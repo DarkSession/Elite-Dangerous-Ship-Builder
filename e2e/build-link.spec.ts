@@ -55,6 +55,12 @@ test.describe('publishing a build link', () => {
     expect(fragment.length).toBeLessThanOrEqual(MAX_LENGTH);
     // Path and query carry no build data: the fragment is the only place it is,
     // and the fragment is the one part a browser never transmits.
+    //
+    // Also 015/FR-017, and the reason a build address is not an advertised
+    // address: a build in the path or the query would be a Commander's loadout
+    // in an access log and in a Referer header, and it would give this feature
+    // an address to render a document for. There is nothing to render, because
+    // there is nothing outside the fragment.
     expect(url.pathname).toBe('/outfitting');
     expect(url.search).toBe('');
   });

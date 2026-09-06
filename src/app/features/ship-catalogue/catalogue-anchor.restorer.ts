@@ -1,5 +1,6 @@
 import { DOCUMENT, Injectable, inject, signal } from '@angular/core';
 import { CatalogueSessionStore } from '../../application/catalogue/catalogue-session.store';
+import { RenderingTarget } from '../../platform/browser/rendering-target';
 
 /** The attribute a catalogue row or card carries so it can be found again. */
 export const ANCHOR_ATTRIBUTE = 'data-hull-symbol';
@@ -21,6 +22,7 @@ export const ANCHOR_ATTRIBUTE = 'data-hull-symbol';
 export class CatalogueAnchorRestorer {
   readonly #document = inject(DOCUMENT);
   readonly #session = inject(CatalogueSessionStore);
+  readonly #target = inject(RenderingTarget);
 
   readonly #selected = signal<string | null>(null);
 
@@ -67,8 +69,24 @@ export class CatalogueAnchorRestorer {
     return true;
   }
 
-  /** Restores once the rows have actually been laid out. */
+  /**
+   * Restores once the rows have actually been laid out.
+   *
+   * Not while the build renders a document. There is no viewport at build time
+   * and no Commander to put back anywhere, so there is nothing to restore — but
+   * the reason this is guarded rather than merely pointless is that it throws.
+   * The build's renderer reaches here when it tears the catalogue down at the
+   * end of every hull route, and its DOM emulation supplies a `defaultView`
+   * with no `requestAnimationFrame` on it. The `defaultView` check below is
+   * therefore not the guard it looks like: it passes, and the next line fails
+   * with `e.requestAnimationFrame is not a function` — the same shape of defect
+   * `UuidAdapter` has, asking whether there is a window when the question is
+   * which platform this is (015 research decision 5).
+   */
   restoreWhenSettled(): void {
+    if (!this.#target.isBrowser) {
+      return;
+    }
     const view = this.#document.defaultView;
     if (!view) {
       return;

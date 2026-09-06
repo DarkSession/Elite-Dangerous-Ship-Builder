@@ -1242,6 +1242,9 @@ describe('search metadata', () => {
 
   // What `scripts/search/published-addresses.mjs` hands the rule: the addresses
   // the deployment writes documents for, each with the keys that name it.
+  // Each entry carries feature 015's verdict, because the rule reconciles it:
+  // whether the build renders a document for this address, and why not where it
+  // does not (015/FR-021).
   const PUBLISHED = [
     // The root, which stopped being a redirect and became the start page.
     {
@@ -1251,6 +1254,8 @@ describe('search metadata', () => {
       titleKey: 'app.name',
       descriptionKey: 'app.description',
       image: 'assets/link-card.png',
+      contentBearing: true,
+      reason: null,
     },
     {
       path: 'ships',
@@ -1259,6 +1264,8 @@ describe('search metadata', () => {
       titleKey: 'catalogue.title',
       descriptionKey: 'catalogue.description',
       image: 'assets/link-card.png',
+      contentBearing: true,
+      reason: null,
     },
     {
       path: 'outfitting',
@@ -1267,6 +1274,8 @@ describe('search metadata', () => {
       titleKey: 'workspace.title',
       descriptionKey: 'workspace.description',
       image: 'assets/link-card.png',
+      contentBearing: false,
+      reason: 'A bench states nothing until a Commander fits a ship.',
     },
   ];
 
@@ -1328,6 +1337,69 @@ describe('search metadata', () => {
 
   it('accepts a set of files that agree with each other and with the routes', () => {
     assert.deepEqual(rules.searchMetadataViolations(complete()), []);
+  });
+
+  /**
+   * Which advertised addresses the build renders a document for.
+   *
+   * The rule this stands behind is that the verdict is recorded once and read
+   * by both the build and the gate. An address that is neither generated nor
+   * deliberately content-free ships the empty shell feature 015 exists to
+   * replace, and nothing else about the build would say so — the address
+   * answers 200, its head is correct, and only its body is missing
+   * (015/FR-021).
+   */
+  it('refuses an advertised address nothing has ruled on', () => {
+    const unruled = PUBLISHED.map((entry) =>
+      entry.path === 'ships' ? { ...entry, contentBearing: undefined } : entry,
+    );
+
+    const found = rules.searchMetadataViolations(complete({ published: unruled }));
+
+    assert.equal(found.length, 1);
+    assert.match(found[0].message, /nothing records whether it has content to state/);
+  });
+
+  it('refuses an address left out with no reason given', () => {
+    // A reason has to be a sentence somebody can write. "There is nothing to
+    // say yet" survives review; "we did not get to it" does not.
+    const silent = PUBLISHED.map((entry) =>
+      entry.path === 'outfitting' ? { ...entry, reason: '   ' } : entry,
+    );
+
+    const found = rules.searchMetadataViolations(complete({ published: silent }));
+
+    assert.equal(found.length, 1);
+    assert.match(found[0].message, /no document and no reason/);
+  });
+
+  it('refuses a generated address that still carries a reason for not being', () => {
+    // Both halves of a change that was only half made.
+    const stale = PUBLISHED.map((entry) =>
+      entry.path === 'ships' ? { ...entry, reason: 'A bench states nothing.' } : entry,
+    );
+
+    const found = rules.searchMetadataViolations(complete({ published: stale }));
+
+    assert.equal(found.length, 1);
+    assert.match(found[0].message, /carries a reason for not being/);
+  });
+
+  it('reconciles the verdict against the list the builder is handed', () => {
+    // `discoverRoutes: false` makes the routes file the whole set, so an
+    // address missing from it is an address that silently keeps today's empty
+    // shell. This is the pair that has to agree, and it is why the verdict is
+    // recorded once rather than inferred at each call site.
+    assert.deepEqual(rules.searchMetadataViolations(complete()), []);
+  });
+
+  it('accepts a bench that has gained content to state', () => {
+    // The registry is where that is stated, and nothing else changes.
+    const promoted = PUBLISHED.map((entry) =>
+      entry.path === 'outfitting' ? { ...entry, contentBearing: true, reason: null } : entry,
+    );
+
+    assert.deepEqual(rules.searchMetadataViolations(complete({ published: promoted })), []);
   });
 
   it('reads no route out of an XML comment, in either of its shapes', () => {

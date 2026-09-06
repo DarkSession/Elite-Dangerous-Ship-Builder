@@ -101,6 +101,28 @@ describe('AppFrame', () => {
     expect(bar.querySelectorAll('.frame__beta')).toHaveLength(1);
   });
 
+  it('draws one mark on a bar that has not been told what screen it is on', () => {
+    // The frame a Commander sees while the application boots. A generated
+    // document is rendered for a route whose name is known and draws the mark
+    // after the title; the application boots before the router has resolved
+    // that name. If the two disagreed about where the mark goes, the boot would
+    // add a second one beside the one the document already drew and take it
+    // away a second later — content appearing, moving and disappearing across
+    // the takeover (015/FR-009).
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.detectChanges();
+    const bar = fixture.nativeElement as HTMLElement;
+
+    expect(bar.querySelectorAll('.frame__beta')).toHaveLength(1);
+    // The same one the document draws: the block is empty, so it is in the same
+    // place either way, and the question is which template branch drew it.
+    fixture.componentRef.setInput('routeContext', 'Ship Builder');
+    fixture.detectChanges();
+    const marks = [...bar.querySelectorAll('.frame__beta, .frame__title')];
+
+    expect(marks.map((node) => node.className)).toEqual(['frame__title', 'frame__beta']);
+  });
+
   it('names the tool a Commander is in, and does not offer it as a way anywhere', () => {
     const fixture = TestBed.createComponent(AppFrame);
     fixture.componentRef.setInput('tools', [

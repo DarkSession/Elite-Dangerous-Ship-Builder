@@ -29,6 +29,7 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
+import { RenderingTarget } from './platform/browser/rendering-target';
 import { Layer } from './ui/components/layer/layer';
 
 /** The shell action that opens the import layer, named once. */
@@ -88,6 +89,13 @@ export class App {
   readonly #slef = inject(SlefStore);
   readonly #active = inject(ActiveBuildStore);
   readonly help = inject(HelpPresenter);
+  /**
+   * Whether a Commander is looking at this, or the build is rendering it.
+   *
+   * Read by the template for one thing only: whether to mount the Help · About
+   * modal. See `app.html` for why that one is conditional and nothing else is.
+   */
+  readonly interactive = inject(RenderingTarget).isBrowser;
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
   readonly library = inject(LibraryPresence);

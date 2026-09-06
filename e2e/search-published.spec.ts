@@ -1,7 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { SITE_ORIGIN } from '../src/app/platform/browser/site-address';
 import { PRODUCT_URL } from './servers';
+import { shapeOf } from './served-document';
 
 /**
  * What a reader that runs no script is actually served, address by address.
@@ -30,6 +31,26 @@ const title = (document: string) => value(document, /<title>([^<]*)<\/title>/);
 const description = (document: string) =>
   value(document, /name="description"[^>]*content="([^"]*)"/s);
 const canonical = (document: string) => value(document, /rel="canonical"[^>]*href="([^"]*)"/);
+
+/**
+ * A document's body as a reader that runs no script sees it: text, no markup.
+ *
+ * Scripts are excluded, and that is the whole point. The bundle's module
+ * preloads sit in the body, so counting their contents as something a reader
+ * can see would let a document that stated a hull's figures only inside a
+ * script pass every assertion below while serving a crawler nothing.
+ *
+ * Parsed rather than pattern-matched, for the reason `served-document.ts`
+ * gives at length.
+ */
+async function readableText(page: Page, document: string): Promise<string> {
+  return (await shapeOf(page, document)).text;
+}
+
+/** Every `<h1>` a document carries, in document order. */
+async function headings(page: Page, document: string): Promise<readonly string[]> {
+  return (await shapeOf(page, document)).headings;
+}
 
 test.describe('the document each published address answers with', () => {
   test('answers from its own document, without a redirect', async ({ page }) => {
@@ -128,5 +149,123 @@ test.describe('the document each published address answers with', () => {
     expect(title(document)).toBe(englishMessages['app.document-title.default']);
     expect(description(document)).toBe(englishMessages['app.description']);
     expect(canonical(document)).toBe(`${SITE_ORIGIN}/`);
+  });
+
+  /**
+   * The half feature 015 added: the body, not the head.
+   *
+   * Everything above this point would pass just as well against the shell this
+   * application served for its first fourteen features — a correct head over an
+   * empty `<app-root>`. What a reader that runs no script actually wants is
+   * underneath it, and until now none of it was there (015/FR-001, SC-001).
+   */
+  test('states a hull’s figures in the body, with no script executed', async ({ page }) => {
+    const response = await page.request.get(`${PRODUCT_URL}/ships/Anaconda`, { maxRedirects: 0 });
+    const document = await response.text();
+    const body = await readableText(page, document);
+
+    // The figures FR-002 names, in the words the document uses for them. Read
+    // out of the served bytes: no browser has run, nothing has booted, and this
+    // is exactly what an indexer or an AI crawler is handed.
+    expect(body).toContain('Faulcon DeLacy');
+    expect(body).toContain('180 m/s');
+    expect(body).toContain('350 MJ');
+    expect(body).toContain('400 t');
+    expect(body).toContain('Crew 4');
+    expect(body).toContain('Mass lock 23');
+    expect(body).toContain('1 Huge');
+    expect(body).toContain('3 Large');
+  });
+
+  test('opens every content-bearing document with its own subject', async ({ page }) => {
+    // What a reader applying no CSS resolves by document order. The shell draws
+    // two bar compositions and hides one, so a hull's document carries two
+    // `<h1>` elements in markup while exactly one is ever rendered — the
+    // narrower composition's comes first, and it names the hull.
+    for (const [path, subject] of [
+      ['/ships/Anaconda', 'Anaconda'],
+      ['/ships/Viper_Mk_IV', 'Viper Mk IV'],
+    ] as const) {
+      const document = await (
+        await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 })
+      ).text();
+
+      expect((await headings(page, document))[0], path).toBe(subject);
+    }
+  });
+
+  test('names every hull the catalogue lists', async ({ page }) => {
+    const document = await (
+      await page.request.get(`${PRODUCT_URL}/ships`, { maxRedirects: 0 })
+    ).text();
+    const body = await readableText(page, document);
+
+    // Counted against the sitemap rather than against 48: the set belongs to
+    // the Almanac, and a pin move must not need this number edited (FR-003).
+    const sitemap = await (await page.request.get(`${PRODUCT_URL}/sitemap.xml`)).text();
+    const hulls = [...sitemap.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)]
+      .map((match) => match[1])
+      .filter((address) => address.startsWith(`${SITE_ORIGIN}/ships/`));
+
+    expect(hulls.length).toBeGreaterThan(40);
+    for (const address of hulls) {
+      const segment = address.slice(`${SITE_ORIGIN}/ships/`.length);
+      expect(body, address).toContain(segment.replace(/_/g, ' '));
+    }
+
+    // FR-003's other half — a link from here to each hull's own address — is
+    // NOT asserted, because it is not built. The catalogue's rows are buttons
+    // whose second press builds the hull rather than navigating to it
+    // (`responsive-catalogue-view.ts`, Commander request 2026-08-28), so they
+    // are not links and cannot be relabelled into links without changing what
+    // the control means. Every hull address is still reachable: the sitemap
+    // lists all 48, and each answers 200 with its own canonical, which the
+    // tests above check. Recorded here rather than quietly asserted around,
+    // because a crawler following links alone finds no hull from this page.
+  });
+
+  test('states every content-bearing address’s subject, and leaves the benches alone', async ({
+    page,
+  }) => {
+    // The whole set, from the map rather than from a list here. The two benches
+    // are advertised and state nothing until a Commander acts, so they keep the
+    // empty body they have always had — which is a ruling, not an oversight
+    // (FR-018).
+    const sitemap = await (await page.request.get(`${PRODUCT_URL}/sitemap.xml`)).text();
+    const advertised = [...sitemap.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(
+      (match) => match[1],
+    );
+    const benches = [`${SITE_ORIGIN}/outfitting`, `${SITE_ORIGIN}/equipment`];
+
+    let stated = 0;
+    for (const address of advertised) {
+      const path = address.slice(SITE_ORIGIN.length);
+      const body = await readableText(
+        page,
+        await (await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 })).text(),
+      );
+
+      if (benches.includes(address)) {
+        expect(body, address).toBe('');
+        continue;
+      }
+      expect(body.length, address).toBeGreaterThan(0);
+      stated += 1;
+    }
+
+    expect(stated).toBe(advertised.length - benches.length);
+  });
+
+  test('serves the navigation fallback with no address’s content in it', async ({ page }) => {
+    // `index.csr.html` is what the service worker falls back to for every
+    // navigation it cannot match, and what `404.html` is copied from. A body
+    // here is one address's content served under every other address at once,
+    // which is the trap that made the root's document worth thinking about at
+    // all (015/FR-014, `contracts/address-set.md` §3).
+    for (const path of ['/index.csr.html', '/404.html']) {
+      const document = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+      expect(await readableText(page, document), path).toBe('');
+    }
   });
 });

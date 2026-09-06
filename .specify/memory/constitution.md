@@ -1,15 +1,28 @@
 <!--
-Sync Impact Report (9.0.2)
-- Version change: 9.0.1 -> 9.0.2 (PATCH)
-- Modified principles: none. The product is named Nav Beacon, two words, and this document
-  spells it so.
-- Rationale: the design canvases and the wordmark on the bar both read `NAV BEACON`; the
-  written name follows them, so the product is spelled one way everywhere
-  (`docs/navbeacon-migration.md`, and
-  `specs/011-interface-foundations/design/search-visibility.md` for the record). Ship Builder
-  is the tool that plans ship loadouts; Nav Beacon is the product that carries it. No
-  obligation changes, so the bump is a patch.
-- Invalidated-spec review: none. No principle, exclusion or count moves.
+Sync Impact Report (9.1.0)
+- Version change: 9.0.2 -> 9.1.0 (MINOR)
+- Modified principles: I. Client-Side Only — unchanged in substance, expanded. The bullet
+  that says build state is never uploaded now says where in a URL it may live: the
+  fragment, and nowhere else, because a fragment is not sent with the request and a query
+  is. The rule was already the implementation; it was not written down, so nothing stopped
+  a later change from moving the build to a query and calling it a detail.
+- Modified sections: Technology Constraints — `Build output` permits build-time
+  prerendering and continues to prohibit per-request server-side rendering.
+- Rationale: the hull pages state what a hull is — manufacturer, size, maximum speed, base
+  shield, hull mass, crew, mass lock, hardpoints and internal capacity — and a crawler that
+  runs no script sees none of it, because the shell paints that content only after Angular
+  boots. Most AI crawlers and several search engines run no script. The content is a
+  function of the pinned Almanac and nothing else: no session, no request, no Commander.
+  A build step can therefore write it, and a server would compute the same bytes for every
+  caller. So the constraint that blocked this was aimed at the server, and the ban on
+  servers is what carries the weight — not a ban on the build doing work. The section now
+  separates the two.
+- Not adopted, deliberately: a server. Prerendering answers a crawler exactly as
+  per-request rendering would, and principle I stands unamended.
+- Invalidated-spec review: none. No principle, exclusion or count moves, and no existing
+  requirement changes meaning. `specs/011-interface-foundations/design/search-visibility.md`
+  records prerendering as considered and out of scope; that record stands as written, and
+  the feature that supersedes it states so itself.
 - Follow-up TODOs: none.
 -->
 
@@ -31,7 +44,14 @@ load, import and export — MUST run in the browser.
 Consequences that follow from this and MUST be honoured:
 
 - Build state lives in the browser (in-memory, `localStorage`) or in a URL. It
-  is never uploaded.
+  is never uploaded. **In a URL it lives in the fragment, and nowhere else.** A
+  fragment is not sent with the request; a path or query is. So a build in a
+  query would be written to the access log of whatever host serves the files, and
+  sent to third parties in the `Referer` header of any link a Commander follows —
+  which is uploading it, whoever owns the log. This holds whether or not the
+  document at that address was prerendered: prerendering renders addresses, and a
+  build is not one. Moving build state out of the fragment requires amending this
+  principle rather than reading an exception into it.
 - The application MUST be deployable as static files to any static host.
 - Every capability MUST remain usable offline after first load. **Assets the
   application serves from its own origin MAY be fetched at runtime** rather than
@@ -345,8 +365,19 @@ requirements without prescribing implementation.
   tokens defined in the global stylesheet layer and one dark theme built from
   them. It is versioned in this repository, and this repository is the source of
   truth for any external design tool it synchronises with (principle VII).
-- **Build output**: static assets only. No server-side rendering, no runtime
-  environment configuration baked into the bundle.
+- **Build output**: static assets only, and a prerendered document is one of them.
+  The build MAY render a route to HTML at build time; it MUST NOT render one per
+  request. The distinction is where the rendering happens, not what it produces: a
+  prerendered document is written by `pnpm run build` from the pinned
+  `@elite-dangerous-almanac/core`, is served as a file by any static host, and is
+  identical for every Commander who asks for that address. Per-request rendering
+  needs an application server, which principle I forbids.
+  A prerendered document MUST NOT embed Commander data, and it MUST NOT carry
+  runtime environment configuration baked into the bundle. What it may state is
+  what the address is about, which is game data the package already owns.
+  The rendered HTML is a starting frame, never the source of truth: the running
+  application MUST reach the same state on its own from the same address, so an
+  address whose document was never generated still works.
 
 ## Development Workflow
 
@@ -393,4 +424,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 9.0.2 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-09-05
+**Version**: 9.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-09-06

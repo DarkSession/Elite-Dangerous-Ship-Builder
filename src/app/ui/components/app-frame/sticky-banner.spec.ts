@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   ElementRef,
   viewChild,
   type Signal,
 } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { renderComponent } from '../ui-component.spec-helpers';
 import { observeBanner } from './sticky-banner';
 import { declareMeasurement, declareResizeObserver } from '../../measurement.spec-helpers';
@@ -130,6 +132,105 @@ describe('the sticky banner', () => {
     const fixture = renderComponent(StickyBannerHost);
 
     expect(fixture.componentInstance.height()).toBe(118);
+  });
+
+  it('measures nothing at all until the host has been rendered once', () => {
+    // The guard 015 needs, in the terms this file already uses.
+    //
+    // The build renders these components to produce the document each address
+    // answers with, and it cannot lay anything out: under its DOM emulation
+    // `getBoundingClientRect` is not a function, so a reading taken before the
+    // first render throws there rather than returning something wrong. The
+    // deferral to `afterNextRender` is what keeps that call from happening, and
+    // `afterNextRender` never runs in that renderer at all.
+    //
+    // Asserted as "no reading was taken" rather than "no error was thrown",
+    // because the prerenderer swallows component errors: an unguarded version
+    // exits 0 and publishes 50 documents rendered from a broken pass.
+    withRootFontSize(16);
+    withWindowHeight(834);
+    withBarHeight(74);
+
+    // Counted on `HTMLElement.prototype`, layered over the declared height,
+    // because that is the level `declareMeasurement` patches — a counter on
+    // `Element.prototype` would sit underneath it and never be called. Undone
+    // by descriptor for the reason that file gives at length.
+    let readings = 0;
+    const declared = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'getBoundingClientRect',
+    );
+    const measure = HTMLElement.prototype.getBoundingClientRect;
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      writable: true,
+      value: function counted(this: Element): DOMRect {
+        readings += 1;
+        return measure.call(this);
+      },
+    });
+
+    try {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [StickyBannerHost] });
+      const fixture = TestBed.createComponent(StickyBannerHost);
+
+      // Constructed, so the effect and the deferral are both registered, but
+      // never rendered — which is as far as the build ever gets.
+      expect(readings).toBe(0);
+      expect(fixture.componentInstance.height()).toBeNull();
+      expect(fixture.componentInstance.released()).toBe(false);
+
+      // And once it is rendered, the reading happens. Without this half the
+      // test above would pass just as well against a measurement that never
+      // works at all.
+      fixture.detectChanges();
+
+      expect(readings).toBeGreaterThan(0);
+      expect(fixture.componentInstance.height()).toBe(74);
+    } finally {
+      if (declared === undefined) {
+        delete (HTMLElement.prototype as { getBoundingClientRect?: unknown }).getBoundingClientRect;
+      } else {
+        Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', declared);
+      }
+    }
+  });
+
+  it('publishes no measurement where the document has no window', () => {
+    // The build's renderer, from the other direction: a document without a
+    // `defaultView`. `released` and `height` keep their initial values, so
+    // `AppFrame` publishes neither host binding into the document and the token
+    // layer's declared height stands (015/FR-009, research decision 6).
+    withRootFontSize(16);
+    withWindowHeight(834);
+    withBarHeight(74);
+
+    // The real document with its window masked, rather than a stub object:
+    // Angular's own renderer calls `querySelector` on whatever `DOCUMENT`
+    // provides, so a plain `{ defaultView: null }` fails before the component
+    // under test is ever constructed. Functions are bound back to the genuine
+    // document, because jsdom refuses a foreign receiver.
+    const windowless = new Proxy(document, {
+      get(target, key) {
+        if (key === 'defaultView') {
+          return null;
+        }
+        const value = Reflect.get(target, key) as unknown;
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [StickyBannerHost],
+      providers: [{ provide: DOCUMENT, useValue: windowless }],
+    });
+    const fixture = TestBed.createComponent(StickyBannerHost);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.height()).toBeNull();
+    expect(fixture.componentInstance.released()).toBe(false);
   });
 
   it('holds its place in a renderer with no resize observer', () => {

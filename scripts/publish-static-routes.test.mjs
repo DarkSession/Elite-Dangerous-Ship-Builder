@@ -1,6 +1,17 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { advertisedAddresses, attribute, documentFor, fileFor } from './publish-static-routes.mjs';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import {
+  advertisedAddresses,
+  attribute,
+  documentFor,
+  fileFor,
+  pruneEmptyDirectories,
+  renderedFileFor,
+} from './publish-static-routes.mjs';
 import { withoutXmlComments } from './search/published-addresses.mjs';
 import { sitemapDocument } from './generate-sitemap.mjs';
 
@@ -161,5 +172,137 @@ describe('the document an address answers with', () => {
     assert.match(document, /content="Costs \$1 \$&amp; \$` \$' \$\$"/);
     // One description tag, not a document that grew a second one out of a value.
     assert.equal(document.match(/<meta name="description"/g).length, 1);
+  });
+});
+
+/**
+ * Where the builder leaves a document, and where it has to end up.
+ *
+ * Angular's prerenderer writes `<route>/index.html` for every address it
+ * renders. GitHub Pages answers a directory with a 301, so publishing that
+ * layout would make every advertised address a redirect to an address the
+ * sitemap does not carry — the problem feature 011 fixed, re-created by the
+ * feature that was meant to build on it (`contracts/address-set.md` §2).
+ */
+describe('where the builder leaves each document', () => {
+  it('leaves an address below the root inside a directory of its own', () => {
+    assert.equal(renderedFileFor(`${ORIGIN}/ships/Anaconda`, ORIGIN), 'ships/Anaconda/index.html');
+    assert.equal(renderedFileFor(`${ORIGIN}/ships`, ORIGIN), 'ships/index.html');
+  });
+
+  it('leaves the root where the root is published, so it is never moved', () => {
+    // The one address whose rendered file and published file are the same, and
+    // the reason the fallback had to move instead: Pages resolves `/` to
+    // `index.html` and to no other file (research decision 9).
+    assert.equal(renderedFileFor(`${ORIGIN}/`, ORIGIN), 'index.html');
+    assert.equal(renderedFileFor(`${ORIGIN}/`, ORIGIN), fileFor(`${ORIGIN}/`, ORIGIN));
+  });
+
+  it('names a different file from the published one for every other address', () => {
+    // Which is what makes the move a move. An address whose two names matched
+    // would be republished onto itself and its directory left standing.
+    for (const path of ['ships', 'ships/Anaconda', 'outfitting']) {
+      assert.notEqual(
+        renderedFileFor(`${ORIGIN}/${path}`, ORIGIN),
+        fileFor(`${ORIGIN}/${path}`, ORIGIN),
+      );
+    }
+  });
+});
+
+/**
+ * Publishing over the rendered documents rather than over a shell.
+ *
+ * The defect this stands against does not look like a defect: the build
+ * succeeds, all 52 addresses answer 200, every head is correct, and every body
+ * is empty. Nothing else in the pipeline notices, because nothing else compares
+ * a body to anything. So the assertion is on the *template* — that a document
+ * with content in it survives being published (015/FR-005, address-set.md §5).
+ */
+describe('publishing a document that already has a body', () => {
+  const RENDERED = INDEX.replace(
+    '<body></body>',
+    '<body><app-root><h1>Anaconda</h1><p>Faulcon DeLacy</p></app-root></body>',
+  );
+
+  it('keeps the rendered body and replaces only the head', () => {
+    const published = documentFor(RENDERED, HEAD);
+
+    assert.match(published, /<h1>Anaconda<\/h1>/);
+    assert.match(published, /Faulcon DeLacy/);
+    assert.match(published, /<title>Anaconda · Nav Beacon<\/title>/);
+    assert.match(published, new RegExp(`rel="canonical" href="${ORIGIN}/ships/Anaconda"`));
+  });
+
+  it('leaves a body it was given empty, empty', () => {
+    // The two head-only addresses, which are still written from the shell.
+    // Their behaviour is unchanged by this feature and must stay that way.
+    const published = documentFor(INDEX, HEAD);
+
+    assert.match(published, /<body><\/body>/);
+  });
+
+  it('refuses a rendered document whose head has changed shape', () => {
+    // Unchanged from the rule this file already held, restated against the new
+    // template: a substitution that silently did nothing on a *rendered*
+    // document looks even more like success than it did on a shell, because
+    // the body is right.
+    const headless = RENDERED.replace(/<title>[^<]*<\/title>/, '');
+
+    assert.throws(() => documentFor(headless, HEAD), /no <title>/);
+  });
+});
+
+/**
+ * The empty directories the move leaves behind.
+ *
+ * `ships/` holds the 48 hull documents as well as the catalogue's own rendered
+ * `index.html`, and `ships` is published before any hull is — so removing a
+ * document's directory as each is published deletes 48 documents that have not
+ * been written yet, and the build still exits 0.
+ */
+describe('pruning what the move leaves behind', () => {
+  /** A directory tree under a temporary root, and the root's path. */
+  async function tree(shape) {
+    const root = await mkdtemp(join(tmpdir(), 'ednb-prune-'));
+    for (const [path, content] of Object.entries(shape)) {
+      const file = join(root, path);
+      await mkdir(dirname(file), { recursive: true });
+      await writeFile(file, content, 'utf8');
+    }
+    return root;
+  }
+
+  it('removes a directory whose only document has been republished', async () => {
+    const root = await tree({ 'ships/Anaconda/.keep': '', 'ships/Anaconda.html': 'x' });
+    await rm(join(root, 'ships/Anaconda/.keep'));
+
+    await pruneEmptyDirectories(root);
+
+    assert.equal(existsSync(join(root, 'ships/Anaconda')), false);
+    assert.equal(existsSync(join(root, 'ships/Anaconda.html')), true);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('keeps a directory that still holds something', async () => {
+    // The guard that stops this from being a recursive delete of the output.
+    // `assets/` holds artwork and no document, and must be untouched.
+    const root = await tree({ 'assets/ships/anaconda.png': 'png', 'index.html': 'x' });
+
+    await pruneEmptyDirectories(root);
+
+    assert.equal(existsSync(join(root, 'assets/ships/anaconda.png')), true);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('removes a directory left empty only because its children were', async () => {
+    const root = await tree({ 'a/b/c/.keep': '', 'index.html': 'x' });
+    await rm(join(root, 'a/b/c/.keep'));
+
+    await pruneEmptyDirectories(root);
+
+    assert.equal(existsSync(join(root, 'a')), false);
+    assert.equal(existsSync(join(root, 'index.html')), true);
+    await rm(root, { recursive: true, force: true });
   });
 });

@@ -275,11 +275,22 @@ export class AppFrame {
    * own build name in a field they can edit: a chip after that reads as part of
    * the name, and the build is not the thing in beta.
    *
-   * A bar carrying neither leads, because there is nothing there to follow.
+   * A bar carrying neither is not a third case. The block is then empty, so
+   * "leads" and "follows" are the same position and the distinction says
+   * nothing — which is why this asks only whether there is an identity block.
+   *
+   * It used to ask for a title as well, and that cost a Commander a second
+   * chip. A generated document is rendered for a route whose name is known, so
+   * it draws the mark after the title; the application boots before the router
+   * has resolved that name, so for one render it had no title, took the
+   * "neither" branch and drew a *second* mark ahead of the one the document
+   * already had. Measured on `/ships`: added at 155ms, removed at 1281ms, with
+   * the screen's name pushed 36px sideways in between — content appearing,
+   * moving and disappearing across the takeover, which is what 015/FR-009
+   * forbids. Asking one question instead of two makes the boot frame and the
+   * document agree, so there is nothing to add and nothing to remove.
    */
-  readonly betaFollowsTitle = computed(
-    () => this.identity() === null && this.routeContext() !== null,
-  );
+  readonly betaFollowsTitle = computed(() => this.identity() === null);
   readonly actionsOpenLabel = this.#messages.messageSignal('shell.actions.open');
   readonly actionsCloseLabel = this.#messages.messageSignal('shell.actions.close');
 

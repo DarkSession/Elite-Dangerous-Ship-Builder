@@ -5,21 +5,79 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  TitleStrategy,
+  type RouterFeatures,
+  provideRouter,
+  withComponentInputBinding,
+  withEnabledBlockingInitialNavigation,
+} from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
+import { RenderingTarget } from './platform/browser/rendering-target';
 import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
+
+/**
+ * The router features that exist only where a document was rendered.
+ *
+ * Read as a function rather than written inline so the dev-only branch is a
+ * statement about the environment, not a ternary buried in a provider list.
+ */
+function takeoverRouting(): RouterFeatures[] {
+  return isDevMode() ? [] : [withEnabledBlockingInitialNavigation()];
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Take over the document the build rendered rather than replacing it.
+    //
+    // Without this, Angular treats a generated document as debris: it empties
+    // `<app-root>` and renders the application into it from nothing. Measured
+    // on `/ships/Anaconda`, that is the hull's figures painted at 39ms, gone at
+    // 181ms, and back at 1236ms — a second of the page a Commander was already
+    // reading being blank, which is exactly the content that "disappears and
+    // returns" that 015/FR-009 forbids and SC-003 measures.
+    //
+    // Hydration walks the rendered DOM instead and adopts it, so the nodes a
+    // Commander is looking at are the nodes the application goes on to own.
+    //
+    // `withEventReplay()` is the other half. A generated document paints every
+    // control before any script has run, so a Commander can press one in that
+    // window — and without replay the press lands on markup with no listener
+    // behind it and nothing happens at all. That is a control that looks
+    // interactive and is not, which is a worse first frame than the empty shell
+    // this feature replaced. Replay records those presses and delivers them
+    // once the application owns the node.
+    provideClientHydration(withEventReplay()),
     // Route parameters are bound to component inputs, so a screen takes its
     // subject as an input rather than reaching into the router for it.
-    provideRouter(routes, withComponentInputBinding()),
+    //
+    // The initial navigation blocks bootstrap, which is what lets the takeover
+    // above adopt a screen instead of rebuilding it. Every screen here is behind
+    // a lazily loaded route, so without this the router reaches the outlet
+    // before that route's chunk has arrived, throws away the document's copy of
+    // the screen and draws its own a moment later. Measured on
+    // `/ships/Anaconda`: the whole inspector — manufacturer, speed, shield, hull
+    // mass, every hardpoint count — left the page for one frame and came back,
+    // and on a phone the hull sheet was replaced by the whole catalogue, 1029
+    // pixels tall becoming 4857. That is the content that "disappears and
+    // returns" 015/FR-009 forbids and SC-003 measures.
+    //
+    // Not in development, and this is the same ruling as the service worker
+    // below rather than a new one: there is no rendered document on a
+    // development server, so there is nothing for a blocking navigation to
+    // protect and Angular says so — NG05001 calls hydration and enabled
+    // blocking initial navigation a contradiction, which is exactly what they
+    // are where nothing was rendered to hydrate. The warning is `ngDevMode`
+    // only; what ships is the blocking navigation, because what ships has 50
+    // documents to adopt.
+    provideRouter(routes, withComponentInputBinding(), ...takeoverRouting()),
     // Route titles are message keys resolved in the committed locale, so the
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },
@@ -32,8 +90,20 @@ export const appConfig: ApplicationConfig = {
     // component does: a record that outlives its deadline until the next start
     // costs nothing, and a row vanishing under a Commander reading the library
     // costs trust (FR-013, ruled 2026-08-25).
+    //
+    // Not in the build's renderer. The sweep reaches `TabOwnershipCoordinator`,
+    // which takes a page nonce from `UuidAdapter`, which throws where there is
+    // no `crypto` rather than fabricating an identity (constitution IV). The
+    // renderer has no `crypto`, so an unguarded initializer throws before the
+    // router runs and every one of the 50 documents comes out empty. What is
+    // removed here is the call, not the honesty: `UuidAdapter` keeps throwing,
+    // and the build simply never asks it for something a build has no use for —
+    // there is no Commander at build time and no library to sweep
+    // (015/FR-001, research decision 5).
     provideAppInitializer(() => {
-      inject(RetentionService).sweep();
+      if (inject(RenderingTarget).isBrowser) {
+        inject(RetentionService).sweep();
+      }
     }),
     // The application's only service worker, and its only cache owner.
     //
