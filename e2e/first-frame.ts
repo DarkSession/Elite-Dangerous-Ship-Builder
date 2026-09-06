@@ -90,10 +90,24 @@ export async function recordFrames(page: Page, subject: string): Promise<void> {
     ([wanted, measured, retiring]: [string, readonly string[], readonly string[]]) => {
       const frames: unknown[] = [];
       (window as unknown as { __frames: unknown[] }).__frames = frames;
+      // Cut by search rather than by pattern: the phrases are words, and a
+      // word compiled into a regular expression is a word whose punctuation
+      // has become syntax.
+      const without = (text: string, phrase: string) => {
+        const lowered = text.toLowerCase();
+        const wanted = phrase.toLowerCase();
+        let cut = '';
+        let from = 0;
+        for (let at = lowered.indexOf(wanted); at !== -1; at = lowered.indexOf(wanted, from)) {
+          cut += text.slice(from, at);
+          from = at + wanted.length;
+        }
+        return cut + text.slice(from);
+      };
       const read = () => {
         let text = (document.body.innerText || '').replace(/\s+/g, ' ').trim();
         for (const phrase of retiring) {
-          text = text.split(new RegExp(phrase, 'gi')).join('');
+          text = without(text, phrase);
         }
         return text.replace(/\s+/g, ' ').trim();
       };

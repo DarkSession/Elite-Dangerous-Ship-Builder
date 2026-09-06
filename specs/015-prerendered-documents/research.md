@@ -522,12 +522,12 @@ The takeover being invisible turned out to be four separate small defects, all o
 them invisible before this feature because there was nothing on screen for them to
 disturb:
 
-| What a Commander saw                                            | Why                                                                                                  | Fixed by |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
-| A second BETA chip at 155ms, gone at 1281ms, name 36px sideways | `betaFollowsTitle` asked a question with two true answers before the route had reported its identity | T006f    |
-| All 48 catalogue rows jumping 16px for one frame                | `[class.field__label--hidden]` is a binding, and Angular re-initialises bindings on its first pass   | T006g    |
-| The mobile hull bar re-composing 46px lower, 1.1s in            | `frame--returning` follows `back()`, published from a lazily loaded component's effect               | T006h    |
-| The whole hull inspector gone for one frame and back            | The router reached the outlet before the lazily loaded chunk, so it discarded the document's screen  | T006d    |
+| What a Commander saw                                                                                                | Why                                                                                                  | Fixed by |
+| ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
+| A second BETA chip at 155ms, gone at 1281ms, name 36px sideways                                                     | `betaFollowsTitle` asked a question with two true answers before the route had reported its identity | T006f    |
+| All 48 catalogue rows jumping 16px for one frame                                                                    | `[class.field__label--hidden]` is a binding, and Angular re-initialises bindings on its first pass   | T006g    |
+| The mobile hull bar re-composing 46px lower, 1.1s in                                                                | `frame--returning` follows `back()`, published from a lazily loaded component's effect               | T006h    |
+| The whole hull inspector gone for one frame and back, and on a phone the hull sheet replaced by the whole catalogue | The router reached the outlet before the lazily loaded chunk, so it discarded the document's screen  | T006d    |
 
 **Rationale**: every one of them is a real thing a Commander sees, and every one
 would have been reported as "the prerendering flickers" rather than as what it is.
@@ -605,6 +605,76 @@ takeover added would still fail.
 an empty node so the shapes match — rejected, it puts a lie in 50 published files
 to make a test easier; comparing only tag counts rather than the shape — rejected,
 it stops detecting reordering, which is the thing FR-011 is actually about.
+
+---
+
+## Decision 19: The blocking initial navigation ships, and does not run in development
+
+**Decision**: apply `withEnabledBlockingInitialNavigation()` outside development
+only, the same shape as `provideServiceWorker({ enabled: !isDevMode() })`.
+
+Angular disagrees with the option outright. `provideClientHydration()` registers
+a detector that warns **NG05001, "found both hydration and enabledBlocking
+initial navigation in the same application, which is a contradiction"**, and it
+is right about a development server: there is no rendered document there, so
+there is nothing for a blocking navigation to protect.
+
+It is wrong about a production build, and the measurement says so. Removed, on
+the shipped output:
+
+| Address           | Width | Text across the takeover | `main`          |
+| ----------------- | ----- | ------------------------ | --------------- |
+| `/`               | 1440  | 884 → 871                | steady          |
+| `/ships/Anaconda` | 1440  | 5015 → 4393              | steady          |
+| `/ships/Anaconda` | 390   | 669 → 5577               | 1029px → 4857px |
+
+The last row is the whole hull sheet being replaced by the catalogue for a
+moment on a phone. Restored, every one of those becomes a single value.
+
+**Rationale**: the detector is `ngDevMode`-only and never reaches a published
+bundle, so this is not a warning being silenced — it is a configuration made to
+say what it means. The takeover exists only where a document was rendered, and
+`angular.json`'s development configuration already says the same thing about
+prerendering itself (T006e).
+
+**Alternatives considered**: making the three prerendered screens' routes eager
+— rejected, it moves two large screens into the initial bundle to fix a timing
+problem the router already has an option for; `withIncrementalHydration()` with
+`@defer (hydrate on …)` — rejected for the reason decision 15 gives, it needs
+`@defer` blocks the screens do not have.
+
+---
+
+## Decision 20: The document gate reads documents with a parser
+
+**Decision**: `check-prerendered-documents.mjs` parses with `jsdom` rather than
+matching HTML with regular expressions.
+
+The gate was written with `<script[\s\S]*?</script>`, `<!--[\s\S]*?-->`,
+`<[^>]+>` and `<body[^>]*>`. CodeQL's `js/bad-tag-filter` flags every one of
+them as a high-severity defect, and it is not being pedantic: an attribute value
+holding a `>` ends a tag early, `<!-->` is a comment that closes immediately,
+and this gate reads 293 KB of exactly the markup those cases live in. A gate
+nobody can believe is worse than no gate.
+
+Two details the rewrite had to keep:
+
+- **Text nodes are joined by a space, not concatenated.** `textContent` would
+  read the catalogue's `<span>220</span><span>m/s</span>` as `220m/s`, and the
+  gate would report a figure missing from a document that plainly states it. An
+  element boundary is a word boundary, which is what the regexes were doing when
+  they replaced each tag with a space.
+- **`&amp;` joins `&` in the build prohibition.** The markup checked is now a
+  parser's serialization, and a parser writes a bare `&` in an attribute back
+  out escaped.
+
+**Cost**: one parse per document, remembered, so the three readers share it. 6.4
+seconds for a full pass over 52 documents and 65 seconds for the gate's own test
+file, which runs it once per doctored case.
+
+**Alternatives considered**: `parse5` directly, which is faster — rejected, it
+is a new dependency and a hand-written text walk to save seconds in a gate that
+runs once per build; suppressing the alerts — rejected, the query is right.
 
 ---
 

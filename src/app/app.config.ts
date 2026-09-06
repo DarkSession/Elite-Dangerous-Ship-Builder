@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   TitleStrategy,
+  type RouterFeatures,
   provideRouter,
   withComponentInputBinding,
   withEnabledBlockingInitialNavigation,
@@ -20,6 +21,16 @@ import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
 import { RenderingTarget } from './platform/browser/rendering-target';
 import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
+
+/**
+ * The router features that exist only where a document was rendered.
+ *
+ * Read as a function rather than written inline so the dev-only branch is a
+ * statement about the environment, not a ternary buried in a provider list.
+ */
+function takeoverRouting(): RouterFeatures[] {
+  return isDevMode() ? [] : [withEnabledBlockingInitialNavigation()];
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -54,9 +65,19 @@ export const appConfig: ApplicationConfig = {
     // the screen and draws its own a moment later. Measured on
     // `/ships/Anaconda`: the whole inspector — manufacturer, speed, shield, hull
     // mass, every hardpoint count — left the page for one frame and came back,
-    // which is the content that "disappears and returns" 015/FR-009 forbids and
-    // SC-003 measures.
-    provideRouter(routes, withComponentInputBinding(), withEnabledBlockingInitialNavigation()),
+    // and on a phone the hull sheet was replaced by the whole catalogue, 1029
+    // pixels tall becoming 4857. That is the content that "disappears and
+    // returns" 015/FR-009 forbids and SC-003 measures.
+    //
+    // Not in development, and this is the same ruling as the service worker
+    // below rather than a new one: there is no rendered document on a
+    // development server, so there is nothing for a blocking navigation to
+    // protect and Angular says so — NG05001 calls hydration and enabled
+    // blocking initial navigation a contradiction, which is exactly what they
+    // are where nothing was rendered to hydrate. The warning is `ngDevMode`
+    // only; what ships is the blocking navigation, because what ships has 50
+    // documents to adopt.
+    provideRouter(routes, withComponentInputBinding(), ...takeoverRouting()),
     // Route titles are message keys resolved in the committed locale, so the
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },
