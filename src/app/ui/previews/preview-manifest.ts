@@ -3401,7 +3401,7 @@ registerPreview({
 // names one role. The open list is reached by pressing the trigger, in the
 // preview exactly as in the editor: the menu holds that state itself, and an
 // input that forced it open would be a control the editor never sets
-// (`specs/002-module-outfitting/design/engineering-editor.md`, "The effect menu
+// (`openspec/changes/archive/002-module-outfitting/design/engineering-editor.md`, "The effect menu
 // is the application's own control").
 registerPreview({
   componentId: 'experimental-effect-menu',

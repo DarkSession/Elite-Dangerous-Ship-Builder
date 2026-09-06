@@ -401,7 +401,7 @@ test.describe('the layer’s semantics', () => {
  * reference draws. This block reads what the browser computes and compares it
  * with what the canvases set, in the same spirit as `e2e/design-reference.spec.ts`
  * and against the measurements recorded in
- * `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
+ * `openspec/changes/archive/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
  *
  * Each assertion is made at whichever arrangement the running profile's width
  * calls for, so all ten projects say something rather than five of them

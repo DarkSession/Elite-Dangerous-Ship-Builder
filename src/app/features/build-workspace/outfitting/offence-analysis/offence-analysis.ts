@@ -117,7 +117,7 @@ const DAMAGE_DIGITS = 1;
  * capacity, which it draws as `38.4 MJ` in canvas 1c's distributor table and as
  * `CAP 61 MJ` on 1d. Feature 005 writes that same quantity to one place, and
  * the split is recorded rather than settled
- * (`specs/005-power-and-heat/contracts/distributor-metrics.md`).
+ * (`openspec/changes/archive/005-power-and-heat/contracts/distributor-metrics.md`).
  */
 const ENERGY_DIGITS = 2;
 /** Durations to one, which is the place canvas 1c's `FULL FIRE 14.2 s` sets. */

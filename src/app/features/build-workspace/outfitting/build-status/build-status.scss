@@ -32,7 +32,7 @@
 // canvas draws that block `rgba(232, 222, 209, 0.28)` over `0.04` — because an
 // `incomplete` is a statement about a build that is not finished and the system
 // has a role for exactly that. The departure is recorded in
-// `specs/003-ship-statistics/design/status-rail.md`, "The issue block".
+// `openspec/changes/archive/003-ship-statistics/design/status-rail.md`, "The issue block".
 .issue {
   @include layout.stack(var(--ednb-space-stack-tight));
 

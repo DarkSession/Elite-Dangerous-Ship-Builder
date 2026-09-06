@@ -54,7 +54,6 @@ describe('OffenceAnalysis', () => {
       loadout,
       hullName: OFFENCE_FIXTURE_HULL,
       provenance: 'stock',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

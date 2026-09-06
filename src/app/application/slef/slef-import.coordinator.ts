@@ -124,12 +124,10 @@ export class SlefImportCoordinator {
    * from — the producer the envelope named, the draft — goes with it: neither
    * is build state.
    *
-   * The quality completions travel as feature 001's own `qualityNotices`, which
-   * nothing draws: what the package completed on a build a Commander now has
-   * open is a remark rather than a decision they are being asked to take, and
-   * the notice that named them was withdrawn on 2026-08-27. Feature 004
-   * publishes no report of its own either
-   * (`specs/004-slef/design/import-outcome.md`, "Divergence").
+   * A partial roll the package completed is not reported. A completed grade is
+   * what the application models, so reaching one is not a decision a Commander
+   * is being asked to take, and feature 004 publishes no report of its own
+   * either (`openspec/changes/archive/004-slef/design/import-outcome.md`, "Divergence").
    */
   #candidate(candidate: SlefImportCandidate) {
     const symbol = candidate.loadout.shipSymbol;
@@ -137,14 +135,6 @@ export class SlefImportCoordinator {
       loadout: candidate.loadout,
       hullName: this.#gameText.shipName(symbol).text ?? symbol,
       provenance: 'working' as const,
-      qualityNotices: candidate.qualityCompletions.map((completion) => ({
-        kind: 'qualityCompleted' as const,
-        slotKey: completion.slotKey,
-        moduleSymbol: completion.moduleSymbol,
-        blueprintFdname: completion.blueprintFdname,
-        previousQuality: completion.previousQuality,
-        quality: completion.quality,
-      })),
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

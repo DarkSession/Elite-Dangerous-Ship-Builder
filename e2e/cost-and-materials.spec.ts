@@ -25,7 +25,7 @@ import { buildStockHull, reachShellAction } from './shell';
  * and 1d draw and nothing more. Six spec-versus-canvas collisions were ruled in
  * the design's favour in wave 10, so the assertions that matter most are the
  * ones that fail if the withdrawn surface — traces, evidence lists, lower-bound
- * wording — comes back (`specs/009-cost-and-materials/design/reference-review.md`).
+ * wording — comes back (`openspec/changes/archive/009-cost-and-materials/design/reference-review.md`).
  */
 
 const HULL = 'Anaconda';

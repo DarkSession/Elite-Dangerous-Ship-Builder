@@ -21,7 +21,6 @@ export const FIELDS_EXCLUDED_FROM_LINKS = [
   'dirty',
   'persistence',
   'link',
-  'qualityCompletionNotices',
 ] as const satisfies readonly (keyof ActiveBuildState)[];
 
 /**

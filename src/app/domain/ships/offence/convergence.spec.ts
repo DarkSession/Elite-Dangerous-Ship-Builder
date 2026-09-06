@@ -10,7 +10,6 @@ import {
 } from './convergence';
 import {
   everyStateBuild,
-  innerMountsBuild,
   noWeaponsBuild,
   OFFENCE_FIXTURE_HULL,
   populatedBuild,
@@ -80,54 +79,6 @@ describe('projectConvergence', () => {
     }
   });
 
-  it('names the armed mount furthest from the axis as the widest', () => {
-    const convergence = available(projectConvergence(OFFENCE_FIXTURE_HULL, weaponsOf()));
-
-    const furthest = Math.max(...convergence.mounts.map((mount) => mount.offsetMetres));
-    expect(convergence.widest?.offsetMetres).toBe(furthest);
-  });
-
-  it('measures each span between the outermost two mounts', () => {
-    const convergence = available(projectConvergence(OFFENCE_FIXTURE_HULL, weaponsOf()));
-
-    const across = convergence.mounts.map((mount) => mount.offset[0]);
-    const up = convergence.mounts.map((mount) => mount.offset[1]);
-    expect(convergence.lateralSpanMetres).toBeCloseTo(Math.max(...across) - Math.min(...across), 9);
-    expect(convergence.verticalSpanMetres).toBeCloseTo(Math.max(...up) - Math.min(...up), 9);
-  });
-
-  it('measures the spans and the widest across the armed mounts alone', () => {
-    // Armed on a Large and a Medium, with the hull's two outermost mounts — its
-    // Smalls — left empty. Every figure below therefore has a different answer
-    // over the armed group than over the hull, which is what makes the
-    // assertions discriminate: on a build that arms the outermost mount the two
-    // answers coincide and the same assertions would pass either way.
-    const weapons = BuildMetrics.of(innerMountsBuild()).weaponMetrics().weapons;
-
-    const convergence = available(projectConvergence(OFFENCE_FIXTURE_HULL, weapons));
-
-    const armed = convergence.mounts.filter((mount) => mount.weapon !== null);
-    expect(armed.length).toBeGreaterThan(1);
-    const across = armed.map((mount) => mount.offset[0]);
-    const up = armed.map((mount) => mount.offset[1]);
-    expect(convergence.lateralSpanMetres).toBeCloseTo(Math.max(...across) - Math.min(...across), 9);
-    expect(convergence.verticalSpanMetres).toBeCloseTo(Math.max(...up) - Math.min(...up), 9);
-
-    // The widest is an armed mount, and it is not the hull's own outermost one.
-    const furthestArmed = Math.max(...armed.map((mount) => mount.offsetMetres));
-    const furthestOfHull = Math.max(...convergence.mounts.map((mount) => mount.offsetMetres));
-    expect(furthestArmed).toBeLessThan(furthestOfHull);
-    expect(convergence.widest?.offsetMetres).toBe(furthestArmed);
-    expect(convergence.widest?.weapon).not.toBeNull();
-
-    // And the spans are genuinely narrower than the hull's, so they too are
-    // about the armed group rather than about every mount.
-    const everyMount = convergence.mounts.map((mount) => mount.offset[0]);
-    expect(convergence.lateralSpanMetres).toBeLessThan(
-      Math.max(...everyMount) - Math.min(...everyMount),
-    );
-  });
-
   it('is unavailable for a hull the catalogue does not carry', () => {
     expect(projectConvergence('not_a_ship', weaponsOf()).kind).toBe('unavailable');
   });
@@ -144,10 +95,6 @@ describe('projectConvergence', () => {
     // Commander with nothing fitted yet is after.
     expect(convergence.mounts).toHaveLength(gunsight?.length ?? 0);
     expect(convergence.mounts.every((mount) => mount.weapon === null)).toBe(true);
-    // No armed group, so nothing to measure one across.
-    expect(convergence.widest).toBeNull();
-    expect(convergence.lateralSpanMetres).toBe(0);
-    expect(convergence.verticalSpanMetres).toBe(0);
   });
 });
 
@@ -185,43 +132,10 @@ describe('convergenceAt', () => {
     const view = convergenceAt(projected, TARGET_RANGE.initial);
 
     // Every hardpoint is placed, because where a mount is is a property of the
-    // hull. None of them fires, so the one figure that reports a group is zero:
-    // an apparent spread stretched across mounts that shoot nothing would be a
-    // spread nobody has.
+    // hull, and none of them fires.
     expect(view.points).toHaveLength(projected.mounts.length);
     expect(view.points.every((point) => point.mount.weapon === null)).toBe(true);
-    expect(view.apparentSpreadMilliradians).toBe(0);
     expect(view.rings).toHaveLength(2);
-  });
-
-  it('measures the apparent spread across the armed mounts alone', () => {
-    const projected = projectConvergence(
-      OFFENCE_FIXTURE_HULL,
-      BuildMetrics.of(populatedBuild()).weaponMetrics().weapons,
-    );
-    if (projected.kind !== 'available') {
-      throw new Error('expected an available convergence');
-    }
-
-    const view = convergenceAt(projected, TARGET_RANGE.max);
-
-    const spreadOf = (points: readonly { horizontal: number; vertical: number }[]) => {
-      const width = points.map((point) => point.horizontal);
-      const height = points.map((point) => point.vertical);
-      return Math.hypot(
-        Math.max(...width) - Math.min(...width),
-        Math.max(...height) - Math.min(...height),
-      );
-    };
-    const armed = view.points.filter((point) => point.mount.weapon !== null);
-
-    // Both are in half-plates rather than milliradians, so the comparison is of
-    // one group against the other rather than of a figure against a constant.
-    expect(spreadOf(armed)).toBeLessThan(spreadOf(view.points));
-    expect(view.apparentSpreadMilliradians / FIELD_OF_VIEW_MILLIRADIANS).toBeCloseTo(
-      spreadOf(armed),
-      9,
-    );
   });
 
   it('draws a distant target tighter than a near one', () => {
@@ -231,7 +145,6 @@ describe('convergenceAt', () => {
     const far = convergenceAt(geometry, TARGET_RANGE.max);
 
     // The mounts have not moved; the angle between them has closed.
-    expect(far.apparentSpreadMilliradians).toBeLessThan(near.apparentSpreadMilliradians);
     for (const [index, point] of far.points.entries()) {
       expect(Math.abs(point.horizontal)).toBeLessThanOrEqual(
         Math.abs(near.points[index]?.horizontal ?? 0) + Number.EPSILON,

@@ -299,7 +299,6 @@ describe('RetentionService', () => {
       loadout: ShipLoadout.default('Anaconda'),
       hullName: 'Anaconda',
       provenance: 'working',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: 'working-0',
       baseline: null,

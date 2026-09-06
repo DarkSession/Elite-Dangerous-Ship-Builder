@@ -85,7 +85,7 @@ notice while the interface is in German — is a property of the reader and the
 
 The record feature 012 is accountable for, including what the automated suite
 does cover in its place, is
-[`specs/012-help-and-licences/design/screen-reader-record.md`](../../../specs/012-help-and-licences/design/screen-reader-record.md).
+[`openspec/changes/archive/012-help-and-licences/design/screen-reader-record.md`](../../../openspec/changes/archive/012-help-and-licences/design/screen-reader-record.md).
 
 ## Drives & Mass (feature 008)
 

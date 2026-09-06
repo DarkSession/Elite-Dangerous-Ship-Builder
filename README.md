@@ -6,8 +6,8 @@ the build as SLEF. It runs at **[navbeacon.app](https://navbeacon.app/)**.
 
 The application is **client-side only**. There is no backend and no account:
 builds live in your browser (`localStorage`) or in a URL, and nothing is ever
-uploaded. See [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)
-for the principles this project is held to.
+uploaded. See [`CONSTITUTION.md`](./CONSTITUTION.md) for the principles this
+project is held to.
 
 Game data and build calculations come from
 [`@elite-dangerous-almanac/core`](https://github.com/DarkSession/Elite-Dangerous-Almanac),
@@ -18,12 +18,11 @@ Desktop, tablet and mobile are all first-class targets.
 
 ## Status
 
-In use. Twelve capabilities are specified and built — the hull catalogue and hull
-pages, module outfitting and engineering, ship statistics, SLEF import and
-export, power and heat, the defence, offence and mobility profiles, cost and
-materials, hull anatomy, the interface foundations the whole application is
-composed from, and Help · About. Each one's spec is in [`specs/`](./specs), and
-each is the record of what the capability owes a Commander.
+In use. Twenty-five capabilities are specified and built, in three groups: the
+ship builder, the equipment builder, and the platform every screen is composed
+from. Each one's specification is in
+[`openspec/specs/`](./openspec/specs), and each is the record of what the
+capability owes a Commander.
 
 The application is installable, works offline after first load, and reads in
 English and German.
@@ -164,7 +163,8 @@ Two details make the deployment behave on Pages:
   the package SVG it was made from, `pnpm run policy` recomputes it against the
   installed file, and a package SVG tracked under `public/` or `src/` fails
   outright. Re-run both scripts after moving the package pin;
-  [spec 010](./specs/010-hull-anatomy/spec.md) is where the rule is written.
+  the [`ship-builder/hull-anatomy`](./openspec/specs/ship-builder/hull-anatomy/spec.md)
+  specification is where the rule is written.
 - `index.csr.html` is copied to `404.html` before upload. Pages answers any path
   that is not a file with its own 404 page, which would break a deep link into a
   client-side route; serving the application from `404.html` hands those paths to
@@ -176,7 +176,7 @@ Two details make the deployment behave on Pages:
   at build time**, each to its own `<route>.html`: the root, the hull catalogue
   and all 48 hulls. The body is there before any script runs, which is what a
   crawler that executes none of them can read
-  ([spec 015](./specs/015-prerendered-documents/spec.md)). The two benches —
+  ([`platform/published-addresses`](./openspec/specs/platform/published-addresses/spec.md)). The two benches —
   `/outfitting` and `/equipment` — state nothing until a Commander acts, so they
   keep the head-only document they have always had.
   `404.html` alone catches every address, but Pages serves it with a 404 status,
@@ -281,52 +281,58 @@ application itself sends no telemetry either; the constitution forbids it.
 
 ## Specifications
 
-This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) for
-spec-driven development, configured for both Claude Code (`.claude/skills`) and
-Codex CLI (`.agents/skills`).
+This repository plans with [OpenSpec](https://github.com/Fission-AI/OpenSpec),
+configured for both Claude Code (`.claude/skills` and `.claude/commands/opsx`)
+and Codex CLI (`.agents/skills`). A specification states what a capability does; a change
+states the difference one piece of work makes to it.
 
-| Spec                                                  | Feature                                                                                        |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (search, sort, filters, previews, local storage, build links) |
-| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering, with undo, redo and the edit history                        |
-| [003](./specs/003-ship-statistics/spec.md)            | Structural status, issues, headline statistics, assembly requirements and viewing conditions   |
-| [004](./specs/004-slef/spec.md)                       | SLEF                                                                                           |
-| [005](./specs/005-power-and-heat/spec.md)             | Selectable deployed or retracted power budget, the distributor, and heat                       |
-| [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
-| [007](./specs/007-offence-profile/spec.md)            | Almanac-provided damage totals, per-weapon detail, ammunition and capacitor endurance          |
-| [008](./specs/008-mobility-and-jump/spec.md)          | Almanac-provided speed, handling, mass and jump performance by load                            |
-| [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy, Merc Coin and the engineering material bill                                    |
-| [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |
-| [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, screen readers, localisation       |
-| [012](./specs/012-help-and-licences/spec.md)          | Licences, attribution, versions and the answers the application's own decisions provoke        |
+| Where                                                     | What it holds                                                                                                                                  |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`openspec/specs/`](./openspec/specs)                     | One specification per capability: its purpose, its requirements, and a scenario for each. This is what the application does.                   |
+| `openspec/changes/`                                       | Work in flight: a proposal, delta specifications, a design and a task list. Archiving a change folds its deltas into the specifications.       |
+| [`openspec/changes/archive/`](./openspec/changes/archive) | The design and contract documents of the features already built. Source files, tests and specifications cite them by path. Read, not extended. |
 
-Specs 005 to 009 are the areas of the statistics family. Each is independently
-deliverable and inherits spec 003, which fixes what every figure about a build
-must obey: where it comes from, how it is qualified, what happens when it is
-unavailable, and the viewing conditions it is computed under. Spec 011 is the
-same kind of contract for screens, and every feature inherits it.
+The capabilities are grouped by the tool they belong to:
 
-The project constitution lives in
-[`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
+| Group                | Capabilities                                                                                                                                                                                                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ship-builder/`      | `hull-catalogue`, `build-lifecycle`, `build-link`, `module-outfitting`, `module-engineering`, `edit-history`, `build-status`, `power-and-heat`, `defence-profile`, `offence-profile`, `mobility-and-jump`, `cost-and-materials`, `hull-anatomy`, `slef-exchange` |
+| `equipment-builder/` | `loadout-assembly`, `modifications`, `material-costs`, `loadout-persistence`                                                                                                                                                                                     |
+| `platform/`          | `design-system`, `accessible-responsive-operation`, `localisation`, `tool-navigation`, `application-delivery`, `published-addresses`, `help-and-licences`                                                                                                        |
 
-Specs are scoped to a capability and name no screen: they describe behaviour and
-the information each screen must convey. Screens are defined during planning, in
-`specs/<NNN>-<short-name>/design/`, and mapped to the requirements they satisfy.
-Every screen composes the one design system; responsiveness, touch support,
-accessibility and translatability are behavioural requirements, not styling
-choices.
+`ship-builder/build-status` holds the build's structural status: the package's
+validation issues, the line that says a build is valid, and the cargo and
+passenger capacity cells. Each of the five metric capabilities — power and heat,
+defence, offence, mobility, cost — owns the figures it states, and several are
+fenced by a `scripts/policy/*-ownership.mjs` script. The `platform/` capabilities are
+the contract every screen obeys.
 
-### Working on a spec
+The project constitution lives in [`CONSTITUTION.md`](./CONSTITUTION.md).
+
+A specification is scoped to a capability and names no screen: it describes
+behaviour and the information each screen must convey. Screens are defined in
+the design of the change that introduces them, and mapped to the requirements
+they satisfy. Every screen composes the one design system; responsiveness, touch
+support, accessibility and translatability are behavioural requirements, not
+styling choices.
+
+### Working on a specification
 
 With Claude Code or Codex CLI in this repository:
 
 ```
-/speckit-specify     # create or refine a feature specification
-/speckit-clarify     # de-risk ambiguous areas (optional)
-/speckit-plan        # produce an implementation plan
-/speckit-tasks       # break the plan into tasks
-/speckit-implement   # execute the tasks
+/opsx:explore     # think the work through before committing to it
+/opsx:propose     # create a change: proposal, specs, design and tasks
+/opsx:apply       # work through the tasks
+/opsx:archive     # fold the change's deltas into the capability specs
 ```
+
+Codex reads the same six skills from `.agents/skills` under their own names —
+`openspec-explore`, `openspec-propose`, `openspec-apply-change`,
+`openspec-archive-change`, `openspec-sync-specs` and `openspec-update-change`.
+The CLI is a devDependency, so `pnpm exec openspec list --specs`,
+`pnpm exec openspec view` and `pnpm exec openspec validate --specs --strict`
+work without a global install.
 
 ## Contributing
 
@@ -363,5 +369,5 @@ their own — some sources state no explicit licence, EDSY-derived material is
 CC BY-NC 4.0 — listed in the `THIRD_PARTY_NOTICES.md` shipped with the installed
 package. Review them before redistributing the data or using it commercially.
 
-[Spec 012](./specs/012-help-and-licences/spec.md) requires the running application
-to reproduce all of this.
+The [`platform/help-and-licences`](./openspec/specs/platform/help-and-licences/spec.md)
+specification requires the running application to reproduce all of this.

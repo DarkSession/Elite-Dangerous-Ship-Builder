@@ -88,7 +88,7 @@ export interface AnatomyGuestMode {
  * strip gains next — a segment that opened an empty panel would be this
  * capability claiming a reading of the hull that nothing has made
  * (design/hull-anatomy.md, "The mode strip";
- * specs/005-power-and-heat/design/canvas-contract.md, "Where the capability
+ * openspec/changes/archive/005-power-and-heat/design/canvas-contract.md, "Where the capability
  * lives").
  */
 @Component({

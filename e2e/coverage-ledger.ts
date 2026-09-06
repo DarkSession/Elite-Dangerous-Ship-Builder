@@ -1408,7 +1408,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     // No panel: the canvas draws none, so with no build to pass on the Export
     // action is simply not published. The workspace's own empty state says what
     // to do next and the shell's Import action is always one control away
-    // (`specs/004-slef/design/reference-review.md`, "Rejected").
+    // (`openspec/changes/archive/004-slef/design/reference-review.md`, "Rejected").
     surfaceId: 'build/slef-export-unavailable',
     requirements: ['004/FR-001'],
     journey: 'product/slef-export',
@@ -1531,21 +1531,6 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'neither states which of the package’s reasons it was, because the package does not say',
       'power, the conditions and the remaining group stay usable while either is unavailable',
       'an infinite utilisation reads as drawing with zero available plant output',
-    ],
-    manualRecord: 'screen-reader',
-  },
-  {
-    surfaceId: 'build/power-and-thermals-mounts',
-    requirements: ['005/FR-012', '005/SC-004'],
-    journey: 'power/plates',
-    axe: true,
-    assertions: [
-      'every mount the package answered for carries its priority group or the canvas’s OFF mark',
-      'a mount with no consumer carries no mark at all rather than a zero',
-      'shed, switched off and inactive while retracted are each named in the mount’s own name',
-      'the mark answers for the hardpoint state the dashboard is showing',
-      'no second power calculation is made: the marks and the bands are one projection',
-      'leaving the mode restores the mounts layer exactly as it was',
     ],
     manualRecord: 'screen-reader',
   },
@@ -2233,7 +2218,7 @@ export interface HelpRouteRow {
  * application currently ships.
  *
  * Transcribed one row at a time from the Release coverage ledger in
- * `specs/012-help-and-licences/design/screen-inventory.md`; it is not
+ * `openspec/changes/archive/012-help-and-licences/design/screen-inventory.md`; it is not
  * re-derived here, and the two are reconciled in both directions before
  * release. A row is added whenever a feature adds a capability, a
  * package-backed surface or a layer that covers the frame.

@@ -21,7 +21,6 @@ describe('CapacitySummary', () => {
       loadout,
       hullName: loadout.shipSymbol,
       provenance: 'stock',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

@@ -67,7 +67,6 @@ function candidate(hull = 'Anaconda'): BuildCandidate {
     loadout: defaultBuild(hull),
     hullName: hull,
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,

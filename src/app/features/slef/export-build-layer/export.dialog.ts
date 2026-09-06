@@ -69,7 +69,7 @@ export class ExportDialog {
    * canvas once listed Journal Loadout and Markdown Table between them; neither
    * is a capability this application has, and a control for a format that cannot
    * be produced is worse than no control, so both were taken out of `.design`
-   * rather than left drawn (`specs/004-slef/design/reference-review.md`).
+   * rather than left drawn (`openspec/changes/archive/004-slef/design/reference-review.md`).
    */
   readonly modes = computed<readonly Choice[]>(() =>
     this.slef.exportView().modes.map((mode) => ({

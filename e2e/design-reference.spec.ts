@@ -14,7 +14,7 @@ import { buildStockHull, openFirstHullFromManifest, openLibrary } from './shell'
  *
  * So this suite reads what the browser actually computes and compares it with
  * what canvas 1a–1d actually sets. The values below are measurements, recorded
- * in `specs/011-interface-foundations/design/canvas-extraction.md`; each one is
+ * in `openspec/changes/archive/011-interface-foundations/design/canvas-extraction.md`; each one is
  * cited where it is asserted.
  *
  * Where a value is deliberately not the canvas's, the assertion says so and

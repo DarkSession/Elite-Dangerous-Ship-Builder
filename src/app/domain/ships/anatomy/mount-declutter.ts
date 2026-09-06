@@ -40,7 +40,7 @@
  * come from. A mark moves as little as the plate allows, mounts the hull
  * mirrors get marks the plate mirrors, and no leader is ever long enough to run
  * across a number that is not its own
- * (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Marks that would touch").
+ * (`openspec/changes/archive/010-hull-anatomy/design/hull-anatomy.md`, "Marks that would touch").
  */
 
 /**

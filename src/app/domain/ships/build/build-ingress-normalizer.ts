@@ -2,7 +2,6 @@ import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
 import type {
-  IngressNotice,
   IngressResult,
   PartialEngineeringFailure,
   SourcePartialEngineering,
@@ -141,7 +140,6 @@ function completePartials(
 ): IngressResult {
   // Correlate, then complete. Every failure is collected rather than thrown on
   // the first one, so a refusal can name every affected slot at once.
-  const notices: IngressNotice[] = [];
   const failures: PartialEngineeringFailure[] = [];
 
   for (const source of partials) {
@@ -180,14 +178,8 @@ function completePartials(
     const result = candidate.completeEngineeringGrade(source.slotKey);
     switch (result.kind) {
       case 'normalized':
-        notices.push({
-          kind: 'qualityCompleted',
-          slotKey: source.slotKey,
-          moduleSymbol: source.moduleSymbol,
-          blueprintFdname: source.blueprintFdname,
-          previousQuality: result.previousQuality,
-          quality: 1,
-        });
+        // A completed grade is what the application models, so reaching one is
+        // not an event. Nothing is recorded and nothing is said.
         break;
       case 'unsupported':
         failures.push({
@@ -210,7 +202,7 @@ function completePartials(
     return { kind: 'refused', failures };
   }
 
-  return { kind: 'accepted', candidate, notices };
+  return { kind: 'accepted', candidate };
 }
 
 /**

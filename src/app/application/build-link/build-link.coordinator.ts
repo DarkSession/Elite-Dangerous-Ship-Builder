@@ -232,7 +232,6 @@ export class BuildLinkCoordinator {
         loadout: ingress.candidate,
         hullName: this.#gameText.shipName(ship.symbol).text ?? ship.symbol,
         provenance: 'link',
-        qualityNotices: ingress.notices,
         sourceNamed: null,
         autosaveRecordId: null,
         // A link build is saved nowhere a Commander could get it back from, so

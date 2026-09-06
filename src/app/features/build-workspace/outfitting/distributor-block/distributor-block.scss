@@ -165,7 +165,7 @@
 // the width, the banks stacked — plus the two readings the artboard drops,
 // which this application keeps and lets name themselves. Asked of the block in
 // rem, so doubled text and a cramped half-panel step down for the same reason a
-// phone does (`specs/005-power-and-heat/design/power-and-heat-detail.md`).
+// phone does (`openspec/changes/archive/005-power-and-heat/design/power-and-heat-detail.md`).
 @container distributor (max-width: 30rem) {
   .distributor thead {
     @include layout.visually-hidden;

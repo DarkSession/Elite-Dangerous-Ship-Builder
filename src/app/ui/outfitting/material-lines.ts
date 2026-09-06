@@ -14,7 +14,7 @@ export interface MaterialLineView {
  * Orders a material list the way a Commander gathers one: commonest first.
  *
  * Shared rather than written twice (ruling G,
- * `specs/009-cost-and-materials/design/reference-review.md`). The Engineer
+ * `openspec/changes/archive/009-cost-and-materials/design/reference-review.md`). The Engineer
  * panel's own list was withdrawn in wave 11 — neither canvas draws one and the
  * rail's build-wide total is the only materials block there is — so the rail is
  * for now the one caller. The ordering stays here rather than inside it: it is

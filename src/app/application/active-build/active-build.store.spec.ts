@@ -17,7 +17,6 @@ function candidate(overrides: Partial<BuildCandidate> = {}): BuildCandidate {
     loadout,
     hullName: 'Anaconda',
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -149,26 +148,6 @@ describe('ActiveBuildStore', () => {
     expect(active.loadout()).toBeNull();
     expect(active.provenance()).toBe('none');
     expect(active.dirty()).toBe(false);
-  });
-
-  it('reports quality completion notices as transient workflow state', () => {
-    const active = store();
-    active.commit(candidate());
-
-    active.setQualityCompletionNotices([
-      {
-        kind: 'qualityCompleted',
-        slotKey: 'FrameShiftDrive',
-        moduleSymbol: 'Int_Hyperdrive_Size6_Class5',
-        blueprintFdname: 'FSD_LongRange',
-        previousQuality: 0.4,
-        quality: 1,
-      },
-    ]);
-    expect(active.qualityCompletionNotices()).toHaveLength(1);
-
-    active.commit(candidate());
-    expect(active.qualityCompletionNotices()).toEqual([]);
   });
 
   it('clears the build when the record it lives in is deleted here', () => {

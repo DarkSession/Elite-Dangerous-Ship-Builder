@@ -6,7 +6,6 @@ test-results/
 coverage/
 pnpm-lock.yaml
 public/
-.specify/
 .claude/
 .agents/
 

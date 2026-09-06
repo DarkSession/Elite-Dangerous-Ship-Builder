@@ -65,7 +65,6 @@ function candidate(symbol = 'Anaconda'): BuildCandidate {
     loadout: defaultBuild(symbol),
     hullName: symbol,
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -343,7 +342,7 @@ describe('HullAnatomy', () => {
       // else: canvas 1d's `OUTPUT, RANGE, CONVERGENCE` sub-line is not
       // something the desktop script draws, and two of its three words name
       // content this feature does not build
-      // (specs/007-offence-profile/design/canvas-contract.md).
+      // (openspec/changes/archive/007-offence-profile/design/canvas-contract.md).
       expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe(
         'Offence analysis',
       );

@@ -25,7 +25,6 @@ function candidateFor(loadout = defaultBuild()): BuildCandidate {
     loadout,
     hullName: 'Anaconda',
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,

@@ -19,7 +19,7 @@ import { BuildStatus } from './build-status';
  * what canvases 1c and 1d draw and nothing else, so the tests that matter most
  * are the ones that fail if a count, a structural-facts list or a per-issue
  * action comes back
- * (`specs/003-ship-statistics/design/reference-review.md`, rulings A–C). The
+ * (`openspec/changes/archive/003-ship-statistics/design/reference-review.md`, rulings A–C). The
  * all-clear line is the one thing ruling A withheld that a Commander asked for
  * back, so it is asserted rather than forbidden.
  */
@@ -74,7 +74,6 @@ describe('the build status block', () => {
       loadout,
       hullName: FIXTURE_HULL,
       provenance: 'stock',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

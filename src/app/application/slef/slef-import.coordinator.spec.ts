@@ -23,7 +23,6 @@ function seedActive(active: ActiveBuildStore): void {
     loadout: ShipLoadout.default('Sidewinder'),
     hullName: 'Sidewinder',
     provenance: 'working',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -97,34 +96,17 @@ describe('the one path from a draft to an active build', () => {
   });
 
   describe('what the accepted import reports', () => {
-    it('hands the completions over as feature 001’s own quality notices', async () => {
+    it('completes a supported partial roll and says nothing about it', async () => {
+      // A completed grade is what the application models, so reaching one is not
+      // an event. The roll is normalised on the way in and nothing anywhere
+      // reports that it was (design/import-outcome.md, "Divergence").
       store.setDraft(JSON.stringify(SUPPORTED_PARTIAL_QUALITY));
 
       await coordinator.submit();
 
-      expect(active.qualityCompletionNotices()).toEqual([
-        {
-          kind: 'qualityCompleted',
-          slotKey: FIXTURE_SLOTS.thrusters,
-          moduleSymbol: 'Int_Engine_Size7_Class5',
-          blueprintFdname: 'Engine_Dirty',
-          previousQuality: SUPPORTED_PARTIAL_SOURCE_QUALITY,
-          quality: 1,
-        },
-      ]);
-    });
-
-    it('publishes no second report of them, and none of the package verdict', async () => {
-      // The canvas draws no feature-004 import report, and both facts one would
-      // carry are already drawn — the completions by feature 002's notice, the
-      // verdict by feature 003's rail (design/import-outcome.md, "Divergence").
-      // Asserted on what the store actually holds after an accepted import:
-      // the completions are feature 001's, and feature 004 keeps none of them.
-      store.setDraft(JSON.stringify(SUPPORTED_PARTIAL_QUALITY));
-
-      await coordinator.submit();
-
-      expect(active.qualityCompletionNotices()).toHaveLength(1);
+      expect(active.loadout()?.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering?.Quality).toBe(
+        1,
+      );
       const held = JSON.stringify({
         draft: store.draft(),
         status: store.importStatus(),
@@ -134,6 +116,7 @@ describe('the one path from a draft to an active build', () => {
       });
       expect(held).not.toContain('qualityCompleted');
       expect(held).not.toContain('previousQuality');
+      expect(held).not.toContain(String(SUPPORTED_PARTIAL_SOURCE_QUALITY));
       expect(held).not.toContain('valid');
     });
 
@@ -143,16 +126,6 @@ describe('the one path from a draft to an active build', () => {
       await coordinator.submit();
 
       expect(active.loadout()?.validation()).toBeDefined();
-    });
-
-    it('retires the notices with the build they described', async () => {
-      store.setDraft(JSON.stringify(SUPPORTED_PARTIAL_QUALITY));
-      await coordinator.submit();
-
-      store.setDraft(VALID);
-      await coordinator.submit();
-
-      expect(active.qualityCompletionNotices()).toEqual([]);
     });
   });
 
@@ -219,7 +192,6 @@ describe('the one path from a draft to an active build', () => {
         loadout: ShipLoadout.default('Eagle'),
         hullName: 'Eagle',
         provenance: 'stock' as const,
-        qualityNotices: [],
         sourceNamed: null,
         autosaveRecordId: null,
         baseline: null,

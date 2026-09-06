@@ -102,7 +102,7 @@ export interface SlefExportView {
  * There is no import-outcome view. The canvas draws no feature-004 report of an
  * accepted import, and both facts one would carry are already drawn by feature
  * 002's completion notice and feature 003's build-status rail
- * (`specs/004-slef/design/import-outcome.md`, "Divergence").
+ * (`openspec/changes/archive/004-slef/design/import-outcome.md`, "Divergence").
  */
 @Injectable({ providedIn: 'root' })
 export class SlefPresenter {

@@ -66,7 +66,6 @@ function hold(active: ActiveBuildStore, autosaveRecordId: string | null): void {
     loadout: ShipLoadout.default('Anaconda'),
     hullName: 'Anaconda',
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId,
     baseline: null,

@@ -60,7 +60,7 @@ $rail-manifest-min: 39.875rem;
 // minimum above, canvas 1c's 14px gap and its 396px editor track, and then the
 // bench's own inset (`$bench-inset`, below). Below it the editor keeps
 // both its cards and takes the chooser's full width
-// (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The bench is
+// (`openspec/changes/archive/002-module-outfitting/design/outfitting-workspace.md`, "The bench is
 // two columns where it has room for three").
 $bench-columns-min: 67.875rem;
 
@@ -111,7 +111,7 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
 // room for two and the whole screen where it has not. There is no third
 // arrangement between them, so there is one step rather than two: a screen
 // stacked under the region it belongs beside is a screen a Commander has to
-// scroll the region past to reach (`specs/001-ship-selection-and-loading/design/hull-detail.md`).
+// scroll the region past to reach (`openspec/changes/archive/001-ship-selection-and-loading/design/hull-detail.md`).
 @mixin below-wide {
   @media (max-width: #{$mode-wide-max}) {
     @content;
@@ -386,7 +386,7 @@ $bench-bounded-min-height: 65.5rem;
 //
 // The recurring chrome of `.design/Ship Builder.dc.html`, named once. Each of
 // these appears at three or more sites in the canvas; the measurements behind
-// them are in `specs/011-interface-foundations/design/canvas-extraction.md`.
+// them are in `openspec/changes/archive/011-interface-foundations/design/canvas-extraction.md`.
 // ---------------------------------------------------------------------------
 
 // The bar at the top of a screen or a dialog: a darker plate closed by an amber

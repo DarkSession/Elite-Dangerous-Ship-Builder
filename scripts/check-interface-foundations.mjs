@@ -56,12 +56,7 @@ export const SCOPE = {
    * defined: a rule that reads every document quoting the target and not the
    * one that sets it has a hole in the middle of it.
    */
-  conformanceDocuments: [
-    'README.md',
-    'AGENTS.md',
-    'CONTRIBUTING.md',
-    '.specify/memory/constitution.md',
-  ],
+  conformanceDocuments: ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'CONSTITUTION.md'],
   /**
    * Feature documentation whose conformance statements are also qualified.
    *
@@ -75,14 +70,14 @@ export const SCOPE = {
    * everywhere else, which leaves the constitution asserting one number and
    * three dozen documents enumerating another.
    */
-  conformanceSpecs: ['specs'],
+  conformanceSpecs: ['openspec/specs', 'openspec/changes'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/navbeacon/browser',
   /** Where the build is configured to place the copied hull schematics. */
   extractedSchematics: 'public/assets/ships',
   previewManifest: 'src/app/ui/previews/preview-manifest.ts',
   uiComponents: 'src/app/ui/components',
-  specs: 'specs',
+  specs: 'openspec/specs',
   /** Interface suites that may never be skipped, focused or quarantined. */
   testGlobs: ['e2e', 'src/app/ui', 'src/app/i18n', 'src/app/platform'],
   /**
@@ -908,12 +903,20 @@ function coveredFeatures(ledgerSource) {
   return new Set([...(match?.[1] ?? '').matchAll(/'([^']+)'/g)].map((m) => m[1]));
 }
 
-/** Requirement ids a specification *declares* — defined in bold, not merely mentioned. */
-function declaredRequirementIds(featureDirectory, specSource) {
-  const featureNumber = featureDirectory.split('-')[0];
-  return [...specSource.matchAll(/\*\*((?:FR|SC)-\d{3})\*\*/g)].map(
-    (match) => `${featureNumber}/${match[1]}`,
-  );
+/**
+ * Requirement ids a capability specification *declares*.
+ *
+ * A requirement states the feature and id it was accepted under on a trailing
+ * `Source: 011/FR-011, 011/SC-003.` line, and that line is the declaration.
+ * Matching the trace rather than a bare mention keeps the rule the same one it
+ * has always been: a requirement quoted in passing does not register itself,
+ * and a withdrawn id carries no trace, so it demands no evidence.
+ */
+function declaredRequirementIds(specSource) {
+  return specSource
+    .split('\n')
+    .filter((line) => /^\s*Source:/.test(line))
+    .flatMap((line) => [...line.matchAll(/\d{3}\/(?:FR|SC)-\d{3}/g)].map((match) => match[0]));
 }
 
 /**
@@ -974,17 +977,18 @@ async function checkLedgerCoverage() {
     return;
   }
 
+  // The ledger names feature directories; a trace names the feature number.
+  const coveredNumbers = new Set([...covered].map((directory) => directory.split('-')[0]));
   const specFiles = (await walk(SCOPE.specs, ['.md'])).filter((file) => file.endsWith('spec.md'));
 
   const declared = [];
   for (const file of specFiles) {
     const relativePath = relative(ROOT, file).split('\\').join('/');
-    const feature = relativePath.split('/')[1];
-    if (!covered.has(feature)) {
-      continue;
-    }
     const source = await readFile(file, 'utf8');
-    for (const id of declaredRequirementIds(feature, source)) {
+    for (const id of declaredRequirementIds(source)) {
+      if (!coveredNumbers.has(id.split('/')[0])) {
+        continue;
+      }
       declared.push({ id, file: relativePath });
     }
   }
@@ -1380,7 +1384,7 @@ const PREVIEW_MARKERS = ['data-preview-address', 'data-preview-isolated', 'data-
  * The last two are the repository's own manifest — the export metadata imports
  * two named values out of `package.json`, and a bundler that stopped
  * tree-shaking it would ship the dependency list, the scripts and whatever else
- * it holds (specs/004-slef tasks T089).
+ * it holds.
  */
 const BUNDLE_REMNANTS = [
   'JOURNAL LOADOUT',

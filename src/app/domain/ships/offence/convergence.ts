@@ -37,19 +37,6 @@ export type Convergence =
       readonly kind: 'available';
       /** Every hardpoint the catalogue places, armed or empty, in the hull's own order. */
       readonly mounts: readonly ConvergenceMount[];
-      /** Widest horizontal separation between two armed mounts, in metres. */
-      readonly lateralSpanMetres: number;
-      /** Widest vertical separation between two armed mounts, in metres. */
-      readonly verticalSpanMetres: number;
-      /**
-       * The armed mount furthest from the cockpit's axis.
-       *
-       * `null` where the build has armed none of them. The hull is still
-       * placed — the plate is drawn, with its axes and its rings — but there is
-       * no group to measure, and a span of zero metres between no mounts is a
-       * figure about nothing.
-       */
-      readonly widest: ConvergenceMount | null;
     };
 
 /** One of the hull's hardpoints, at the offset the package publishes for it. */
@@ -149,8 +136,6 @@ export interface ConvergenceView {
   readonly targetRangeMetres: number;
   /** Every placed hardpoint, armed or empty, in the hull's own order. */
   readonly points: readonly ConvergencePoint[];
-  /** The diagonal of the spread, in milliradians — the canvas's `APPARENT SPREAD`. */
-  readonly apparentSpreadMilliradians: number;
   /** The canvas's two dashed rings, inner first. */
   readonly rings: readonly ConvergenceRing[];
   /** The outer ring's angular radius, and what it spans on the plane at this range. */
@@ -260,29 +245,7 @@ export function projectConvergence(
     ];
   });
 
-  // The three figures are about a group of *armed* mounts. An empty hardpoint
-  // is drawn, because its offset is a property of the hull, but it fires
-  // nothing: a lateral span stretched to reach one would be a separation
-  // between a shot and no shot.
-  const armed = mounts.filter((mount) => mount.weapon !== null);
-
-  // `null` on a build that has armed nothing. Not `unavailable`: the two are
-  // different answers, and the unavailable sentence says the package publishes
-  // no geometry for this hull, which for a placed hull whose hardpoints are
-  // merely empty is untrue.
-  const widest = armed.reduce<ConvergenceMount | null>(
-    (furthest, mount) =>
-      furthest === null || mount.offsetMetres > furthest.offsetMetres ? mount : furthest,
-    null,
-  );
-
-  return {
-    kind: 'available',
-    mounts,
-    lateralSpanMetres: span(armed.map((mount) => mount.offset[0])),
-    verticalSpanMetres: span(armed.map((mount) => mount.offset[1])),
-    widest,
-  };
+  return { kind: 'available', mounts };
 }
 
 /**
@@ -345,15 +308,9 @@ export function convergenceAt(
     };
   };
 
-  const armed = angles.filter((angle) => angle.mount.weapon !== null);
-
   return {
     targetRangeMetres,
     points: angles.map(place),
-    apparentSpreadMilliradians: Math.hypot(
-      span(armed.map((angle) => angle.across)),
-      span(armed.map((angle) => angle.up)),
-    ),
     rings: [ring(FIELD_OF_VIEW_MILLIRADIANS / 3), ring(ringMilliradians)],
     ringMilliradians,
     ringMetres: (ringMilliradians / MILLIRADIANS_PER_RADIAN) * targetRangeMetres,
@@ -371,9 +328,4 @@ export function convergenceAt(
  */
 function fitsOnPlate(fraction: number): boolean {
   return Math.abs(fraction) <= PLATE_MARGIN_FRACTION;
-}
-
-/** The distance between the outermost two of a set. Zero for a single mount. */
-function span(values: readonly number[]): number {
-  return values.length === 0 ? 0 : Math.max(...values) - Math.min(...values);
 }

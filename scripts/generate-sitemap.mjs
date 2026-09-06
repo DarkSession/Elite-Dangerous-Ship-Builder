@@ -59,7 +59,7 @@ const HEADER = `<!--
   Neither \`changefreq\` nor \`priority\` is stated: Google has ignored both for
   years, and a file that states things nobody reads invites belief in them.
   \`lastmod\` is absent for a reason of its own, recorded in
-  specs/011-interface-foundations/design/search-visibility.md.
+  openspec/changes/archive/011-interface-foundations/design/search-visibility.md.
 -->`;
 
 /** The sitemap as text, given the addresses it lists. */

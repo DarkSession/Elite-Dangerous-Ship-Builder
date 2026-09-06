@@ -72,9 +72,6 @@ describe('incoming build normalization', () => {
       return;
     }
     expect(emptyFixedMounts(result.candidate)).toEqual([]);
-    // A defaulted mount is ordinary build state. It produces no notice, because
-    // there is nothing about it for a Commander to decide (FR-010, FR-011).
-    expect(result.notices).toEqual([]);
   });
 
   it('accepts an unusable fixed mount replaced by the package default', () => {
@@ -86,10 +83,9 @@ describe('incoming build normalization', () => {
     }
     expect(result.candidate.fittedModuleAt(FIXTURE_SLOTS.core)).not.toBeNull();
     expect(emptyFixedMounts(result.candidate)).toEqual([]);
-    expect(result.notices).toEqual([]);
   });
 
-  it('completes a supported partial roll and reports it once', () => {
+  it('completes a supported partial roll, recording nothing about it', () => {
     const result = normalizeIncomingBuild(SUPPORTED_PARTIAL_QUALITY);
 
     expect(result.kind).toBe('accepted');
@@ -97,16 +93,6 @@ describe('incoming build normalization', () => {
       return;
     }
     expect(result.candidate.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering?.Quality).toBe(1);
-    expect(result.notices).toEqual([
-      {
-        kind: 'qualityCompleted',
-        slotKey: FIXTURE_SLOTS.thrusters,
-        moduleSymbol: 'Int_Engine_Size7_Class5',
-        blueprintFdname: 'Engine_Dirty',
-        previousQuality: SUPPORTED_PARTIAL_SOURCE_QUALITY,
-        quality: 1,
-      },
-    ]);
   });
 
   it('refuses the whole candidate when one partial roll is unsupported', () => {
@@ -167,9 +153,6 @@ describe('incoming build normalization', () => {
       ],
     });
     expect(complete.kind).toBe('accepted');
-    if (complete.kind === 'accepted') {
-      expect(complete.notices).toEqual([]);
-    }
 
     // Absent quality: the package answers `unsupported` if asked, so a pipeline
     // that asked would refuse a build with nothing wrong with it.
@@ -207,7 +190,10 @@ describe('incoming build normalization', () => {
     if (result.kind !== 'accepted') {
       return;
     }
-    expect(result.notices).toEqual([]);
+    // The mount the roll named is empty, and nothing else was engineered in its
+    // place: correlating by slot alone would have completed whatever the package
+    // put there.
+    expect(result.candidate.fittedModuleAt(FIXTURE_SLOTS.hardpoint)).toBeNull();
   });
 
   it('accepts a final article whose stated quality was never a roll', () => {
@@ -224,9 +210,7 @@ describe('incoming build normalization', () => {
     if (result.kind !== 'accepted') {
       return;
     }
-    // Nothing was completed, so nothing is reported: the article is exactly the
-    // article, at the quality the package holds it at.
-    expect(result.notices).toEqual([]);
+    // The article is exactly the article, at the quality the package holds it at.
     const fitted = result.candidate.fittedModuleAt(slot);
     expect(fitted?.symbol).toBe(symbol);
     expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
@@ -247,7 +231,6 @@ describe('incoming build normalization', () => {
     const reopened = normalizeReconstructedBuild(built.candidate);
 
     expect(reopened.kind).toBe('accepted');
-    expect(reopened.kind === 'accepted' ? reopened.notices : null).toEqual([]);
   });
 
   it('refuses a reconstructed candidate whose hull is not a package identity', () => {

@@ -34,8 +34,8 @@ to it. So a further move is one decision and four mechanical propagations, with
 Those five files are the whole of what the checker holds. The address is also written
 in `README.md`, `SECURITY.md`, `AGENTS.md`, two workflow comments, the fixtures under
 `scripts/` and `src/app/platform/browser/site-address.spec.ts`, and
-`specs/011-interface-foundations/quickstart.md`. Nothing fails when one of those is
-missed; a reader has to catch it.
+`openspec/changes/archive/011-interface-foundations/design/search-visibility.md`.
+Nothing fails when one of those is missed; a reader has to catch it.
 
 `public/manifest.webmanifest` states no absolute address by design and the checker
 rejects one.
@@ -60,19 +60,19 @@ lowercase identifier the same product is filed under, and do not follow the spel
 the tool, which is what those strings mean under Nav Beacon. `help.purpose` is the one help
 string on the product's side of that line: one dialog opens over both benches, so it opens
 with the product's name rather than a bench's
-(`specs/013-equipment-builder/design/reference-review.md`).
+(`openspec/changes/archive/013-equipment-builder/design/reference-review.md`).
 
 `app.document-title.default` is the one string that says more than the name:
 `Nav Beacon – Elite Dangerous Commander Tools`, which titles the root document and
 `404.html`, and nothing else. Every other address reads `<screen> · Nav Beacon`.
-`specs/011-interface-foundations/design/search-visibility.md` is the record.
+`openspec/changes/archive/011-interface-foundations/design/search-visibility.md` is the record.
 
 Help content is generated: run `pnpm run help:artifacts` after touching any help string,
 and `pnpm run help:artifacts:check` gates it.
 
 The `package.json` name is also the SLEF producer identity: every export writes
 `appName: navbeacon` where it wrote `appName: elite-dangerous-ship-builder`
-(`src/app/platform/build/application-metadata.ts`, `specs/004-slef/contracts/slef-export.md`).
+(`src/app/platform/build/application-metadata.ts`, `openspec/changes/archive/004-slef/contracts/slef-export.md`).
 The identifier is stable in the sense the contract means — it does not vary with the reader's
 language, with the build, or with how the product spells its name. That one move cost a
 consumer keying on the old string a new producer, and is the accepted cost of the product
@@ -91,7 +91,7 @@ formats.
 The browser keys and the formats are the ones that cost something. A record a Commander
 saved under the earlier prefix is not one of this application's keys, so it is never read
 and never migrated — the same rule that keeps the application off every other
-application's keys (`specs/001-ship-selection-and-loading/contracts/persistence.md`). The
+application's keys (`openspec/changes/archive/001-ship-selection-and-loading/contracts/persistence.md`). The
 alternative was one product carrying two prefixes for the life of the key space, and the
 Commander ruled for the break.
 
@@ -101,10 +101,11 @@ The tools are a data array in `src/app/features/shared/app-navigation.ts`, and a
 its own in `src/app/ui/components/app-frame` renders from it, the way the canvas runs its
 tabs and its tool grid off one registry. It is the upper deck of one bar: the insignia leads it, the
 command deck under it keeps the screen identity and the amber rule that closes the plate,
-and both decks sit on the plate's own inset. `specs/011-interface-foundations/` is the record: FR-028 and
-SC-009 in `spec.md`, the composition in `design/application-shell.md`, the measured
-values and the departures in `design/canvas-extraction.md` and
-`design/reference-review.md`.
+and both decks sit on the plate's own inset. `openspec/specs/platform/tool-navigation/spec.md` is the record,
+with the composition in
+`openspec/changes/archive/011-interface-foundations/design/application-shell.md` and the
+measured values and departures in that directory's `canvas-extraction.md` and
+`reference-review.md`.
 
 The registry holds the tools the application serves: the ship builder at `/ships` and
 `/outfitting`, and the equipment builder at `/equipment`. A tool the application gains is
@@ -125,7 +126,7 @@ neither is about ships.
 
 On-foot outfitting: suits, handheld weapons, grades and modifications, drawn in
 `.design/Equipment Builder.dc.html` at 1640px (`1a`) and 390px (`1b`), and specified in
-`specs/013-equipment-builder/`.
+the `equipment-builder/` capabilities under `openspec/specs/`.
 
 **The package carries the whole feature.** `@elite-dangerous-almanac/core` ships the
 `equipment/` namespace — `suits`, `weapons`, `modifications`, `engineering`,
@@ -148,7 +149,7 @@ icon, its own `EXPORT` dialog, its own `SAVED LOADOUTS` list and its own `HELP �
 carrying a separate `APP VERSION`. It is folded into the shared shell instead: one bar,
 one record library, one `HELP · ABOUT` and one pair of versions for the deployment. The
 ruling and what it withdrew are in
-`specs/013-equipment-builder/design/reference-review.md`.
+`openspec/changes/archive/013-equipment-builder/design/reference-review.md`.
 
 ## Not doing
 

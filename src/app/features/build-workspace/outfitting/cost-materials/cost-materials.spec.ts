@@ -31,7 +31,6 @@ describe('cost and materials surface', () => {
       loadout,
       hullName: 'Anaconda',
       provenance: 'stock',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

@@ -645,7 +645,7 @@ describe('attribute comparison', () => {
  *
  * The Engineer panel and the status rail draw the same materials for the same
  * build, so they share this comparator rather than each having one — ruling G,
- * `specs/009-cost-and-materials/design/reference-review.md`.
+ * `openspec/changes/archive/009-cost-and-materials/design/reference-review.md`.
  */
 describe('material line order', () => {
   const line = (symbol: string, grade: number | null, text: string | null = symbol) => ({

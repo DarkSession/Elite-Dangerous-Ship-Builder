@@ -4,7 +4,6 @@ import { normalizeIncomingBuild } from '../build/build-ingress-normalizer';
 import { classifyConstructionFailure, classifyNormalizationFailure } from './slef-import-failures';
 import {
   SLEF_IMPORT_LIMIT_BYTES,
-  type EngineeringQualityCompletion,
   type SlefImportCandidate,
   type SlefImportFailure,
   type SlefRequestToken,
@@ -98,13 +97,6 @@ function construct(entry: SlefEntry, requestToken: SlefRequestToken): SlefImport
     candidate: {
       loadout: ingress.candidate,
       sourceAttribution: attribution(entry),
-      qualityCompletions: ingress.notices.map((notice): EngineeringQualityCompletion => ({
-        slotKey: notice.slotKey,
-        moduleSymbol: notice.moduleSymbol,
-        blueprintFdname: notice.blueprintFdname,
-        previousQuality: notice.previousQuality,
-        quality: notice.quality,
-      })),
       validation: ingress.candidate.validation(),
       requestToken,
     },

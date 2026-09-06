@@ -461,7 +461,10 @@ function inventoryLedger(): {
 }[] {
   // Relative to the repository root, which is where the suite runs from — the
   // same convention the disclaimer comparison below reads root `LICENSE` by.
-  const source = readFileSync('specs/012-help-and-licences/design/screen-inventory.md', 'utf8');
+  const source = readFileSync(
+    'openspec/changes/archive/012-help-and-licences/design/screen-inventory.md',
+    'utf8',
+  );
   const section = source.slice(source.indexOf('## Release coverage ledger'));
   const table = section.slice(section.indexOf('| Capability / surface'));
 
@@ -1189,7 +1192,7 @@ test.describe('which artifact a Commander is looking at', () => {
 /**
  * The accessibility floor, over every state the modal actually has (T054–T056).
  *
- * The states are the ones [design/screen-inventory.md](../specs/012-help-and-licences/design/screen-inventory.md)
+ * The states are the ones [design/screen-inventory.md](../openspec/changes/archive/012-help-and-licences/design/screen-inventory.md)
  * lists and no more: default, alternate locale, expanded text, reduced motion,
  * 200% text and actual 400% zoom. There is deliberately no release and no
  * non-release state to sweep — FR-007's display half is withdrawn, the modal

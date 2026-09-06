@@ -1058,7 +1058,7 @@ test.describe('the rail’s pip control', () => {
     // padded block, which the workspace owns. So the figures start where the
     // cells start: an inset of this block's own would be a second one inside
     // that padding, and the reading would stand further in than the cells it
-    // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
+    // heads (`openspec/changes/archive/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
     // are one block").
     const line = page.locator('ednb-power-summary .rail-power');
     const cells = page.locator('.outfitting__status-cells .metric');
