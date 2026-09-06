@@ -4,6 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { frames, openWithADelayedBundle, openWithoutTheBundle, recordFrames } from './first-frame';
 import { PRODUCT_URL } from './servers';
+import { shapeOf } from './served-document';
 import { waitForTakeover } from './shell';
 
 /**
@@ -337,16 +338,7 @@ test.describe('a document read by a Commander whose browser asks for German', ()
     // only a few hundred milliseconds of being English and a test that races
     // that window reports the language rather than the layout.
     const served = await (await page.request.get(`${PRODUCT_URL}/ships`)).text();
-    const servedShape = await page.evaluate((source) => {
-      const parsed = new DOMParser().parseFromString(source, 'text/html');
-      const main = parsed.querySelector('main');
-      return {
-        outline: [...(main?.querySelectorAll('*') ?? [])]
-          .map((element) => element.tagName.toLowerCase())
-          .join(','),
-        disclosures: main?.querySelectorAll('.game-text__disclosure').length ?? 0,
-      };
-    }, served);
+    const servedShape = await shapeOf(page, served);
     const before = servedShape.outline;
 
     expect(before, 'the served document stated a catalogue').toContain('ednb-game-text');

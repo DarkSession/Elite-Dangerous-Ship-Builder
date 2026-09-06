@@ -672,6 +672,15 @@ Two details the rewrite had to keep:
 seconds for a full pass over 52 documents and 65 seconds for the gate's own test
 file, which runs it once per doctored case.
 
+The same readers existed a second time, in `e2e/search-published.spec.ts`, and
+they are gone the same way — through `e2e/served-document.ts`, which parses with
+`DOMParser` in the browser the suite already has open. No `jsdom` there and
+nothing installed: the document under test is HTML, a browser is what reads
+HTML, and a `DOMParser` document runs no script and loads no subresource, so
+what comes back is the file rather than a page that ran. The German case in
+`prerendered-first-frame.spec.ts` reads the served document through the same
+helper.
+
 **Alternatives considered**: `parse5` directly, which is faster — rejected, it
 is a new dependency and a hand-written text walk to save seconds in a gate that
 runs once per build; suppressing the alerts — rejected, the query is right.

@@ -1,7 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { SITE_ORIGIN } from '../src/app/platform/browser/site-address';
 import { PRODUCT_URL } from './servers';
+import { shapeOf } from './served-document';
 
 /**
  * What a reader that runs no script is actually served, address by address.
@@ -34,32 +35,21 @@ const canonical = (document: string) => value(document, /rel="canonical"[^>]*hre
 /**
  * A document's body as a reader that runs no script sees it: text, no markup.
  *
- * Scripts are removed first, and that is the whole point. The bundle's module
- * preloads sit in the body, so a naive tag strip would count their contents as
- * something a reader can see — and a document that stated a hull's figures only
- * inside a script would pass every assertion below while serving a crawler
- * nothing.
+ * Scripts are excluded, and that is the whole point. The bundle's module
+ * preloads sit in the body, so counting their contents as something a reader
+ * can see would let a document that stated a hull's figures only inside a
+ * script pass every assertion below while serving a crawler nothing.
+ *
+ * Parsed rather than pattern-matched, for the reason `served-document.ts`
+ * gives at length.
  */
-function readableText(document: string): string {
-  const opened = /<body[^>]*>/.exec(document);
-  return document
-    .slice((opened?.index ?? 0) + (opened?.[0].length ?? 0))
-    .replace(/<script[\s\S]*?<\/script>/g, ' ')
-    .replace(/<style[\s\S]*?<\/style>/g, ' ')
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+async function readableText(page: Page, document: string): Promise<string> {
+  return (await shapeOf(page, document)).text;
 }
 
 /** Every `<h1>` a document carries, in document order. */
-function headings(document: string): readonly string[] {
-  return [...document.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/g)].map((match) =>
-    match[1]
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim(),
-  );
+async function headings(page: Page, document: string): Promise<readonly string[]> {
+  return (await shapeOf(page, document)).headings;
 }
 
 test.describe('the document each published address answers with', () => {
@@ -172,7 +162,7 @@ test.describe('the document each published address answers with', () => {
   test('states a hull’s figures in the body, with no script executed', async ({ page }) => {
     const response = await page.request.get(`${PRODUCT_URL}/ships/Anaconda`, { maxRedirects: 0 });
     const document = await response.text();
-    const body = readableText(document);
+    const body = await readableText(page, document);
 
     // The figures FR-002 names, in the words the document uses for them. Read
     // out of the served bytes: no browser has run, nothing has booted, and this
@@ -200,7 +190,7 @@ test.describe('the document each published address answers with', () => {
         await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 })
       ).text();
 
-      expect(headings(document)[0], path).toBe(subject);
+      expect((await headings(page, document))[0], path).toBe(subject);
     }
   });
 
@@ -208,7 +198,7 @@ test.describe('the document each published address answers with', () => {
     const document = await (
       await page.request.get(`${PRODUCT_URL}/ships`, { maxRedirects: 0 })
     ).text();
-    const body = readableText(document);
+    const body = await readableText(page, document);
 
     // Counted against the sitemap rather than against 48: the set belongs to
     // the Almanac, and a pin move must not need this number edited (FR-003).
@@ -250,7 +240,8 @@ test.describe('the document each published address answers with', () => {
     let stated = 0;
     for (const address of advertised) {
       const path = address.slice(SITE_ORIGIN.length);
-      const body = readableText(
+      const body = await readableText(
+        page,
         await (await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 })).text(),
       );
 
@@ -274,7 +265,7 @@ test.describe('the document each published address answers with', () => {
     for (const path of ['/index.csr.html', '/404.html']) {
       const document = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
 
-      expect(readableText(document), path).toBe('');
+      expect(await readableText(page, document), path).toBe('');
     }
   });
 });
