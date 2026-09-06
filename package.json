@@ -57,7 +57,7 @@
     "@angular/platform-browser": "^22.1.4",
     "@angular/router": "^22.1.4",
     "@angular/service-worker": "^22.1.4",
-    "@elite-dangerous-almanac/core": "0.2.10",
+    "@elite-dangerous-almanac/core": "0.2.11",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
