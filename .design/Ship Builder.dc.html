@@ -1250,7 +1250,90 @@
                           text-wrap: pretty;
                         "
                       >
-                        Paste a SLEF export or a journal Loadout event.
+                        Upload journal files, or paste a SLEF export or a journal Loadout event.
+                      </div>
+                      <div
+                        id="imp-drop"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 13px;
+                          padding: 14px;
+                          border-width: 1px;
+                          border-style: dashed;
+                          border-color: var(--amber-a45);
+                          background: var(--panel-4);
+                          cursor: pointer;
+                        "
+                        style-hover="border-color:var(--amber-2);background:var(--panel-6)"
+                      >
+                        <div
+                          style="
+                            flex: none;
+                            width: 30px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid var(--amber-a45);
+                            font:
+                              400 13px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                          "
+                        >
+                          &#8593;
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                          <div
+                            style="
+                              font:
+                                600 10.5px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                            "
+                          >
+                            SELECT OR DROP JOURNAL FILES
+                          </div>
+                          <div
+                            id="imp-fname"
+                            style="
+                              display: none;
+                              font:
+                                400 9px/1.4 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.04em;
+                              color: var(--ink-62);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                      <input
+                        id="imp-file"
+                        type="file"
+                        accept=".log,.json,.txt,application/json"
+                        multiple="multiple"
+                        style="display: none"
+                      />
+                      <div style="display: flex; align-items: center; gap: 10px">
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--ink-36);
+                          "
+                        >
+                          OR PASTE
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                       </div>
                       <textarea
                         id="imp-in"
@@ -1282,30 +1365,17 @@
                           letter-spacing: 0.06em;
                           color: var(--ink-45);
                         "
-                      >
-                        AWAITING INPUT
-                      </div>
+                      ></div>
                       <div
                         style="
                           display: flex;
                           align-items: center;
-                          justify-content: space-between;
+                          justify-content: flex-end;
                           gap: 10px;
                           padding-top: 4px;
                           border-top: 1px solid var(--amber-a14);
                         "
                       >
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-36);
-                            letter-spacing: 0.1em;
-                          "
-                        >
-                          SLEF v1 · JOURNAL LOADOUT EVENT
-                        </div>
                         <div style="display: flex; gap: 8px">
                           <div
                             id="imp-cancel"
@@ -4311,8 +4381,90 @@
                           text-wrap: pretty;
                         "
                       >
-                        Paste a SLEF export or a journal Loadout event. The hull is selected from
-                        the loadout.
+                        Upload journal files, or paste a SLEF export or a journal Loadout event. The
+                        hull is selected from the loadout.
+                      </div>
+                      <div
+                        id="simp-drop"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 12px;
+                          padding: 13px 14px;
+                          border-width: 1px;
+                          border-style: dashed;
+                          border-color: var(--amber-a45);
+                          background: var(--panel-4);
+                          cursor: pointer;
+                        "
+                      >
+                        <div
+                          style="
+                            flex: none;
+                            width: 28px;
+                            height: 28px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid var(--amber-a45);
+                            font:
+                              400 13px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                          "
+                        >
+                          &#8593;
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                          <div
+                            style="
+                              font:
+                                600 10.5px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                            "
+                          >
+                            SELECT JOURNAL FILES
+                          </div>
+                          <div
+                            id="simp-fname"
+                            style="
+                              display: none;
+                              font:
+                                400 9px/1.4 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.04em;
+                              color: var(--ink-62);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                      <input
+                        id="simp-file"
+                        type="file"
+                        accept=".log,.json,.txt,application/json"
+                        multiple="multiple"
+                        style="display: none"
+                      />
+                      <div style="display: flex; align-items: center; gap: 10px">
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--ink-36);
+                          "
+                        >
+                          OR PASTE
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                       </div>
                       <textarea
                         id="simp-in"
@@ -4344,9 +4496,7 @@
                           letter-spacing: 0.05em;
                           color: var(--ink-45);
                         "
-                      >
-                        AWAITING INPUT
-                      </div>
+                      ></div>
                       <div
                         style="
                           display: flex;
@@ -25359,7 +25509,89 @@
                           text-wrap: pretty;
                         "
                       >
-                        Paste a SLEF export or a journal Loadout event.
+                        Upload journal files, or paste a SLEF export or a journal Loadout event.
+                      </div>
+                      <div
+                        id="mimp-drop"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 12px;
+                          padding: 13px 14px;
+                          border-width: 1px;
+                          border-style: dashed;
+                          border-color: var(--amber-a45);
+                          background: var(--panel-4);
+                          cursor: pointer;
+                        "
+                      >
+                        <div
+                          style="
+                            flex: none;
+                            width: 28px;
+                            height: 28px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid var(--amber-a45);
+                            font:
+                              400 13px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                          "
+                        >
+                          &#8593;
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                          <div
+                            style="
+                              font:
+                                600 10.5px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                            "
+                          >
+                            SELECT JOURNAL FILES
+                          </div>
+                          <div
+                            id="mimp-fname"
+                            style="
+                              display: none;
+                              font:
+                                400 9px/1.4 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.04em;
+                              color: var(--ink-62);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                      <input
+                        id="mimp-file"
+                        type="file"
+                        accept=".log,.json,.txt,application/json"
+                        multiple="multiple"
+                        style="display: none"
+                      />
+                      <div style="display: flex; align-items: center; gap: 10px">
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--ink-36);
+                          "
+                        >
+                          OR PASTE
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                       </div>
                       <textarea
                         id="mimp-in"
@@ -25391,9 +25623,7 @@
                           letter-spacing: 0.05em;
                           color: var(--ink-45);
                         "
-                      >
-                        AWAITING INPUT
-                      </div>
+                      ></div>
                       <div
                         style="
                           display: flex;
@@ -37553,6 +37783,46 @@
           if (openBtn) openBtn.addEventListener('click', close);
         }
 
+        // Accepts a SLEF export, a single journal Loadout event, or a whole
+        // line-delimited journal file (Journal.*.log) — latest Loadout wins.
+        extractLoadout(text) {
+          const raw = String(text || '').trim();
+          if (!raw) return null;
+          const fromObj = o => {
+            if (!o || typeof o !== 'object') return null;
+            const slef = o.header && o.data ? o : null;
+            const body = slef ? slef.data : o;
+            if (!body || typeof body !== 'object') return null;
+            if (!slef && String(body.event || '').toLowerCase() !== 'loadout') return null;
+            const mods = body.Modules || [];
+            return {
+              raw: o,
+              ship: body.ShipName || body.Ship || 'UNKNOWN HULL',
+              n: Array.isArray(mods) ? mods.length : Object.keys(mods || {}).length,
+              ts: body.timestamp || (slef && slef.header && slef.header.appName ? '' : ''),
+              src: slef
+                ? 'SLEF \u00b7 ' + String(slef.header.appName || 'UNKNOWN APP').toUpperCase() + (slef.header.appVersion ? ' ' + slef.header.appVersion : '')
+                : 'JOURNAL LOADOUT',
+            };
+          };
+          try { const c = fromObj(JSON.parse(raw)); if (c) return c; } catch (e) { /* fall through to line scan */ }
+          let best = null, count = 0;
+          raw.split(/\r?\n/).forEach(line => {
+            const l = line.trim();
+            if (l.charAt(0) !== '{') return;
+            let o; try { o = JSON.parse(l); } catch (e) { return; }
+            const c = fromObj(o);
+            if (!c) return;
+            count++;
+            if (!best || String(c.ts || '') >= String(best.ts || '')) best = c;
+          });
+          if (best) {
+            best.src = 'JOURNAL \u00b7 ' + count + ' LOADOUT EVENT' + (count > 1 ? 'S \u00b7 LATEST' : '');
+            return best;
+          }
+          return null;
+        }
+
         wireImport(p) {
           const btn = document.getElementById(p + '-btn');
           const modal = document.getElementById(p + '-modal');
@@ -37560,30 +37830,80 @@
           btn.dataset.wired = '1';
           const input = document.getElementById(p + '-in');
           const msg = document.getElementById(p + '-msg');
+          const fileIn = document.getElementById(p + '-file');
+          const drop = document.getElementById(p + '-drop');
+          const fname = document.getElementById(p + '-fname');
+          const fnameIdle = fname ? fname.textContent : '';
           const say = (t, c) => { if (msg) { msg.textContent = t; msg.style.color = c || 'rgba(232,222,209,.45)'; } };
-          const open = () => { modal.style.display = 'flex'; say('AWAITING INPUT'); if (input) { input.value = ''; input.focus(); } };
+          const open = () => {
+            modal.style.display = 'flex';
+            say('');
+            if (fileIn) fileIn.value = '';
+            if (fname) { fname.textContent = fnameIdle; fname.style.display = 'none'; }
+            if (input) { input.value = ''; input.focus(); }
+          };
           const close = () => { modal.style.display = 'none'; };
+
+          const apply = (cand, srcLabel) => {
+            if (!cand.n) return say(srcLabel + ' \u00b7 NO MODULES IN PAYLOAD', '#ff6b3d');
+            say(srcLabel + ' \u00b7 ' + String(cand.ship).toUpperCase() + ' \u00b7 ' + cand.n + ' MODULES \u00b7 LOADOUT APPLIED', '#7fc46b');
+            setTimeout(close, 1000);
+          };
 
           const parse = () => {
             const raw = (input && input.value || '').trim();
             if (!raw) return say('NOTHING TO IMPORT', '#ff6b3d');
-            if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 PASTE SLEF OR A JOURNAL LOADOUT EVENT', '#ff6b3d');
-            let data;
-            try { data = JSON.parse(raw); } catch (e) { return say('JSON PARSE ERROR \u00b7 ' + e.message.toUpperCase().slice(0, 46), '#ff6b3d'); }
-            const slef = data && data.header && data.data ? data : null;
-            const body = slef ? slef.data : data;
-            const journal = !slef && body && String(body.event || '').toLowerCase() === 'loadout';
-            if (!slef && !journal) return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED SLEF OR A JOURNAL LOADOUT EVENT', '#ff6b3d');
-            const src = slef
-              ? 'SLEF \u00b7 ' + String(slef.header.appName || 'UNKNOWN APP').toUpperCase() + (slef.header.appVersion ? ' ' + slef.header.appVersion : '')
-              : 'JOURNAL LOADOUT';
-            const ship = body.ShipName || body.Ship || 'UNKNOWN HULL';
-            const mods = body.Modules || [];
-            const n = Array.isArray(mods) ? mods.length : Object.keys(mods || {}).length;
-            if (!n) return say(src + ' \u00b7 NO MODULES IN PAYLOAD', '#ff6b3d');
-            say(src + ' \u00b7 ' + String(ship).toUpperCase() + ' \u00b7 ' + n + ' MODULES \u00b7 LOADOUT APPLIED', '#7fc46b');
-            setTimeout(close, 900);
+            if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 PASTE SLEF, DROP A JOURNAL FILE OR SELECT ONE', '#ff6b3d');
+            const cand = this.extractLoadout(raw);
+            if (!cand) {
+              let err = null;
+              try { JSON.parse(raw); } catch (e) { err = e; }
+              return say(err
+                ? 'JSON PARSE ERROR \u00b7 ' + err.message.toUpperCase().slice(0, 46)
+                : 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED SLEF OR A JOURNAL LOADOUT EVENT', '#ff6b3d');
+            }
+            apply(cand, cand.src);
           };
+
+          const readFiles = files => {
+            const list = Array.from(files || []).filter(f => f && f.size);
+            if (!list.length) return;
+            const tooBig = list.filter(f => f.size > 25e6);
+            if (tooBig.length) return say('FILE TOO LARGE \u00b7 ' + tooBig[0].name.toUpperCase() + ' EXCEEDS 25 MB', '#ff6b3d');
+            say('SCANNING ' + list.length + ' FILE' + (list.length > 1 ? 'S' : '') + ' \u2026', 'rgba(232,222,209,.62)');
+            Promise.all(list.map(f => f.text().then(t => ({ name: f.name, text: t }), () => ({ name: f.name, text: '' }))))
+              .then(res => {
+                let best = null, name = '';
+                res.forEach(r => {
+                  const c = this.extractLoadout(r.text);
+                  if (c && (!best || String(c.ts || '') >= String(best.ts || ''))) { best = c; name = r.name; }
+                });
+                if (!best) return say('NO LOADOUT EVENT FOUND IN ' + (list.length > 1 ? list.length + ' FILES' : list[0].name.toUpperCase()), '#ff6b3d');
+                if (fname) {
+                  fname.textContent = name.toUpperCase() + (list.length > 1 ? ' \u00b7 ' + (list.length - 1) + ' OTHER FILE' + (list.length > 2 ? 'S' : '') + ' SCANNED' : '');
+                  fname.style.display = 'block';
+                }
+                if (input) input.value = JSON.stringify(best.raw, null, 1);
+                apply(best, name.toUpperCase() + ' \u00b7 ' + best.src);
+              });
+          };
+
+          if (fileIn) fileIn.addEventListener('change', () => readFiles(fileIn.files));
+          if (drop) {
+            const lift = on => {
+              drop.style.borderColor = on ? 'var(--amber-2)' : 'var(--amber-a45)';
+              drop.style.background = on ? 'var(--panel-6)' : 'var(--panel-4)';
+            };
+            drop.addEventListener('click', () => { if (fileIn) { fileIn.value = ''; fileIn.click(); } });
+            ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); lift(true); }));
+            ['dragleave', 'dragend'].forEach(ev => drop.addEventListener(ev, () => lift(false)));
+            drop.addEventListener('drop', e => {
+              e.preventDefault(); e.stopPropagation(); lift(false);
+              readFiles(e.dataTransfer && e.dataTransfer.files);
+            });
+            modal.addEventListener('dragover', e => e.preventDefault());
+            modal.addEventListener('drop', e => e.preventDefault());
+          }
 
           btn.addEventListener('click', open);
           [p + '-x', p + '-cancel'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('click', close); });
