@@ -59,10 +59,11 @@ seconds by default, so a test with sixty seconds on a runner could still fail on
 that lost a CPU race, and report a missing element rather than a slow one. `expect.timeout` therefore
 takes the same split the test budget has: ten seconds on CI, five locally. The allowance is stated
 once, for every assertion that waits, rather than added to the one assertion that failed last. A wait
-that needs something else states its own budget and the reason for it: longer, where it waits on a
-fetch rather than a redraw, and shorter inside a `toPass` block, so the block retries rather than
-spending its whole budget on one attempt. `toPass` is the one exception Playwright makes: it takes no
-budget from `expect.timeout`, so each of its call sites states its own.
+that needs something else states its own budget and the reason for it: longer, where it spans work
+the allowance does not cover — a fetch, a boot, a first paint, an encode — and shorter inside a
+`toPass` block, so the block retries rather than spending its whole budget on one attempt. `toPass`
+is the one exception Playwright makes: it takes no budget from `expect.timeout`, so each of its call
+sites states its own.
 
 ## Product and preview coverage ledger
 
