@@ -2,7 +2,14 @@ import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { frames, openWithADelayedBundle, openWithoutTheBundle, recordFrames } from './first-frame';
+import {
+  MEASURED,
+  type Frame,
+  frames,
+  openWithADelayedBundle,
+  openWithoutTheBundle,
+  recordFrames,
+} from './first-frame';
 import { PRODUCT_URL } from './servers';
 import { shapeOf } from './served-document';
 import { waitForTakeover } from './shell';
@@ -128,6 +135,42 @@ async function storeCatalogueView(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Whether a window of frames holds the takeover rather than sitting to one side
+ * of it — a frame from before the application owned the page and a frame from
+ * after.
+ */
+function spansTheTakeover(window: readonly Frame[]): boolean {
+  return window.some((frame) => !frame.takenOver) && window.some((frame) => frame.takenOver);
+}
+
+/**
+ * Asserts that nothing moved across a window of frames.
+ *
+ * Compared box by box and named, rather than deep-compared as an array: a
+ * `toEqual` failure prints four rectangles of numbers and leaves the reader to
+ * work out which selector each one was, and the answer to "what moved" is the
+ * whole value of the assertion.
+ */
+function nothingMovedAcross(window: readonly Frame[], path: string, era: string): void {
+  const first = window[0];
+  for (const [index, frame] of window.entries()) {
+    const moved = frame.boxes
+      .map((box, at) => ({ box, at }))
+      .filter(({ box, at }) => JSON.stringify(box) !== JSON.stringify(first.boxes[at]))
+      .map(
+        ({ box, at }) =>
+          `${MEASURED[at]}: ${JSON.stringify(first.boxes[at])} → ${JSON.stringify(box)}`,
+      );
+
+    expect(
+      moved,
+      `${path} moved at ${era} frame ${index} of ${window.length}` +
+        ` (taken over: ${frame.takenOver})`,
+    ).toEqual([]);
+  }
+}
+
 test.describe('the first frame of a generated document', () => {
   for (const { path, subject } of SCREENS) {
     test(`states ${path} to a reader that runs no script`, async ({ page }) => {
@@ -211,24 +254,57 @@ test.describe('the first frame of a generated document', () => {
       // where the shell's bar sits, where the screen's content begins, where the
       // screen itself sits, and where the page ends (`MEASURED`). A composition
       // corrected after the fact moves at least one of them.
+      //
+      // With the bundle held back half a second, for the reason its sibling
+      // above gives and one more: on a static server on the same machine the
+      // takeover can land in the same handful of frames as the typeface, and
+      // the two windows below are drawn at the typeface. Held back, the document
+      // is finished and wearing what it asked for long before the application
+      // reaches it, so the window that holds the takeover holds it whole.
       await recordFrames(page, subject);
-      await page.goto(`${PRODUCT_URL}${path}`);
+      await openWithADelayedBundle(page, path);
       await waitForTakeover(page);
 
-      // From the frame the document finished arriving in, not from the frame it
-      // started in: a quarter-megabyte document paints while it is still being
-      // read, so the earliest frames hold a page that is genuinely shorter than
-      // the one being served. Growing as it downloads is what every document
-      // does and is not what SC-003 is about — what SC-003 is about is the
-      // application, once it exists, moving something a Commander is reading.
-      const recorded = (await frames(page)).filter((frame) => frame.parsed);
-      const first = recorded[0];
+      // From the frame the page had all of itself, not from the frame it
+      // started in, and two things arrive late.
+      //
+      // The document: a quarter of a megabyte paints while it is still being
+      // read, so the earliest frames hold a page genuinely shorter than the one
+      // being served. The typeface: the faces are declared `font-display: swap`,
+      // so a cold load paints in a system fallback and re-paints in Barlow, and
+      // where the two disagree on metrics the page changes height under the
+      // swap — Firefox at 1112px moved the catalogue ten pixels doing exactly
+      // that. Both happen to a page this application never touches, which is
+      // what makes them the network rather than the takeover; SC-003 is about
+      // the application, once it exists, moving something a Commander is
+      // reading.
+      //
+      // The swap is where the two windows meet: everything up to and including
+      // the last frame that was still loading a face is the page in the system
+      // fallback, everything after it is the page in Barlow. Split there rather
+      // than at the first frame that reports `loaded`, because a set with
+      // nothing asked of it yet reports loaded too — the earliest frames of
+      // every load say so before the first face has been requested — and those
+      // frames are in the fallback like the ones after them.
+      const parsed = (await frames(page)).filter((frame) => frame.parsed);
+      const swap = parsed.map((frame) => frame.dressed).lastIndexOf(false);
+      const inTheFallback = parsed.slice(0, swap + 1);
+      const inTheTypeface = parsed.slice(swap + 1);
 
-      expect(first, `${path} finished arriving`).toBeDefined();
+      expect(parsed.length, `${path} finished arriving`).toBeGreaterThan(0);
 
-      for (const frame of recorded) {
-        expect(frame.boxes, `${path} boxes`).toEqual(first.boxes);
-      }
+      // Nothing is measured across the swap, but the takeover has to be inside
+      // one of the two windows or nothing has been measured at all. Which one
+      // it lands in is not fixed — a page whose faces are already in the browser
+      // never leaves the fallback window — so either will do, and the delayed
+      // bundle is what keeps the takeover from straddling the two.
+      expect(
+        spansTheTakeover(inTheFallback) || spansTheTakeover(inTheTypeface),
+        `${path}: the takeover fell on the typeface's swap, so neither window held it`,
+      ).toBe(true);
+
+      nothingMovedAcross(inTheFallback, path, 'fallback');
+      nothingMovedAcross(inTheTypeface, path, 'typeface');
     });
   }
 

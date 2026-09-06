@@ -78,10 +78,11 @@ test.describe('offline', () => {
     context,
   }) => {
     // 015/FR-015 and FR-016. `NotAShip` is not a hull, so the build rendered no
-    // document for it and never will; what answers it is the navigation
-    // fallback, which since feature 015 is `index.csr.html` — a shell that
-    // states nothing — rather than `index.html`, which is now the start page's
-    // own document.
+    // document for it and never will; what answers it is a fallback, and since
+    // feature 015 both fallbacks are the body-less shell rather than
+    // `index.html`, which is now the start page's own document. The worker's is
+    // `index.csr.html` (`ngsw-config.json`), the host's is `404.html`, and
+    // `scripts/publish-static-routes.mjs` writes the second from the first.
     //
     // The distinction is the whole point. A fallback carrying the start page
     // would paint "Tools for Commanders" under `/ships/NotAShip`, which is a

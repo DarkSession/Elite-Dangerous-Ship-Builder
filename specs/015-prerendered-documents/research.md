@@ -319,6 +319,16 @@ serves `404.html` for every unmatched address, so leaving the copy as it is woul
 state the start page's content under every address that has no document. That is
 the same trap as the fallback, reached through the host instead of the worker.
 
+The journey's own static server had to follow the host. `scripts/serve-production.mjs`
+stands in for Pages, and it fell unmatched addresses through to `index.html`
+because that used to be the shell. Left alone it served `/ships/NotAShip` the
+start page's content — a document the deployment never serves — and the offline
+journey's assertion that no frame carries the start page failed on it in every
+Firefox project. It falls through to `404.html` now, which is what Pages does, with `index.html`
+behind it for the two outputs that have no `404.html`: the development build,
+which prerenders nothing, and the preview application. For those two the
+`index.html` it falls through to is still the body-less shell it always was.
+
 Settled in [contracts/address-set.md](./contracts/address-set.md) §2, §3 and §5.
 
 ---
@@ -548,7 +558,7 @@ and the journey does not measure it.
 
 ## Decision 17: What the first-frame journey may not measure
 
-**Decision**: three things the recorder subtracts or waits for, each named.
+**Decision**: four things the recorder subtracts or waits for, each named.
 
 **The document arrives in pieces.** A hull document is up to 293 KB and the
 browser paints while it is still reading it: under eight parallel workers the
@@ -567,6 +577,22 @@ characters, the only text that ever leaves the page. That is the illustration
 arriving rather than content disappearing, and the plate reserves its area at a
 fixed ratio either way, so nothing moves. `RETIRING` in `e2e/first-frame.ts`
 subtracts it before anything is measured.
+
+**The typeface arrives after the page does.** The faces are same-origin subsets
+declared `font-display: swap`, so a cold load paints in a system fallback and
+re-paints in Barlow once the subset lands. Where the two disagree on metrics the
+page changes height under that swap: Firefox at 1112px laid the catalogue out ten
+pixels taller in the fallback than in Barlow, on `/ships` and `/ships/Anaconda`
+alike, and Chromium — whose fallback happens to agree — showed nothing. It is not
+the takeover: the same swap moves the same ten pixels on a document whose bundle
+is blocked, and the application's own layout is byte-for-byte the document's
+(measured: `main` is 2459px in the served document and 2459px after the takeover).
+So frames carry `dressed` (`document.fonts.status === 'loaded'`) and the movement
+assertion starts after the last frame that was still loading a face — after,
+rather than at the first frame that reports loaded, because a set with nothing
+asked of it yet reports loaded too. What stops this from emptying the assertion is
+an explicit expectation that the measured window still holds a frame from before
+the takeover.
 
 **The window can be shorter than the first paint.** On a static server on the same
 machine the takeover can complete before the browser's first animation frame, so a

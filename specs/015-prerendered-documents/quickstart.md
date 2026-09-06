@@ -190,7 +190,10 @@ measures, and how it ended up measuring it:
   `main`, the screen inside it, and the page. Not Cumulative Layout Shift, which
   the plan expected: `layout-shift` entries are Chromium-only and half the matrix
   is Firefox, so a CLS assertion would cover five projects and skip five, which
-  the constitution forbids.
+  the constitution forbids. Measured with the bundle held back half a second, so
+  the document is finished and wearing the typeface it asked for well before the
+  application reaches it — otherwise the takeover lands among the same handful of
+  frames the page is still settling in, and the measurement is of the machine.
 - **No frame is emptier than the frame before**, measured from the frame the
   document finished arriving in. A 293 KB document paints while it is still being
   read, so the earliest frames genuinely hold less of it; that is the download,
@@ -206,9 +209,14 @@ measures, and how it ended up measuring it:
   untranslated-name disclosures subtracted — the bounded exception FR-011a allows,
   and the reason FR-011 had to be amended (research decision 18).
 
-Two things this deliberately does not measure: the web font's `swap` reflow, which
-every page has had for as long as it has had a web font; and the visually hidden
-line announcing a pending illustration, which retires when the picture arrives.
+Two things this deliberately does not measure, both excluded by the recorder
+rather than by hand. The web font's `swap` reflow — every page has had it for as
+long as it has had a web font, and Firefox at 1112px moved ten pixels under it —
+is excluded by starting the box comparison after the last frame that was still
+loading a face (`Frame.dressed`), with an explicit expectation that the window
+still holds a pre-takeover frame so the assertion cannot empty itself. The
+visually hidden line announcing a pending illustration, which retires when the
+picture arrives, is subtracted by `RETIRING` before any text is measured.
 
 ## What CI runs, and what it does not
 

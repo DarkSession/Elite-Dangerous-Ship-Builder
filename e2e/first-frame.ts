@@ -36,6 +36,19 @@ export interface Frame {
    * two are only told apart by knowing which frames are which.
    */
   readonly parsed: boolean;
+  /**
+   * Whether the typeface the page asked for has arrived.
+   *
+   * The faces are same-origin subsets declared `font-display: swap`, so a cold
+   * load paints in a system fallback and re-paints in Barlow a moment later.
+   * Where the two disagree on metrics the page changes height under that swap —
+   * measured on Firefox at 1112px, ten pixels across the catalogue — and it does
+   * so whether or not this application ever loads, which is what makes it the
+   * network rather than the takeover. Recorded so a measurement of the takeover
+   * can start from the frame the page is wearing what it asked for, the same way
+   * `parsed` lets one start from the frame the page had all of itself.
+   */
+  readonly dressed: boolean;
 }
 
 /**
@@ -132,6 +145,7 @@ export async function recordFrames(page: Page, subject: string): Promise<void> {
             }),
             takenOver: document.querySelectorAll('[jsaction]').length === 0,
             parsed: document.readyState !== 'loading',
+            dressed: document.fonts.status === 'loaded',
           });
         }
         requestAnimationFrame(record);

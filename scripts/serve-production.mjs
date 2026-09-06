@@ -122,9 +122,22 @@ const server = createServer(async (request, response) => {
   }
 
   const direct = await resolveFile(request.url ?? '/');
-  // Unmatched paths fall through to the application shell, the way a static
-  // host configured for a single-page application does.
-  const file = direct ?? (await resolveFile('/index.html'));
+  // Unmatched paths fall through to `404.html` where the output has one, which
+  // is what Pages serves for every address it cannot match and what this server
+  // stands in for.
+  //
+  // Not `index.html` first. Since feature 015 that file is the start page's own
+  // rendered document, so falling through to it would answer `/ships/NotAShip`
+  // with "Tools for Commanders" — one screen's content under another screen's
+  // address, which is the near-duplicate `scripts/publish-static-routes.mjs`
+  // writes `404.html` from the body-less shell to avoid.
+  //
+  // `index.html` behind it, because this same server serves two outputs that
+  // have no `404.html` to fall through to: the development build, which
+  // prerenders nothing (`angular.json`), and the preview application. Their
+  // `index.html` is still the body-less shell it always was, so for them the
+  // two files are the same document under different names.
+  const file = direct ?? (await resolveFile('/404.html')) ?? (await resolveFile('/index.html'));
 
   if (!file) {
     response.writeHead(404).end('Not found');
