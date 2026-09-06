@@ -68,6 +68,8 @@ every one of the 50 routes.
 - [x] T005 Guard the retention sweep in `src/app/app.config.ts` behind `rendering-target.ts`, so `provideAppInitializer` → `RetentionService` → `TabOwnershipCoordinator` → `UuidAdapter.create()` is not reached at build time. `UuidAdapter` keeps throwing rather than fabricating an identity; the call is removed, not the honesty (research decision 5, constitution IV)
 - [x] T006 Give `observeBanner` in `src/app/ui/components/app-frame/sticky-banner.ts` a `DOCUMENT`-injected view and defer its first `measure()` to `afterNextRender`, following `element-size.adapter.ts:28` and `bench-composition.ts:91-94`. The document must carry neither `frame--released` nor `--ednb-layout-bar-height` (`app-frame.ts:185-186`), and the pass must log no `getBoundingClientRect` error (research decision 6)
 - [x] T006a Guard `restoreWhenSettled` in `src/app/features/ship-catalogue/catalogue-anchor.restorer.ts` behind `rendering-target.ts`. **Found during implementation, not by the spike**: the build tears the catalogue down at the end of every hull route, and the emulation supplies a `defaultView` with no `requestAnimationFrame`, so the existing guard passes and the next line throws. A third instance of the wrong question research decision 5 names
+- [x] T006b Add `provideClientHydration(withEventReplay())` to `src/app/app.config.ts`. **Found during implementation, not by the spike, and the largest defect this feature had**: without it Angular treats a generated document as debris — it empties `<app-root>` and renders from nothing. Measured on `/ships/Anaconda`: the hull's figures painted at 39ms, gone at 181ms, back at 1236ms. A second of blank page in the middle of what a Commander was already reading, which is exactly the content that "disappears and returns" FR-009 forbids and SC-003 measures. `withEventReplay()` is the other half: a generated document paints every control before any script has run, so a press in that window would otherwise land on markup with no listener behind it (FR-009, FR-010, SC-003)
+- [x] T006c Add `waitForTakeover` to `e2e/shell.ts` and wait on it in `reachShellAction`, `reachShellLink`, `openActionLayer`, `reachHull` and `buildStockHull`. **Found during implementation**: T006b's replay holds a press made in the first frame until the takeover reaches that node, and the takeover of `/ships` completes about two seconds after `load` — so a journey that pressed at 600ms opened the layer at 2.6s, and under eight parallel workers past its own five-second assertion. `help-offline` failed one run in three on the feature branch and three runs in three on `e3b8a36`, the tree before it. A journey about the _running_ application now says so and waits; what the first frame itself offers is T026's question, not one every other journey answers by accident
 - [x] T007 [P] Add unit tests for `rendering-target.ts` in `src/app/platform/browser/rendering-target.spec.ts`, covering both platforms
 - [x] T008 [P] Extend the `sticky-banner` unit tests to assert that no measurement is taken before the first render, so T006's deferral cannot be undone silently
 - [x] T009 Add the `contentBearing` registry to `scripts/search/published-addresses.mjs` beside the list it qualifies: one record per advertised address, `reason` required when `false`, 50 true and 2 false ([data-model.md](./data-model.md) `ContentBearing`, FR-021)
@@ -77,7 +79,7 @@ every one of the 50 routes.
 - [x] T013 Configure the build in `angular.json`: `server`, `ssr.entry`, `prerender.routesFile` and `discoverRoutes: false`, **without** `outputMode` — setting `outputMode` makes the builder ignore `prerender` entirely and warn about it (`@angular/build/src/builders/application/options.js:116-126`, research decision 2)
 - [x] T014 Wire `generate-prerender-routes.mjs` into `pnpm run build` in `package.json`, ahead of `ng build`, so the routes file exists when the builder reads it
 - [x] T015 Add the post-build placement step that moves each prerendered `<route>/index.html` to `<address>.html` and leaves no `ships/index.html` behind, keeping the root at `index.html` (address-set.md §2, research decision 4)
-- [ ] T016 [P] Add script tests for the placement step: `ships.html` and `ships/Anaconda.html` exist, `ships/index.html` does not, `index.html` does, and no address resolves to a directory
+- [x] T016 [P] Add script tests for the placement step: `ships.html` and `ships/Anaconda.html` exist, `ships/index.html` does not, `index.html` does, and no address resolves to a directory
 
 **Checkpoint**: `pnpm run build` produces 50 documents with bodies plus
 `index.csr.html`. They are about to be overwritten — that is T018.
@@ -156,10 +158,10 @@ Commander data.
 the fallback move, or the fallback move without `freshness`, each leaves a wrong
 first frame.
 
-- [ ] T033 [US3] Set `"navigationRequestStrategy": "freshness"` in `ngsw-config.json`, so an online navigation reaches the network and gets the real document while an offline one still falls back to the cached shell (research decision 8, FR-013, FR-014)
-- [ ] T034 [US3] Point the worker's `index` at `/index.csr.html` and replace `/index.html` with `/index.csr.html` in the `app-shell` asset group's file list in `ngsw-config.json` (address-set.md §3)
-- [ ] T035 [US3] Update `scripts/check-service-worker-ownership.test.mjs`'s pinned `app-shell` file list (`:105-110`) for T034 — a deliberate edit to a test that exists to catch undeliberate ones
-- [ ] T036 [US3] Add two new assertions to `check-service-worker-ownership.test.mjs`: `config.index` is `/index.csr.html`, and `config.navigationRequestStrategy` is `freshness`. **Nothing asserts the second today**, so without it a later edit could restore the cache-first default and every returning Commander would silently go back to today's empty first frame with no test failing (FR-014)
+- [x] T033 [US3] Set `"navigationRequestStrategy": "freshness"` in `ngsw-config.json`, so an online navigation reaches the network and gets the real document while an offline one still falls back to the cached shell (research decision 8, FR-013, FR-014)
+- [x] T034 [US3] Point the worker's `index` at `/index.csr.html` and replace `/index.html` with `/index.csr.html` in the `app-shell` asset group's file list in `ngsw-config.json` (address-set.md §3)
+- [x] T035 [US3] Update `scripts/check-service-worker-ownership.test.mjs`'s pinned `app-shell` file list (`:105-110`) for T034 — a deliberate edit to a test that exists to catch undeliberate ones
+- [x] T036 [US3] Add two new assertions to `check-service-worker-ownership.test.mjs`: `config.index` is `/index.csr.html`, and `config.navigationRequestStrategy` is `freshness`. **Nothing asserts the second today**, so without it a later edit could restore the cache-first default and every returning Commander would silently go back to today's empty first frame with no test failing (FR-014)
 - [ ] T037 [P] [US3] Extend `e2e/offline-privacy.spec.ts` with the repeat-visit case: online, a second visit to `/ships/Anaconda` gets the hull document and never paints the start page's content
 - [ ] T038 [P] [US3] Extend `e2e/offline.spec.ts` with the unmatched-address case: `/ships/NotAShip` offline gets the shell and the application's own handling, never the start page (FR-015, FR-016)
 - [ ] T039 [P] [US3] Add the FR-007 assertions to `check-prerendered-documents.mjs`'s prohibition check: no build, no saved record, no Commander data, no runtime environment configuration, and no application version — the version is stamped in CI immediately before `ng build`, so a body carrying it would bake a CI-only value into static HTML (research decision 14, SC-008)
@@ -171,8 +173,8 @@ first frame.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T041 Fix the PR preview job's `noindex` step in `.github/workflows/ci.yml:533-540`: rewrite the robots tag across **every** generated document rather than `index.html` alone, and make the verification count them. 49 documents keeping `content="index,follow"` would publish full near-duplicates of production on another host — the exact duplicate that step exists to prevent
-- [ ] T042 Fix the preview job's `404.html` copy in `.github/workflows/ci.yml:542-544` to copy `index.csr.html` rather than `index.html`, for the same reason as T017
+- [x] T041 Fix the PR preview job's `noindex` step in `.github/workflows/ci.yml:533-540`: rewrite the robots tag across **every** generated document rather than `index.html` alone, and make the verification count them. 49 documents keeping `content="index,follow"` would publish full near-duplicates of production on another host — the exact duplicate that step exists to prevent
+- [x] T042 Fix the preview job's `404.html` copy in `.github/workflows/ci.yml:542-544` to copy `index.csr.html` rather than `index.html`, for the same reason as T017
 - [ ] T043 [P] Register feature 015's rows in `e2e/coverage-ledger.ts` and add `'015-prerendered-documents'` to `COVERED_FEATURES`, which immediately requires every requirement id the spec declares — FR-001 through FR-021, FR-009a included (constitution VIII)
 - [ ] T044 [P] Update `README.md`'s deployment section for the new output shape: 50 documents, `index.csr.html` as the shell, and `404.html` copied from it
 - [ ] T045 [P] Record the measured document sizes and the CI cost of the `e2e-production` job in `research.md`, replacing the spike figures with the shipped ones
@@ -187,7 +189,8 @@ first frame.
 
 - **Setup (T001–T003)**: no dependencies. T002 and T003 both need T001.
 - **Foundational (T004–T016)**: needs Setup. **Blocks every story.** Within it,
-  T005 needs T004; T013 needs T011; T014 needs T011 and T013; T015 needs T013.
+  T005 needs T004; T006c needs T006b; T013 needs T011; T014 needs T011 and T013;
+  T015 needs T013.
 - **US1 (T017–T025)**: needs Foundational. T018 needs T017 (ordering inside the
   script is load-bearing). T020 needs T018 — a gate run before the pipeline is
   fixed reports 50 failures that are all one defect. T021 needs T020. T023 needs

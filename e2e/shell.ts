@@ -11,8 +11,42 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * The shell publishes no actions of its own; capability features supply them.
  */
 
+/**
+ * Waits until the running application owns the document.
+ *
+ * Since feature 015 an advertised address answers with a document the build
+ * rendered, so every control on it is drawn and named before a single line of
+ * the application has run. A journey that presses one in that window is not
+ * pressing the application's control: it is pressing the build's markup, and
+ * the press is held by the replay contract until the takeover reaches that
+ * node. Measured on this container at `/ships`, the takeover completes about
+ * two seconds after `load`, so a press at 600ms opens the layer at 2.6s — well
+ * inside what a Commander gets, and well outside a five-second assertion when
+ * eight journeys share the machine. That is what made `help-offline` fail one
+ * run in three and pass the next.
+ *
+ * So a journey about the *running* application says so here, once, and waits.
+ * What the first frame itself offers is a different question with its own
+ * journey (`prerendered-first-frame.spec.ts`), and it must not be answered by
+ * accident in every other one.
+ *
+ * The wait is over when no control is still holding a press for the takeover.
+ * On a development project there is no rendered document and nothing ever holds
+ * one, so this costs a single evaluation and returns.
+ */
+export async function waitForTakeover(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => document.querySelectorAll('[jsaction]').length === 0,
+    undefined,
+    {
+      timeout: 30_000,
+    },
+  );
+}
+
 /** Opens the folded action layer if the wanted action is not already visible. */
 export async function reachShellAction(page: Page, name: RegExp): Promise<void> {
+  await waitForTakeover(page);
   const action = page.getByRole('button', { name });
 
   if ((await action.count()) === 0) {
@@ -53,6 +87,7 @@ export async function openLibrary(page: Page): Promise<void> {
  * into the `⋮` menu beneath it. A journey knows only which tool it wants.
  */
 export async function reachShellLink(page: Page, name: RegExp | string): Promise<void> {
+  await waitForTakeover(page);
   const link = page.getByRole('link', { name });
 
   if ((await link.count()) === 0) {
@@ -69,6 +104,7 @@ export async function reachShellLink(page: Page, name: RegExp | string): Promise
  * ellipsis, so it is found by name like everything else.
  */
 export async function openActionLayer(page: Page): Promise<void> {
+  await waitForTakeover(page);
   await page
     .getByRole('button', { name: /^(menu|menü)$/i })
     .first()
@@ -178,6 +214,10 @@ export async function openFirstHullFromManifest(page: Page): Promise<void> {
  * package's way.
  */
 export async function buildStockHull(page: Page, label: string): Promise<void> {
+  // Before any of it, because the retry below would otherwise press a control
+  // the build drew and press it again after the takeover, which is one
+  // commitment made twice.
+  await waitForTakeover(page);
   const action = page.getByRole('button', { name: label, exact: true });
   const row = manifestBuildControl(page);
 
@@ -244,6 +284,7 @@ export function restsToRead(page: Page): Promise<boolean> {
 }
 
 async function reachHull(page: Page, row: Locator): Promise<void> {
+  await waitForTakeover(page);
   if (await restsToRead(page)) {
     await row.hover();
   } else {

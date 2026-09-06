@@ -452,6 +452,46 @@ the running application.
 
 ---
 
+## Decision 15: Hydration is not optional, and neither is event replay
+
+**Found during implementation.** The spike did not ask what the application does
+with a document it did not create, and the answer is: destroys it.
+
+**Decision**: `provideClientHydration(withEventReplay())`.
+
+**Rationale**: Without hydration Angular treats a generated document as debris. It
+empties `<app-root>` and renders the application into it from nothing. Measured on
+`/ships/Anaconda` against a production build: the hull's figures painted at 39ms
+(9,733 characters of readable text), the page was down to 1,747 at 181ms, and the
+figures were back at 1236ms. A second of blank page in the middle of what a
+Commander was already reading — precisely the content that "disappears and
+returns" FR-009 forbids and SC-003 measures. With hydration the same three routes
+were never wiped and logged no hydration error.
+
+`withEventReplay()` answers the second half. A generated document paints every
+control before any script has run, so a Commander can press one in that window.
+Without replay the press lands on markup with no listener behind it and nothing
+happens at all — a control that looks interactive and is not, which is a worse
+first frame than the empty shell this feature replaced.
+
+**What replay costs, and who pays it**: a press held by the replay contract is
+delivered when the takeover reaches that node, not when it is made. Measured on
+the CI-sized container, `/ships` completes its takeover about 2.0–2.6s after
+`load`, so a press at 600ms opens the layer at ~2.6s. That is inside what a
+Commander experiences as one slow page and outside a five-second end-to-end
+assertion measured from the press, which is what made `help-offline` fail one
+parallel run in three. The journeys were corrected rather than the application
+(T006c): a journey about the running application waits for the takeover, and the
+first frame's own behaviour is asserted by its own journey.
+
+**Alternatives considered**: leaving hydration off and accepting the wipe —
+rejected, it fails FR-009 outright; `withIncrementalHydration()` and `@defer
+(hydrate on …)` to shorten the interval — rejected for this feature, it needs
+`@defer` blocks the screens do not have, which is the screen work the plan
+excludes. It stays available if the interval ever becomes a complaint.
+
+---
+
 ## Resolved unknowns
 
 | Unknown at spec time                              | Resolution                                                                                |
@@ -462,4 +502,4 @@ the running application.
 | What breaks first?                                | The app initializer, then `sticky-banner.ts` — decisions 5, 6                             |
 | How is FR-014 answered?                           | `freshness`, plus a fallback and a `404.html` that move off `index.html` — decisions 8, 9 |
 | Is the payload acceptable?                        | Yes, ~20 KB compressed per document — decision 10                                         |
-| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11                                            |
+| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11; and hydration itself, decision 15         |

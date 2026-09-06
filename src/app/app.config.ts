@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
@@ -18,6 +19,26 @@ import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Take over the document the build rendered rather than replacing it.
+    //
+    // Without this, Angular treats a generated document as debris: it empties
+    // `<app-root>` and renders the application into it from nothing. Measured
+    // on `/ships/Anaconda`, that is the hull's figures painted at 39ms, gone at
+    // 181ms, and back at 1236ms — a second of the page a Commander was already
+    // reading being blank, which is exactly the content that "disappears and
+    // returns" that 015/FR-009 forbids and SC-003 measures.
+    //
+    // Hydration walks the rendered DOM instead and adopts it, so the nodes a
+    // Commander is looking at are the nodes the application goes on to own.
+    //
+    // `withEventReplay()` is the other half. A generated document paints every
+    // control before any script has run, so a Commander can press one in that
+    // window — and without replay the press lands on markup with no listener
+    // behind it and nothing happens at all. That is a control that looks
+    // interactive and is not, which is a worse first frame than the empty shell
+    // this feature replaced. Replay records those presses and delivers them
+    // once the application owns the node.
+    provideClientHydration(withEventReplay()),
     // Route parameters are bound to component inputs, so a screen takes its
     // subject as an input rather than reaching into the router for it.
     provideRouter(routes, withComponentInputBinding()),

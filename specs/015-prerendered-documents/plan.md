@@ -172,7 +172,8 @@ src/
 ├── main.server.ts               # NEW — build-time render entry, BootstrapContext
 ├── app/
 │   ├── app.config.server.ts     # NEW — appConfig + provideServerRendering
-│   ├── app.config.ts            # retention sweep guarded (research decision 5)
+│   ├── app.config.ts            # provideClientHydration(withEventReplay()) — decision 15;
+│   │                            # retention sweep guarded (research decision 5)
 │   ├── platform/browser/
 │   │   └── rendering-target.ts  # NEW — the one statement of "is this a browser"
 │   └── ui/components/app-frame/
@@ -189,6 +190,8 @@ scripts/
 └── check-interface-foundations.mjs  # reconciles the content-bearing registry
 
 e2e/
+├── shell.ts                     # + waitForTakeover, so a journey about the running
+│                                #   application waits for it (research decision 15)
 ├── search-published.spec.ts     # + the body states the subject (US1)
 ├── prerendered-first-frame.spec.ts  # NEW — takeover, no shift, axe (US2)
 │                                    #       and added to e2e:offline's spec list
