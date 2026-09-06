@@ -133,12 +133,12 @@ test.describe('start page', () => {
   test('gives the licence notice the width of the band rather than a measure', async ({ page }) => {
     // The band is small print closing the page, so nothing holds the notice to
     // a prose column: it takes the room the band has, and it wraps only where
-    // its own line runs out. On the wide artboard that is one line (014/FR-012,
-    // and the cap `design/reference-review.md` withdraws).
+    // its own line runs out. On the wide artboard that is one line (014/FR-012;
+    // design/reference-review.md, "What is withdrawn, and why").
     //
-    // Awaited, because the faces load with `font-display: swap`. Measured in the
-    // fallback the notice is wider, the wide artboard looks too narrow to hold
-    // one line, and the assertion below would skip rather than fail.
+    // The fonts load with `font-display: swap`, so wait for them. In the
+    // fallback the notice is wider than the band, and the one-line assertion
+    // below would skip rather than fail.
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
 
     const geometry = await page.evaluate(() => {
