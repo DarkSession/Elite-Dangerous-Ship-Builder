@@ -111,10 +111,14 @@ describe('where files come in', () => {
     expect(query(fixture, '.file-drop__button').hasAttribute('disabled')).toBe(true);
   });
 
-  it('takes nothing while what was chosen is still being read', () => {
+  it('says it is reading without taking the control away', () => {
     const fixture = render({ busy: true });
 
-    expect(query(fixture, '.file-drop__button').hasAttribute('disabled')).toBe(true);
+    // Disabling it would move focus to the top of the document, and the
+    // element it would move focus off is the one the Commander just activated.
+    // The plate says it is busy; the control stays where they left it.
+    expect(query(fixture, '.file-drop__button').hasAttribute('disabled')).toBe(false);
+    expect(query(fixture, '.file-drop__button').getAttribute('aria-busy')).toBe('true');
     expect(query(fixture, '.file-drop').hasAttribute('data-busy')).toBe(true);
   });
 

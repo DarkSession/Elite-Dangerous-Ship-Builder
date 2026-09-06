@@ -141,6 +141,53 @@ describe('a suit loadout coming in from a journal', () => {
     });
   });
 
+  describe('a paste holding more than one loadout', () => {
+    it('lists them rather than taking the newest', async () => {
+      store.openLayer();
+      store.setDraft(
+        [
+          event({ LoadoutName: 'Recon', timestamp: '2026-09-01T10:00:00Z' }),
+          event({ LoadoutName: 'Assault', timestamp: '2026-09-02T10:00:00Z' }),
+        ].join('\n'),
+      );
+
+      // A pasted stretch of a journal is a log like any other. Taking the
+      // newest would discard the rest of what the Commander pasted in silence.
+      expect(await coordinator.submit()).toEqual({ kind: 'listed' });
+
+      expect(store.entries().length).toBe(2);
+      expect(bench.loadout()).toBe(null);
+      expect(store.open()).toBe(true);
+    });
+  });
+
+  describe('a scan nobody is waiting for', () => {
+    it('is discarded when a newer one has started', async () => {
+      const slow = journalFile('Journal.slow.log', [event({ LoadoutName: 'Superseded' })]);
+      const scanning = coordinator.scanFiles([slow]);
+      // A second drop while the first is still being read: the newer selection
+      // is the question, and the older answer must not land on top of it.
+      await coordinator.scanFiles([
+        journalFile('Journal.fast.log', [event({ LoadoutName: 'Chosen' })]),
+      ]);
+      await scanning;
+
+      expect(store.entries().map((entry) => entry.value.name)).toEqual(['Chosen']);
+      expect(store.scanning()).toBe(false);
+    });
+
+    it('leaves nothing behind after the layer closes', async () => {
+      const scanning = coordinator.scanFiles([
+        journalFile('Journal.01.log', [event({ LoadoutName: 'Abandoned' })]),
+      ]);
+      store.closeLayer();
+      await scanning;
+
+      expect(store.entries()).toEqual([]);
+      expect(store.scanning()).toBe(false);
+    });
+  });
+
   describe('several loadouts chosen', () => {
     async function scanTwo(): Promise<void> {
       await coordinator.scanFiles([
@@ -160,13 +207,19 @@ describe('a suit loadout coming in from a journal', () => {
         fileCount: 1,
         fileName: 'Journal.01.log',
         eventCount: 2,
+        refused: [],
       });
     });
 
     it('saves each one and opens none of them', async () => {
       await scanTwo();
 
-      expect(await coordinator.submit()).toEqual({ kind: 'stored', stored: 2, refused: [] });
+      expect(await coordinator.submit()).toEqual({
+        kind: 'stored',
+        stored: 2,
+        refused: [],
+        left: 0,
+      });
 
       expect(bench.loadout()).toBeNull();
       library.refresh();
@@ -215,13 +268,40 @@ describe('a suit loadout coming in from a journal', () => {
       expect(notes.every((note) => note === 'Imported from journal')).toBe(true);
     });
 
-    it('states how many were saved', async () => {
+    it('states how many were saved, and closes on a clean batch', async () => {
+      store.openLayer();
       await scanTwo();
 
       await coordinator.submit();
 
       expect(store.batchOutcome()).toEqual({ stored: 2, refused: [] });
       expect(store.open()).toBe(false);
+    });
+
+    it('saves them and still states what the package left out', async () => {
+      store.openLayer();
+      await coordinator.scanFiles([
+        journalFile('Journal.01.log', [
+          event({ LoadoutName: 'Whole', timestamp: '2026-09-02T10:00:00Z' }),
+          event({
+            LoadoutName: 'Partial',
+            timestamp: '2026-09-01T10:00:00Z',
+            Modules: [{ SlotName: 'PrimaryWeapon1', ModuleName: 'wpn_not_a_weapon', Class: 5 }],
+          }),
+        ]),
+      ]);
+      store.setSelection(store.entries().map((entry) => entry.key));
+
+      const submission = await coordinator.submit();
+
+      // Both are saved — a loadout missing one weapon is still a loadout — and
+      // the layer stays up saying which entry the package could not take
+      // (016/FR-015).
+      expect(submission).toEqual({ kind: 'stored', stored: 2, refused: [], left: 1 });
+      expect(store.open()).toBe(true);
+      expect(store.failure()?.kind).toBe('partial');
+      library.refresh();
+      expect(library.total()).toBe(2);
     });
   });
 });

@@ -534,8 +534,27 @@ describe('what a journal source adds to the words', () => {
   });
 
   it('says that it is reading files, out loud', async () => {
-    await presenter.scanFiles([FILE('Journal.01.log', [line({ ShipName: 'A' })])]);
+    const scanning = presenter.scanFiles([FILE('Journal.01.log', [line({ ShipName: 'A' })])]);
 
     expect(announcements.polite()).toBe('Reading journal files.');
+
+    await scanning;
+  });
+
+  it('says how the scan ended, not only that it started', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [line({ ShipName: 'A' }), line({ ShipName: 'B' })]),
+    ]);
+
+    // Everything else a scan produces — the list, the scanned line, the
+    // refusal — is on the screen. A Commander who is not looking at the screen
+    // would otherwise hear that a scan started and never hear it finish.
+    expect(announcements.polite()).toBe('2 builds found. Choose one or more.');
+  });
+
+  it('says so out loud when a scan found nothing', async () => {
+    await presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
+
+    expect(announcements.polite()).toBe('Nothing was found to import.');
   });
 });

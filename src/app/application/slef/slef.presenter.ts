@@ -251,6 +251,32 @@ export class SlefPresenter {
       messageKey: 'slef.import.announce.scanning',
     });
     await this.#import.scanFiles(files);
+    this.#announceScan();
+  }
+
+  /**
+   * Says how a scan ended, not only that one started.
+   *
+   * The list, the scanned line and the refusal all reach a Commander who is
+   * looking at the panel. A Commander who is not gets one sentence: what came
+   * back. Without it a screen reader hears "Reading journal files." and then
+   * nothing at all, whether three builds arrived or the file held none
+   * (016/FR-004, FR-006).
+   */
+  #announceScan(): void {
+    const found = this.#store.journalEntries().length;
+    this.#announcements.announce({
+      kind: 'slef.import.scan',
+      revision: this.#store.requestToken,
+      urgency: 'polite',
+      messageKey:
+        found === 0
+          ? 'slef.import.announce.scanned.none'
+          : found === 1
+            ? 'slef.import.announce.scanned.one'
+            : 'slef.import.announce.scanned.many',
+      params: { count: this.#formatters.integer(found) },
+    });
   }
 
   /** Records which of the builds a scan found the Commander wants. */
@@ -374,6 +400,17 @@ export class SlefPresenter {
     const ending = this.#store.importEnding();
     if (ending !== null) {
       return this.#messages.message(`slef.import.status.${ending}` as MessageKey);
+    }
+    // A file the bound refused while the rest were read. It is stated here
+    // rather than as the panel's refusal, because the scan succeeded: the same
+    // sentence the whole refusal uses, about the one file it is about
+    // (016/FR-002, FR-004).
+    const [refused] = this.#store.scanReport()?.refused ?? [];
+    if (refused !== undefined) {
+      return this.#messages.message('slef.import.failure.fileTooLarge', {
+        file: refused.fileName,
+        limit: this.#formatters.bytes(refused.limitBytes),
+      });
     }
     return '';
   }

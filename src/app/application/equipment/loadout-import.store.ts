@@ -62,6 +62,16 @@ export class LoadoutImportStore {
   readonly #batch = signal<LoadoutBatchOutcome | null>(null);
   readonly #working = signal(false);
 
+  /**
+   * What a result must still carry to be acted on.
+   *
+   * A monotonic counter, exactly as the Ship Builder's own exchange store keeps
+   * one. Reading a 20 MB journal takes long enough for a Commander to drop a
+   * second one, cancel, or close the layer, and an answer to a question nobody
+   * is asking any more must not land on top of the answer to the one they are.
+   */
+  #token = 0;
+
   readonly open = this.#open.asReadonly();
   readonly draft = this.#draft.asReadonly();
   readonly scanning = computed(() => this.#scanningFiles() > 0);
@@ -78,12 +88,31 @@ export class LoadoutImportStore {
     this.#entries().filter((entry) => this.#selected().includes(entry.key)),
   );
 
+  /** The token in force. */
+  get requestToken(): number {
+    return this.#token;
+  }
+
+  /** Issues a new token, invalidating every result still in flight. */
+  issueToken(): number {
+    this.#token += 1;
+    return this.#token;
+  }
+
+  /** True while this token is still the current one. */
+  isCurrent(token: number): boolean {
+    return token === this.#token;
+  }
+
   openLayer(): void {
     this.#open.set(true);
   }
 
   closeLayer(): void {
     this.#open.set(false);
+    // Whatever is still being read is about a layer nobody is looking at.
+    this.issueToken();
+    this.#scanningFiles.set(0);
   }
 
   /** Records an edit, and forgets a scan the text is no longer about. */
@@ -131,6 +160,7 @@ export class LoadoutImportStore {
   }
 
   clearScan(): void {
+    this.issueToken();
     this.#scanningFiles.set(0);
     this.#entries.set([]);
     this.#report.set(null);

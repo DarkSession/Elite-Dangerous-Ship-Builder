@@ -137,8 +137,9 @@ implements.
 
 ## Divergences from the canvases
 
-The canvases are the record, and this change departs from them in two places. Both
-are Commander rulings of 2026-09-06, recorded here rather than argued again.
+The canvases are the record, and this change departs from them in three places. The
+first two are Commander rulings of 2026-09-06, recorded here rather than argued again;
+the third is an accessibility rule the canvas cannot carry.
 
 **Divergence from the batch outcome.** Both canvases load the first selected event
 into the yard or onto the bench and add the rest to the saved records, ending with a
@@ -153,6 +154,34 @@ imported without naming a build in the workspace.
 saying what names it. The ruling names it, including the hull-name fallback, and that
 fallback contradicts `build-lifecycle`'s rule against an application-supplied name.
 The requirement is modified rather than read around.
+
+**Divergence from the gate's two links.** Both canvases set `Import a journal event`
+and `Open a saved build` in the accent, side by side in one sentence, separated by a
+3px square and ruled by nothing. That was defensible while the gate held one control:
+with two, the sentence reads `Already have a loadout? Import a journal event Open a
+saved build`, and only the colour says which parts of it are controls. Both are
+underlined. Nothing else about the block changes.
+
+## Decisions taken while building
+
+**The size bound is per file, and a refused file costs only itself.** A selection
+mixing a 30 MB journal with five ordinary ones reads the five and names the one it
+left out on the status line, in the same sentence a whole refusal uses. Refusing the
+selection would make a Commander sort their journal folder by size before they could
+use any of it. Where nothing was read at all, the refusal is the whole answer.
+
+**A batch states what the package left out, and only then goes anywhere.** A suit
+loadout the package could not fit whole is still saved — it is a loadout — but the
+layer stays open naming each entry that was left out, exactly as a single import
+does. Only a batch with nothing refused and nothing left out closes and opens the
+saved records.
+
+**"Nothing selected" is refused by the action, not by a sentence.** 016/FR-008 says
+loading is refused while nothing is chosen and that the refusal says so. The action
+is disabled and the list's own legend states `… · 0 selected`, which is the refusal
+and its reason on the surface at the moment it applies. The message the coordinator
+carries for the same case remains, for a submission that arrives with nothing chosen
+by any other route.
 
 ## Wording carried from the canvases
 

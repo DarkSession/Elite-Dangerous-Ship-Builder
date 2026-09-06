@@ -79,6 +79,21 @@ export interface JournalScanReport {
   /** The file's name where exactly one was read, and `null` where several were. */
   readonly fileName: string | null;
   readonly eventCount: number;
+  /**
+   * The files left unread for their size, in the order they were chosen.
+   *
+   * The bound is per file (016/FR-002), so one journal too large to read costs
+   * only itself. It is named here rather than dropped, because a Commander who
+   * selected six files and got five read is owed the name of the sixth.
+   */
+  readonly refused: readonly JournalFileRefusal[];
+}
+
+/** One file the bound refused, with the numbers the refusal states. */
+export interface JournalFileRefusal {
+  readonly fileName: string;
+  readonly sizeBytes: number;
+  readonly limitBytes: number;
 }
 
 /** Why a scan produced nothing. */
@@ -127,6 +142,11 @@ export function scanJournalText<T>(
  * read, so what a selection costs follows the loadouts it holds rather than the
  * bytes it was found in. The size bound is measured before a file is read, so an
  * over-sized file is refused rather than loaded and then rejected.
+ *
+ * The bound is per file. A file over it is left out and named in the report, and
+ * the rest of the selection is read as if it had not been chosen — a whole
+ * selection refused for one file would make a Commander sort their journal
+ * folder by size before they could use any of it (016/FR-002).
  */
 export async function scanJournalFiles<T>(
   files: readonly JournalFile[],
@@ -137,21 +157,24 @@ export async function scanJournalFiles<T>(
     return { ok: false, failure: { kind: 'noFiles' } };
   }
 
-  const oversized = chosen.find((file) => file.size > JOURNAL_FILE_LIMIT_BYTES);
-  if (oversized !== undefined) {
-    return {
-      ok: false,
-      failure: {
-        kind: 'fileTooLarge',
-        fileName: oversized.name,
-        sizeBytes: oversized.size,
-        limitBytes: JOURNAL_FILE_LIMIT_BYTES,
-      },
-    };
+  const refused: JournalFileRefusal[] = chosen
+    .filter((file) => file.size > JOURNAL_FILE_LIMIT_BYTES)
+    .map((file) => ({
+      fileName: file.name,
+      sizeBytes: file.size,
+      limitBytes: JOURNAL_FILE_LIMIT_BYTES,
+    }));
+  const within = chosen.filter((file) => file.size <= JOURNAL_FILE_LIMIT_BYTES);
+
+  // Nothing left to read. The refusal is the whole answer, and it names the
+  // first file rather than reporting that a scan of nothing found nothing.
+  const [first] = refused;
+  if (within.length === 0 && first !== undefined) {
+    return { ok: false, failure: { kind: 'fileTooLarge', ...first } };
   }
 
   const found: JournalEntry<T>[] = [];
-  for (const file of chosen) {
+  for (const file of within) {
     let text: string;
     try {
       text = await file.text();
@@ -166,19 +189,28 @@ export async function scanJournalFiles<T>(
 
   const entries = orderJournalEntries(found);
   if (entries.length === 0) {
+    // A refusal outranks an empty scan: "this file was too large" is the reason
+    // there is nothing, and "no loadout was found" would name files that were
+    // read and blame them for it.
+    if (first !== undefined) {
+      return { ok: false, failure: { kind: 'fileTooLarge', ...first } };
+    }
     return {
       ok: false,
-      failure: { kind: 'noEvents', fileNames: chosen.map((file) => file.name) },
+      failure: { kind: 'noEvents', fileNames: within.map((file) => file.name) },
     };
   }
 
-  const [first] = chosen;
+  // The count is what was read, not what was chosen: a file the bound refused
+  // is named on its own line rather than counted among the files that were.
+  const [firstRead] = within;
   return {
     ok: true,
     report: {
-      fileCount: chosen.length,
-      fileName: chosen.length === 1 && first !== undefined ? first.name : null,
+      fileCount: within.length,
+      fileName: within.length === 1 && firstRead !== undefined ? firstRead.name : null,
       eventCount: entries.length,
+      refused,
     },
     entries,
   };

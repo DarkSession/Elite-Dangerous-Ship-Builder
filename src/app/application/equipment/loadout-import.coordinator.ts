@@ -1,5 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { getSuitByFamily } from '@elite-dangerous-almanac/core/equipment/suits';
+import type { SuitLoadoutImportOutcome } from '@elite-dangerous-almanac/core/equipment/suit-loadout';
 import {
   SUIT_JOURNAL_READER,
   importSuitLoadout,
@@ -28,6 +29,14 @@ export type LoadoutImportSubmission =
       readonly kind: 'stored';
       readonly stored: number;
       readonly refused: readonly LoadoutBatchRefusal[];
+      /**
+       * How many entries the package left out of the loadouts that were saved.
+       *
+       * A saved loadout missing a weapon the package does not carry is still a
+       * loadout, so it is stored — but what was left out is stated before the
+       * Commander is taken anywhere (016/FR-015).
+       */
+      readonly left: number;
     };
 
 /**
@@ -61,12 +70,24 @@ export class LoadoutImportCoordinator {
     return this.#injector.get(BuildLibraryStore);
   }
 
-  /** Reads the journal files a Commander chose. Imports nothing. */
+  /**
+   * Reads the journal files a Commander chose. Imports nothing.
+   *
+   * Guarded by a token: a second drop, a cancel or a close issues a new one, and
+   * a scan that resolves against an older token is discarded rather than
+   * listed. Without it the slower of two scans wins, which is the one the
+   * Commander superseded.
+   */
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#store.clearScan();
+    const token = this.#store.issueToken();
     this.#store.setScanning(files.length);
 
     const result = await scanJournalFiles(files, SUIT_JOURNAL_READER);
+
+    if (!this.#store.isCurrent(token)) {
+      return;
+    }
 
     this.#store.setScanning(0);
     if (!result.ok) {
@@ -84,8 +105,17 @@ export class LoadoutImportCoordinator {
    * loadouts is the same list either way.
    */
   async submit(): Promise<LoadoutImportSubmission> {
-    if (this.#store.entries().length === 0 && !this.#scanDraft()) {
-      return { kind: 'failed' };
+    if (this.#store.entries().length === 0) {
+      if (!this.#scanDraft()) {
+        return { kind: 'failed' };
+      }
+      // A paste that turned out to hold several loadouts is a question, not an
+      // import: the list is now on the screen and the Commander says which of
+      // them they meant. Taking the newest here would discard the rest of what
+      // they pasted without saying so (016/FR-014).
+      if (this.#store.entries().length > 1) {
+        return { kind: 'listed' };
+      }
     }
     if (this.#store.entries().length > 1 && this.#store.selectedKeys().length === 0) {
       this.#store.setFailure({ kind: 'nothingSelected' });
@@ -185,8 +215,15 @@ export class LoadoutImportCoordinator {
 
     let stored = 0;
     const refused: LoadoutBatchRefusal[] = [];
+    // Everything the package left out of the loadouts in this batch, gathered
+    // as it goes. A batch states it exactly as a single import does: the
+    // package's own answer, nothing substituted for it (016/FR-015).
+    const outcomes: SuitLoadoutImportOutcome[] = [];
+    const heldBack: string[] = [];
 
     for (const entry of chosen) {
+      outcomes.push(...entry.value.outcomes);
+      heldBack.push(...entry.value.heldBack);
       const saved = await this.#named.createNamed({
         name: this.recordName(entry.value),
         note,
@@ -203,13 +240,19 @@ export class LoadoutImportCoordinator {
     this.#store.setWorking(false);
     this.#library.refresh();
 
-    if (refused.length === 0) {
+    const left = outcomes.length + heldBack.length;
+    if (refused.length === 0 && left === 0) {
       this.#store.clear();
       this.#store.closeLayer();
+    } else if (refused.length === 0) {
+      // Saved, and not finished with: the layer stays up so what the package
+      // left out is read where every other package answer is read.
+      this.#store.clearScan();
+      this.#store.setFailure({ kind: 'partial', outcomes, heldBack });
     }
     this.#store.setBatchOutcome({ stored, refused });
 
-    return { kind: 'stored', stored, refused };
+    return { kind: 'stored', stored, refused, left };
   }
 
   /**

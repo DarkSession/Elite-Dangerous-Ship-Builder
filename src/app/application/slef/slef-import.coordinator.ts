@@ -197,10 +197,11 @@ export class SlefImportCoordinator {
       }
     }
 
-    if (!this.#store.isCurrent(token)) {
-      return this.#settle('superseded');
-    }
-
+    // The records exist whatever happened to the layer while they were written.
+    // A token issued mid-batch supersedes a *candidate*, which is a build
+    // nobody has seen yet; it cannot supersede rows already in storage, and
+    // leaving the library unrefreshed would hide records a Commander asked for
+    // until something else happened to reload it.
     this.#library.refresh();
 
     // A clean batch is finished with: the draft goes, the layer closes, and the
@@ -209,7 +210,7 @@ export class SlefImportCoordinator {
     //
     // The outcome is recorded last. Clearing the draft forgets the scan, and the
     // outcome is the one thing about it that outlives the layer.
-    if (refused.length === 0) {
+    if (refused.length === 0 && this.#store.isCurrent(token)) {
       this.#store.clearDraft();
       this.#store.closeLayer();
     } else {
@@ -297,6 +298,10 @@ export class SlefImportCoordinator {
   abandon(): void {
     this.#store.issueToken();
     this.#store.setImportStatus('editing');
+    // A scan in flight now carries a stale token, so it will return without
+    // clearing the counter it raised. Left alone, the panel reopens saying it
+    // is reading a file nobody asked for and refusing to submit anything.
+    this.#store.setScanning(0);
   }
 
   /**

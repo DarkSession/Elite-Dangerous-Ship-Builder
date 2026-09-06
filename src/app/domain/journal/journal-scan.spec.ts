@@ -130,12 +130,32 @@ describe('the size bound', () => {
     });
   });
 
-  it('refuses the whole selection when one file is over the bound', async () => {
+  it('reads the rest of the selection and names the file it left out', async () => {
     const valid = file('Journal.01.log', line('anaconda', '2026-09-01T10:00:00Z'));
     const oversized = file('Journal.02.log', '', JOURNAL_FILE_LIMIT_BYTES + 1);
 
     const result = await scanJournalFiles([valid, oversized], READER);
 
+    // The bound is per file: one journal too large to read costs only itself.
+    expect(result.ok && result.entries.length).toBe(1);
+    expect(result.ok && result.report.fileCount).toBe(1);
+    expect(result.ok && result.report.refused).toEqual([
+      {
+        fileName: 'Journal.02.log',
+        sizeBytes: JOURNAL_FILE_LIMIT_BYTES + 1,
+        limitBytes: JOURNAL_FILE_LIMIT_BYTES,
+      },
+    ]);
+  });
+
+  it('refuses by name when the only file over the bound is the only file', async () => {
+    const oversized = file('Journal.02.log', '', JOURNAL_FILE_LIMIT_BYTES + 1);
+    const empty = file('Journal.01.log', 'nothing this reader takes');
+
+    const result = await scanJournalFiles([empty, oversized], READER);
+
+    // Nothing was found, and the file that was not read is the reason. Naming
+    // the file that was read would blame it for holding nothing.
     expect(result.ok).toBe(false);
     expect(result.ok ? null : result.failure.kind).toBe('fileTooLarge');
   });
@@ -250,6 +270,7 @@ describe('what a scan reports', () => {
       fileCount: 1,
       fileName: 'Journal.2026-09-01T100000.01.log',
       eventCount: 2,
+      refused: [],
     });
   });
 
@@ -263,6 +284,11 @@ describe('what a scan reports', () => {
       READER,
     );
 
-    expect(result.ok && result.report).toEqual({ fileCount: 3, fileName: null, eventCount: 3 });
+    expect(result.ok && result.report).toEqual({
+      refused: [],
+      fileCount: 3,
+      fileName: null,
+      eventCount: 3,
+    });
   });
 });

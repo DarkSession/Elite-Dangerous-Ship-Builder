@@ -25,7 +25,8 @@
     <button
       class="file-drop__button"
       type="button"
-      [disabled]="disabled() || busy()"
+      [disabled]="disabled()"
+      [attr.aria-busy]="busy() ? 'true' : null"
       [attr.aria-describedby]="describedBy()"
       (click)="choose()"
     >

@@ -47,7 +47,10 @@ export class ImportLoadoutDialog {
    */
   async #submit(): Promise<void> {
     const submission = await this.presenter.submit();
-    if (submission.kind === 'stored' && submission.refused.length === 0) {
+    // Nothing was refused and nothing was left out: the batch is finished with,
+    // so the records are where the Commander goes next. Either kind of package
+    // answer keeps the layer, because that is where it is read.
+    if (submission.kind === 'stored' && submission.refused.length === 0 && submission.left === 0) {
       this.#library.raise(this.presenter.importNotice());
     }
   }

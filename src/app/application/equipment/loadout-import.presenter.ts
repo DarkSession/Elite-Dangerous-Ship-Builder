@@ -108,15 +108,40 @@ export class LoadoutImportPresenter {
     this.#store.setSelection(keys);
   }
 
-  /** Reads the journal files a Commander chose, saying so as it starts. */
+  /** Reads the journal files a Commander chose, saying so as it starts and as it ends. */
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#announcements.announce({
       kind: 'equipment.import.scan',
-      revision: files.length,
+      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey: 'equipment.import.announce.scanning',
     });
     await this.#import.scanFiles(files);
+    this.#announceScan();
+  }
+
+  /**
+   * Says how a scan ended, not only that one started (016/FR-004, FR-006).
+   *
+   * The revision is the store's own token, which only ever rises. A count would
+   * not: `AnnouncementService` drops any request whose revision is below the
+   * highest it has published for that kind, so announcing the second of two
+   * scans at a lower number would silence it for the rest of the session.
+   */
+  #announceScan(): void {
+    const found = this.#store.entries().length;
+    this.#announcements.announce({
+      kind: 'equipment.import.scan',
+      revision: this.#store.requestToken,
+      urgency: 'polite',
+      messageKey:
+        found === 0
+          ? 'equipment.import.announce.scanned.none'
+          : found === 1
+            ? 'equipment.import.announce.scanned.one'
+            : 'equipment.import.announce.scanned.many',
+      params: { count: this.#formatters.integer(found) },
+    });
   }
 
   async submit(): Promise<LoadoutImportSubmission> {
@@ -141,7 +166,10 @@ export class LoadoutImportPresenter {
   #announce(messageKey: MessageKey, params: Record<string, string> = {}): void {
     this.#announcements.announce({
       kind: 'equipment.import',
-      revision: this.#store.entries().length + this.#store.draft().length,
+      // The store's monotonic token, never a measurement of the draft: a
+      // revision that can fall is a mute switch for every later announcement of
+      // this kind.
+      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey,
       params,
@@ -159,7 +187,17 @@ export class LoadoutImportPresenter {
             files: this.#formatters.integer(reading),
           });
     }
-    return this.#store.working() ? this.#messages.message('equipment.import.status.working') : '';
+    if (this.#store.working()) {
+      return this.#messages.message('equipment.import.status.working');
+    }
+    // A file the bound refused while the rest were read (016/FR-002, FR-004).
+    const [refused] = this.#store.report()?.refused ?? [];
+    return refused === undefined
+      ? ''
+      : this.#messages.message('equipment.import.failure.fileTooLarge', {
+          file: refused.fileName,
+          limit: this.#formatters.bytes(refused.limitBytes),
+        });
   }
 
   #scanned(): string | null {

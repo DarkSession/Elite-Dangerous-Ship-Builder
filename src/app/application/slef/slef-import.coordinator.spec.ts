@@ -272,6 +272,24 @@ describe('builds a journal offers', () => {
     coordinator = TestBed.inject(SlefImportCoordinator);
   });
 
+  describe('a scan nobody is waiting for', () => {
+    it('leaves the panel usable after the layer is closed mid-scan', async () => {
+      const scanning = coordinator.scanFiles([
+        journalFile('Journal.01.log', [loadoutLine({ ShipName: 'Abandoned' })]),
+      ]);
+      // What Cancel, Close and a route change all do.
+      coordinator.abandon();
+      await scanning;
+
+      // The counter the scan raised has to come down with it: left standing,
+      // the panel reopens saying it is reading a file nobody asked for, with
+      // its own file control disabled.
+      expect(store.scanningFiles()).toBe(0);
+      expect(store.scanning()).toBe(false);
+      expect(store.journalEntries()).toEqual([]);
+    });
+  });
+
   describe('choosing what to import', () => {
     it('lists every build a scan found, newest first', async () => {
       await coordinator.scanFiles([
@@ -289,6 +307,7 @@ describe('builds a journal offers', () => {
         fileCount: 1,
         fileName: 'Journal.01.log',
         eventCount: 2,
+        refused: [],
       });
     });
 

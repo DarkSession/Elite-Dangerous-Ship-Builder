@@ -1355,7 +1355,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a file over the stated bound is refused by name, and the rest of the selection is still read',
       'what was read is stated: the files by name, and how many events they hold',
       'a build two files both hold is listed once, and the list is newest first',
-      'a file at the bound is scanned within the budget in the reference environment',
+      'a file at the bound is scanned within the budget, measured as a domain operation in the reference environment',
+      'a scan says how it ended and not only that it started, in one polite announcement',
       'nothing is sent anywhere and nothing of a journal is cached',
     ],
     manualRecord: 'screen-reader',
@@ -1392,6 +1393,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'the bench reads suit loadouts from the same files, newest first',
       'what the package left out is named as the package reported it, and nothing is substituted',
+      'a pasted log holding several loadouts is listed rather than narrowed to the newest',
+      'a batch that saved a loadout the package could not fit whole says so before it goes anywhere',
       'one chosen loadout opens on the bench, and several are saved with the bench left empty',
       'a saved loadout is named by the journal’s own loadout name, and carries the journal note',
     ],

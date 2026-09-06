@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
@@ -75,6 +76,49 @@ test.describe('reading a journal', () => {
     await expect(picks(page)).toHaveCount(4);
   });
 
+  test('takes the same files when they are dropped on the plate', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    // The other half of 016/FR-001. `setInputFiles` drives the control; only a
+    // real drop exercises the plate, so the file is built in the page and
+    // dropped on it.
+    const text = readFileSync(`${FIXTURES}Journal.ship-multiple.log`, 'utf8');
+    const dropped = await page.evaluateHandle((content: string) => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([content], 'Journal.dropped.log', { type: 'text/plain' }));
+      return transfer;
+    }, text);
+    await layer(page).locator('.file-drop').dispatchEvent('drop', { dataTransfer: dropped });
+
+    await expect(layer(page).getByText(/Journal\.dropped\.log · 3 builds/)).toBeVisible();
+    await expect(picks(page)).toHaveCount(3);
+  });
+
+  test('reads the rest of a selection when one file is over the bound', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await layer(page)
+      .locator('input[type="file"]')
+      .setInputFiles([
+        {
+          name: 'Journal.ship-multiple.log',
+          mimeType: 'text/plain',
+          buffer: readFileSync(`${FIXTURES}Journal.ship-multiple.log`),
+        },
+        {
+          name: 'Journal.enormous.log',
+          mimeType: 'text/plain',
+          buffer: Buffer.alloc(FILE_LIMIT_BYTES + 1, 0x20),
+        },
+      ]);
+
+    // The bound is per file (016/FR-002): the journal that fits is still read,
+    // and the one that does not is named.
+    await expect(picks(page)).toHaveCount(3);
+    await expect(layer(page).getByText(/Journal\.enormous\.log is larger than/)).toBeVisible();
+  });
+
   test('names the files it read when none of them holds a build', async ({ page }) => {
     await page.goto('/ships');
     await openImport(page);
@@ -142,6 +186,27 @@ test.describe('what a Commander chooses', () => {
     await expect(library.getByText(/3 builds imported/i)).toBeVisible();
     await expect(library.getByText(/Night Watch/)).toBeVisible();
     await expect(library.getByText(/NW-02/)).toBeVisible();
+    // The build whose event carried neither a name nor an ident takes its
+    // hull's name, from the package's own catalogue (016/FR-012). Read off the
+    // row's title, because the hull is also named in the row's own facts.
+    await expect(library.locator('.record__title', { hasText: 'Sidewinder' })).toHaveCount(1);
+  });
+
+  test('keeps both when an imported name is already taken', async ({ page }) => {
+    await page.goto('/ships');
+    await importAll(page);
+    await page
+      .getByRole('button', { name: /^close$|^dismiss/i })
+      .first()
+      .click();
+
+    await importAll(page);
+
+    // No question is asked, and the record that had the name keeps it
+    // (016/FR-013).
+    const library = page.getByRole('dialog', { name: /saved builds/i });
+    await expect(library.locator('.record__title', { hasText: 'Night Watch' })).toHaveCount(2);
+    await expect(library.locator('.record__title', { hasText: 'Sidewinder' })).toHaveCount(2);
   });
 
   test('refuses to load with nothing chosen', async ({ page }) => {
@@ -153,6 +218,20 @@ test.describe('what a Commander chooses', () => {
     await expect(layer(page).getByRole('button', { name: /^load build$/i })).toBeDisabled();
   });
 });
+
+/** Chooses every build the multi-event journal holds, and stores them. */
+async function importAll(page: Page): Promise<void> {
+  await openImport(page);
+  await chooseFiles(page, ['Journal.ship-multiple.log']);
+  await expect(picks(page)).toHaveCount(3);
+  for (let row = 0; row < 3; row += 1) {
+    if (!(await picks(page).nth(row).isChecked())) {
+      await picks(page).nth(row).click();
+    }
+  }
+  await submit(page, /^load 3 builds$/i);
+  await expect(page.getByRole('dialog', { name: /saved builds/i })).toBeVisible();
+}
 
 test.describe('the panel', () => {
   test('is readable, scans clean and never scrolls the document sideways', async ({
