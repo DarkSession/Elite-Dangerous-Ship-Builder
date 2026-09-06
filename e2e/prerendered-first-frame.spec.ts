@@ -6,6 +6,7 @@ import {
   MEASURED,
   type Frame,
   frames,
+  openOnceTheTypefaceHasArrived,
   openWithADelayedBundle,
   openWithoutTheBundle,
   recordFrames,
@@ -136,23 +137,14 @@ async function storeCatalogueView(page: Page): Promise<void> {
 }
 
 /**
- * Whether a window of frames holds the takeover rather than sitting to one side
- * of it — a frame from before the application owned the page and a frame from
- * after.
- */
-function spansTheTakeover(window: readonly Frame[]): boolean {
-  return window.some((frame) => !frame.takenOver) && window.some((frame) => frame.takenOver);
-}
-
-/**
- * Asserts that nothing moved across a window of frames.
+ * Asserts that every frame sits where the first one did.
  *
  * Compared box by box and named, rather than deep-compared as an array: a
  * `toEqual` failure prints four rectangles of numbers and leaves the reader to
  * work out which selector each one was, and the answer to "what moved" is the
  * whole value of the assertion.
  */
-function nothingMovedAcross(window: readonly Frame[], path: string, era: string): void {
+function nothingMovedAcross(window: readonly Frame[], path: string): void {
   const first = window[0];
   for (const [index, frame] of window.entries()) {
     const moved = frame.boxes
@@ -165,8 +157,8 @@ function nothingMovedAcross(window: readonly Frame[], path: string, era: string)
 
     expect(
       moved,
-      `${path} moved at ${era} frame ${index} of ${window.length}` +
-        ` (taken over: ${frame.takenOver})`,
+      `${path} moved ${index} frame(s) into the takeover, of ${window.length}` +
+        ` (taken over: ${frame.takenOver}, typeface: ${frame.dressed})`,
     ).toEqual([]);
   }
 }
@@ -255,56 +247,40 @@ test.describe('the first frame of a generated document', () => {
       // screen itself sits, and where the page ends (`MEASURED`). A composition
       // corrected after the fact moves at least one of them.
       //
-      // With the bundle held back half a second, for the reason its sibling
-      // above gives and one more: on a static server on the same machine the
-      // takeover can land in the same handful of frames as the typeface, and
-      // the two windows below are drawn at the typeface. Held back, the document
-      // is finished and wearing what it asked for long before the application
-      // reaches it, so the window that holds the takeover holds it whole.
+      // Opened with the bundle held until the page is wearing the typeface it
+      // asked for, which is what makes the measurement below about the
+      // application at all. Two things settle a page before any of this
+      // application exists: a quarter-megabyte document paints while it is
+      // still being read, and the faces swap in under `font-display: swap` —
+      // Firefox at 1112px is ten pixels taller in the fallback than in Barlow.
+      // Neither is the takeover, both happen to a page whose bundle never
+      // arrives, and holding the bundle until after them is simpler and more
+      // honest than trying to tell their frames apart afterwards.
       await recordFrames(page, subject);
-      await openWithADelayedBundle(page, path);
+      await openOnceTheTypefaceHasArrived(page, path);
       await waitForTakeover(page);
 
-      // From the frame the page had all of itself, not from the frame it
-      // started in, and two things arrive late.
+      // Measured from the last frame the document had to itself, through every
+      // frame after it. That is SC-003's sentence exactly — what a Commander was
+      // reading when the application arrived is where it stays — and it is the
+      // reading that does not depend on knowing which of the earlier frames were
+      // the page settling and which were something moving.
       //
-      // The document: a quarter of a megabyte paints while it is still being
-      // read, so the earliest frames hold a page genuinely shorter than the one
-      // being served. The typeface: the faces are declared `font-display: swap`,
-      // so a cold load paints in a system fallback and re-paints in Barlow, and
-      // where the two disagree on metrics the page changes height under the
-      // swap — Firefox at 1112px moved the catalogue ten pixels doing exactly
-      // that. Both happen to a page this application never touches, which is
-      // what makes them the network rather than the takeover; SC-003 is about
-      // the application, once it exists, moving something a Commander is
-      // reading.
-      //
-      // The swap is where the two windows meet: everything up to and including
-      // the last frame that was still loading a face is the page in the system
-      // fallback, everything after it is the page in Barlow. Split there rather
-      // than at the first frame that reports `loaded`, because a set with
-      // nothing asked of it yet reports loaded too — the earliest frames of
-      // every load say so before the first face has been requested — and those
-      // frames are in the fallback like the ones after them.
+      // A wipe-and-rebuild cannot hide in the gap: the frames are consecutive
+      // samples, so a blanked or re-composed frame is itself one of the frames
+      // compared. Measured on `/ships/Anaconda` before the blocking initial
+      // navigation shipped, `main` went from 1029 pixels to 4857 between two of
+      // them.
       const parsed = (await frames(page)).filter((frame) => frame.parsed);
-      const swap = parsed.map((frame) => frame.dressed).lastIndexOf(false);
-      const inTheFallback = parsed.slice(0, swap + 1);
-      const inTheTypeface = parsed.slice(swap + 1);
+      const arrival = parsed.findIndex((frame) => frame.takenOver);
 
       expect(parsed.length, `${path} finished arriving`).toBeGreaterThan(0);
-
-      // Nothing is measured across the swap, but the takeover has to be inside
-      // one of the two windows or nothing has been measured at all. Which one
-      // it lands in is not fixed — a page whose faces are already in the browser
-      // never leaves the fallback window — so either will do, and the delayed
-      // bundle is what keeps the takeover from straddling the two.
       expect(
-        spansTheTakeover(inTheFallback) || spansTheTakeover(inTheTypeface),
-        `${path}: the takeover fell on the typeface's swap, so neither window held it`,
-      ).toBe(true);
+        arrival,
+        `${path} was taken over before it was ever recorded on its own`,
+      ).toBeGreaterThan(0);
 
-      nothingMovedAcross(inTheFallback, path, 'fallback');
-      nothingMovedAcross(inTheTypeface, path, 'typeface');
+      nothingMovedAcross(parsed.slice(arrival - 1), path);
     });
   }
 

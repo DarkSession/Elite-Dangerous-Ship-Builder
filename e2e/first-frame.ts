@@ -223,3 +223,43 @@ export async function openWithADelayedBundle(page: Page, path: string): Promise<
   });
   await page.goto(`${PRODUCT_URL}${path}`);
 }
+
+/**
+ * Opens an address with the bundle held back until the page is wearing the
+ * typeface it asked for.
+ *
+ * A fixed delay is not enough for a movement measurement. The faces are
+ * declared `font-display: swap`, so the page paints in a system fallback and
+ * re-lays itself out as each subset lands — Firefox at 1112px is ten pixels
+ * taller in the fallback than in Barlow — and those re-layouts are the document
+ * settling into itself, not the application moving anything. They cannot be
+ * subtracted after the fact either: `document.fonts.status` is one verdict over
+ * every face at once, so it still reads `loading` long after the face that
+ * changed the metrics has landed, and a frame is not told apart by it.
+ *
+ * So the swap is put where it belongs — before the application exists — by
+ * holding the bundle until the set reports itself done. `size > 0` and a face
+ * that actually loaded, because a set with nothing asked of it yet reports
+ * `loaded` too, and continuing on that would hold nothing back at all. Parsed
+ * first, because a face is only asked for once there is text needing it, and a
+ * set judged complete halfway down a document goes back to loading when the
+ * rest of it arrives. The wait is capped and its failure ignored: a browser that
+ * never gets a face is a Commander on a broken connection, and the test's
+ * subject is the takeover either way.
+ */
+export async function openOnceTheTypefaceHasArrived(page: Page, path: string): Promise<void> {
+  await page.route(/\.js(\?.*)?$/, async (route) => {
+    await page
+      .waitForFunction(
+        () =>
+          document.readyState !== 'loading' &&
+          document.fonts.status === 'loaded' &&
+          [...document.fonts].some((face) => face.status === 'loaded'),
+        undefined,
+        { timeout: 10_000 },
+      )
+      .catch(() => undefined);
+    await route.continue();
+  });
+  await page.goto(`${PRODUCT_URL}${path}`);
+}

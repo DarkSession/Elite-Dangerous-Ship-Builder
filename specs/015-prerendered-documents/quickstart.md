@@ -190,10 +190,11 @@ measures, and how it ended up measuring it:
   `main`, the screen inside it, and the page. Not Cumulative Layout Shift, which
   the plan expected: `layout-shift` entries are Chromium-only and half the matrix
   is Firefox, so a CLS assertion would cover five projects and skip five, which
-  the constitution forbids. Measured with the bundle held back half a second, so
-  the document is finished and wearing the typeface it asked for well before the
-  application reaches it — otherwise the takeover lands among the same handful of
-  frames the page is still settling in, and the measurement is of the machine.
+  the constitution forbids. Measured from the last frame the document had to
+  itself through every frame after it, with the bundle held until the typeface
+  has arrived — so the two things that settle a page before this application
+  exists, the document still downloading and the faces swapping in, are behind it
+  rather than subtracted from it.
 - **No frame is emptier than the frame before**, measured from the frame the
   document finished arriving in. A 293 KB document paints while it is still being
   read, so the earliest frames genuinely hold less of it; that is the download,
@@ -209,14 +210,15 @@ measures, and how it ended up measuring it:
   untranslated-name disclosures subtracted — the bounded exception FR-011a allows,
   and the reason FR-011 had to be amended (research decision 18).
 
-Two things this deliberately does not measure, both excluded by the recorder
-rather than by hand. The web font's `swap` reflow — every page has had it for as
-long as it has had a web font, and Firefox at 1112px moved ten pixels under it —
-is excluded by starting the box comparison after the last frame that was still
-loading a face (`Frame.dressed`), with an explicit expectation that the window
-still holds a pre-takeover frame so the assertion cannot empty itself. The
-visually hidden line announcing a pending illustration, which retires when the
-picture arrives, is subtracted by `RETIRING` before any text is measured.
+Two things this deliberately does not measure. The web font's `swap` reflow —
+every page has had it for as long as it has had a web font, and Firefox at 1112px
+moved ten pixels under it — is put before the takeover rather than subtracted from
+it, by holding the bundle until the face set reports itself done; `Frame.dressed`
+records the set's verdict per frame and appears in the failure message, but is not
+what the assertion is drawn on, because that verdict covers every face at once and
+outlasts the one that moved the page. The visually hidden line announcing a
+pending illustration, which retires when the picture arrives, is subtracted by
+`RETIRING` before any text is measured.
 
 ## What CI runs, and what it does not
 

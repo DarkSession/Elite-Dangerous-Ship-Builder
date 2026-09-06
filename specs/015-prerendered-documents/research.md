@@ -580,19 +580,26 @@ subtracts it before anything is measured.
 
 **The typeface arrives after the page does.** The faces are same-origin subsets
 declared `font-display: swap`, so a cold load paints in a system fallback and
-re-paints in Barlow once the subset lands. Where the two disagree on metrics the
-page changes height under that swap: Firefox at 1112px laid the catalogue out ten
-pixels taller in the fallback than in Barlow, on `/ships` and `/ships/Anaconda`
-alike, and Chromium — whose fallback happens to agree — showed nothing. It is not
-the takeover: the same swap moves the same ten pixels on a document whose bundle
-is blocked, and the application's own layout is byte-for-byte the document's
+re-lays itself out as each subset lands. Where the fallback and Barlow disagree on
+metrics the page changes height doing it: Firefox at 1112px laid the catalogue out
+ten pixels taller in the fallback, on `/ships` and `/ships/Anaconda` alike, and
+Chromium — whose fallback happens to agree — showed nothing. It is not the
+takeover: the same swap moves the same ten pixels on a document whose bundle is
+blocked, and the application's own layout is the document's to the pixel
 (measured: `main` is 2459px in the served document and 2459px after the takeover).
-So frames carry `dressed` (`document.fonts.status === 'loaded'`) and the movement
-assertion starts after the last frame that was still loading a face — after,
-rather than at the first frame that reports loaded, because a set with nothing
-asked of it yet reports loaded too. What stops this from emptying the assertion is
-an explicit expectation that the measured window still holds a frame from before
-the takeover.
+
+It cannot be subtracted after the fact, and the first attempt to tried.
+`document.fonts.status` is one verdict over every face at once, so it still reads
+`loading` long after the face that changed the metrics has landed — CI put the
+movement at the fourth frame of a twenty-eight-frame window the flag called
+undressed throughout. So the swap is put where it belongs instead, before the
+application exists: the movement journey holds the bundle until the set reports
+itself done with at least one face loaded (`openOnceTheTypefaceHasArrived`), and
+measures from the last frame the document had to itself through every frame after
+it. That is SC-003's sentence rather than a subtraction — what a Commander was
+reading when the application arrived is where it stays — and a wipe-and-rebuild
+cannot hide in the gap, because the frames are consecutive samples and a blanked
+frame is itself one of the frames compared.
 
 **The window can be shorter than the first paint.** On a static server on the same
 machine the takeover can complete before the browser's first animation frame, so a
