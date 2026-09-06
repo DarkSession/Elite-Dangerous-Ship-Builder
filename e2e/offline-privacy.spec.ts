@@ -108,6 +108,8 @@ test.describe('offline capability', () => {
   });
 
   test('keeps an illustration that has been seen once', async ({ page, context }) => {
+    // Both waits carry their own budget, because each is a fetch of the
+    // illustration — from the network first, then from the worker's cache.
     await withWorker(page, '/ships/Anaconda');
     await expect.poll(() => illustrationLoaded(page), { timeout: 10_000 }).toBe(true);
 

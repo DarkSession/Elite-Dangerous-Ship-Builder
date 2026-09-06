@@ -46,21 +46,22 @@ keeps its own run under `pnpm run e2e:offline`.
 **Timeouts, ruled 2026-08-22.** Playwright's 30-second default is a figure calibrated on a developer
 machine, and a CI runner puts the same work at roughly two to three times the wall clock — enough to
 fail a test that has never been near the limit anywhere else, and to report a machine as a product
-defect. A run therefore takes its budget from two places. The **run** gets 60 seconds on CI and keeps
-30 locally, so a genuinely slow test is felt where it is written. A **test** that is slow because of
-how much it draws extends its own budget as it draws it: every call to `sweepOutfittingState` adds
-one sweep's worth, so a three-state sweep is given three sweeps' worth and a fourth state raises the
-allowance with it rather than moving the test back towards the edge. Neither is a licence to absorb a
-hang — retries stay diagnostic only and `failOnFlakyTests` stays on.
+defect. A run therefore takes its budget from three places, the third of them ruled below. The **run**
+gets 60 seconds on CI and keeps 30 locally, so a genuinely slow test is felt where it is written. A
+**test** that is slow because of how much it draws extends its own budget as it draws it: every call
+to `sweepOutfittingState` adds one sweep's worth, so a three-state sweep is given three sweeps' worth
+and a fourth state raises the allowance with it rather than moving the test back towards the edge.
+Neither is a licence to absorb a hang — retries stay diagnostic only and `failOnFlakyTests` stays on.
 
 **Assertions, ruled 2026-09-06.** A waiting assertion has a budget of its own, and the test budget
 above it does not scale it. Playwright gives every `expect(locator)` and every `expect.poll` five
 seconds by default, so a test with sixty seconds on a runner could still fail on one visibility wait
 that lost a CPU race, and report a missing element rather than a slow one. `expect.timeout` therefore
 takes the same split the test budget has: ten seconds on CI, five locally. The allowance is stated
-once, for every assertion that waits, rather than added to the one assertion that failed last.
-`toPass` is the one exception Playwright makes: it takes no budget from `expect.timeout`, so each of
-its call sites states its own.
+once, for every assertion that waits, rather than added to the one assertion that failed last. A wait
+that needs more than the allowance states its own budget and the reason for it. `toPass` is the one
+exception Playwright makes: it takes no budget from `expect.timeout`, so each of its call sites
+states its own.
 
 ## Product and preview coverage ledger
 
