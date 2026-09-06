@@ -106,11 +106,10 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ednb-layout-rail-min)), 1fr));
   }
 
-  // Centred and given no measure. The band is one line of small print that
-  // closes the page, not a column of prose to read down, so it takes the width
-  // the band has: a measure would break it into four short lines in the middle
-  // of an empty band. The notice sets on one line from about 1360px and wraps
-  // from its own edges below that.
+  // The notice takes the band's width. It is small print closing the page, not a
+  // column to read, so a prose measure only breaks it into short centred lines
+  // with the rest of the band empty. It fits on one line from about 1380px and
+  // wraps at the band's edges below that.
   .start__legal {
     display: flex;
     justify-content: center;

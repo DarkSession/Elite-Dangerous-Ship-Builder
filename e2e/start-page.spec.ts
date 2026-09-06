@@ -133,8 +133,14 @@ test.describe('start page', () => {
   test('gives the licence notice the width of the band rather than a measure', async ({ page }) => {
     // The band is small print closing the page, so nothing holds the notice to
     // a prose column: it takes the room the band has, and it wraps only where
-    // its own line runs out. On the wide artboard that is one line
-    // (014/FR-013).
+    // its own line runs out. On the wide artboard that is one line (014/FR-012,
+    // and the cap `design/reference-review.md` withdraws).
+    //
+    // Awaited, because the faces load with `font-display: swap`. Measured in the
+    // fallback the notice is wider, the wide artboard looks too narrow to hold
+    // one line, and the assertion below would skip rather than fail.
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+
     const geometry = await page.evaluate(() => {
       const band = document.querySelector('.start__legal')!;
       const notice = band.querySelector('blockquote')!;
@@ -145,7 +151,7 @@ test.describe('start page', () => {
         parseFloat(bandBox.paddingInlineEnd);
 
       // The box the notice takes with nothing to wrap it. Measured rather than
-      // written down, because it is a property of the text and the face, and
+      // written down, because it is a property of the text and the font, and
       // its height is what one line of this notice is in this engine.
       const probe = notice.cloneNode(true) as HTMLElement;
       probe.style.position = 'absolute';
@@ -166,7 +172,7 @@ test.describe('start page', () => {
       };
     });
 
-    // A pixel of slack throughout: a fractional layout box is not a measure.
+    // A pixel of slack throughout: layout boxes land on fractions.
     expect(geometry.width).toBeGreaterThanOrEqual(
       Math.min(geometry.room, geometry.unwrappedWidth) - 1,
     );
