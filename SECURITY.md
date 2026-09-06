@@ -1,6 +1,6 @@
 # Security policy
 
-NavBeacon is a static, client-side application. It has no backend, no accounts
+Nav Beacon is a static, client-side application. It has no backend, no accounts
 and no telemetry, and it makes no request to any origin other than the one it is served from. A
 build lives in the browser — in memory, in `localStorage` — or in a URL, and nothing is uploaded.
 

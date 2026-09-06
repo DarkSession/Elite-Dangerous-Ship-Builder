@@ -1,6 +1,6 @@
-# NavBeacon migration
+# Nav Beacon migration
 
-NavBeacon is published at `navbeacon.app`. It holds two tools, Ship Builder and
+Nav Beacon is published at `navbeacon.app`. It holds two tools, Ship Builder and
 Equipment Builder, and it is built to hold more. This document records the
 decisions that shape the move and the work that is left.
 
@@ -49,14 +49,23 @@ DNS setup; "Enforce HTTPS" is the step that ends the gap.
 
 ## The name
 
-NavBeacon is the product and Ship Builder is a tool inside it. The product identity is
-`app.name`, `app.description` and `app.document-title.default` in the locale
-catalogues, the manifest's `name`, `short_name` and `description`, the `package.json`
-name, the project key in `angular.json`, and the Frontier media-usage notice in
-`LICENSE`. Everything that names the outfitting bench — `catalogue.title`,
+Nav Beacon is the product and Ship Builder is a tool inside it. The name is two words,
+the spelling the wordmark on the bar and the design canvases carry. The written name is
+`app.name`, `app.description` and `app.document-title.default` in the locale catalogues,
+the manifest's `name`, `short_name` and `description`, and the Frontier media-usage notice
+in `LICENSE`. The `package.json` name and the project key in `angular.json` are the
+lowercase identifier the same product is filed under, and do not follow the spelling. Everything that names the outfitting bench — `catalogue.title`,
 `navigation.catalogue`, `hullDetail.back`, `workspace.empty.description`,
-`workspace.empty.action`, `help.purpose` and the help topics that describe the bench's
-behaviour — names the tool, which is what those strings mean under NavBeacon.
+`workspace.empty.action` and the help topics that describe the bench's behaviour — names
+the tool, which is what those strings mean under Nav Beacon. `help.purpose` is the one help
+string on the product's side of that line: one dialog opens over both benches, so it opens
+with the product's name rather than a bench's
+(`specs/013-equipment-builder/design/reference-review.md`).
+
+`app.document-title.default` is the one string that says more than the name:
+`Nav Beacon – Elite Dangerous Commander Tools`, which titles the root document and
+`404.html`, and nothing else. Every other address reads `<screen> · Nav Beacon`.
+`specs/011-interface-foundations/design/search-visibility.md` is the record.
 
 Help content is generated: run `pnpm run help:artifacts` after touching any help string,
 and `pnpm run help:artifacts:check` gates it.
@@ -65,8 +74,9 @@ The `package.json` name is also the SLEF producer identity: every export writes
 `appName: navbeacon` where it wrote `appName: elite-dangerous-ship-builder`
 (`src/app/platform/build/application-metadata.ts`, `specs/004-slef/contracts/slef-export.md`).
 The identifier is stable in the sense the contract means — it does not vary with the reader's
-language or the build — and it moves with the product name, once. A consumer keying on the old
-string sees a new producer, which is the accepted cost of the product having one name.
+language, with the build, or with how the product spells its name. That one move cost a
+consumer keying on the old string a new producer, and is the accepted cost of the product
+having one identity; the written name moving again does not move it.
 
 Renaming the repository to match is optional. GitHub redirects the old URLs and Pages
 follows the rename, so it costs a remote update and nothing else.

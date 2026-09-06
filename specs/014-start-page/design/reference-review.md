@@ -55,13 +55,12 @@ attribution in Barlow 300 — 10.5px at 1440px, 9px at 390px — in `--ink-32`.
 
 ## What is withdrawn, and why
 
-| Drawn                                     | Withdrawn because                                                                                                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The `CH` chip in the upper deck           | Not built in the shell (Commander confirmation 2026-09-04), and it reads as an account, which constitution I forbids                                                |
-| The `⋯` marker after the tool tabs        | Not built in the shell (same confirmation). It stands for tools beyond the two, and a control for a tool that does not exist is what 011/FR-028 rules out           |
-| The footer's `Nav Beacon` spelling        | The product is `NavBeacon`. The attribution is a quoted notice, so the manifest's `exactText` ships and the canvas's loose quotation does not (research decision 4) |
-| The footer text ending at "in the making" | The notice ends "in the making of it." The canvas truncates; the document is the record                                                                             |
-| The `→` go mark at 1440px                 | Not drawn there. It is `1b`'s only affordance marker and stays compact-only                                                                                         |
+| Drawn                                     | Withdrawn because                                                                                                                                         |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The `CH` chip in the upper deck           | Not built in the shell (Commander confirmation 2026-09-04), and it reads as an account, which constitution I forbids                                      |
+| The `⋯` marker after the tool tabs        | Not built in the shell (same confirmation). It stands for tools beyond the two, and a control for a tool that does not exist is what 011/FR-028 rules out |
+| The footer text ending at "in the making" | The notice ends "in the making of it." The canvas truncates; the document is the record                                                                   |
+| The `→` go mark at 1440px                 | Not drawn there. It is `1b`'s only affordance marker and stays compact-only                                                                               |
 
 Nothing is added beside the design. The one thing on screen that the canvas does not draw is
 invisible: the accessible name on the region holding the tool entries, which is the

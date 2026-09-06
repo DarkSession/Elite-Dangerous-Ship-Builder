@@ -3,7 +3,7 @@
 **Route**: `''` | **Component**: `src/app/features/start/start.page.ts` |
 **Reference**: `.design/Home.dc.html`, artboards `1a` and `1b`
 
-The screen a Commander gets when they open NavBeacon itself. It states what the product is,
+The screen a Commander gets when they open Nav Beacon itself. It states what the product is,
 offers the tools it carries, and closes with the notice attached to the material it uses.
 
 ## What it composes

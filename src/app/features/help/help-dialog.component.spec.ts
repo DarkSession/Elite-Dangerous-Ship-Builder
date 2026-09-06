@@ -12,7 +12,7 @@ import { HELP_TOPIC_IDS } from '../../domain/help/help-topic';
 
 /** Two lines with the punctuation a real notice carries. */
 const EXCERPT = [
-  'NavBeacon was created using assets and imagery from Elite Dangerous, with',
+  'Nav Beacon was created using assets and imagery from Elite Dangerous, with',
   'the permission of Frontier Developments plc.',
 ].join('\n');
 
@@ -79,7 +79,7 @@ const TOPICS = HELP_TOPIC_IDS.map((id, index) => ({
 
 const VIEW: HelpDialogViewModel = {
   title: 'Help · About',
-  purpose: 'NavBeacon is an Elite Dangerous outfitting bench.',
+  purpose: 'Nav Beacon is an Elite Dangerous outfitting bench.',
   sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
   about: ABOUT,
   topics: TOPICS,

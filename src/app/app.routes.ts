@@ -28,8 +28,9 @@ import { Routes } from '@angular/router';
  */
 export const routes: Routes = [
   {
-    // The product's own address. It is a screen: a Commander who opens NavBeacon is shown what NavBeacon
-    // carries rather than dropped into one of its tools (`.design/Home.dc.html`).
+    // The product's own address. It is a screen: a Commander who opens Nav
+    // Beacon is shown what it carries rather than dropped into one of its tools
+    // (`.design/Home.dc.html`).
     //
     // Being a screen rather than a redirect is also what makes Back work. A
     // redirect replaces itself, so there was nothing here to come back to.
@@ -37,8 +38,8 @@ export const routes: Routes = [
     pathMatch: 'full',
     // The bar names the product here, because that is what the canvas draws in
     // the identity deck: `NAV BEACON`, not the masthead below it. The screen a
-    // Commander is on *is* the product, so the tab says it once — see
-    // `resolveDocumentTitle`.
+    // Commander is on *is* the product, so the tab carries the product's own
+    // title rather than its name twice over — see `resolveDocumentTitle`.
     title: 'app.name',
     data: { description: 'app.description' },
     loadComponent: () => import('./features/start/start.page').then((module) => module.StartPage),

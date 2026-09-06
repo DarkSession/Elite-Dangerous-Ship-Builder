@@ -1,6 +1,6 @@
 # Agent guide
 
-NavBeacon — a client-side-only Angular application carrying tools for Elite
+Nav Beacon — a client-side-only Angular application carrying tools for Elite
 Dangerous. Ship Builder, which plans ship loadouts, is the first of them.
 
 ## Read first

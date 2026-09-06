@@ -17,26 +17,26 @@ const ORIGIN = 'https://navbeacon.app';
 const INDEX = [
   '<!doctype html>',
   '<html lang="en"><head>',
-  '<title>NavBeacon</title>',
+  '<title>Nav Beacon</title>',
   `<link rel="canonical" href="${ORIGIN}/" />`,
   '<meta name="description" content="What this is." />',
   '<meta name="twitter:description" content="What this is." />',
-  '<meta name="twitter:title" content="NavBeacon" />',
+  '<meta name="twitter:title" content="Nav Beacon" />',
   `<meta name="twitter:image" content="${ORIGIN}/assets/link-card.png" />`,
   '<meta property="og:description" content="What this is." />',
-  '<meta property="og:title" content="NavBeacon" />',
+  '<meta property="og:title" content="Nav Beacon" />',
   `<meta property="og:url" content="${ORIGIN}/" />`,
   `<meta property="og:image" content="${ORIGIN}/assets/link-card.png" />`,
-  '<meta property="og:image:alt" content="NavBeacon" />',
+  '<meta property="og:image:alt" content="Nav Beacon" />',
   '</head><body></body></html>',
 ].join('\n');
 
 const HEAD = {
-  title: 'Anaconda · NavBeacon',
+  title: 'Anaconda · Nav Beacon',
   description: 'Anaconda: every figure and the slot layout.',
   canonical: `${ORIGIN}/ships/Anaconda`,
   image: `${ORIGIN}/assets/ships/Anaconda/illustration.png`,
-  imageAlt: 'Anaconda · NavBeacon',
+  imageAlt: 'Anaconda · Nav Beacon',
 };
 
 describe('reading the map', () => {
@@ -105,7 +105,7 @@ describe('the document an address answers with', () => {
   it('carries its own canonical, title, description and card', () => {
     const document = documentFor(INDEX, HEAD);
 
-    assert.match(document, /<title>Anaconda · NavBeacon<\/title>/);
+    assert.match(document, /<title>Anaconda · Nav Beacon<\/title>/);
     assert.match(document, new RegExp(`rel="canonical" href="${ORIGIN}/ships/Anaconda"`));
     assert.match(document, new RegExp(`property="og:url" content="${ORIGIN}/ships/Anaconda"`));
     assert.match(document, /name="description" content="Anaconda: every figure/);

@@ -1,5 +1,5 @@
 {
-  "name": "NavBeacon",
+  "name": "Nav Beacon",
   "build": {
     "dockerfile": "Dockerfile"
   },

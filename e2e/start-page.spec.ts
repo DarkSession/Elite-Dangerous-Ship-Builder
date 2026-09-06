@@ -1,12 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
+import englishMessages from '../src/app/i18n/locales/en.json';
 
 /**
  * The start page journey (014/US1–US3).
  *
  * The product's own address used to redirect into the ship tool, so a Commander
- * who opened NavBeacon landed in a shipyard and discovered the other tool from
+ * who opened Nav Beacon landed in a shipyard and discovered the other tool from
  * a tab. It is a screen now, and these assertions are what makes it one: the
  * choice is offered, either tool opens, back returns, and an address that
  * resolves to nothing lands here rather than inside a tool nobody asked for.
@@ -69,6 +70,12 @@ test.describe('start page', () => {
       await page.goBack();
       await expect(page).toHaveURL(/\/$/);
       await expect(cards(page)).toHaveCount(2);
+
+      // The tab as well as the screen. Asserted after coming back rather than
+      // on the first load, because the served document already carries this
+      // title: only a title the application has written over `<tool> · Nav
+      // Beacon` proves `resolveDocumentTitle` chose it (014/FR-016).
+      await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
     });
   }
 

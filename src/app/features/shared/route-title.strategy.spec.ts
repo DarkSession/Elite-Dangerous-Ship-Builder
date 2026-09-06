@@ -80,7 +80,7 @@ describe('RouteTitleStrategy', () => {
     expect(locale.page()).toBe(BUNDLED_ENGLISH['workspace.title']);
   });
 
-  it('leaves the product name standing for a route with no title', () => {
+  it("leaves the product's own title standing for a route with no title", () => {
     const { strategy, locale, snapshot } = strategyWith([{}]);
 
     strategy.updateTitle(snapshot);

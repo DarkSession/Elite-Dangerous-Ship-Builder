@@ -9,7 +9,7 @@
 **Input**: User description: "A starting page based on .design"
 
 The application opens on a choice of tool rather than inside one. A Commander who
-arrives at the product's own address is shown what NavBeacon carries, told enough
+arrives at the product's own address is shown what Nav Beacon carries, told enough
 about each tool to pick the right one, and taken there. Drawn in
 `.design/Home.dc.html` at 1440px (artboard `1a`, "Desktop — merged toolbar, tool
 selector in the middle") and 390px (artboard `1b`, "Mobile — stacked selector").
@@ -43,7 +43,7 @@ that closes it.
 
 ### User Story 1 - Arrive and choose a tool (Priority: P1)
 
-A Commander opens NavBeacon's own address for the first time — from a bookmark, a
+A Commander opens Nav Beacon's own address for the first time — from a bookmark, a
 link in a Discord thread, or a search result naming the product rather than a
 build. Instead of landing inside one tool and having to work out that another
 exists, they are met by the product's name, a line saying what it is for, and the
@@ -220,7 +220,7 @@ present and readable at desktop, tablet and mobile widths.
 
 ### Key Entities
 
-- **Tool**: One of the things NavBeacon carries. Has an identity, a name, the subjects
+- **Tool**: One of the things Nav Beacon carries. Has an identity, a name, the subjects
   it covers, two descriptions of what a Commander does with it — a fuller one and a
   shorter one — and the address it opens at. The same record the tool bar reads, which
   today reads only the identity, the name and the address.

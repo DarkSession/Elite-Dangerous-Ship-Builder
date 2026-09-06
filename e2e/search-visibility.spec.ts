@@ -163,6 +163,15 @@ test.describe('what the head says this page is', () => {
 
     await description(page).toBe(germanMessages['catalogue.description']);
     await head(page, 'head meta[property="og:locale"]', 'content').toBe('de');
+    await expect
+      .poll(() => page.title())
+      .toBe(`${germanMessages['catalogue.title']} · ${germanMessages['app.name']}`);
+
+    // The product's own address, whose title is a phrase rather than a name and
+    // so is the one title with wording of its own to translate.
+    await page.goto(`${PRODUCT_URL}/`);
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect.poll(() => page.title()).toBe(germanMessages['app.document-title.default']);
 
     await context.close();
   });
@@ -184,7 +193,16 @@ test.describe('what the head says this page is', () => {
     expect(value(/property="og:description"[^>]*content="([^"]*)"/s)).toBe(
       englishMessages['app.description'],
     );
-    expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(englishMessages['app.name']);
+    // Both cards' titles are the document's, which at the root is the product's
+    // full title rather than its bare name. Asserted tag by tag: the checker
+    // holds the three descriptions equal to each other but has no title
+    // equivalent, so a title tag left behind drifts in silence.
+    expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.document-title.default'],
+    );
+    expect(value(/name="twitter:title"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.document-title.default'],
+    );
     expect(value(/rel="canonical"[^>]*href="([^"]*)"/)).toBe(`${SITE_ORIGIN}/`);
     expect(value(/name="twitter:card"[^>]*content="([^"]*)"/)).toBe('summary_large_image');
     expect(value(/property="og:image"[^>]*content="([^"]*)"/)).toBe(

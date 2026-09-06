@@ -19,13 +19,13 @@ regenerated and advertises `https://navbeacon.app/` for the first time.
 **Rationale**: `UNLISTABLE_ROUTES` holds `''` and `'**'` with the comment "a redirect and a
 wildcard are not addresses". That was true and stops being true here. The root is now the
 one address that describes the product rather than one of its tools, which is the address a
-search for "NavBeacon" should return — and today the sitemap advertises three tool addresses
+search for "Nav Beacon" should return — and today the sitemap advertises three tool addresses
 and forty-eight hulls, and not the product.
 
 `src/index.html` already carries the root's canonical (`https://navbeacon.app/`), its
-`og:url` and the site card, and its own comment says every phrase in it "is the English
-default for the screen the application opens on". That screen changes, so those phrases
-change with it. Mapping the root to `index.html` in `fileFor` means the publisher writes the
+`og:url` and the site card, and its own comment says every phrase in it is the English
+default for the address it answers. That address answers with the start page, so those
+phrases are the start page's. Mapping the root to `index.html` in `fileFor` means the publisher writes the
 root's head into the file that already answers the root, through the same `documentFor`
 substitution every other address goes through — which "refuses rather than adds", so a head
 tag the substitution cannot find fails the build rather than silently publishing the old
@@ -35,8 +35,8 @@ sentence.
 
 - _Leave `''` unlistable and change only `index.html`'s wording._ Fewer moving parts, but
   the gate would never reconcile the root's committed head against the message keys the
-  running application resolves — which is exactly the drift `documentTitleParity` and the
-  checker exist to prevent, and FR-016 would be unverified.
+  running application resolves — which is exactly the drift `what a published document is titled` and
+  the checker exist to prevent, and FR-016 would be unverified.
 - _Write the root as `index.html` copied to some other file._ There is no other file: Pages
   serves `/` from `index.html`, and a directory document would answer 301 to itself.
 - _Special-case the root inside `main()` and skip publishing it._ A branch that says "this
@@ -123,10 +123,9 @@ as text rather than markup and to mark the language they were written in. Consti
 and VI both point at reuse here: a second copy could drift from the licence file, and
 translating it would be this application editing a notice it is only carrying.
 
-The canvas's own footer text differs from the manifest's in two ways — it writes "Nav
-Beacon" where the product is "NavBeacon", and it stops at "was involved in the making"
-without the closing "of it." Both are the canvas quoting loosely. The document is the
-record, so the manifest's text ships and the canvas's rendering of it does not.
+The canvas's own footer text stops at "was involved in the making" without the closing
+"of it." That is the canvas quoting loosely. The document is the record, so the manifest's
+text ships and the canvas's rendering of it does not.
 
 **Alternatives considered**:
 
