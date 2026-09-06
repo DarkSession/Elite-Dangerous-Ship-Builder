@@ -19,7 +19,6 @@ function commit(active: ActiveBuildStore, loadout = ShipLoadout.default(FIXTURE_
     loadout,
     hullName: 'Anaconda',
     provenance: 'working',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -163,20 +162,10 @@ describe('the export artifact’s life', () => {
   });
 
   describe('what the payload does not carry', () => {
-    it('carries no local record identity, name, note or import report', () => {
+    it('carries no local record identity, name or note', () => {
       commit(active);
       active.setLink({ kind: 'published', fragment: 'b.abc', revision: active.revision() });
       store.setDraft('{"a":1}');
-      active.setQualityCompletionNotices([
-        {
-          kind: 'qualityCompleted',
-          slotKey: FIXTURE_SLOTS.thrusters,
-          moduleSymbol: 'Int_Engine_Size7_Class5',
-          blueprintFdname: 'Engine_Dirty',
-          previousQuality: 0.37,
-          quality: 1,
-        },
-      ]);
 
       coordinator.generate();
       const payload = store.artifact()?.payload ?? '';

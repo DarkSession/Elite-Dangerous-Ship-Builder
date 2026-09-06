@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
  * `package.json#version` and freezes it as the `appVersion` a SLEF export is
  * attributed to. It is deliberately *not* release evidence: a release is
  * declared by `SHIP_BUILDER_RELEASE_TAG` matching the shipped version exactly
- * (`specs/012-help-and-licences/contracts/distribution-artifacts.md`), which no
+ * (`openspec/changes/archive/012-help-and-licences/contracts/distribution-artifacts.md`), which no
  * workflow sets, so an automatically stamped patch stays a non-release build.
  */
 

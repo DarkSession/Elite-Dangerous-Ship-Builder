@@ -68,6 +68,7 @@
     "@angular/platform-server": "^22.1.5",
     "@angular/ssr": "^22.1.7",
     "@axe-core/playwright": "^4.13.0",
+    "@fission-ai/openspec": "^1.11.0",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",

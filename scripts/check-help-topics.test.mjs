@@ -44,9 +44,8 @@ async function fixtureRepo({ locales = {}, principles, requirements } = {}) {
   temporaryRoots.push(root);
 
   const declaredPrinciples = principles ?? ['I', 'II', 'III', 'IV'];
-  await mkdir(join(root, '.specify/memory'), { recursive: true });
   await writeFile(
-    join(root, '.specify/memory/constitution.md'),
+    join(root, 'CONSTITUTION.md'),
     [
       '# Constitution',
       '',
@@ -62,10 +61,26 @@ async function fixtureRepo({ locales = {}, principles, requirements } = {}) {
     '005-power-and-heat': ['FR-003'],
   };
   for (const [feature, ids] of Object.entries(declaredRequirements)) {
-    await mkdir(join(root, 'specs', feature), { recursive: true });
+    const capability = join(root, 'openspec/specs/ship-builder', feature);
+    await mkdir(capability, { recursive: true });
     await writeFile(
-      join(root, 'specs', feature, 'spec.md'),
-      ['## Requirements', '', ...ids.map((id) => `- **${id}**: Something accepted.`)].join('\n'),
+      join(capability, 'spec.md'),
+      [
+        '## Purpose',
+        '',
+        'A fixture capability.',
+        '',
+        '## Requirements',
+        '',
+        ...ids.flatMap((id) => [
+          `### Requirement: Something accepted (${id})`,
+          '',
+          'The application MUST do something accepted.',
+          '',
+          `Source: ${feature.split('-')[0]}/${id}.`,
+          '',
+        ]),
+      ].join('\n'),
       'utf8',
     );
   }
@@ -181,7 +196,7 @@ describe('the help topic catalogue', () => {
         },
       });
 
-      await refuses(root, /001-ship-selection-and-loading FR-008: is not a declared requirement/);
+      await refuses(root, /001\/FR-008: is not a declared requirement/);
     });
 
     it('refuses a feature that has no specification at all', async () => {
@@ -193,7 +208,14 @@ describe('the help topic catalogue', () => {
         },
       });
 
-      await refuses(root, /001-ship-selection-and-loading\/spec\.md: is missing/);
+      await refuses(root, /001\/FR-008: is not a declared requirement/);
+    });
+
+    it('refuses a repository with no capability specifications', async () => {
+      const root = await fixtureRepo();
+      await rm(join(root, 'openspec/specs'), { recursive: true });
+
+      await refuses(root, /openspec\/specs: is missing/);
     });
 
     // A withdrawal table names a dozen reassigned ids in prose. Resolving one
@@ -201,15 +223,15 @@ describe('the help topic catalogue', () => {
     // longer true.
     it('refuses an id that appears only in a withdrawal table', async () => {
       const root = await fixtureRepo();
-      const path = join(root, 'specs/001-ship-selection-and-loading/spec.md');
+      const path = join(root, 'openspec/specs/ship-builder/001-ship-selection-and-loading/spec.md');
       const text = await readFile(path, 'utf8');
       await writeFile(
         path,
-        `${text.replace('- **FR-008**: Something accepted.', '')}\n\n| \`FR-008\` | Was a thing | **Reassigned** |\n`,
+        `${text.replace('Source: 001/FR-008.', '')}\n\n| \`001/FR-008\` | Was a thing | **Reassigned** |\n`,
         'utf8',
       );
 
-      await refuses(root, /001-ship-selection-and-loading FR-008: is not a declared requirement/);
+      await refuses(root, /001\/FR-008: is not a declared requirement/);
     });
   });
 

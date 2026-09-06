@@ -11,7 +11,6 @@ import type {
   LinkPublicationState,
   NamedSource,
   PersistenceStatus,
-  QualityCompletionNotice,
 } from './active-build.models';
 
 /**
@@ -39,7 +38,6 @@ export class ActiveBuildStore {
   readonly #baseline = signal<string | null>(null);
   readonly #persistence = signal<PersistenceStatus>('ready');
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
-  readonly #notices = signal<readonly QualityCompletionNotice[]>([]);
   readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
 
   readonly loadout = this.#loadout.asReadonly();
@@ -51,7 +49,6 @@ export class ActiveBuildStore {
   readonly baselineFingerprint = this.#baseline.asReadonly();
   readonly persistence = this.#persistence.asReadonly();
   readonly link = this.#link.asReadonly();
-  readonly qualityCompletionNotices = this.#notices.asReadonly();
 
   /**
    * Why the last incoming build was refused before it was ever activated.
@@ -99,7 +96,6 @@ export class ActiveBuildStore {
     dirty: this.dirty(),
     persistence: this.#persistence(),
     link: this.#link(),
-    qualityCompletionNotices: this.#notices(),
   }));
 
   /**
@@ -117,7 +113,6 @@ export class ActiveBuildStore {
     this.#provenance.set(candidate.provenance);
     this.#sourceNamed.set(candidate.sourceNamed);
     this.#baseline.set(candidate.baseline);
-    this.#notices.set(candidate.qualityNotices);
     this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
     this.#revision.update((revision) => revision + 1);
@@ -188,10 +183,6 @@ export class ActiveBuildStore {
     this.#link.set(state);
   }
 
-  setQualityCompletionNotices(notices: readonly QualityCompletionNotice[]): void {
-    this.#notices.set(notices);
-  }
-
   /** Records a whole-candidate ingress refusal. Nothing about the build moves. */
   reportIngressRefusal(failures: readonly PartialEngineeringFailure[]): void {
     this.#ingressFailures.set(failures);
@@ -227,7 +218,6 @@ export class ActiveBuildStore {
     this.#autosaveRecordId.set(null);
     this.#sourceNamed.set(null);
     this.#baseline.set(null);
-    this.#notices.set([]);
     this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
     this.#revision.update((revision) => revision + 1);

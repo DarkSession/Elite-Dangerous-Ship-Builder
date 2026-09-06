@@ -1,0 +1,203 @@
+## Purpose
+
+Every capability works by pointer, by touch and with a screen reader, and stays complete
+on desktop, tablet and mobile in both orientations. The conformance target is WCAG 2.2 AA
+except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, and
+layout, accessibility and screen-reader checks hold it.
+
+## Requirements
+
+### Requirement: Pointer and touch operation
+
+Every capability MUST work by pointer and touch without hover or multi-pointer gestures.
+
+Source: 011/FR-006.
+
+#### Scenario: A Commander operates a capability by touch
+
+- **WHEN** a Commander operates a capability by pointer or by touch
+- **THEN** every function of that capability is available
+- **AND** no function needs hover or a multi-pointer gesture
+
+### Requirement: Accessible names, roles, states and relationships
+
+Every control MUST expose an accessible name matching its visible name, its role, its state
+and its relationship to labels and errors.
+
+Source: 011/FR-007.
+
+#### Scenario: A control is read by assistive technology
+
+- **WHEN** assistive technology reads a control
+- **THEN** the control exposes an accessible name matching its visible name, its role and its
+  state
+- **AND** it exposes its relationship to its labels and to its errors
+
+### Requirement: Landmarks and heading structure
+
+Every capability MUST expose meaningful landmarks and heading structure.
+
+Source: 011/FR-008.
+
+#### Scenario: A Commander moves through a capability by structure
+
+- **WHEN** a Commander moves through a capability by landmark or by heading
+- **THEN** the capability exposes landmarks and a heading structure that carry its meaning
+
+### Requirement: Announcement of errors and changes
+
+A blocking error MUST be announced promptly. Other changes MUST be announced without
+interrupting current speech and without announcing unaffected values.
+
+Source: 011/FR-009.
+
+#### Scenario: A blocking error occurs
+
+- **WHEN** a blocking error occurs
+- **THEN** the application announces it promptly
+
+#### Scenario: A value changes while speech is in progress
+
+- **WHEN** a change other than a blocking error occurs
+- **THEN** the application announces it once without interrupting current speech
+- **AND** it does not announce values the change did not affect
+
+### Requirement: Text equivalents for visual information
+
+Meaning MUST NOT depend on colour, shape, position or motion. Every visual information
+carrier MUST have a text equivalent.
+
+Source: 011/FR-010.
+
+#### Scenario: Information is carried visually
+
+- **WHEN** a capability carries information by colour, shape, position or motion
+- **THEN** the same information is available as text
+
+#### Scenario: A statistic is read as text
+
+- **WHEN** assistive technology reads a statistic
+- **THEN** the statistic exposes its meaning, its unit, its availability and its viewing
+  conditions as text
+
+### Requirement: Every supported size, text size and zoom
+
+Every capability MUST remain available on desktop, tablet and mobile in portrait and
+landscape and at 200% text size and 400% zoom, with no horizontal page scrolling.
+
+Source: 011/FR-011, 011/SC-003.
+
+#### Scenario: A capability is used on a mobile device in landscape
+
+- **WHEN** a Commander opens a capability on desktop, tablet or mobile, in portrait or in
+  landscape
+- **THEN** the capability remains available and complete
+- **AND** the page does not scroll horizontally
+
+#### Scenario: Text is enlarged and the page is zoomed
+
+- **WHEN** text size is set to 200% or the page is zoomed to 400%
+- **THEN** the content remains complete
+- **AND** the page does not scroll horizontally
+
+### Requirement: Contrast and target size
+
+Within the qualified conformance target that excludes criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1,
+2.4.1, 2.4.3, 2.4.7 and 2.4.11, text, meaningful non-text content and interactive targets
+MUST meet the applicable WCAG 2.2 AA contrast and target-size rules.
+
+Source: 011/FR-012.
+
+#### Scenario: In-scope text, non-text content and targets are measured
+
+- **WHEN** in-scope text, meaningful non-text content and interactive targets are measured
+- **THEN** they meet the applicable WCAG 2.2 AA contrast and target-size rules
+- **AND** overall conformance excludes criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
+  2.4.7 and 2.4.11
+
+### Requirement: Reduced motion
+
+Motion MUST respect `prefers-reduced-motion` and MUST NOT carry required meaning.
+
+Source: 011/FR-013.
+
+#### Scenario: A Commander asks for reduced motion
+
+- **WHEN** the browser reports `prefers-reduced-motion`
+- **THEN** the application removes nonessential motion
+- **AND** no meaning is lost, because motion carries no required meaning
+
+### Requirement: Text expansion and right-to-left content
+
+Layout and interaction MUST survive text expansion and right-to-left content.
+
+Source: 011/FR-014.
+
+#### Scenario: Text expands or reads right to left
+
+- **WHEN** text expands, or content reads right to left
+- **THEN** the layout and the interaction remain usable
+
+### Requirement: Qualified conformance statements
+
+Conformance statements MUST name all eight excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.2.1,
+2.4.1, 2.4.3, 2.4.7 and 2.4.11. Unqualified WCAG 2.2 AA claims are prohibited. A statement
+naming only the seven keyboard criteria is an unqualified claim and MUST fail the policy
+checker.
+
+Source: 011/FR-015.
+
+#### Scenario: A conformance statement is published
+
+- **WHEN** the repository states conformance with WCAG 2.2 AA
+- **THEN** the statement names all eight excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.2.1,
+  2.4.1, 2.4.3, 2.4.7 and 2.4.11
+
+#### Scenario: A statement names only the seven keyboard criteria
+
+- **WHEN** a conformance statement is unqualified, or names only the seven keyboard criteria
+- **THEN** the policy checker fails
+
+### Requirement: Journeys across the five layout profiles in both engines
+
+Every primary journey MUST run across the five layout profiles — desktop, tablet portrait,
+tablet landscape, mobile portrait and mobile landscape — in both Chromium and Firefox.
+
+Source: 011/FR-021, 011/SC-005.
+
+#### Scenario: The journey suite runs
+
+- **WHEN** the journey suite runs
+- **THEN** every primary journey runs on desktop, tablet portrait, tablet landscape, mobile
+  portrait and mobile landscape
+- **AND** it runs in both Chromium and Firefox
+- **AND** it passes, covering the three viewport classes in both orientations
+
+### Requirement: Automated accessibility checks
+
+Automated accessibility checks MUST cover every capability and relevant state and MUST fail
+the build on an in-scope violation.
+
+Source: 011/FR-022, 011/SC-002.
+
+#### Scenario: An in-scope violation is found
+
+- **WHEN** the automated accessibility scan covers every capability and relevant state
+- **THEN** it fails the build on an in-scope violation
+
+#### Scenario: The scan finds nothing in scope
+
+- **WHEN** the automated accessibility scan runs on the published application
+- **THEN** it reports no in-scope WCAG violations
+
+### Requirement: Screen-reader journeys
+
+Screen-reader journeys MUST supplement automation for every primary capability.
+
+Source: 011/FR-023, 011/SC-001.
+
+#### Scenario: A primary capability is exercised with a screen reader
+
+- **WHEN** a primary journey is run with a screen reader
+- **THEN** the journey completes
+- **AND** the screen-reader journey supplements the automated checks for that capability

@@ -26,7 +26,7 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
  * the signal graph memoises the whole thing for the surfaces that read it. That
  * is the shape features 009 and 005 already ship, and the shape feature 003's
  * ruling named for features 005 to 008
- * (`specs/006-defence-profile/design/reference-review.md`, "Departures from the
+ * (`openspec/changes/archive/006-defence-profile/design/reference-review.md`, "Departures from the
  * plan").
  *
  * Nothing below is computed. Every number is a package field copied whole, and
@@ -227,7 +227,7 @@ export interface CellBankView {
  * — module armour and module protection are already two of its own labelled
  * facts — and the package gives an ordinary module reinforcement package no
  * engineering group to classify it by
- * (`specs/006-defence-profile/design/reference-review.md`, "Departures from the
+ * (`openspec/changes/archive/006-defence-profile/design/reference-review.md`, "Departures from the
  * plan").
  */
 export type DefenceRole =
@@ -241,7 +241,7 @@ export type DefenceRole =
  * `boosters`, `reinforcement`, `bulkheads` — and it stays whole. The package
  * publishes no per-source breakdown, so the modules below it carry no share of
  * it: they say what is fitted and in which mount, which is what the row's
- * actions are for (`specs/006-defence-profile/contracts/workspace-integration.md`,
+ * actions are for (`openspec/changes/archive/006-defence-profile/contracts/workspace-integration.md`,
  * "Fitted role boundary").
  */
 export interface DefenceRoleGroup {

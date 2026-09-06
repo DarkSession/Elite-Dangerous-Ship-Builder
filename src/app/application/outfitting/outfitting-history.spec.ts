@@ -30,7 +30,6 @@ function candidateFor(loadout: ShipLoadout): BuildCandidate {
     loadout,
     hullName: 'Anaconda',
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -176,23 +175,6 @@ describe('outfitting store: undo and redo', () => {
       store.undo();
       expect(store.canUndo()).toBe(false);
     });
-
-    it('spends no frame on a quality-completion notice', () => {
-      open();
-
-      active.setQualityCompletionNotices([
-        {
-          kind: 'qualityCompleted',
-          slotKey: FIXTURE_SLOTS.frameShiftDrive,
-          moduleSymbol: 'Int_Hyperdrive_Size5_Class5',
-          blueprintFdname: 'FSD_LongRange',
-          previousQuality: 0.42,
-          quality: 1,
-        },
-      ]);
-
-      expect(store.canUndo()).toBe(false);
-    });
   });
 
   describe('the branch', () => {
@@ -301,7 +283,6 @@ describe('outfitting store: undo and redo', () => {
       // No auxiliary provenance comes back with it: it is the same modelled
       // module the package put there, restored like any other.
       expect(fittedSymbolAt(slot)).toBe(before);
-      expect(active.qualityCompletionNotices()).toEqual([]);
     });
 
     it('spends one revision per step, so everything downstream re-reads once', () => {

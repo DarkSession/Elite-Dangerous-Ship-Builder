@@ -5,8 +5,7 @@ and what a change has to satisfy before it can be merged.
 
 Two documents govern this repository, and they win over anything here:
 
-- [`.specify/memory/constitution.md`](./.specify/memory/constitution.md) — the non-negotiable
-  principles.
+- [`CONSTITUTION.md`](./CONSTITUTION.md) — the non-negotiable principles.
 - [`AGENTS.md`](./AGENTS.md) — the working guide: the non-negotiables in short form, the repository
   layout, the language rules, and the pull request rules.
 
@@ -76,19 +75,22 @@ it is.
 
 ## Make the change
 
-1. Read the spec of the area you are touching. `specs/<NNN>-<short-name>/spec.md` holds the
-   behaviour, and several regions of the outfitting workspace are fenced by a
-   `scripts/policy/*-ownership.mjs` script that fails the build rather than argue. The table in
-   [`AGENTS.md`](./AGENTS.md) maps each region to its spec.
+1. Read the specification of the capability you are touching.
+   `openspec/specs/<capability-path>/spec.md` holds the behaviour, and several regions of the
+   outfitting workspace are fenced by a `scripts/policy/*-ownership.mjs` script that fails the
+   build rather than argue. The table in [`AGENTS.md`](./AGENTS.md) maps each region to its
+   capability.
 2. Branch from `main`.
-3. For a feature, follow the Spec Kit flow: `/speckit-specify` → `/speckit-clarify` (optional) →
-   `/speckit-plan` → `/speckit-tasks` → `/speckit-implement`. A defect fix does not need a new spec,
-   but it must not contradict the accepted one.
+3. For a feature, propose a change with OpenSpec: `/opsx:propose "what you want to build"` writes
+   `openspec/changes/<change-id>/` with a proposal, delta specifications, a design and a task list.
+   `/opsx:apply` works through the tasks, and `/opsx:archive` folds the deltas into the capability
+   specifications. Use `/opsx:explore` first when the shape of the work is still open. A defect fix
+   does not need a change, but it must not contradict an accepted specification.
 4. Start a bug fix with a failing test that reproduces the bug.
 5. Put unit tests beside their source in `src/`, and end-to-end tests in `e2e/`. A new user journey
    needs both.
-6. Record an ambiguity as `[NEEDS CLARIFICATION]` in the spec. Do not resolve it by silent
-   assumption.
+6. Write an unresolved question down in the change that found it, and answer it before you build
+   the tasks that depend on it. Do not resolve it by silent assumption.
 7. Keep the change scoped to one thing.
 
 ## Run the gate

@@ -469,8 +469,8 @@ describe('coverage ledger reconciliation', () => {
   it('rejects a declared requirement that nothing verifies', () => {
     const found = rules.ledgerCoverageViolations(
       [
-        { id: '011/FR-001', file: 'specs/011-interface-foundations/spec.md' },
-        { id: '011/FR-002', file: 'specs/011-interface-foundations/spec.md' },
+        { id: '011/FR-001', file: 'openspec/specs/platform/design-system/spec.md' },
+        { id: '011/FR-002', file: 'openspec/specs/platform/design-system/spec.md' },
       ],
       ledgerWith('011/FR-001'),
       'e2e/coverage-ledger.ts',
@@ -483,7 +483,7 @@ describe('coverage ledger reconciliation', () => {
 
   it('accepts a ledger that registers every declared id', () => {
     const found = rules.ledgerCoverageViolations(
-      [{ id: '011/FR-001', file: 'specs/011-interface-foundations/spec.md' }],
+      [{ id: '011/FR-001', file: 'openspec/specs/platform/design-system/spec.md' }],
       ledgerWith('011/FR-001'),
       'e2e/coverage-ledger.ts',
     );
@@ -493,7 +493,7 @@ describe('coverage ledger reconciliation', () => {
 
   it("does not let one feature satisfy another feature's requirement", () => {
     const found = rules.ledgerCoverageViolations(
-      [{ id: '001/FR-006', file: 'specs/001-ship-selection-and-loading/spec.md' }],
+      [{ id: '001/FR-006', file: 'openspec/specs/ship-builder/hull-catalogue/spec.md' }],
       ledgerWith('011/FR-006'),
       'e2e/coverage-ledger.ts',
     );
@@ -513,10 +513,14 @@ describe('coverage ledger reconciliation', () => {
     assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
   });
 
-  it('reads declared ids only where a specification defines them in bold', () => {
+  it('reads declared ids only from a requirement’s trace line', () => {
     const ids = rules.declaredRequirementIds(
-      '011-interface-foundations',
-      '- **FR-001**: A requirement.\nProse mentioning FR-999 in passing.\n- **SC-002**: A criterion.',
+      [
+        '### Requirement: A requirement',
+        'The application MUST do a thing.',
+        'Source: 011/FR-001, 011/SC-002.',
+        'Prose mentioning 011/FR-999 in passing.',
+      ].join('\n'),
     );
 
     assert.deepEqual(ids, ['011/FR-001', '011/SC-002']);

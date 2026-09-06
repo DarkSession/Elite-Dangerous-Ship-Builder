@@ -94,7 +94,6 @@ export class RecordOpenService {
         loadout: ingress.candidate,
         hullName: this.#gameText.shipName(record.hullSymbol).text ?? record.hullSymbol,
         provenance,
-        qualityNotices: ingress.notices,
         sourceNamed:
           record.kind === 'named'
             ? { recordId: record.id, baseRevisionId: record.revisionId }

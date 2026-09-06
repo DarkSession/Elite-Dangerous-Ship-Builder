@@ -4,7 +4,6 @@ import {
   FIXTURE_HULL,
   FIXTURE_SLOTS,
   SUPPORTED_PARTIAL_QUALITY,
-  SUPPORTED_PARTIAL_SOURCE_QUALITY,
   UNSUPPORTED_PARTIAL_QUALITY,
   finalArticlePartialQuality,
 } from '../outfitting/outfitting.fixtures';
@@ -189,22 +188,13 @@ describe('construction and normalization', () => {
     expect(fitted?.symbol.toLowerCase()).not.toContain('pulselaser');
   });
 
-  it('completes a supported partial roll and reports it', () => {
+  it('completes a supported partial roll, recording nothing about it', () => {
     const result = importSlef(JSON.stringify(SUPPORTED_PARTIAL_QUALITY), TOKEN);
 
     expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
-    expect(result.candidate.qualityCompletions).toEqual([
-      {
-        slotKey: FIXTURE_SLOTS.thrusters,
-        moduleSymbol: 'Int_Engine_Size7_Class5',
-        blueprintFdname: 'Engine_Dirty',
-        previousQuality: SUPPORTED_PARTIAL_SOURCE_QUALITY,
-        quality: 1,
-      },
-    ]);
     expect(
       result.candidate.loadout.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering?.Quality,
     ).toBe(1);
@@ -232,7 +222,6 @@ describe('construction and normalization', () => {
     if (!result.ok) {
       return;
     }
-    expect(result.candidate.qualityCompletions).toEqual([]);
     expect(result.candidate.loadout.fittedModuleAt(slot)?.preEngineeredVariant).not.toBeNull();
   });
 
@@ -269,7 +258,6 @@ describe('construction and normalization', () => {
     }
     const fitted = result.candidate.loadout.fittedModuleAt('hugehardpoint1');
     expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
-    expect(result.candidate.qualityCompletions).toEqual([]);
   });
 
   it('leaves a completed roll and an unengineered module alone', () => {
@@ -289,7 +277,14 @@ describe('construction and normalization', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.ok ? result.candidate.qualityCompletions : null).toEqual([]);
+    if (!result.ok) {
+      return;
+    }
+    // Neither module needed completing, and neither was touched: the roll was
+    // already at 1, and the unengineered module carries no engineering at all.
+    const loadout = result.candidate.loadout;
+    expect(loadout.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering?.Quality).toBe(1);
+    expect(loadout.fittedModuleAt(FIXTURE_SLOTS.core)?.engineering ?? null).toBeNull();
   });
 
   it('reads the package verdict only after the build is finished', () => {

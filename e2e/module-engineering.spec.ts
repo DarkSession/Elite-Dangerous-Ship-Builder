@@ -761,11 +761,13 @@ test.describe('purchased and reward articles', () => {
 });
 
 test.describe('reading a build in', () => {
-  test('completes a supported partial roll and says so, at quality 1', async ({ page }) => {
+  test('completes a supported partial roll at quality 1', async ({ page }) => {
     await openStockBuild(page);
 
     // A build the Almanac can identify but that arrived at a partial roll. It
-    // is normalized before anything reads it, and the Commander is told.
+    // is normalized before anything reads it, and nothing is said about it: a
+    // completed grade is what the application models, so reaching one is not an
+    // event.
     const core = await import('@elite-dangerous-almanac/core/ships/ship-loadout');
     const partial = core.ShipLoadout.default('Anaconda');
     partial.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade: 5, quality: 0.42 });

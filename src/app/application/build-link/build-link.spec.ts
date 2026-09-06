@@ -40,7 +40,6 @@ function commitAnaconda(active: ActiveBuildStore, hull = 'Anaconda'): void {
     loadout: ShipLoadout.default(hull),
     hullName: hull,
     provenance: 'stock',
-    qualityNotices: [],
     sourceNamed: null,
     autosaveRecordId: null,
     baseline: null,
@@ -94,9 +93,6 @@ describe('BuildLinkCoordinator', () => {
     ];
     expect(fixed.length).toBeGreaterThan(0);
     expect(fixed.every((slot) => slot.module !== null)).toBe(true);
-    // Defaulting happened inside the package's own construction, so there is
-    // nothing for the application to report about having done it.
-    expect(active.qualityCompletionNotices()).toEqual([]);
   });
 
   it('replaces unsaved work without asking about it', async () => {
@@ -145,7 +141,6 @@ describe('BuildLinkCoordinator', () => {
       loadout: imported.candidate,
       hullName: 'Anaconda',
       provenance: 'working',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,
@@ -263,7 +258,6 @@ describe('the link payload allowlist', () => {
       'dirty',
       'persistence',
       'link',
-      'qualityCompletionNotices',
     ]);
   });
 

@@ -80,7 +80,7 @@ const PIP_DIGITS = 1;
  * 2026-08-31). No heat sentence is drawn anywhere: canvas 1d does print
  * `Sustained fire peaks at 131% heat` in its `BUILD STATUS` block, and this
  * feature's wave-13 ruling withdrew that tier entirely
- * (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is withdrawn
+ * (`openspec/changes/archive/005-power-and-heat/design/reference-review.md`, "Tier 2 is withdrawn
  * entirely").
  *
  * The bar's `79%`, `21%` and `83.3%` are the artboard's own figures over the

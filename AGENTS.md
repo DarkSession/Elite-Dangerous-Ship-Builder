@@ -5,313 +5,315 @@ Dangerous. Ship Builder, which plans ship loadouts, is the first of them.
 
 ## Read first
 
-- [`.specify/memory/constitution.md`](./.specify/memory/constitution.md) — the
-  project's non-negotiable principles. Everything below follows from it.
-- [`specs/`](./specs) — one directory per feature, each with a `spec.md`.
+- [`CONSTITUTION.md`](./CONSTITUTION.md) — the project's non-negotiable
+  principles. Everything below is their short form; where the two differ, the
+  constitution wins.
+- [`openspec/specs/`](./openspec/specs) — three group directories
+  (`ship-builder/`, `equipment-builder/`, `platform/`), one directory per
+  capability inside each, and a `spec.md` stating what that capability does. Read the one you are about
+  to touch.
 
 ## Non-negotiables
 
 - **No backend.** No server, no API of our own, no accounts, no telemetry.
-  Builds live in memory, in `localStorage`, or in a URL. Nothing is uploaded.
-  The build output is static files.
+  Builds live in memory, in `localStorage`, or in a URL fragment. Nothing is
+  uploaded. The build output is static files.
 - **`@elite-dangerous-almanac/core` is the source of truth** for game data and
-  build calculations. Do not hand-maintain game data and do not reimplement a
+  build calculations. Never hand-maintain game data, and never reimplement a
   calculation the package provides. Import leaf subpaths (e.g.
-  `@elite-dangerous-almanac/core/ships/ships`) rather than whole barrels.
-  `ShipLoadout` holds and edits a build; since Almanac 0.2.0 **every calculation
-  is on `BuildMetrics`**, which reads the build it is handed —
-  `BuildMetrics.of(build).powerBudget()`. A property is a fact the build already
-  carries and anything that does work is a call, so `validation()` is a call
-  too. Since Almanac 0.2.2 a metric that can be unavailable is offered **only**
-  as its `…Result` form on `BuildMetrics` — `heatMetricsResult()`, not
-  `heatMetrics()` — whose `value` is the figure or `null` and whose `issues` say
-  why it is `null`. Read `.value` where a screen only states the absence, and the
-  issues where it states the reason. The leaves still export **standalone
-  calculators** under the withdrawn names, taking inputs rather than a build:
-  they are not the call you want, and assembling their inputs here would be this
-  application deciding what a figure is made of. The power-and-heat, defence and
-  mobility ownership policies refuse them by name wherever that name differs
-  from the build-aware call; where it does not — `powerBudget` and
-  `armourMetrics` are spelled alike either way — only the feature's contract
-  says so, and nothing mechanical can hold you to it. Specs written before 0.2.0 name these calls on
-  `ShipLoadout`; the `contracts/` under each feature are corrected, older
-  `research.md`, `plan.md` and `tasks.md` entries are dated records and are left
-  as they were written.
-- **Library defects are fixed in the library.** If the package returns a wrong
-  value or is missing something, call it out and raise it against
+  `@elite-dangerous-almanac/core/ships/ships`), not whole barrels.
+- **Library defects are fixed in the library.** Raise them against
   [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac)
-  with a minimal reproduction, then consume the released fix. Do **not** correct,
-  clamp, re-derive or special-case a library result inside this application —
-  not even temporarily. A blocked feature waits on the upstream fix.
+  with a minimal reproduction and consume the released fix. Never correct,
+  clamp, re-derive or special-case a library result here, not even temporarily.
+  A blocked feature waits on the upstream fix.
+- **Never fabricate values.** Where the package reports a value as unavailable,
+  or a build as invalid or incomplete, surface that. Never substitute zero or an
+  estimate.
+- **Identities come from the package**: `symbol` for hulls, modules, blueprints
+  and experimental effects, and the game's own slot keys — never positional
+  indices.
 - **Desktop, tablet and mobile are all first-class.** Every feature must be
   fully usable on all three, by touch as well as pointer, in portrait and
   landscape, with no horizontal page scrolling.
-- **Nothing ships untranslatable.** Every string the application owns goes
+- **Accessible to WCAG 2.2 AA, except success criteria 2.1.1, 2.1.2, 2.1.4,
+  2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11** — principle V names them. Seven are
+  the keyboard-operation criteria; the eighth, 2.2.1 Timing Adjustable, is
+  excluded for applying a published update and nothing else. **That is the only
+  mechanism the application puts a time limit on**, and a limit anywhere else
+  needs an amendment rather than a reading of this one. Name all eight wherever
+  conformance is stated; the policy checker rejects an unqualified claim. In
+  scope from the start, not a later pass: screen-reader navigable, legible at
+  200% text and 400% zoom, AA contrast, AA touch targets,
+  `prefers-reduced-motion` honoured, and nothing carried by colour alone.
+- **Nothing ships untranslatable.** Every string the application owns resolves
   through the localisation layer — never hard-coded in a component, template or
   formatter — and numbers, credits and dates are formatted for the active
-  locale. Translations are static assets. Game text (ship, module, blueprint,
-  effect and material names, and the package's diagnostics) belongs to
+  locale. Translations are static assets. Game text — ship, module, blueprint,
+  effect and material names, and the package's own diagnostics — belongs to
   `@elite-dangerous-almanac/core`: ask for a locale there, never keep a private
   translation of game data here.
-- **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
-  branches, functions, lines) — enforced in `angular.json`; never lower the
-  threshold to get green. Playwright end-to-end tests run as part of
-  `pnpm run check` and cover desktop, tablet and mobile viewports, in **Chromium
-  and Firefox**, with an automated accessibility check over every screen.
-  `playwright.config.ts` generates **ten projects** — five layout profiles
-  (desktop, tablet portrait, tablet landscape, mobile portrait, mobile
-  landscape) in each of the two engines — and every rendered product and preview
-  state is scanned with `@axe-core/playwright` against WCAG 2.0/2.1/2.2 A and AA
-  with no disabled rules. CI may shard the matrix; it may not reduce it. Do not
-  skip, quarantine or delete tests to pass a build — `pnpm run policy` fails a
-  build that contains a skipped, focused or quarantined interface test.
-- **Accessible to WCAG 2.2 AA, except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1,
-  2.4.3, 2.4.7 and 2.4.11.** Seven of those eight are the keyboard-operation criteria
-  the constitution excludes. The eighth, 2.2.1 Timing Adjustable, is excluded for one
-  mechanism and no other: applying a published update. Nothing is asked, so the overlay
-  announcing the restart offers nothing that calls it off, and the notice the restarted
-  session draws takes itself down after a few seconds. Every conformance statement
-  names all eight; an unqualified "WCAG 2.2 AA" claim is a stronger claim than this
-  project supports, and the policy checker rejects one.
-  Screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
-  touch targets, `prefers-reduced-motion` honoured, and nothing carried by
-  colour alone. It is a requirement of every feature, not a later pass.
-  Keyboard operation is out of scope by constitutional exclusion (principle V
-  names the criteria), so the application never claims unqualified AA — state
-  the exclusion wherever conformance is stated. Applying an update is the
-  application's only mechanism with a time limit on it — the restart, and the
-  notice on the other side of it; a limit anywhere else needs an amendment
-  rather than a reading of this one.
-- **Identities come from the package**: `symbol` for hulls, modules, blueprints
-  and experimental effects, and the game's own slot keys — never positional
-  indices. Almanac 0.2.0 renamed the blueprint and effect identities from
-  `fdname` to `blueprintSymbol` / `experimentalEffectSymbol`; this repository's
-  own persisted formats — build snapshots and the build-link codec — keep saying
-  `fdname`, because renaming them would change bytes a Commander has already
-  saved.
-- **Never fabricate values.** Where the package reports a value as unavailable
-  or a build as invalid or incomplete, surface that; do not substitute zero or
-  an estimate.
+- **One design system, one dark theme.** Screens compose the component library
+  in `src/app/ui/` and never invent a visual language of their own. Design
+  tokens are the only source of colour, type, spacing, radius, elevation and
+  motion; no file outside the token layer may carry a colour literal. There is
+  no light theme and no theme preference, and no requirement anywhere may depend
+  on a theme being chosen or changed. A screen that needs something the system
+  lacks extends the system. This repository is
+  the source of truth for any design tool it syncs with.
 - **Domain logic lives outside components** — in framework-agnostic services and
   signal-based stores that are testable without rendering.
-- **One design system, one theme.** Screens compose the component library in
-  `src/app/ui/`; they never invent their own visual language. Design tokens are
-  the only source of colour, type, spacing, radius, elevation and motion — no
-  component, template or stylesheet outside the token layer may contain a colour
-  literal. The application ships one dark theme; there is no light theme and no
-  theme preference. A screen that needs something the system lacks extends the
-  system. This repository is the source of truth for any design tool it syncs
-  with.
+- **Tests gate the build.** Unit coverage stays at or above 80% (statements,
+  branches, functions, lines), enforced in `angular.json`; never lower the
+  threshold to get green. Never skip, quarantine or delete a test either —
+  `pnpm run policy` fails a build containing a skipped, focused or quarantined
+  interface test.
+
+## Using the Almanac
+
+`ShipLoadout` holds and edits a build. **Every calculation is on
+`BuildMetrics`**, which reads the build it is handed:
+`BuildMetrics.of(build).powerBudget()`. A property is a fact the build already
+carries; anything that does work is a call, so `validation()` is a call too.
+
+A metric that can be unavailable is offered **only** as its `…Result` form —
+`heatMetricsResult()`, not `heatMetrics()` — whose `value` is the figure or
+`null` and whose `issues` say why. Read `.value` where a screen states only the
+absence, the issues where it states the reason.
+
+The leaves also export **standalone calculators** taking inputs rather than a
+build. They are not the call you want: assembling their inputs here would be
+this application deciding what a figure is made of. The power-and-heat, defence
+and mobility ownership policies refuse them by name. Where the two names
+coincide — `powerBudget`, `armourMetrics` — only the capability's specification
+holds you to it, and nothing mechanical can.
+
+The persisted formats — build snapshots and the build-link codec — say `fdname`
+where the package says `blueprintSymbol` and `experimentalEffectSymbol`. Leave
+them: renaming them would change bytes a Commander has already saved.
 
 ## Working in this repo
 
-- Package manager is **pnpm**. `pnpm-lock.yaml` is committed; use
-  `--frozen-lockfile` in CI.
-- **A release waits seven days before this project may install it.**
-  `pnpm-workspace.yaml` sets `minimumReleaseAge` to 10080 minutes. pnpm skips
-  any version published less than seven days ago. The delay gives a compromised
-  or withdrawn release time to be found and pulled before this project can
-  reach it. CI installs from the committed lockfile, so the delay applies only
-  when a person resolves a new version.
-- **Nothing tells you what the delay holds.** pnpm does not report a held-back
-  version reliably, and `pnpm outdated` hides one. Run `pnpm view <name> time`
-  to read the publish dates and work it out. An exact-version specifier that is
-  too young fails the install with `ERR_PNPM_NO_MATURE_MATCHING_VERSION` rather
-  than resolving an older release.
-- **`minimumReleaseAgeExclude` takes two shapes.** A bare name or pattern
-  exempts every release of a package, now and later. A `name@version` entry
-  exempts one release and keeps the delay over the next one.
-  `@elite-dangerous-almanac/*` is the only standing bare exclusion, because a
-  feature here waits on Almanac releases. A second bare exclusion needs a
-  reason in the commit that adds it.
-- **A security fix does not wait.** To take a fix younger than the delay:
-
-  1. Add the release to `minimumReleaseAgeExclude` as `<name>@<version>`.
-  2. Run `pnpm update <name>`.
-  3. Commit `pnpm-workspace.yaml` and the lockfile. Name the advisory in the
-     commit message.
-  4. Delete the entry once the release is seven days old.
-
-  Step 1 is what holds the fix. Resolve it without the entry and the next
-  `pnpm update` silently takes the older version back. `pnpm audit` does not
-  catch that: an advisory published in the last few days is not in its feed
-  yet.
-
-- **`package.json` declares `major.minor.0`; CI supplies the patch.** Major and
-  minor are advanced by hand in a normal reviewed commit. The patch is never
-  written down: `scripts/resolve-build-version.mjs` counts the commits since
-  that major.minor was declared and stamps the result into the manifest just
-  before `pnpm run build` in CI, so the deployed bundle — and the `appVersion`
-  its SLEF exports carry — is versioned without anything being committed back to
-  `main`. The count is a property of the commit, so a re-run and the manual
-  republish in `deploy.yml` ship the same number. A committed patch other than
-  `0` fails the resolver. It is not release evidence: a release is declared only
-  by `SHIP_BUILDER_RELEASE_TAG` matching the shipped version exactly
-  (`specs/012-help-and-licences/contracts/distribution-artifacts.md`).
-- **A pull request is published as a preview**, built a second time with a
-  sub-path `<base href>` and pushed to the separate
-  `Elite-Dangerous-Ship-Builder-Preview` repository, because this repository's
-  own Pages site is production (`public/CNAME` → `navbeacon.app`). It follows that
-  **nothing the application asks for at runtime may be a root-absolute path**: a
-  leading `/` looks past the deployment base and misses the file, which is
-  invisible at the root of a domain and fatal one directory down. `fetch` paths
-  are relative to the base href — see `hullArtworkPath` and the locale
-  registry's `assetPath`, which `fetch` resolves against the document base for
-  free — and the `@font-face` sources in `src/styles/_fonts.scss` are relative
-  to the stylesheet, which is why `angular.json` carries
-  `externalDependencies: ["fonts/*"]`: without it the bundler resolves them at
-  build time and the relative URL never reaches the emitted CSS.
 - Angular is standalone and zoneless; prefer signals for state.
-- Run `pnpm run check` (format check, typecheck, build, unit tests with
-  coverage, Playwright) before proposing a change.
-- Unit tests live beside their source in `src/`; end-to-end tests live in
-  `e2e/`. New user journeys need both.
-- The end-to-end suite runs every project in Chromium **and** in Firefox, with an
-  automated accessibility check over every capability and relevant state (feature
-  011, FR-021 and FR-022). `playwright.config.ts` generates the ten projects from
-  `ENGINES × LAYOUT_PROFILES` in `e2e/coverage-ledger.ts`, which is also where
-  the coverage ledger lives; the policy checker reconciles the two, so a project
-  cannot be renamed or dropped without the build noticing. No browser may be
-  dropped from the matrix to get a build green. If a preinstalled browser does
-  not match the version Playwright pins, point at its executable
-  (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing the config.
+- Package manager is **pnpm**. `pnpm-lock.yaml` is committed; CI installs with
+  `--frozen-lockfile`.
+- Run `pnpm run check` before proposing a change: format, typecheck, build, unit
+  tests with coverage, Playwright.
+- Unit tests live beside their source in `src/`; end-to-end tests in `e2e/`. A
+  new user journey needs both.
+- **Nothing the application asks for at runtime may be a root-absolute path.** A
+  pull request is published as a preview, built a second time with a sub-path
+  `<base href>` and pushed to the separate `Elite-Dangerous-Ship-Builder-Preview`
+  repository, because this repository's own Pages site is production
+  (`public/CNAME` → `navbeacon.app`). A leading `/` therefore looks past the
+  deployment base and misses the file — invisible at the root of a domain, fatal
+  one directory down. `fetch` paths resolve against the base href for free (see
+  `hullArtworkPath` and the locale registry's `assetPath`); `@font-face` sources
+  in `src/styles/_fonts.scss` need `externalDependencies: ["fonts/*"]` in
+  `angular.json`, or the bundler resolves them before the emitted CSS sees them.
+- **`package.json` declares `major.minor.0`; CI supplies the patch.** Major and
+  minor are advanced by hand in a normal reviewed commit.
+  `scripts/resolve-build-version.mjs` counts the commits since that major.minor
+  was declared and stamps the result into the manifest just before
+  `pnpm run build` in CI, so the deployed bundle — and the `appVersion` its SLEF
+  exports carry — is versioned without anything being committed back to `main`.
+  The count is a property of the commit, so a re-run and the manual republish in
+  `deploy.yml` ship the same number. A committed patch other than `0` fails the
+  resolver. A version is not release evidence: a
+  release is declared only by `SHIP_BUILDER_RELEASE_TAG` matching the shipped
+  version exactly
+  (`openspec/changes/archive/012-help-and-licences/contracts/distribution-artifacts.md`).
+
+### The end-to-end matrix
+
+`playwright.config.ts` generates **ten projects** from `ENGINES ×
+LAYOUT_PROFILES` in `e2e/coverage-ledger.ts` — five layout profiles (desktop,
+tablet portrait and landscape, mobile portrait and landscape) in Chromium and in
+Firefox. Every rendered product and preview state is scanned with
+`@axe-core/playwright` against WCAG 2.0/2.1/2.2 A and AA with no disabled rules.
+
+- CI may shard the matrix; it may not reduce it, and no browser may be dropped
+  to get a build green.
+- The coverage ledger shares that file, and the policy checker reconciles the
+  two, so a project cannot be renamed or dropped without the build noticing.
+- The ledger registers which test evidences which requirement id. A capability
+  requirement declares its id on a trailing `Source: 002/FR-014.` line — write
+  that line on any requirement you add or move, or its coverage stops being
+  checked.
+- If a preinstalled browser does not match the version Playwright pins, point at
+  its executable (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing
+  the config.
 - Automation is a floor, not the gate. The versioned manual protocols in
   `e2e/manual/` — screen-reader journeys and actual 400% browser zoom — cover
   what no scan can judge, and their result records live beside them.
-- **Specs are scoped to a capability and name no screen.** They constrain
-  behaviour and the information a screen must convey. Screens are defined at
-  plan time in `specs/<NNN>-<short-name>/design/`, recording what each screen
-  composes, the states it handles, and the requirements it satisfies. The
-  inventory and its requirement mapping come before task breakdown; finished
-  visuals may follow.
-- **Composed features own their own regions, and their specs are the record.**
-  The outfitting workspace is assembled from several capabilities. Each one's
-  boundary, its ruled exceptions, the package fields it deliberately does not
-  read and what it leaves out of scope are written in its own spec directory —
-  not here. Read the spec of the region you are touching before you touch it.
 
-  | Region                                       | Feature | Spec                            |
-  | -------------------------------------------- | ------- | ------------------------------- |
-  | Slot ledger, fitting bench, engineering      | 002     | `specs/002-module-outfitting/`  |
-  | Status rail: heading, issues, capacity cells | 003     | `specs/003-ship-statistics/`    |
-  | Anatomy region, `POWER` mode + rail power    | 005     | `specs/005-power-and-heat/`     |
-  | Anatomy region, `DEFENCE` mode + rail cells  | 006     | `specs/006-defence-profile/`    |
-  | Anatomy region, `OFFENCE` mode + rail cell   | 007     | `specs/007-offence-profile/`    |
-  | Anatomy region, `DRIVES` mode + rail cells   | 008     | `specs/008-mobility-and-jump/`  |
-  | Status rail: `COST` and `MATERIALS`          | 009     | `specs/009-cost-and-materials/` |
-  | Anatomy region, `MOUNTS` mode and its plates | 010     | `specs/010-hull-anatomy/`       |
-  | `Help · About` modal and its frame action    | 012     | `specs/012-help-and-licences/`  |
+### Installing a dependency
 
-  Two things follow that no single spec can tell you. The anatomy region's
-  five-mode strip is one control with **five different owners**, so a change to
-  it crosses five boundaries. The status rail's cell band is one grid with
-  **four**, for the same reason. And several of these features are fenced by a
-  `scripts/policy/*-ownership.mjs` script — read the script before crossing the
-  boundary it guards, because it will fail the build rather than argue.
+**A release waits seven days before this project may install it.**
+`pnpm-workspace.yaml` sets `minimumReleaseAge` to 10080 minutes, giving a
+compromised or withdrawn release time to be pulled before this project can reach
+it. It applies only when a person resolves a new version.
 
-## Communication style
+- Nothing tells you what the delay holds — `pnpm outdated` hides a held-back
+  version. Run `pnpm view <name> time` and work it out. A too-young exact
+  version fails with `ERR_PNPM_NO_MATURE_MATCHING_VERSION` rather than
+  resolving an older release.
+- `minimumReleaseAgeExclude` takes a bare name or pattern, which exempts every
+  release of a package now and later, or `name@version`, which exempts one
+  release and keeps the delay over the next. `@elite-dangerous-almanac/*` is the
+  only standing bare exclusion; a second needs a reason in the commit that adds
+  it.
+  **A security fix does not wait.** To take one younger than the delay:
 
-Use [ASD-STE-100](https://www.asd-ste100.org/) (Simplified Technical English)
-when you speak to the operator.
+1. Add the release to `minimumReleaseAgeExclude` as `<name>@<version>`.
+2. Run `pnpm update <name>`.
+3. Commit `pnpm-workspace.yaml` and the lockfile, naming the advisory in the
+   commit message.
+4. Delete the entry once the release is seven days old.
 
-- One idea per sentence. Keep instructions to 20 words and descriptions to 25.
-- Active voice, present tense. Name who or what does the thing.
-- One word, one meaning. Choose a term and keep it; do not vary it for style.
-- Use the simplest verb that is correct. No metaphor, no idiom, no jargon the
-  operator did not use first.
-- Write a procedure as numbered steps in the order you do them. Give the
-  condition before the action: "If the build fails, read the policy output."
-- Keep a paragraph to six sentences. Split what is longer.
+Step 1 is what holds the fix. Resolve it without the entry and the next
+`pnpm update` silently takes the older version back. `pnpm audit` does not catch
+that: an advisory published in the last few days is not in its feed yet.
 
-The same rules make good comments, documentation and pull requests, together
-with the language rules below.
+### Who owns which region
 
-## Language and documentation
+The outfitting workspace is assembled from several capabilities. Each one's
+boundary, its ruled exceptions, the package fields it deliberately does not read
+and what it leaves out of scope are in its own specification — not here.
 
-- **Write in plain, common language.** Code, comments, documentation, commit
-  messages, pull requests and replies to the person you are working with all
-  use ordinary words a contributor can skim. Name a thing what it is. No
-  literary phrasing, no metaphor, no rhetorical build-up, no marketing
-  adjectives, no emoji: "add a tooltip to the heat glosses" beats "the glosses
-  find their voice at last". Identifiers, test names and headings follow the
-  same rule — descriptive, not clever.
-- **Say it once, and say it directly.** Short sentences, active voice, concrete
-  nouns. Drop throat-clearing openers ("it is worth noting that"),
-  self-assessment ("comprehensive", "robust", "seamless") and hedging that
-  carries no information. If deleting a sentence loses nothing, delete it.
-- **Documentation describes the current state, not the change that produced
-  it.** Git already records what moved, when and by whom; a reader opening a
-  file wants to know how the thing works now. Keep changelog residue out of
-  comments, docs, `README.md` and this file — no "previously", "now", "was
-  changed to", "new", "updated", "as of <date>", no diff narration, no dated
-  superseded notes. Write the rule, the behaviour and the reason it holds, in
-  the present tense, as though it had always been so.
-- **Delete rather than annotate.** Code and prose that no longer apply are
-  removed, not labelled obsolete and left in place. Commented-out code, "kept
-  for reference" blocks and "(deprecated)" markers on things nothing uses all
-  go; git holds the old version.
-- **Two deliberate exceptions.** A `specs/<NNN>-…/tasks.md` entry is a dated
-  record of work, and the dated notes already there stay as they were written.
-  And where a decision cannot be understood without its history — a persisted
-  format that keeps an old field name, a workaround for a known upstream defect
-  — record the reason rather than the chronology, in the one sentence that stops
-  someone undoing it.
+| Region                                       | Capability                        |
+| -------------------------------------------- | --------------------------------- |
+| Slot ledger and fitting bench                | `ship-builder/module-outfitting`  |
+| Engineering surface                          | `ship-builder/module-engineering` |
+| Status rail: heading, issues, capacity cells | `ship-builder/build-status`       |
+| Anatomy region, `POWER` mode + rail power    | `ship-builder/power-and-heat`     |
+| Anatomy region, `DEFENCE` mode + rail cells  | `ship-builder/defence-profile`    |
+| Anatomy region, `OFFENCE` mode + rail cell   | `ship-builder/offence-profile`    |
+| Anatomy region, `DRIVES` mode + rail cells   | `ship-builder/mobility-and-jump`  |
+| Status rail: `COST` and `MATERIALS`          | `ship-builder/cost-and-materials` |
+| Anatomy region, `MOUNTS` mode and its plates | `ship-builder/hull-anatomy`       |
+| `Help · About` modal and its frame action    | `platform/help-and-licences`      |
 
-## Commit Identity — no personal data in git metadata
+The anatomy region's five-mode strip is one control with **five different
+owners**, so a change to it crosses five boundaries; the status rail's cell band
+is one grid with **four**. Several of these capabilities are fenced by a
+`scripts/policy/*-ownership.mjs` script — read the script before crossing the
+boundary it guards, because it will fail the build rather than argue.
 
-**Commit as whoever git is already configured as. Never set an identity yourself.** The environment configures `user.name` / `user.email` (and, where signing is enabled, the signing key) before you start. Do not pass `-c user.name=…` / `-c user.email=…` to `git commit`, do not `git config` a different one, and do not use `--reset-author` to change _who_ a commit is by. An agent that substitutes its own choice produces commits GitHub marks **Unverified**, because the identity no longer matches the key that signed them.
+## Spec-driven development
 
-**An identity you did not get from git config is a personal detail, and commit metadata publishes it.** A maintainer's address may be in front of you — in the conversation, an issue, a profile, an earlier commit's author field — and none of that is permission to write it into this repository's history. The author and committer fields of a public repository are world-readable and permanent in a way ordinary files are not:
+This repository plans with [OpenSpec](https://github.com/Fission-AI/OpenSpec),
+installed for Claude Code (`.claude/skills` and `.claude/commands/opsx`) and
+Codex CLI (`.agents/skills`). The CLI is a devDependency, and the dev container
+puts `node_modules/.bin` on the path, so `openspec …` resolves without a global
+install. The Claude Code flow is `/opsx:explore` (optional) → `/opsx:propose` →
+`/opsx:apply` → `/opsx:archive`; Codex reads the same work as the skills
+`openspec-explore`, `openspec-propose`, `openspec-apply-change` and
+`openspec-archive-change`, with `openspec-update-change` and
+`openspec-sync-specs` beside them.
 
-> A wrong address cannot be taken back by force-pushing over it. Rewriting the branch removes the _reference_; the old commit object survives on the remote, stays fetchable by its SHA, and the force-push event in a pull request timeline links to it by SHA. Only GitHub Support can purge unreachable objects. **Getting it right the first time is the only fix that works.**
+- **A capability specification** — `openspec/specs/<capability-path>/spec.md` —
+  states what the application does. `## Purpose`, then `## Requirements`, each
+  `### Requirement:` written with MUST, MUST NOT and MAY and carrying at least
+  one `#### Scenario:` in WHEN/THEN form. It is the standing record.
+- **A change** — `openspec/changes/<change-id>/` — states the difference one
+  piece of work makes: a proposal, delta specifications naming the requirements
+  it adds, modifies, removes or renames, a design where one is needed, and a
+  task list. Archiving folds the deltas into the capability specifications.
+- **A specification is scoped to a capability and names no screen.** It
+  constrains behaviour and the information a screen must convey. Screens are
+  defined in the design of the change that introduces them — what each composes,
+  the states it handles, the requirements it satisfies — before task breakdown.
+  Finished visuals may follow. The screen definitions of what is already built
+  are in `openspec/changes/archive/<NNN>-<short-name>/design/`.
+- **Specify what must be built, not what must not.** A prohibition earns its
+  place only where someone would otherwise build the thing.
+- Write an unresolved question down in the change that found it and answer it
+  before building the tasks that depend on it. If code and an accepted
+  specification disagree, resolve the mismatch deliberately.
+- `openspec/changes/archive/<NNN>-<short-name>/` holds the design and contract
+  documents of the features already built. Source files, tests and
+  specifications cite them by path. Read them; do not extend them.
 
-Before pushing, confirm the whole branch carries one identity, the configured one:
+## How to write
+
+Everything you author — code, comments, documentation, specifications, commit
+messages, pull requests and replies to the operator — follows these rules. For
+anything addressed to the operator they are
+[ASD-STE-100](https://www.asd-ste100.org/) (Simplified Technical English).
+
+- **Plain, common words a contributor can skim.** Name a thing what it is. No
+  metaphor, no idiom, no rhetorical build-up, no marketing adjectives, no emoji:
+  "add a tooltip to the heat glosses" beats "the glosses find their voice at
+  last". Identifiers, test names and headings follow the same rule.
+- **One idea per sentence.** Active voice, present tense, concrete nouns.
+  Instructions to 20 words, descriptions to 25, paragraphs to six sentences.
+- **One word, one meaning.** Choose a term and keep it. Use the simplest verb
+  that is correct, and no jargon the operator did not use first.
+- **Say it once.** Drop throat-clearing openers, self-assessment
+  ("comprehensive", "robust", "seamless") and hedging. If deleting a sentence
+  loses nothing, delete it.
+- **Write a procedure as numbered steps**, condition before action: "If the
+  build fails, read the policy output."
+- **Describe the current state, not the change that produced it.** Git records
+  what moved. No "previously", "now", "was changed to", "new", "updated", "as of
+  <date>", no diff narration, no dated superseded notes. Write the rule and the
+  reason it holds, in the present tense, as though it had always been so.
+- **Delete rather than annotate.** Commented-out code, "kept for reference"
+  blocks and "(deprecated)" markers all go; git holds the old version.
+- **One deliberate exception.** Where a decision cannot be understood without
+  its history — a persisted format keeping an old field name, a workaround for a
+  known upstream defect — record the reason rather than the chronology, in the
+  one sentence that stops someone undoing it.
+
+## Commit identity — no personal data in git metadata
+
+**Commit as whoever git is already configured as. Never set an identity
+yourself.** The environment configures `user.name`, `user.email` and any signing
+key before you start. Do not pass `-c user.name=…` to `git commit`, do not
+`git config` a different one, and do not use `--reset-author`. An identity that
+no longer matches the signing key produces commits GitHub marks **Unverified**.
+
+**An identity you did not get from git config is a personal detail, and commit
+metadata publishes it.** A maintainer's address may be in front of you — in the
+conversation, an issue, a profile, an earlier commit — and none of that is
+permission to write it into this history. A wrong address cannot be taken back:
+force-pushing removes the reference, but the old commit object survives on the
+remote and stays fetchable by its SHA, and only GitHub Support can purge it.
+Getting it right the first time is the only fix that works. Before pushing,
+confirm the branch carries one identity:
 
 ```bash
 git log --format='%an <%ae> | %cn <%ce>' origin/<default-branch>..HEAD | sort -u
 ```
 
-The same rule covers everything else you author. Commit messages, PR titles and bodies, code comments, data files, fixtures and documentation entries carry **no personal data** — no email addresses, no real names, no handles, no machine or account names, and nothing identifying a private individual.
+Everything else you author — commit messages, PR titles and bodies, comments,
+data files, fixtures, documentation — carries **no personal data**: no
+addresses, no real names, no handles, no machine or account names, nothing
+identifying a private individual.
 
 ## Pull requests
 
 A pull request describes the change, not the process that produced it. Write for
-a reviewer who has not seen the conversation: what is different, why it is
-wanted, and the evidence that it works.
+a reviewer who has not seen the conversation.
 [`.github/pull_request_template.md`](./.github/pull_request_template.md) is the
-layout to fill in.
+layout.
 
-- **The title says what changed**, in one plain line — no metaphor, no
-  wordplay, no subtitle after a dash. "Add a tooltip to the heat glosses", not
-  "the glosses find their voice at last".
-- **What and why, in that order.** Open with the change in a few sentences:
-  what behaviour, screen or capability is different, and what problem that
-  solves. Name the feature and spec directory it belongs to, and link the issue
-  it closes.
-- **Confirm what was validated.** Say that `pnpm run check` passed, or name the
-  commands that were run, what was left out and why. "Tests pass" without
-  saying which is not evidence. For a visual change or a new journey, say which
-  viewports and engines were exercised and attach the manual protocol record
-  when one was required.
-- **Leave the making-of out.** No account of how the work was carried out, no
-  review-and-fix log, no list of what a subagent review found and how each
-  finding was answered, no commit-by-commit walkthrough, no self-assessment of
-  quality, no wishlist of what could be done later. A finding that mattered is
-  already fixed in the diff; one that still matters is a follow-up issue, not a
-  paragraph.
-- **Length follows the change.** A one-line fix gets a few lines of pull
-  request. Do not inflate a small change into a report, and do not compress a
-  large one into a headline.
+- **The title says what changed**, in one plain line — no wordplay, no subtitle
+  after a dash.
+- **What and why, in that order.** What behaviour, screen or capability is
+  different, and what problem that solves. Name the capability, link the issue.
+- **Confirm what was validated.** Say `pnpm run check` passed, or name the
+  commands run and what was left out and why. "Tests pass" is not evidence. For
+  a visual change or a new journey, say which viewports and engines were
+  exercised, and attach the manual protocol record when one was required.
+- **Leave the making-of out.** No review-and-fix log, no commit-by-commit
+  walkthrough, no self-assessment, no wishlist. A finding that mattered is fixed
+  in the diff; one that still matters is a follow-up issue.
+- **Length follows the change.** Do not inflate a small change into a report,
+  and do not compress a large one into a headline.
 
-**Before opening any PR, have a subagent re-review the complete change.** Address every actionable finding, then ask a subagent to review the updated change again. Repeat this review-and-fix cycle until the subagent reports no actionable findings; only then may the PR be opened. The cycle is how the change gets good; it is not material for the description.
-
-## Spec-driven development
-
-This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit),
-installed for Claude Code (`.claude/skills`) and Codex CLI (`.agents/skills`).
-The flow is: `/speckit-specify` → `/speckit-clarify` (optional) →
-`/speckit-plan` → `/speckit-tasks` → `/speckit-implement`.
-
-Record ambiguity as `[NEEDS CLARIFICATION]` in the spec rather than resolving it
-by silent assumption. If code and an accepted spec disagree, resolve the
-mismatch deliberately — do not leave it standing.
+**Before opening any PR, have a subagent re-review the complete change.** Address
+every actionable finding, then have it review again. Repeat until it reports no
+actionable findings; only then may the PR be opened. The cycle is how the change
+gets good; it is not material for the description.

@@ -4,6 +4,20 @@
     "dockerfile": "Dockerfile"
   },
 
+  // OpenSpec reports anonymous usage and checks npm for a newer release on
+  // every run; this project sends nothing out and pins the version in the
+  // lockfile, so both are off. The one variable turns off both.
+  "containerEnv": {
+    "OPENSPEC_TELEMETRY": "0"
+  },
+
+  // The OpenSpec skills invoke the bare `openspec` binary. It is a
+  // devDependency, so `node_modules/.bin` has to be on the path for that to
+  // resolve without a global install.
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:PATH}"
+  },
+
   "features": {
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },

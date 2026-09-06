@@ -26,17 +26,6 @@ export interface SourcePartialEngineering {
   readonly quality: number;
 }
 
-/** One thing worth telling the Commander about an accepted build. */
-export interface IngressNotice {
-  readonly kind: 'qualityCompleted';
-  readonly slotKey: string;
-  readonly moduleSymbol: string;
-  readonly blueprintFdname: string | null;
-  readonly previousQuality: number;
-  /** Always `1`. Named rather than implied, because it is the whole claim. */
-  readonly quality: 1;
-}
-
 /**
  * Why one module's partial engineering could not be completed.
  *
@@ -70,7 +59,6 @@ export type IngressResult =
   | {
       readonly kind: 'accepted';
       readonly candidate: ShipLoadout;
-      readonly notices: readonly IngressNotice[];
     }
   | { readonly kind: 'refused'; readonly failures: readonly PartialEngineeringFailure[] }
   | { readonly kind: 'unusable'; readonly reason: string };

@@ -14,11 +14,11 @@
 // application: two of them passed the 10kB ceiling `angular.json` sets for a
 // component's styles. The first answer to that ceiling is to take the shared
 // thing out rather than to raise the number, and this file is that answer
-// (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The block is its
+// (`openspec/changes/archive/005-power-and-heat/design/power-and-heat-detail.md`, "The block is its
 // own component"). It is not the whole of it: the outfitting screen's own
 // stylesheet has nothing shared left in it, so `anyComponentStyle` is raised to
 // 11kB — a build-wide ceiling, not one screen's — which is recorded with the
-// reason (`specs/002-module-outfitting/design/outfitting-workspace.md`).
+// reason (`openspec/changes/archive/002-module-outfitting/design/outfitting-workspace.md`).
 
 @use 'responsive' as layout;
 

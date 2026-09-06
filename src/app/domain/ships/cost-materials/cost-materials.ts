@@ -18,7 +18,7 @@ import {
  * the three aggregate counts and the Merc Coin row inside the materials block
  * are all here, and the trace disclosures, unpriced evidence and lower-bound
  * wording the specification once asked for are not
- * (`specs/009-cost-and-materials/design/reference-review.md`).
+ * (`openspec/changes/archive/009-cost-and-materials/design/reference-review.md`).
  */
 export interface CostAndMaterials {
   readonly credits: CreditsView;

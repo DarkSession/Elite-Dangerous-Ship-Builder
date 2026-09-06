@@ -226,7 +226,7 @@ const RESISTANCE_CEILING = 1;
  * and once as an English sentence. The pair is what a surface is given to act
  * on, and this reads the pair. It does not translate the sentence, parse it, or
  * infer a reason from another result — a pair with no entry here keeps the
- * package's own words (`specs/006-defence-profile/contracts/shield-profile.md`,
+ * package's own words (`openspec/changes/archive/006-defence-profile/contracts/shield-profile.md`,
  * "Refusal presentation").
  *
  * Wording the pair is labelling a package result, which constitution II
@@ -284,7 +284,7 @@ function issueKey(issue: CalculationIssueView): string {
  * rather than a share worked out per module: the Almanac publishes no such
  * split, and one divided out here would be this application's claim rather than
  * the Almanac's (constitution II and IV,
- * `specs/006-defence-profile/design/reference-review.md`).
+ * `openspec/changes/archive/006-defence-profile/design/reference-review.md`).
  *
  * Two package sentinels keep their own state and their own words rather than
  * being drawn as numbers: an unbounded effective pool is a resistance of 100%,
@@ -456,7 +456,7 @@ export class DefenceAnalysis {
    *
    * So an issue drawn under the strength is not drawn again here. An issue this
    * result has and that one did not is drawn, because it is a reason nobody has
-   * been given yet (`specs/006-defence-profile/contracts/shield-profile.md`,
+   * been given yet (`openspec/changes/archive/006-defence-profile/contracts/shield-profile.md`,
    * "Refusal presentation").
    */
   readonly recoveryIssues = computed<readonly IssueView[]>(() => {

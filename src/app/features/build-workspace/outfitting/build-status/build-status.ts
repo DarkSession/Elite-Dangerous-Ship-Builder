@@ -43,7 +43,7 @@ const SEVERITY_LABELS = {
  * capability; there is no wide Status tab to move them to; and the counts, the
  * structural-facts list, the qualification summary, the none-reported
  * statements, the count announcer and every slot action the specification asked
- * for are not built (`specs/003-ship-statistics/design/reference-review.md`,
+ * for are not built (`openspec/changes/archive/003-ship-statistics/design/reference-review.md`,
  * rulings A–C).
  *
  * A build the package reports nothing about says so, in one line: `Build is

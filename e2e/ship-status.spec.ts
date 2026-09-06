@@ -13,7 +13,7 @@ import { buildStockHull, openLibrary, openRecordFromLibrary } from './shell';
  * in the design's favour in wave 11, so the assertions that matter most are the
  * ones that fail if the withdrawn surface — counts, a structural-facts list, an
  * all-clear line, a per-issue slot action, a wide Status tab — comes back
- * (`specs/003-ship-statistics/design/reference-review.md`, rulings A–C).
+ * (`openspec/changes/archive/003-ship-statistics/design/reference-review.md`, rulings A–C).
  */
 
 const HULL = 'Anaconda';
@@ -416,8 +416,8 @@ test.describe('the BUILD STATUS block', () => {
     // its 2026-08-25 revision — so a rail without them is that feature's open
     // task, not this feature's guarantee, and asserting their absence here would
     // make feature 003 the thing that fails when 005 draws what the canvas draws
-    // (`design/status-rail.md`, item 4; `specs/005-power-and-heat/tasks.md`,
-    // T074).
+    // (`design/status-rail.md`, item 4;
+    // `openspec/specs/ship-builder/power-and-heat/spec.md`, "Rail pip control").
   });
 
   test('states what the build carries, in the rail’s own cell band', async ({ page }) => {

@@ -2,7 +2,7 @@
 //
 // Every value here is measured from the product reference canvas
 // `.design/Ship Builder.dc.html`, canvases 1a–1d. The measurement is recorded in
-// `specs/011-interface-foundations/design/canvas-extraction.md`; that file, not
+// `openspec/changes/archive/011-interface-foundations/design/canvas-extraction.md`; that file, not
 // this one, is where a value is argued for.
 //
 // The canvas ships a 55-property colour block and nothing else — every other
@@ -491,7 +491,7 @@
   // over it still stops the runaway — 566px against the 584px a 1920 column
   // would otherwise hand each plate, and against 904px at 2560 — while giving
   // the drawing the room the screen actually has. The derivation is in
-  // `specs/010-hull-anatomy/design/hull-anatomy.md`, and it reproduces this
+  // `openspec/changes/archive/010-hull-anatomy/design/hull-anatomy.md`, and it reproduces this
   // token's own pre-raise 404px at the 1560 the canvas was drawn at.
   --ednb-measure-anatomy-plate: 35.35rem;
 

@@ -53,7 +53,6 @@ function session(active: ActiveBuildStore, outfitting: OutfittingStore): string 
     baseline: active.baselineFingerprint(),
     dirty: active.dirty(),
     link: active.link(),
-    notices: active.qualityCompletionNotices(),
     validation: active.validation(),
     canUndo: outfitting.canUndo(),
     canRedo: outfitting.canRedo(),
@@ -73,14 +72,13 @@ describe('what an import that does not happen costs', () => {
 
   /**
    * A session with something to lose: a dirty build off a saved record, a
-   * published link, an edit on the undo tape and a completion notice on screen.
+   * published link and an edit on the undo tape.
    */
   function seed(): void {
     active.commit({
       loadout: defaultBuild(),
       hullName: 'Anaconda',
       provenance: 'working',
-      qualityNotices: [],
       sourceNamed: { recordId: 'record-1', baseRevisionId: 'rev-1' },
       autosaveRecordId: null,
       baseline: null,
@@ -98,16 +96,6 @@ describe('what an import that does not happen costs', () => {
         : { kind: 'fitVariant', slotKey: FIXTURE_SLOTS.hardpoint, choiceKey: choice.key },
     );
     active.setLink({ kind: 'published', fragment: 'b.abc', revision: active.revision() });
-    active.setQualityCompletionNotices([
-      {
-        kind: 'qualityCompleted',
-        slotKey: FIXTURE_SLOTS.thrusters,
-        moduleSymbol: 'Int_Engine_Size7_Class5',
-        blueprintFdname: 'Engine_Dirty',
-        previousQuality: 0.37,
-        quality: 1,
-      },
-    ]);
   }
 
   beforeEach(() => {
@@ -228,7 +216,6 @@ describe('what an import that does not happen costs', () => {
         loadout: ShipLoadout.default('Eagle'),
         hullName: 'Eagle',
         provenance: 'stock',
-        qualityNotices: [],
         sourceNamed: null,
         autosaveRecordId: null,
         baseline: null,

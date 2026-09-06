@@ -1,0 +1,386 @@
+## Purpose
+
+A Commander creates a stock build, works in it, and finds it again later. This capability owns build
+creation, the active build, the local records that hold builds, their names, notes, expiry and
+removal, and the versioned browser persistence format.
+
+## Requirements
+
+### Requirement: Build creation from the package default loadout
+
+Build creation MUST be explicit and MUST use the package default loadout. If no default is available,
+creation MUST be unavailable; the application MUST NOT invent one.
+
+Source: 001/FR-007.
+
+#### Scenario: Creating a build for a hull
+
+- **WHEN** a Commander creates a build for a selected hull
+- **THEN** the build carries the Almanac default loadout for that hull
+
+#### Scenario: The package publishes no default loadout
+
+- **WHEN** a hull has no package default loadout
+- **THEN** creation is unavailable for that hull
+- **AND** the application does not invent a loadout
+
+#### Scenario: Creating a build while another build is open
+
+- **WHEN** a Commander creates a build while another build is open
+- **THEN** the application does not ask about the build already open
+- **AND** the earlier build stays in the record it was autosaved to
+
+### Requirement: Autosave of the active build
+
+The active build MUST be recoverable from a stored record at all times, without being asked for and
+without a Commander action, and MUST be restored after reload. A build that has no record yet MUST be
+autosaved to an unnamed record of its own from the moment it becomes active. A build opened from an
+existing record MUST be autosaved to an unnamed record of its own from its first modelled edit.
+Wherever a record is taken for a build — at either of those two moments — an unnamed record already
+holding identical modelled state MUST be taken over rather than a second copy of it stored. Autosave
+MUST NEVER write to a named record. Creating, opening or loading another build MUST NOT overwrite or
+discard the record of the build before it. Records MUST use local identities independent of their
+display names.
+
+Autosave stops at the named record deliberately. A Commander who names a build has said which version
+of it they want kept, and letting the next edit flow into that record would take the decision back
+off them. So editing a named build forks an unnamed record and every write goes there, and the named
+record moves only when the Commander saves. The cost is that ordinary browsing and ordinary editing
+leave records behind, which the seven-day expiry and naming carry.
+
+Source: 001/FR-008.
+
+#### Scenario: Reloading the tab
+
+- **WHEN** a Commander reloads the tab
+- **THEN** the build the tab was working on is restored
+
+#### Scenario: Creating the same stock hull twice
+
+- **WHEN** a Commander creates the same stock hull a second time, or opens the same link twice
+- **THEN** the build takes over the unnamed record already holding that modelled state
+- **AND** one record exists rather than two
+
+#### Scenario: Two saved builds edited into the same state
+
+- **WHEN** a Commander edits two saved builds into the same first change
+- **THEN** the second edit takes over the unnamed record already holding that state
+
+#### Scenario: Two existing records become alike
+
+- **WHEN** two records that already exist come to hold the same modelled state through later edits
+- **THEN** they are never merged
+
+#### Scenario: Editing a build opened from a named record
+
+- **WHEN** a Commander edits a build opened from a named record
+- **THEN** the named record is unchanged
+- **AND** the edits are autosaved to an unnamed record of their own, listed as such
+
+#### Scenario: Opening a named build and not editing it
+
+- **WHEN** a Commander opens a named build and makes no edit
+- **THEN** nothing is written
+
+#### Scenario: Replacing the build in the workspace
+
+- **WHEN** a Commander replaces the build in the workspace
+- **THEN** the earlier build remains as the record it was autosaved to
+- **AND** the library still lists it
+
+### Requirement: Naming, saving and removing a record
+
+Duplicate names MUST be allowed after warning. Removing a record MUST require a confirmed deletion,
+the manual save that consumes it, or the expiry this capability defines, and nothing else may remove
+one. Deleting the record this page is autosaving into MUST clear the active build to the no-build
+state rather than leave it on screen with nowhere to write: the Commander asked for that build to go,
+and the confirmation named it. A manual save MUST consume the unnamed record it saved from and MUST
+leave no copy of it behind: naming an unnamed record MUST name that same local identity, and writing
+the build into an existing record MUST delete the unnamed record afterwards. Saving a copy under
+another name MUST create a further record and leave the original where it is. Replacing the active
+build MUST NOT be confirmed, because autosave leaves nothing to lose.
+
+Naming, renaming and saving a copy MUST be offered on the build that is open, and MUST NOT be offered
+as actions on a row of the library. The library MUST commit exactly two: open the record that was
+chosen, and delete it. A record is renamed by opening it and saving it under another name over the
+save it came from, and copied by opening it and saving it as a new build.
+
+A save that writes nothing MUST say so, and MUST leave what the Commander typed on screen for them to
+try again with. A build looks the same whether its save landed or not, so a layer that closes over a
+full store, a lock it could not take or a record removed in another tab is the one way an edit is
+lost without anyone being told. The same holds for an answer to a save conflict.
+
+Source: 001/FR-009.
+
+#### Scenario: Naming an unnamed record
+
+- **WHEN** a Commander saves an unnamed build under a name
+- **THEN** the same local identity takes the name
+- **AND** no copy of the unnamed record is left behind
+
+#### Scenario: Saving over an existing record
+
+- **WHEN** a Commander saves the open build into an existing record
+- **THEN** the unnamed record the build was autosaved to is deleted afterwards
+
+#### Scenario: Saving a copy under another name
+
+- **WHEN** a Commander saves the open build as a new build under another name
+- **THEN** a further record is created
+- **AND** the record it was opened from stays where it is
+
+#### Scenario: A name already in use
+
+- **WHEN** a Commander saves under a name another record already carries
+- **THEN** the application warns
+- **AND** the duplicate name is allowed
+
+#### Scenario: Deleting the record the workspace is autosaving into
+
+- **WHEN** a Commander confirms deletion of the record this page is autosaving into
+- **THEN** the active build clears to the no-build state
+- **AND** the no-build state explains how to select a hull, open a save or paste a link, as it does before a Commander has built anything
+
+#### Scenario: A save writes nothing
+
+- **WHEN** a save or an answer to a save conflict fails to write
+- **THEN** the application says the save wrote nothing
+- **AND** what the Commander typed stays on screen to try again with
+
+### Requirement: Stored entry facts and listing
+
+Stored entries MUST state their name or that they have none, hull, last-modified time and the
+validation state recorded at that time. An unnamed entry MUST also state how long it has before it
+expires, and MUST be titled by the build's own ship name, by its ident where there is no ship name,
+or by the hull name where there is neither.
+
+Entries MUST be listed as one list in one order, and MUST NOT be divided into a group of named
+records and a group of unnamed ones. The last-modified time MUST be stated as how long ago the entry
+was edited, in the active locale's own words; the instant itself MUST remain available as text, so
+that nothing is lost to a reader who needs it exactly.
+
+The recorded validation, the remaining life and the marker on the record the workspace holds are
+stated rather than drawn. The row the workspace holds carries `aria-current` and sits on the amber
+edge; a build with issues carries their count on a warm plate beside its title, and a build with none
+carries nothing.
+
+The title MUST be read from the build rather than stored on the record, MUST NOT be a name the
+application invented, and MUST be distinguished from a name the Commander gave the record. A build
+MAY have one local note.
+
+Source: 001/FR-010.
+
+#### Scenario: An unnamed entry is titled from the build
+
+- **WHEN** an unnamed record's build carries a ship name
+- **THEN** the entry is titled by that ship name, marked as not a name the Commander gave the record
+
+#### Scenario: An unnamed build carries neither ship name nor ident
+
+- **WHEN** an unnamed record's build has no ship name and no ident
+- **THEN** the entry is titled by the hull name
+
+#### Scenario: The ship name changes
+
+- **WHEN** a Commander renames the ship in an unnamed build
+- **THEN** the entry's title follows it, because the title is read from the build
+
+#### Scenario: Two unnamed entries share a title
+
+- **WHEN** two unnamed entries carry the same title, because two ships share a name
+- **THEN** neither is treated as a duplicate of the other
+- **AND** hull, last-modified time and remaining life still tell them apart
+
+#### Scenario: Reading when an entry was edited
+
+- **WHEN** a Commander reads an entry's last-modified time
+- **THEN** it is stated as how long ago the entry was edited, in the active locale's own words
+- **AND** the instant itself remains available as text
+
+### Requirement: Local-only notes and storage identities
+
+Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF export.
+
+Source: 001/FR-011.
+
+#### Scenario: Sharing a build that carries a note
+
+- **WHEN** a Commander shares a build that has a local note as a link or a SLEF export
+- **THEN** neither the note nor the storage identity is in the output
+
+### Requirement: Concurrent pages and records
+
+A record deleted by another live page MUST NOT clear that page's active build. The build MUST remain
+usable, autosave MUST pause, and resuming MUST be an explicit Commander action, because nobody at
+this page decided anything.
+
+Two live pages MUST NOT autosave to one record. Each page's autosave target is an unnamed record it
+minted or took over for itself; a page that finds another live page claiming that identity MUST fork
+under a fresh one before either page next writes. Two pages MAY hold the same named record open,
+because neither autosaves into it; concurrent manual writes to one record MUST offer overwrite, keep
+both and cancel.
+
+Source: 001/FR-012.
+
+#### Scenario: Another page deletes this page's record
+
+- **WHEN** another live page deletes the record this page is autosaving into
+- **THEN** this page keeps its build usable and pauses autosave
+- **AND** the Commander resumes autosave by an explicit action
+
+#### Scenario: Two pages claim one autosave identity
+
+- **WHEN** a page finds another live page claiming its autosave record identity
+- **THEN** it forks under a fresh identity before either page next writes
+
+#### Scenario: A conflicting manual save from another tab
+
+- **WHEN** two pages write manually to one record
+- **THEN** the application offers overwrite, keep both and cancel
+- **AND** neither version is silently lost
+
+### Requirement: Expiry of unnamed records
+
+An unnamed record MUST expire seven days after it was last modified, and MUST then be removed. The
+seven days MUST run from last modification, so a build a Commander keeps working on never expires
+under them. Naming a record MUST stop the clock: a named record MUST NOT expire, and is bounded only
+by the browser storage quota. A record a live page is autosaving into MUST NOT expire while that page
+holds it. There MUST be no limit on how many records may exist inside the seven days.
+
+The sweep MUST NOT be announced after it has run. The remaining time on the entry is the notice,
+given while there is still something a Commander can do about it; a message about builds that are
+already gone offers nothing to act on and no way back. That notice is stated rather than drawn, so a
+Commander who does not use a screen reader meets it by going to the record: an unnamed record can run
+out without a drawn warning that it was going to.
+
+Expiry is not a storage bound and MUST NOT be presented as one: at the browser storage quota the
+Commander MUST still be able to choose records to discard while the active in-memory build remains
+usable.
+
+Source: 001/FR-013.
+
+#### Scenario: An unnamed record is returned to
+
+- **WHEN** a Commander keeps editing an unnamed record
+- **THEN** the seven days run from the last modification and the record does not expire
+
+#### Scenario: A record is taken over
+
+- **WHEN** a build takes over an unnamed record holding identical modelled state
+- **THEN** the seven days do not restart, because taking a record over is not modifying it
+- **AND** the entry states the remaining time
+
+#### Scenario: A tab is left open for longer than seven days
+
+- **WHEN** a page holds a record it is autosaving into for longer than seven days
+- **THEN** the record is not swept while that page holds it
+
+#### Scenario: Unsaved edits to a named build
+
+- **WHEN** unsaved edits to a named build sit in their unnamed record for seven days
+- **THEN** the unnamed record expires on the same clock as any other
+- **AND** the named record it was forked from does not expire at all
+
+#### Scenario: Naming a record before it expires
+
+- **WHEN** a Commander names a record at any point before it runs out
+- **THEN** the record is kept indefinitely
+- **AND** there is no count at which naming becomes necessary
+
+#### Scenario: Expired records are swept
+
+- **WHEN** the sweep removes expired records
+- **THEN** the application says nothing about them afterwards
+
+#### Scenario: The browser storage quota is reached
+
+- **WHEN** browser storage is full
+- **THEN** the Commander can still choose records to discard
+- **AND** the active in-memory build remains usable
+
+### Requirement: Versioned browser persistence
+
+Browser persistence MUST use a versioned format and migrate every supported older version without
+losing recognized modelled state. During reconstruction, an unknown hull MUST leave the record stored
+but unopened. Package reconstruction MUST populate every fixed mount from the hull default whenever
+its source entry is absent or unusable, before the build becomes active; the application MUST NOT run
+a separate repair or preserve empty-mount provenance. Unknown module identities are outside the
+supported persistence contract. Unsupported newer versions MUST remain stored but unopened. Storage
+failure MUST disable only persistence.
+
+Source: 001/FR-014, 001/SC-002.
+
+#### Scenario: A record names an unknown hull
+
+- **WHEN** reconstruction meets a record whose hull the installed package does not publish
+- **THEN** the record is refused atomically and stays stored but unopened
+
+#### Scenario: A fixed mount is absent or unusable
+
+- **WHEN** a record's entry for a fixed mount is absent or unusable
+- **THEN** reconstruction populates that mount from the hull default before the build becomes active
+- **AND** no separate repair runs and no empty-mount provenance is kept
+
+#### Scenario: A record carries an unsupported newer version
+
+- **WHEN** a record's format version is newer than any this application supports
+- **THEN** the record stays stored but unopened
+
+#### Scenario: Storage is unavailable or full
+
+- **WHEN** browser storage is unavailable or full
+- **THEN** only persistence is disabled
+- **AND** the build remains usable and the persistence failure is clear
+
+### Requirement: Ship name and ident on the active build
+
+While a build is active, a Commander MUST be able to set and clear its ship name and ident. Both are
+optional free text, both are modelled build state carried by the build snapshot, and neither MUST be
+inferred, defaulted or derived from the hull. Applying either MUST go through the same package
+reconstruction and atomic replacement as any other edit.
+
+A ship's name and the name a Commander gives the saved build record are one value; the application
+MUST NOT hold a second copy of it, and a record's local identity remains independent of it. An
+unnamed build MUST present an empty name rather than a hull-derived placeholder shown as a value.
+
+Free text, but not unbounded text: the game's own ship naming terminal takes at most 22 characters of
+name and a 6-character ID plate, and a build carrying more than either describes a ship nobody can
+register. Each field MUST hold a Commander to its bound as they type and as they paste, rather than
+accepting the text and refusing it afterwards. Confirming a field MUST commit no more than its bound,
+so a longer value that reached the field from a link or a SLEF file is brought inside the limit by
+the edit rather than passed through it — and the field MUST open on the bounded value, so what a
+Commander confirms is what they were shown. Both bounds sit under the build link codec's own
+per-string bound, so a name and an ident that pass here always fit a shared link.
+
+The two figures are held in the application because nothing publishes them. They are the game's
+bounds and not this application's, so they belong to the Almanac; the package exposes no record of
+the naming terminal's limits for them to be read from. They are a recorded gap rather than a licence:
+the numbers live in one named place (`SHIP_NAME_MAX_LENGTH` / `SHIP_IDENT_MAX_LENGTH` in
+`src/app/ui/outfitting/ship-identity-fields.ts`), they are the only game figures this application
+states, and the condition for removing them is the package publishing the bounds — at which point the
+constants go and the fields read them, in the same change. Nothing else may be added beside them on
+this precedent.
+
+Source: 002/FR-019.
+
+#### Scenario: Setting a ship name
+
+- **WHEN** a Commander sets the ship name on the active build
+- **THEN** the name is applied through the same package reconstruction and atomic replacement as any other edit
+- **AND** the saved record's name is that same value rather than a second copy of it
+
+#### Scenario: Typing or pasting past a bound
+
+- **WHEN** a Commander types or pastes more than 22 characters of ship name, or more than 6 characters of ident
+- **THEN** the field holds them to the bound as they type
+
+#### Scenario: A longer value arrives from a link or a SLEF file
+
+- **WHEN** a ship name or ident longer than its bound reaches the field from a link or a SLEF file
+- **THEN** the field opens on the bounded value
+- **AND** confirming the field commits no more than the bound
+
+#### Scenario: A build has no ship name
+
+- **WHEN** a build carries no ship name
+- **THEN** the field presents an empty name rather than a hull-derived placeholder shown as a value

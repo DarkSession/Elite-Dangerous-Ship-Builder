@@ -14,7 +14,7 @@ and after.
 
 ## Why
 
-<!-- The problem this solves. Name the feature and spec directory it comes from. -->
+<!-- The problem this solves. Name the capability it belongs to and the change it comes from. -->
 
 Closes #
 

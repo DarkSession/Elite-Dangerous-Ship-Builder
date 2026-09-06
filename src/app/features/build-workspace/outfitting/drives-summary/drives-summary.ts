@@ -41,7 +41,7 @@ const MASS_DIGITS = 0;
  * Nothing here is interactive, as no cell in the rail's band is: the canvas
  * draws no control in that grid. The rail around it is another matter since
  * the 2026-08-25 revision, which put feature 005's pip control in it
- * (`specs/003-ship-statistics/design/status-rail.md`, item 4). At both widths
+ * (`openspec/changes/archive/003-ship-statistics/design/status-rail.md`, item 4). At both widths
  * the two cards these figures come from are a segment away.
  *
  * A figure the package could not settle has no value, and the cell says so

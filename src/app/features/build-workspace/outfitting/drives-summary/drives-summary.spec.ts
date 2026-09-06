@@ -36,7 +36,6 @@ describe('DrivesSummary', () => {
       loadout,
       hullName: HULL,
       provenance: 'stock',
-      qualityNotices: [],
       sourceNamed: null,
       autosaveRecordId: null,
       baseline: null,

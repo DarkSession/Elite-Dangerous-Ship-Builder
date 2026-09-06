@@ -91,15 +91,6 @@ export interface NormalizationRefusal {
   readonly params: LoadoutIssueParams | null;
 }
 
-/** One partial roll the package completed, for the post-commit outcome. */
-export interface EngineeringQualityCompletion {
-  readonly slotKey: string;
-  readonly moduleSymbol: string;
-  readonly blueprintFdname: string | null;
-  readonly previousQuality: number;
-  readonly quality: 1;
-}
-
 /**
  * A detached, fully normalized build that has not been made active.
  *
@@ -111,7 +102,6 @@ export interface SlefImportCandidate {
   readonly loadout: ShipLoadout;
   /** The producer the envelope named, when it named one. Plain text only. */
   readonly sourceAttribution: SlefSourceAttribution | null;
-  readonly qualityCompletions: readonly EngineeringQualityCompletion[];
   readonly validation: PackageValidation;
   readonly requestToken: SlefRequestToken;
 }

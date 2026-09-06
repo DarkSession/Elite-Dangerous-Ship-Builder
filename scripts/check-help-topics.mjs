@@ -25,7 +25,7 @@
  * FAQ with no answer about build links would reasonably conclude there was
  * nothing to say about build links.
  */
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,7 +50,10 @@ export const OUTPUT_PATH = 'src/app/platform/build/help-topics.generated.ts';
 export const SHIPPED_LOCALES = Object.freeze(['en', 'de']);
 
 /** The constitution, which declares the numbered principles. */
-const CONSTITUTION_PATH = '.specify/memory/constitution.md';
+const CONSTITUTION_PATH = 'CONSTITUTION.md';
+
+/** Where the capability specifications live. */
+const SPECS_DIR = 'openspec/specs';
 
 /** Wording the reference mock carries and this application must not. */
 const PROHIBITED_WORDING = Object.freeze([
@@ -117,11 +120,11 @@ export function assertDeclaredSet(definitions) {
 /**
  * Resolves one governing reference against the artifact that declares it.
  *
- * A requirement is matched on its declaration form — `- **FR-015**:` — and not
- * merely on the string appearing somewhere. Feature 003's withdrawal table
- * names a dozen reassigned ids in prose; a check that accepted a mention would
- * happily resolve every one of them against the paragraph explaining that they
- * no longer exist.
+ * A requirement is matched on its declaration form — the trailing
+ * `Source: 001/FR-008.` line a capability requirement carries — and not merely
+ * on the string appearing somewhere. A withdrawn id carries no trace, and a
+ * paragraph that mentions one in passing is not a declaration, so neither can
+ * govern a help answer.
  */
 export async function resolveReference(reference, { repoRoot = ROOT } = {}) {
   if (reference.kind === 'principle') {
@@ -144,24 +147,38 @@ export async function resolveReference(reference, { repoRoot = ROOT } = {}) {
     throw new HelpTopicError(String(reference.kind), 'is not a kind of governing reference.');
   }
 
-  const path = join(repoRoot, 'specs', reference.feature, 'spec.md');
-  if (!existsSync(path)) {
-    throw new HelpTopicError(
-      `${reference.feature}/spec.md`,
-      `is missing, so ${reference.id} cannot be resolved.`,
-    );
+  const specsRoot = join(repoRoot, SPECS_DIR);
+  if (!existsSync(specsRoot)) {
+    throw new HelpTopicError(SPECS_DIR, 'is missing, so no requirement can be resolved.');
   }
-  const text = await readFile(path, 'utf8');
-  // The declaration form, bold and at the head of its own list item. An
-  // unbolded id in a withdrawal table is deliberately not a declaration.
-  const declared = new RegExp(`^- \\*\\*${reference.id}\\*\\*:`, 'm').test(text);
-  if (!declared) {
-    throw new HelpTopicError(
-      `${reference.feature} ${reference.id}`,
-      'is not a declared requirement. A withdrawn or reassigned id cannot govern a help answer.',
-    );
+  const trace = `${reference.feature.split('-')[0]}/${reference.id}`;
+  for (const file of await specFiles(specsRoot)) {
+    const text = await readFile(file, 'utf8');
+    // The id ends where the trace does. `002/FR-002` must not resolve against a
+    // trace that carries only `002/FR-002a`, which is a different requirement.
+    const declares = new RegExp(`${trace.replace('/', '\\/')}(?![0-9a-z])`);
+    const declared = text
+      .split('\n')
+      .some((line) => /^\s*Source:/.test(line) && declares.test(line));
+    if (declared) {
+      return `${relative(repoRoot, file).split('\\').join('/')}#${trace}`;
+    }
   }
-  return `specs/${reference.feature}/spec.md#${reference.id}`;
+  throw new HelpTopicError(
+    trace,
+    'is not a declared requirement. A withdrawn or reassigned id cannot govern a help answer.',
+  );
+}
+
+/** Every capability specification under a specifications root. */
+async function specFiles(root) {
+  const found = [];
+  for (const entry of await readdir(root, { withFileTypes: true, recursive: true })) {
+    if (entry.isFile() && entry.name === 'spec.md') {
+      found.push(join(entry.parentPath, entry.name));
+    }
+  }
+  return found.sort();
 }
 
 /** Reads one shipped locale catalogue. */

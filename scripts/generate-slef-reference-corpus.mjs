@@ -26,7 +26,7 @@ const CORPUS_VERSION = 1;
 const SERIALIZATION = { moduleOrder: 'fitted', explicitPower: false, indent: 2 };
 
 const defaultOutputDirectory = fileURLToPath(
-  new URL('../specs/004-slef/validation/reference-corpus/', import.meta.url),
+  new URL('../openspec/changes/archive/004-slef/validation/reference-corpus/', import.meta.url),
 );
 const outputDirectory = process.env.SLEF_CORPUS_OUTPUT_PATH ?? defaultOutputDirectory;
 
