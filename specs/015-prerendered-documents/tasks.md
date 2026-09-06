@@ -48,9 +48,9 @@ answer already:
 
 **Purpose**: Get the toolchain able to prerender at all. Nothing else compiles first.
 
-- [X] T001 Add `@angular/ssr` and `@angular/platform-server` as dev dependencies at the Angular pin in `package.json`, moving the Angular pin itself if peers demand it, and refresh `pnpm-lock.yaml` (research decision 12)
-- [X] T002 Create the build-time render entry `src/main.server.ts`, exporting a default that takes `BootstrapContext` and passes it to `bootstrapApplication` — omitting it raises NG0401 and kills the build (research decision 3)
-- [X] T003 Create `src/app/app.config.server.ts` merging `appConfig` with `provideServerRendering()`, per research decision 2
+- [x] T001 Add `@angular/ssr` and `@angular/platform-server` as dev dependencies at the Angular pin in `package.json`, moving the Angular pin itself if peers demand it, and refresh `pnpm-lock.yaml` (research decision 12)
+- [x] T002 Create the build-time render entry `src/main.server.ts`, exporting a default that takes `BootstrapContext` and passes it to `bootstrapApplication` — omitting it raises NG0401 and kills the build (research decision 3)
+- [x] T003 Create `src/app/app.config.server.ts` merging `appConfig` with `provideServerRendering()`, per research decision 2
 
 **Checkpoint**: `pnpm install` succeeds and the two entries typecheck. Nothing renders yet.
 
@@ -64,18 +64,19 @@ states what a prerender pass is. Every user story depends on all of it.
 **⚠️ CRITICAL**: A prerender configured before T004–T006 is a build that fails on
 every one of the 50 routes.
 
-- [X] T004 Create `src/app/platform/browser/rendering-target.ts` as the single injectable statement of "is this a browser", wrapping `isPlatformBrowser(inject(PLATFORM_ID))` — **not** a `DOCUMENT.defaultView` check, which the spike proved wrong because the emulation supplies `defaultView` but no `crypto` (research decision 5, constitution III)
-- [X] T005 Guard the retention sweep in `src/app/app.config.ts` behind `rendering-target.ts`, so `provideAppInitializer` → `RetentionService` → `TabOwnershipCoordinator` → `UuidAdapter.create()` is not reached at build time. `UuidAdapter` keeps throwing rather than fabricating an identity; the call is removed, not the honesty (research decision 5, constitution IV)
-- [X] T006 Give `observeBanner` in `src/app/ui/components/app-frame/sticky-banner.ts` a `DOCUMENT`-injected view and defer its first `measure()` to `afterNextRender`, following `element-size.adapter.ts:28` and `bench-composition.ts:91-94`. The document must carry neither `frame--released` nor `--ednb-layout-bar-height` (`app-frame.ts:185-186`), and the pass must log no `getBoundingClientRect` error (research decision 6)
-- [X] T007 [P] Add unit tests for `rendering-target.ts` in `src/app/platform/browser/rendering-target.spec.ts`, covering both platforms
-- [X] T008 [P] Extend the `sticky-banner` unit tests to assert that no measurement is taken before the first render, so T006's deferral cannot be undone silently
-- [ ] T009 Add the `contentBearing` registry to `scripts/search/published-addresses.mjs` beside the list it qualifies: one record per advertised address, `reason` required when `false`, 50 true and 2 false ([data-model.md](./data-model.md) `ContentBearing`, FR-021)
-- [ ] T010 [P] Add script tests for the registry in `scripts/search/published-addresses.test.mjs`: every advertised address appears exactly once, `reason` is present wherever `contentBearing` is `false`, and the counts are 52 / 50 / 2
-- [ ] T011 Create `scripts/generate-prerender-routes.mjs`, deriving the routes file from `publishedAddresses(...)` filtered by `contentBearing` — one leading-slash line each, 50 lines, written to the build directory and never committed (address-set.md §4, FR-006)
-- [ ] T012 [P] Add script tests for the generator in `scripts/generate-prerender-routes.test.mjs`: exactly 50 lines, every line a content-bearing address, no bench, and no hand-listed hull
-- [ ] T013 Configure the build in `angular.json`: `server`, `ssr.entry`, `prerender.routesFile` and `discoverRoutes: false`, **without** `outputMode` — setting `outputMode` makes the builder ignore `prerender` entirely and warn about it (`@angular/build/src/builders/application/options.js:116-126`, research decision 2)
-- [ ] T014 Wire `generate-prerender-routes.mjs` into `pnpm run build` in `package.json`, ahead of `ng build`, so the routes file exists when the builder reads it
-- [ ] T015 Add the post-build placement step that moves each prerendered `<route>/index.html` to `<address>.html` and leaves no `ships/index.html` behind, keeping the root at `index.html` (address-set.md §2, research decision 4)
+- [x] T004 Create `src/app/platform/browser/rendering-target.ts` as the single injectable statement of "is this a browser", wrapping `isPlatformBrowser(inject(PLATFORM_ID))` — **not** a `DOCUMENT.defaultView` check, which the spike proved wrong because the emulation supplies `defaultView` but no `crypto` (research decision 5, constitution III)
+- [x] T005 Guard the retention sweep in `src/app/app.config.ts` behind `rendering-target.ts`, so `provideAppInitializer` → `RetentionService` → `TabOwnershipCoordinator` → `UuidAdapter.create()` is not reached at build time. `UuidAdapter` keeps throwing rather than fabricating an identity; the call is removed, not the honesty (research decision 5, constitution IV)
+- [x] T006 Give `observeBanner` in `src/app/ui/components/app-frame/sticky-banner.ts` a `DOCUMENT`-injected view and defer its first `measure()` to `afterNextRender`, following `element-size.adapter.ts:28` and `bench-composition.ts:91-94`. The document must carry neither `frame--released` nor `--ednb-layout-bar-height` (`app-frame.ts:185-186`), and the pass must log no `getBoundingClientRect` error (research decision 6)
+- [x] T006a Guard `restoreWhenSettled` in `src/app/features/ship-catalogue/catalogue-anchor.restorer.ts` behind `rendering-target.ts`. **Found during implementation, not by the spike**: the build tears the catalogue down at the end of every hull route, and the emulation supplies a `defaultView` with no `requestAnimationFrame`, so the existing guard passes and the next line throws. A third instance of the wrong question research decision 5 names
+- [x] T007 [P] Add unit tests for `rendering-target.ts` in `src/app/platform/browser/rendering-target.spec.ts`, covering both platforms
+- [x] T008 [P] Extend the `sticky-banner` unit tests to assert that no measurement is taken before the first render, so T006's deferral cannot be undone silently
+- [x] T009 Add the `contentBearing` registry to `scripts/search/published-addresses.mjs` beside the list it qualifies: one record per advertised address, `reason` required when `false`, 50 true and 2 false ([data-model.md](./data-model.md) `ContentBearing`, FR-021)
+- [x] T010 [P] Add script tests for the registry in `scripts/search/published-addresses.test.mjs`: every advertised address appears exactly once, `reason` is present wherever `contentBearing` is `false`, and the counts are 52 / 50 / 2
+- [x] T011 Create `scripts/generate-prerender-routes.mjs`, deriving the routes file from `publishedAddresses(...)` filtered by `contentBearing` — one leading-slash line each, 50 lines, written to the build directory and never committed (address-set.md §4, FR-006)
+- [x] T012 [P] Add script tests for the generator in `scripts/generate-prerender-routes.test.mjs`: exactly 50 lines, every line a content-bearing address, no bench, and no hand-listed hull
+- [x] T013 Configure the build in `angular.json`: `server`, `ssr.entry`, `prerender.routesFile` and `discoverRoutes: false`, **without** `outputMode` — setting `outputMode` makes the builder ignore `prerender` entirely and warn about it (`@angular/build/src/builders/application/options.js:116-126`, research decision 2)
+- [x] T014 Wire `generate-prerender-routes.mjs` into `pnpm run build` in `package.json`, ahead of `ng build`, so the routes file exists when the builder reads it
+- [x] T015 Add the post-build placement step that moves each prerendered `<route>/index.html` to `<address>.html` and leaves no `ships/index.html` behind, keeping the root at `index.html` (address-set.md §2, research decision 4)
 - [ ] T016 [P] Add script tests for the placement step: `ships.html` and `ships/Anaconda.html` exist, `ships/index.html` does not, `index.html` does, and no address resolves to a directory
 
 **Checkpoint**: `pnpm run build` produces 50 documents with bodies plus
@@ -95,8 +96,8 @@ search-visibility gain with neither other story built.
 
 ### The pipeline that makes the documents survive
 
-- [ ] T017 [US1] Change `scripts/publish-static-routes.mjs` so `404.html` is a byte copy of `index.csr.html` rather than of `index.html`, written before any substitution — after this feature `index.html` carries the start page, and an unchanged copy would answer every unmatched address with it (address-set.md §3, §5)
-- [ ] T018 [US1] Change `publish-static-routes.mjs`'s template from one file to per-address: substitute each address's head over **that address's generated document**, and over `index.csr.html` for the two head-only addresses. A content-bearing address whose document is missing MUST fail the build rather than fall back to the shell (address-set.md §5, FR-005, FR-021)
+- [x] T017 [US1] Change `scripts/publish-static-routes.mjs` so `404.html` is a byte copy of `index.csr.html` rather than of `index.html`, written before any substitution — after this feature `index.html` carries the start page, and an unchanged copy would answer every unmatched address with it (address-set.md §3, §5)
+- [x] T018 [US1] Change `publish-static-routes.mjs`'s template from one file to per-address: substitute each address's head over **that address's generated document**, and over `index.csr.html` for the two head-only addresses. A content-bearing address whose document is missing MUST fail the build rather than fall back to the shell (address-set.md §5, FR-005, FR-021)
 - [ ] T019 [US1] Extend `scripts/publish-static-routes.test.mjs`: the 50 keep their bodies after publishing, the 2 get the shell, `404.html` matches `index.csr.html`, and a missing generated document is a failure rather than a silent shell
 
 ### The gates FR-020 and FR-021 are

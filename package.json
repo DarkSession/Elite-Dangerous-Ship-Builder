@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "pnpm run help:artifacts && ng serve",
-    "build": "pnpm run help:artifacts && pnpm run search:sitemap && ng build && node scripts/publish-static-routes.mjs",
+    "build": "pnpm run help:artifacts && pnpm run search:sitemap && node scripts/generate-prerender-routes.mjs && ng build && node scripts/publish-static-routes.mjs",
     "watch": "pnpm run help:artifacts && ng build --watch --configuration development",
     "test": "pnpm run help:artifacts && ng test",
     "test:scripts": "node --test scripts/*.test.mjs scripts/**/*.test.mjs",

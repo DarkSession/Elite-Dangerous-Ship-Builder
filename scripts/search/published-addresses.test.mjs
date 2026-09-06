@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   HULL_PARENT,
   SITE_CARD,
+  contentBearing,
+  contentBearingAddresses,
   declaredOrigin,
   documentHead,
   documentTitle,
@@ -133,5 +135,97 @@ describe('what a published document says', () => {
   it('falls back to the application title where the page has no name', () => {
     assert.equal(documentTitle(CATALOGUE, null), 'Nav Beacon – Elite Dangerous Commander Tools');
     assert.equal(documentTitle(CATALOGUE, '   '), 'Nav Beacon – Elite Dangerous Commander Tools');
+  });
+});
+
+/**
+ * Which advertised addresses carry content a build can state.
+ *
+ * The property under test is that the two consumers of this verdict cannot
+ * disagree, because there is only one verdict. A build that generated 49
+ * documents and a gate that expected 50 would not fail here — it would fail
+ * with a message about a missing file, days later, in a job nobody attached to
+ * this decision (015/FR-021).
+ */
+describe('the content-bearing registry', () => {
+  const ORIGIN = 'https://navbeacon.app';
+
+  it('answers for every advertised address exactly once', () => {
+    const addresses = contentBearingAddresses({ origin: ORIGIN });
+    const advertised = publishedAddresses({ origin: ORIGIN });
+
+    assert.equal(addresses.length, advertised.length);
+    assert.deepEqual(
+      addresses.map((entry) => entry.path),
+      advertised.map((entry) => entry.path),
+    );
+    assert.equal(new Set(addresses.map((entry) => entry.path)).size, addresses.length);
+  });
+
+  it('generates the root, the catalogue and every hull', () => {
+    const bearing = contentBearingAddresses({ origin: ORIGIN }).filter(
+      (entry) => entry.contentBearing,
+    );
+
+    assert.ok(bearing.some((entry) => entry.path === ''));
+    assert.ok(bearing.some((entry) => entry.path === HULL_PARENT));
+    // Every hull, counted against the package rather than against 48 — a pin
+    // move that adds a hull must not need this number edited (015/SC-009).
+    const hulls = publishedAddresses({ origin: ORIGIN }).filter((entry) =>
+      entry.path.startsWith(`${HULL_PARENT}/`),
+    );
+    assert.equal(
+      bearing.filter((entry) => entry.path.startsWith(`${HULL_PARENT}/`)).length,
+      hulls.length,
+    );
+    assert.equal(bearing.length, hulls.length + 2);
+  });
+
+  it('generates no document for the two benches, and says why for each', () => {
+    const free = contentBearingAddresses({ origin: ORIGIN }).filter(
+      (entry) => !entry.contentBearing,
+    );
+
+    assert.deepEqual(
+      free.map((entry) => entry.path),
+      ['outfitting', 'equipment'],
+    );
+    for (const entry of free) {
+      // A reason, not a bare exclusion. An address left out because nobody got
+      // to it cannot be described in a sentence that survives review.
+      assert.equal(typeof entry.reason, 'string');
+      assert.ok(entry.reason.length > 0);
+    }
+  });
+
+  it('carries no reason where a document is generated', () => {
+    for (const entry of contentBearingAddresses({ origin: ORIGIN })) {
+      if (entry.contentBearing) {
+        assert.equal(entry.reason, null);
+      }
+    }
+  });
+
+  it('keeps every field the address already had', () => {
+    // The verdict is attached to the address, not a parallel list keyed by
+    // path. A second list would be a second thing to keep in step.
+    const [root] = contentBearingAddresses({ origin: ORIGIN });
+
+    assert.equal(root.path, '');
+    assert.equal(root.address, `${ORIGIN}/`);
+    assert.equal(root.titleKey, 'app.name');
+    assert.equal(root.image, SITE_CARD);
+  });
+
+  it('treats an address nobody has ruled on as content-bearing', () => {
+    // The default matters: a new address that someone forgot to classify gets
+    // a document, which is visible, rather than silently getting none. The
+    // reconciliation gate is what makes the omission fail the build; this is
+    // what makes the failure mode the loud one.
+    assert.deepEqual(contentBearing('a-new-address'), {
+      path: 'a-new-address',
+      contentBearing: true,
+      reason: null,
+    });
   });
 });

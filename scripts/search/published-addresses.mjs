@@ -71,6 +71,57 @@ export const STATIC_ADDRESSES = [
   { path: 'equipment', titleKey: 'equipment.title', descriptionKey: 'equipment.description' },
 ];
 
+/**
+ * Why an advertised address carries no content the build can state.
+ *
+ * Keyed by path, and the only addresses in it are the ones a document is *not*
+ * generated for. Everything else — the root, the catalogue, every hull — is
+ * content-bearing, so the absence of a key is the ordinary case rather than an
+ * omission.
+ *
+ * A reason rather than a bare `false` so that excluding an address costs a
+ * sentence someone has to be able to write. "There is nothing to say yet" is a
+ * fact about the address; "we did not get to it" is not, and would not survive
+ * being written down here (015/FR-021).
+ */
+const CONTENT_FREE = {
+  outfitting: 'A bench states nothing until a Commander fits a ship.',
+  equipment: 'A bench states nothing until a Commander equips a Commander.',
+};
+
+/**
+ * Whether an address has a subject the build can state, and why when it has not.
+ *
+ * This is the property feature 015 turns on: a content-bearing address answers
+ * with a document whose body already states its subject, and a content-free one
+ * keeps the head it has and the empty shell it has always had.
+ *
+ * It lives here, beside the list it qualifies, so the build and the gate read
+ * one export rather than each inferring the rule. Two call sites that inferred
+ * it separately is precisely how a hull could stop being generated without
+ * anything failing (015/FR-021, `contracts/address-set.md` §1).
+ *
+ * A bench that later gains resting content the package can state becomes
+ * content-bearing by losing its entry here, and nothing else changes.
+ */
+export function contentBearing(path) {
+  const reason = CONTENT_FREE[path];
+  return reason === undefined
+    ? { path, contentBearing: true, reason: null }
+    : { path, contentBearing: false, reason };
+}
+
+/**
+ * Every advertised address with its content-bearing verdict attached.
+ *
+ * The one list both the routes-file generator and the reconciliation gate read.
+ * Derived from `publishedAddresses`, so a hull that arrives with a pin move
+ * arrives here too, already content-bearing, with nothing to remember.
+ */
+export function contentBearingAddresses(options) {
+  return publishedAddresses(options).map((entry) => ({ ...entry, ...contentBearing(entry.path) }));
+}
+
 /** The message keys the hull address resolves, with the hull interpolated in. */
 export const HULL_KEYS = {
   titleKey: 'hullDetail.title',

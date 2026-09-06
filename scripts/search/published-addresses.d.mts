@@ -30,6 +30,17 @@ export interface PublishedAddress {
   readonly image: string;
 }
 
+/** Whether an advertised address has a subject the build can state. */
+export interface ContentBearingVerdict {
+  readonly path: string;
+  readonly contentBearing: boolean;
+  /** Why it is not, where it is not. `null` where it is. */
+  readonly reason: string | null;
+}
+
+/** An advertised address with its content-bearing verdict attached. */
+export type ContentBearingAddress = PublishedAddress & ContentBearingVerdict;
+
 /** What one address's document says, resolved in a catalogue. */
 export interface PublishedHead {
   readonly title: string;
@@ -63,3 +74,8 @@ export declare function documentHead(
   origin: string,
 ): PublishedHead;
 export declare function declaredOrigin(source: string): string;
+export declare function contentBearing(path: string): ContentBearingVerdict;
+export declare function contentBearingAddresses(input: {
+  origin: string;
+  ships?: readonly AddressedShip[];
+}): readonly ContentBearingAddress[];
