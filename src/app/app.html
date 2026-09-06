@@ -46,50 +46,70 @@
 }
 
 <!--
-  The one Help · About modal, mounted beside the frame and never inside a
-  capability. It is eager, not deferred: help has to open on the first offline
-  visit after one completed load, and a chunk fetched on activation is a
-  request waiting to fail (012/FR-001).
--->
-<ednb-help-dialog
-  [open]="help.open()"
-  [view]="help.view()"
-  [dismissLabel]="help.dismissLabel()"
-  (dismissed)="help.closeDialog()"
-/>
+  The three layers that talk to a Commander about the session they are in
+  rather than about a screen: Help · About, and the two halves of the update
+  announcement.
 
-<!--
-  The overlay a newer version puts up before it restarts the page under it.
-  Mounted beside the frame rather than inside a capability, because the version
-  a session is running belongs to no screen in particular.
+  All three are mounted in a browser only, and this is the one place in this
+  template that asks which. Each of them is a closed `<dialog>` until something
+  opens it, so rendering them into a generated document draws nothing, moves
+  nothing and costs a Commander no frame — but two of them state the version
+  the session is running, which CI stamps into `package.json` immediately
+  before `ng build`. A body carrying it would bake a CI-only value into static
+  HTML, which is the runtime environment configuration a prerendered document
+  may not carry (015/FR-007, constitution 9.1.0, research decision 14).
 
-  It is a layer with no dismiss label, which is what leaves it with no control,
-  no Escape and no ground to click: the restart is announced rather than asked
-  about, so there is nothing here to answer. That is a time limit a Commander
-  cannot stop, and constitution V names WCAG 2.2.1 among the excluded criteria
-  for this one mechanism.
+  Mounting them a moment later rather than blanking what they say keeps each
+  one's own contract whole. Help still opens on the first offline visit,
+  because the browser mounts it before anything can ask for it, and it still
+  names the running version, because by then something is running. And there is
+  no session to announce an update to until there is a session.
 -->
-<ednb-layer
-  [open]="updateOverlay()"
-  [title]="updateOverlayTitle()"
-  [description]="updateOverlayNotice()"
-  [dismissLabel]="null"
-/>
+@if (interactive) {
+  <!--
+    Help · About, beside the frame and never inside a capability. Eager rather
+    than deferred: help has to open on the first offline visit after one
+    completed load, and a chunk fetched on activation is a request waiting to
+    fail (012/FR-001).
+  -->
+  <ednb-help-dialog
+    [open]="help.open()"
+    [view]="help.view()"
+    [dismissLabel]="help.dismissLabel()"
+    (dismissed)="help.closeDialog()"
+  />
 
-<!--
-  And the other half of the announcement, drawn by the session that came up on
-  the newer version. The overlay above is gone with the page that drew it; this
-  is the half a Commander who looked away is certain to read, and it names the
-  version they landed on. Dismissed like any other layer, and after a few
-  seconds by itself as well — nothing is pending behind it, because the update
-  is already applied.
--->
-<ednb-layer
-  [open]="updateApplied()"
-  [title]="updateAppliedTitle()"
-  [description]="updateAppliedNotice()"
-  [dismissLabel]="updateAppliedDismiss()"
-  (dismissed)="acknowledgeUpdate()"
->
-  <p class="app__update-detail">{{ updateAppliedDetail() }}</p>
-</ednb-layer>
+  <!--
+    The overlay a newer version puts up before it restarts the page under it.
+
+    It is a layer with no dismiss label, which is what leaves it with no
+    control, no Escape and no ground to click: the restart is announced rather
+    than asked about, so there is nothing here to answer. That is a time limit
+    a Commander cannot stop, and constitution V names WCAG 2.2.1 among the
+    excluded criteria for this one mechanism.
+  -->
+  <ednb-layer
+    [open]="updateOverlay()"
+    [title]="updateOverlayTitle()"
+    [description]="updateOverlayNotice()"
+    [dismissLabel]="null"
+  />
+
+  <!--
+    And the other half of the announcement, drawn by the session that came up
+    on the newer version. The overlay above is gone with the page that drew it;
+    this is the half a Commander who looked away is certain to read, and it
+    names the version they landed on. Dismissed like any other layer, and after
+    a few seconds by itself as well — nothing is pending behind it, because the
+    update is already applied.
+  -->
+  <ednb-layer
+    [open]="updateApplied()"
+    [title]="updateAppliedTitle()"
+    [description]="updateAppliedNotice()"
+    [dismissLabel]="updateAppliedDismiss()"
+    (dismissed)="acknowledgeUpdate()"
+  >
+    <p class="app__update-detail">{{ updateAppliedDetail() }}</p>
+  </ednb-layer>
+}

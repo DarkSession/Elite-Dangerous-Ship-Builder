@@ -152,6 +152,24 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      # After the build, because it reads what the build wrote.
+      #
+      # `test:scripts` above runs this gate's own tests, which prove it notices
+      # a doctored document — but they run before there is anything to read, so
+      # the half of them that needs a build skips there. This is the step that
+      # holds the real output to the package: every figure in every generated
+      # document compared against the pinned Almanac, every head still matching
+      # what its address advertises, and nothing published that a static file
+      # may not carry (015/FR-020, `contracts/prerendered-document.md`).
+      #
+      # The failure it exists for is silent by nature. A component that stops
+      # rendering a figure, a formatter that starts rounding, a publishing step
+      # that writes the shell over a rendered body: each leaves a build that
+      # exits 0 with all 52 addresses answering 200 and every head correct.
+      # Nothing else in this workflow compares a body to anything.
+      - name: Check the generated documents against the package
+        run: node scripts/check-prerendered-documents.mjs
+
       - name: Unit tests
         run: pnpm run test
 
