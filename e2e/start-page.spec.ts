@@ -130,6 +130,52 @@ test.describe('start page', () => {
     await expect(notice).toHaveAttribute('lang', 'en');
   });
 
+  test('gives the licence notice the width of the band rather than a measure', async ({ page }) => {
+    // The band is small print closing the page, so nothing holds the notice to
+    // a prose column: it takes the room the band has, and it wraps only where
+    // its own line runs out. On the wide artboard that is one line
+    // (014/FR-013).
+    const geometry = await page.evaluate(() => {
+      const band = document.querySelector('.start__legal')!;
+      const notice = band.querySelector('blockquote')!;
+      const bandBox = getComputedStyle(band);
+      const room =
+        band.getBoundingClientRect().width -
+        parseFloat(bandBox.paddingInlineStart) -
+        parseFloat(bandBox.paddingInlineEnd);
+
+      // The box the notice takes with nothing to wrap it. Measured rather than
+      // written down, because it is a property of the text and the face, and
+      // its height is what one line of this notice is in this engine.
+      const probe = notice.cloneNode(true) as HTMLElement;
+      probe.style.position = 'absolute';
+      probe.style.visibility = 'hidden';
+      probe.style.whiteSpace = 'nowrap';
+      probe.style.maxInlineSize = 'none';
+      band.append(probe);
+      const unwrapped = probe.getBoundingClientRect();
+      probe.remove();
+
+      const box = notice.getBoundingClientRect();
+      return {
+        room,
+        unwrappedWidth: unwrapped.width,
+        oneLineHeight: unwrapped.height,
+        width: box.width,
+        height: box.height,
+      };
+    });
+
+    // A pixel of slack throughout: a fractional layout box is not a measure.
+    expect(geometry.width).toBeGreaterThanOrEqual(
+      Math.min(geometry.room, geometry.unwrappedWidth) - 1,
+    );
+
+    if (geometry.unwrappedWidth <= geometry.room) {
+      expect(geometry.height).toBeLessThanOrEqual(geometry.oneLineHeight + 1);
+    }
+  });
+
   test('does not scroll the page sideways', async ({ page }) => {
     await expectNoDocumentOverflow(page);
   });

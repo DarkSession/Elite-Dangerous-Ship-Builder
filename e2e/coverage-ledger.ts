@@ -2067,6 +2067,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'the notice is the help manifest’s exact text, ending in the words the licence file ends in',
       'it is marked in the language it was written in rather than the interface’s',
+      'it takes the width the band has rather than a prose measure, and sets on one line where that fits',
     ],
     manualRecord: 'screen-reader',
   },

@@ -61,6 +61,7 @@ attribution in Barlow 300 — 10.5px at 1440px, 9px at 390px — in `--ink-32`.
 | The `⋯` marker after the tool tabs        | Not built in the shell (same confirmation). It stands for tools beyond the two, and a control for a tool that does not exist is what 011/FR-028 rules out |
 | The footer text ending at "in the making" | The notice ends "in the making of it." The canvas truncates; the document is the record                                                                   |
 | The `→` go mark at 1440px                 | Not drawn there. It is `1b`'s only affordance marker and stays compact-only                                                                               |
+| The 880px cap on the footer text          | The canvas caps a truncated notice. The full notice sets on one line from about 1360px, and a cap breaks it into four short lines in an empty band        |
 
 Nothing is added beside the design. The one thing on screen that the canvas does not draw is
 invisible: the accessible name on the region holding the tool entries, which is the
