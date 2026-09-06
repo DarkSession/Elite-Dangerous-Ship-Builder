@@ -137,11 +137,10 @@ test.describe('restoring a build from a link', () => {
     const incoming = await page.context().newPage();
     await incoming.goto(`/outfitting#${fragment}`);
     await buildIsOpen(incoming);
-    await incoming.waitForFunction(
-      (expected) => window.location.hash === `#${expected}`,
-      fragment,
-      { timeout: 5_000 },
-    );
+    // Polled rather than waited for by a page function, so the wait takes the
+    // assertion allowance: publishing a fragment lazily loads the codec table
+    // and encodes off the main thread.
+    await expect.poll(() => incoming.evaluate(() => window.location.hash)).toBe(`#${fragment}`);
     await incoming.close();
   });
 });

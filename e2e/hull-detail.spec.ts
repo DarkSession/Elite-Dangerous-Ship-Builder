@@ -347,9 +347,10 @@ test.describe('hull detail', () => {
     await retry.click();
 
     // The same page, the same route, the same state: only the illustration
-    // changed, and nothing had to be loaded again to get it. Its own budget,
-    // because the wait is a fetch of the illustration rather than a redraw.
+    // changed, and nothing had to be loaded again to get it.
     await expect(retry).toHaveCount(0);
+    // Ten seconds in both environments, because the wait is a fetch of the
+    // illustration rather than a redraw.
     await expect
       .poll(
         () =>
