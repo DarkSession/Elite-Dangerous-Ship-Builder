@@ -110,7 +110,7 @@ search-visibility gain with neither other story built.
 
 ### The journey
 
-- [ ] T025 [US1] Extend `e2e/search-published.spec.ts` so every `<loc>` that is content-bearing also asserts its body states its subject, keeping `page.request.get(..., { maxRedirects: 0 })` so the assertion is about the files on disk rather than about the service worker (FR-001, FR-003, SC-001)
+- [x] T025 [US1] Extend `e2e/search-published.spec.ts` so every `<loc>` that is content-bearing also asserts its body states its subject, keeping `page.request.get(..., { maxRedirects: 0 })` so the assertion is about the files on disk rather than about the service worker (FR-001, FR-003, SC-001)
 
 **Checkpoint**: A crawler running no script can read all 48 hulls. SC-001 and
 SC-002 are met. Story 1 is shippable alone.
