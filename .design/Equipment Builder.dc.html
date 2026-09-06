@@ -3008,7 +3008,90 @@
                           text-wrap: pretty;
                         "
                       >
-                        Paste a loadout JSON export or a journal SuitLoadout event.
+                        Upload journal files, or paste a journal SuitLoadout event.
+                      </div>
+                      <div
+                        id="ge-imp-drop"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 13px;
+                          padding: 14px;
+                          border-width: 1px;
+                          border-style: dashed;
+                          border-color: var(--amber-a45);
+                          background: var(--panel-4);
+                          cursor: pointer;
+                        "
+                        style-hover="border-color:var(--amber-2);background:var(--panel-6)"
+                      >
+                        <div
+                          style="
+                            flex: none;
+                            width: 30px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid var(--amber-a45);
+                            font:
+                              400 13px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                          "
+                        >
+                          &#8593;
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                          <div
+                            style="
+                              font:
+                                600 10.5px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                            "
+                          >
+                            SELECT OR DROP JOURNAL FILES
+                          </div>
+                          <div
+                            id="ge-imp-fname"
+                            style="
+                              display: none;
+                              font:
+                                400 9px/1.4 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.04em;
+                              color: var(--ink-62);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                      <input
+                        id="ge-imp-file"
+                        type="file"
+                        accept=".log,.json,.txt,application/json"
+                        multiple="multiple"
+                        style="display: none"
+                      />
+                      <div style="display: flex; align-items: center; gap: 10px">
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--ink-36);
+                          "
+                        >
+                          OR PASTE
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                       </div>
                       <textarea
                         id="ge-imp-in"
@@ -3040,30 +3123,17 @@
                           letter-spacing: 0.06em;
                           color: var(--ink-45);
                         "
-                      >
-                        AWAITING INPUT
-                      </div>
+                      ></div>
                       <div
                         style="
                           display: flex;
                           align-items: center;
-                          justify-content: space-between;
+                          justify-content: flex-end;
                           gap: 10px;
                           padding-top: 4px;
                           border-top: 1px solid var(--amber-a14);
                         "
                       >
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-36);
-                            letter-spacing: 0.1em;
-                          "
-                        >
-                          LOADOUT JSON · JOURNAL SUITLOADOUT EVENT
-                        </div>
                         <div style="display: flex; gap: 8px">
                           <div
                             class="ge-x"
@@ -3571,7 +3641,7 @@
                     </div>
                     <div
                       id="ge-imp-btn"
-                      title="Paste a loadout JSON export or a journal SuitLoadout event"
+                      title="Upload journal files or paste a journal SuitLoadout event"
                       style="
                         height: 34px;
                         display: flex;
@@ -5707,7 +5777,11 @@
           ];
           let savedSel = 0;
 
-          const openModal = id => { $$('.ge-modal').forEach(m => m.style.display = 'none'); $(id).style.display = 'flex'; };
+          const openModal = id => {
+            $$('.ge-modal').forEach(m => m.style.display = 'none');
+            if (id === '#ge-imp-modal') impReset();
+            $(id).style.display = 'flex';
+          };
           const closeModals = () => $$('.ge-modal').forEach(m => m.style.display = 'none');
           sec.addEventListener('click', e => {
             if (e.target.closest('.ge-x')) { closeModals(); return; }
@@ -5763,10 +5837,14 @@
           const parseLoadout = raw => {
             raw = (raw || '').trim();
             if (!raw) return { err: 'NOTHING TO IMPORT' };
-            if (/^https?:\/\//i.test(raw)) return { err: 'SHARE LINKS NOT SUPPORTED \u00b7 PASTE LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+            if (/^https?:\/\//i.test(raw)) return { err: 'SHARE LINKS NOT SUPPORTED \u00b7 UPLOAD A JOURNAL FILE OR PASTE A SUITLOADOUT EVENT' };
             let d;
-            try { d = JSON.parse(raw); } catch (e) { return { err: 'JSON PARSE ERROR \u00b7 ' + e.message.toUpperCase().slice(0, 46) }; }
-            if (!d || typeof d !== 'object') return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+            const scan = scanJournal(raw);
+            if (scan) d = scan.obj;
+            else {
+              try { d = JSON.parse(raw); } catch (e) { return { err: 'JSON PARSE ERROR \u00b7 ' + e.message.toUpperCase().slice(0, 46) }; }
+            }
+            if (!d || typeof d !== 'object') return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT' };
             if (String(d.event || '').toLowerCase() === 'suitloadout') {
               const sn = d.SuitName_Localised || d.SuitName;
               if (!sn) return { err: 'JOURNAL SUITLOADOUT \u00b7 NO SUIT IN PAYLOAD' };
@@ -5781,18 +5859,64 @@
                 + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
               return { src: 'LOADOUT JSON', name: d.name || String(d.suit.name), suit: String(d.suit.name), grade: Number(d.suit.grade) || 1, items: wp.length + 1, mods };
             }
-            return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+            return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT' };
           };
 
+          const scanJournal = text => this.scanSuitJournal(text);
+
           const impSay = (t, c) => { const m = $('#ge-imp-msg'); if (m) { m.textContent = t; m.style.color = c || 'rgba(232,222,209,.45)'; } };
-          $('#ge-imp-btn').addEventListener('click', () => {
+          const impFname = (t, show) => {
+            const el = $('#ge-imp-fname');
+            if (!el) return;
+            el.textContent = t || '';
+            el.style.display = show ? 'block' : 'none';
+          };
+          function impReset() {
             const inp = $('#ge-imp-in');
             if (inp) inp.value = '';
-            impSay('AWAITING INPUT');
+            const f = $('#ge-imp-file');
+            if (f) f.value = '';
+            impFname('', false);
+            impSay('');
+          }
+          $('#ge-imp-btn').addEventListener('click', () => {
             openModal('#ge-imp-modal');
+            const inp = $('#ge-imp-in');
             if (inp) inp.focus();
           });
-          const impGo = () => {
+
+          const impFiles = files => {
+            this.readSuitJournalFiles(files, impSay).then(r => {
+              if (!r) return;
+              impFname(r.name.toUpperCase() + ' \u00b7 ' + r.events + ' EVENT' + (r.events > 1 ? 'S \u00b7 LATEST APPLIED' : ''), true);
+              const inp = $('#ge-imp-in');
+              if (inp) inp.value = JSON.stringify(r.obj, null, 1);
+              impGo();
+            });
+          };
+
+          const impFileIn = $('#ge-imp-file');
+          if (impFileIn) impFileIn.addEventListener('change', () => impFiles(impFileIn.files));
+          const impDrop = $('#ge-imp-drop');
+          if (impDrop) {
+            const lift = on => {
+              impDrop.style.borderColor = on ? 'var(--amber-2)' : 'var(--amber-a45)';
+              impDrop.style.background = on ? 'var(--panel-6)' : 'var(--panel-4)';
+            };
+            impDrop.addEventListener('click', () => { if (impFileIn) { impFileIn.value = ''; impFileIn.click(); } });
+            ['dragenter', 'dragover'].forEach(ev => impDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); lift(true); }));
+            ['dragleave', 'dragend'].forEach(ev => impDrop.addEventListener(ev, () => lift(false)));
+            impDrop.addEventListener('drop', e => {
+              e.preventDefault(); e.stopPropagation(); lift(false);
+              impFiles(e.dataTransfer && e.dataTransfer.files);
+            });
+            const impModal = $('#ge-imp-modal');
+            if (impModal) {
+              impModal.addEventListener('dragover', e => e.preventDefault());
+              impModal.addEventListener('drop', e => e.preventDefault());
+            }
+          }
+          function impGo() {
             const r = parseLoadout($('#ge-imp-in').value);
             if (r.err) return impSay(r.err, '#ff6b3d');
             const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === r.suit.toLowerCase());
@@ -6150,10 +6274,36 @@
                 + '<div id="me-ogo" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:#ff8c1a;color:#0b0b0c;font:700 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;cursor:pointer">OPEN LOADOUT</div>';
             } else if (st.sheet === 'import') {
               title.textContent = 'IMPORT LOADOUT';
-              body.innerHTML = '<div style="font:400 11.5px/1.5 Barlow,sans-serif;color:rgba(232,222,209,.62);text-wrap:pretty">Paste a loadout JSON export or a journal SuitLoadout event.</div>'
-                + '<textarea id="me-iin" spellcheck="false" placeholder="{&quot;event&quot;:&quot;SuitLoadout&quot;,&quot;SuitName_Localised&quot;:&quot;Dominator Suit&quot;,&quot;Modules&quot;:[…]}" style="width:100%;height:190px;box-sizing:border-box;resize:none;background:#0b0b0c;border:1px solid rgba(255,140,26,.22);color:#e8ded1;padding:11px 12px;font:400 10.5px/1.6 \'JetBrains Mono\',monospace;outline:none"></textarea>'
-                + '<div id="me-imsg" style="min-height:13px;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.06em;color:rgba(232,222,209,.45)">AWAITING INPUT</div>'
-                + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.34);letter-spacing:.1em">LOADOUT JSON · JOURNAL SUITLOADOUT EVENT</div>';
+              body.innerHTML = '<div style="font:400 11.5px/1.5 Barlow,sans-serif;color:rgba(232,222,209,.62);text-wrap:pretty">Upload journal files, or paste a journal SuitLoadout event.</div>'
+                + '<div id="me-idrop" style="display:flex;align-items:center;gap:13px;padding:15px 14px;border-width:1px;border-style:dashed;border-color:rgba(255,140,26,.45);background:rgba(255,140,26,.04);cursor:pointer">'
+                + '<div style="flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,26,.45);font:400 14px/1 \'JetBrains Mono\',monospace;color:#ffa54d">&#8593;</div>'
+                + '<div style="display:flex;flex-direction:column;gap:5px;min-width:0">'
+                + '<div style="font:600 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.16em;color:#ffa54d;white-space:nowrap">SELECT JOURNAL FILES</div>'
+                + '<div id="me-ifname" style="display:none;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.04em;color:rgba(232,222,209,.62);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>'
+                + '</div></div>'
+                + '<input id="me-ifile" type="file" accept=".log,.json,.txt,application/json" multiple style="display:none">'
+                + '<div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:rgba(255,140,26,.14)"></div>'
+                + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;letter-spacing:.16em;color:rgba(232,222,209,.36)">OR PASTE</div>'
+                + '<div style="flex:1;height:1px;background:rgba(255,140,26,.14)"></div></div>'
+                + '<textarea id="me-iin" spellcheck="false" placeholder="{&quot;event&quot;:&quot;SuitLoadout&quot;,&quot;SuitName_Localised&quot;:&quot;Dominator Suit&quot;,&quot;Modules&quot;:[…]}" style="width:100%;height:132px;box-sizing:border-box;resize:none;background:#0b0b0c;border:1px solid rgba(255,140,26,.22);color:#e8ded1;padding:11px 12px;font:400 10.5px/1.6 \'JetBrains Mono\',monospace;outline:none"></textarea>'
+                + '<div id="me-imsg" style="min-height:13px;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.06em;color:rgba(232,222,209,.45)"></div>';
+              const mif = body.querySelector('#me-ifile');
+              if (mif) mif.addEventListener('change', () => {
+                const msg = body.querySelector('#me-imsg');
+                const say = (t, c) => { if (msg) { msg.textContent = t; msg.style.color = c || 'rgba(232,222,209,.45)'; } };
+                this.readSuitJournalFiles(mif.files, say).then(r => {
+                  if (!r) return;
+                  const fn = body.querySelector('#me-ifname');
+                  if (fn) {
+                    fn.textContent = r.name.toUpperCase() + ' \u00b7 ' + r.events + ' EVENT' + (r.events > 1 ? 'S \u00b7 LATEST APPLIED' : '');
+                    fn.style.display = 'block';
+                  }
+                  const ta = body.querySelector('#me-iin');
+                  if (ta) ta.value = JSON.stringify(r.obj, null, 1);
+                  const go = root.querySelector('#me-igo');
+                  if (go) go.click();
+                });
+              });
               foot.innerHTML = '<div class="me-x" style="width:110px;height:48px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(232,222,209,.18);color:rgba(232,222,209,.66);font:600 11px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.16em;cursor:pointer">CANCEL</div>'
                 + '<div id="me-igo" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:#ff8c1a;color:#0b0b0c;font:700 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;cursor:pointer">LOAD LOADOUT</div>';
             } else if (st.sheet === 'help') {
@@ -6204,14 +6354,23 @@
               setTimeout(closeSheet, 700);
               return;
             }
+            if (e.target.closest('#me-idrop')) {
+              const f = root.querySelector('#me-ifile');
+              if (f) { f.value = ''; f.click(); }
+              return;
+            }
             if (e.target.closest('#me-igo')) {
               const msg = $('#me-imsg');
               const say = (t, c) => { if (msg) { msg.textContent = t; msg.style.color = c || 'rgba(232,222,209,.45)'; } };
               const raw = (($('#me-iin') || {}).value || '').trim();
               if (!raw) return say('NOTHING TO IMPORT', '#ff6b3d');
-              if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 PASTE LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
+              if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 UPLOAD A JOURNAL FILE OR PASTE A SUITLOADOUT EVENT', '#ff6b3d');
               let d;
-              try { d = JSON.parse(raw); } catch (err) { return say('JSON PARSE ERROR \u00b7 ' + err.message.toUpperCase().slice(0, 40), '#ff6b3d'); }
+              const scan = this.scanSuitJournal(raw);
+              if (scan) d = scan.obj;
+              else {
+                try { d = JSON.parse(raw); } catch (err) { return say('JSON PARSE ERROR \u00b7 ' + err.message.toUpperCase().slice(0, 40), '#ff6b3d'); }
+              }
               let src, sname, grade, lname, items, mods;
               if (d && String(d.event || '').toLowerCase() === 'suitloadout') {
                 sname = d.SuitName_Localised || d.SuitName;
@@ -6226,7 +6385,7 @@
                 items = wp.length + 1;
                 mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0) + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
               } else {
-                return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
+                return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
               }
               const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === String(sname).toLowerCase());
               if (!k) return say(src + ' \u00b7 UNKNOWN SUIT \u00b7 ' + String(sname).toUpperCase(), '#ff6b3d');
@@ -6291,6 +6450,50 @@
           });
 
           render();
+        }
+
+        // Scans a pasted event or a whole line-delimited journal file
+        // (Journal.*.log) — the most recent SuitLoadout event wins.
+        scanSuitJournal(text) {
+          const raw = String(text || '').trim();
+          if (!raw) return null;
+          const ok = o => o && typeof o === 'object'
+            && (String(o.event || '').toLowerCase() === 'suitloadout' || (o.suit && o.suit.name));
+          try { const o = JSON.parse(raw); if (ok(o)) return { obj: o, count: 1 }; } catch (e) { /* line scan */ }
+          let best = null, count = 0;
+          raw.split(/\r?\n/).forEach(line => {
+            const l = line.trim();
+            if (l.charAt(0) !== '{') return;
+            let o; try { o = JSON.parse(l); } catch (e) { return; }
+            if (!ok(o)) return;
+            count++;
+            if (!best || String(o.timestamp || '') >= String(best.timestamp || '')) best = o;
+          });
+          return best ? { obj: best, count } : null;
+        }
+
+        // Reads picked/dropped journal files, resolves with the latest matching event.
+        readSuitJournalFiles(files, say) {
+          const list = Array.from(files || []).filter(f => f && f.size);
+          if (!list.length) return Promise.resolve(null);
+          const big = list.find(f => f.size > 25e6);
+          if (big) { say('FILE TOO LARGE \u00b7 ' + big.name.toUpperCase() + ' EXCEEDS 25 MB', '#ff6b3d'); return Promise.resolve(null); }
+          say('SCANNING ' + list.length + ' FILE' + (list.length > 1 ? 'S' : '') + ' \u2026');
+          return Promise.all(list.map(f => f.text().then(t => ({ name: f.name, text: t }), () => ({ name: f.name, text: '' }))))
+            .then(res => {
+              let best = null, name = '', events = 0;
+              res.forEach(r => {
+                const c = this.scanSuitJournal(r.text);
+                if (!c) return;
+                events += c.count;
+                if (!best || String(c.obj.timestamp || '') >= String(best.timestamp || '')) { best = c.obj; name = r.name; }
+              });
+              if (!best) {
+                say('NO SUITLOADOUT EVENT FOUND IN ' + (list.length > 1 ? list.length + ' FILES' : list[0].name.toUpperCase()), '#ff6b3d');
+                return null;
+              }
+              return { obj: best, name, events };
+            });
         }
 
         componentDidMount() { this.wirePE(); this.wireME(); }
