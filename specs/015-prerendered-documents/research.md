@@ -341,7 +341,7 @@ these are the files a deployment actually uploads.
 
 | Document                 | Raw     | Gzipped |
 | ------------------------ | ------- | ------- |
-| `index.html` (start)     | 60,819  | 11,770  |
+| `index.html` (start)     | 60,684  | 11,753  |
 | `index.csr.html` (shell) | 29,373  | 6,794   |
 | `404.html`               | 29,373  | 6,788   |
 | `equipment.html` (bench) | 29,313  | 6,860   |

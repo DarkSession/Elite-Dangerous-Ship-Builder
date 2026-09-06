@@ -2,8 +2,10 @@
 
 **Feature**: 015 | **Date**: 2026-09-06 | **Plan**: [plan.md](./plan.md)
 
-How to prove this feature works. Every command below was run against this
-checkout during Phase 0, except where marked as needing the implementation.
+How to prove this feature works. Every command below was walked against the
+shipped implementation on 2026-09-06 (T047); where a step's expectation was
+written from the Phase 0 spike and the implementation moved it, the step now
+records what the build actually does.
 
 ## Prerequisites
 
@@ -41,9 +43,30 @@ cmp index.csr.html 404.html && echo "ok: 404 copies the shell, not the start pag
 # Never a directory — Pages would 301 it
 [ -e ships/index.html ] && echo "FAIL: directory layout left behind" || echo "ok: flat layout"
 
-# Exactly 50 generated documents, against the content-bearing registry
-node -e "…count against the content-bearing registry…"
+cd -
 ```
+
+```bash
+# 50 of the 52 advertised addresses carry a rendered body, against the registry
+# that records which of them should — the same registry the build reads.
+node --input-type=module -e "
+import { readFile } from 'node:fs/promises';
+import { contentBearingAddresses, declaredOrigin } from './scripts/search/published-addresses.mjs';
+import { fileFor } from './scripts/publish-static-routes.mjs';
+
+const origin = declaredOrigin(await readFile('src/app/platform/browser/site-address.ts', 'utf8'));
+const advertised = contentBearingAddresses({ origin });
+const stated = [];
+for (const entry of advertised.filter((one) => one.contentBearing)) {
+  const html = await readFile(\`dist/navbeacon/browser/\${fileFor(entry.address, origin)}\`, 'utf8');
+  if (!html.includes('<app-root></app-root>')) stated.push(entry.address);
+}
+console.log(\`\${stated.length} of \${advertised.length} advertised addresses carry a rendered body\`);
+"
+```
+
+**Walked**: `50 of 52 advertised addresses carry a rendered body`, the other 2
+recorded content-free.
 
 The `cmp` is the one to watch. Today `404.html` is a byte copy of `index.html`
 (`publish-static-routes.mjs:192`) and that was harmless because every body was
@@ -69,9 +92,10 @@ for k in ['Faulcon DeLacy', 'speed', 'Shield', 'Mass', 'Crew', 'lock', 'huge', '
 PY
 ```
 
-**Phase 0 result**, from the spike on `ships/Adder/index.html`: every one found.
-The body opened `Adder Zorgon Peterson · Small landing pad` and carried the
-catalogue's 48 rows with hardpoints and prices.
+**Walked** on `ships/Anaconda.html`: every one found. The spike read
+`ships/Adder/index.html`, a path the build no longer writes — the placement step
+republishes each document as `<address>.html` so `/ships/Anaconda` answers 200
+rather than redirecting to a directory (§1's flat-layout check).
 
 Also check the heading, which a reader applying no CSS resolves by document order:
 
@@ -82,10 +106,14 @@ h=open('dist/navbeacon/browser/ships/Anaconda.html').read()
 print(re.findall(r'<h1[^>]*>(.*?)</h1>',h,re.S)[:2])"
 ```
 
-Expect two `<h1>` elements and **`Anaconda` first** — the shell renders one bar
+Expect two `<h1>` elements, both reading `Anaconda` — the shell renders one bar
 composition and hides the other with `display: none`, so exactly one is on screen
 and in the accessibility tree, and the narrower composition's comes first in the
-markup (`design/first-frame.md`, FR-019).
+markup (`design/first-frame.md`, FR-019). What the check proves is that the hull
+is the heading at all; that only one of the two is reachable is what the axe scans
+in §6 answer for.
+
+**Walked**: `['Anaconda', 'Anaconda']`.
 
 ## 3. The figures match the package
 
@@ -126,9 +154,13 @@ grep -c 'Faulcon DeLacy' dist/navbeacon/browser/ships/Anaconda.html   # > 0
 A document with the right canonical and an empty body is the failure mode this
 step exists to catch: the script ran, and it overwrote what the builder made.
 
-FR-021: an address that is neither must fail the build. To prove the gate bites,
-add an address to the route table and the sitemap without recording it, and
-confirm `pnpm run policy` names it.
+FR-021: an address that is neither generated nor deliberately content-free must
+fail the build. The gate is `check-interface-foundations.mjs`, and that it bites
+is asserted rather than demonstrated by hand — `check-interface-foundations.test.mjs`
+carries "refuses an advertised address nothing has ruled on" and "refuses an
+address left out with no reason given", both under `pnpm run test:scripts`. Adding
+an unrecorded address to the route table by hand proves the same thing and leaves
+a checkout to clean up.
 
 ## 6. The first frame, in a real browser, on every profile
 
@@ -172,6 +204,15 @@ Manually, against `pnpm exec node scripts/serve-production.mjs`:
    see the start page's content — the trap research decision 9 closes.
 4. Open `/ships/NotAShip` offline. **Expect** the shell then the application's own
    handling, never the start page (FR-016, and the `404.html` copy above).
+
+**Walked** on 2026-09-06, driving a browser through the four steps against
+`scripts/serve-production.mjs` and sampling every animation frame:
+
+1. eleven frames before the takeover, the first of them 5,040 characters, and the
+   manufacturer among them — the hull document, not the shell;
+2. the hull's heading with the network off;
+3. sixteen frames, none carrying the start page;
+4. "No such hull" shown, and again no frame carrying the start page.
 
 The three assertions the service worker test must carry after this
 (`scripts/check-service-worker-ownership.test.mjs`): `config.index` is
