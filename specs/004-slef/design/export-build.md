@@ -33,6 +33,10 @@ and running the full height of the panel. Each region carries its own padding an
 carries none, which is what gives that rule a full height to run. The layer takes the widest dialog
 step, because two regions need more room than one.
 
+That arrangement is the shared `FormatLayer`. The equipment bench exports through the same two
+regions and the same rule, so the shell is one component. What each format holds stays with the
+feature that owns that format (011/FR-001).
+
 Each format is a bordered plate carrying a tracked condensed title over a description
 (`specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards"), the selected one
 washed amber with its title in amber and a marker inside its leading edge. Both plates are closed

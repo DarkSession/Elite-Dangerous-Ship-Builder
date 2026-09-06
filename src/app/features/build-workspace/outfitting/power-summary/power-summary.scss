@@ -103,72 +103,18 @@
   @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 }
 
-// Four blocks across the line, each of them the control for that many pips — the
-// same control the distributor's cell draws, at the same size, so the two places
-// a Commander can set the pips are the same to press.
-//
-// The blocks hold the 24-pixel floor rather than the 2.75rem design baseline:
-// four of those are 176px before the gaps, in a 306-pixel rail that has three
-// groups of them to stand, and the canvas draws a pip block as a chip in a row
-// of them rather than as a button standing on its own. The floor is a floor and
-// not a waiver — the canvas's own 14 pixels stay unbuilt.
-//
-// No scroller of its own any more, because there is nothing left for one to
-// scroll: four floors and their gaps come to 114px in a 269px row at ordinary
-// text and 210px at doubled text, measured, so the row holds at both. A
-// container that can never overflow is a scrollbar a reader can reach and
-// nothing can put anything into (see the figures on `.pips__step` below).
-.pips {
-  display: flex;
-  gap: var(--ednb-space-inline-tight);
-}
-
-.pips__step {
-  @include layout.target-floor;
-
-  position: relative;
-  // Four across the rail, each taking a quarter of it and none below the floor.
-  // Four floors and their gaps come to 114px in a 269px row at ordinary text and
-  // 210px at doubled text, so the row holds without a scroller of its own.
-  flex: 1 1 var(--ednb-target-size-floor);
-  padding: 0;
-  background-color: var(--ednb-surface-inset);
-  border: var(--ednb-border-width-hairline) solid transparent;
-  cursor: pointer;
-}
-
-.pips__fill {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  display: block;
-}
-
-// The canvas's own colour per bank, on the bank's name and on its blocks. It is
-// decoration on top of the reading, exactly as it is in the distributor table:
+// The canvas's own colour per bank, on the bank's name. The blocks below it take
+// the same colour from the control's own stylesheet; this is the half that
+// belongs to the name beside them, and it is decoration on top of the reading —
 // each group is named with the allocation it stands at.
-@mixin bank-colour($colour) {
-  .pipset__name {
-    color: $colour;
-  }
-
-  .pips__fill {
-    background-color: $colour;
-  }
-
-  .pips__step:hover {
-    border-color: $colour;
-  }
+[data-bank='systems'] .pipset__name {
+  color: var(--ednb-surface-bank-systems);
 }
 
-[data-bank='systems'] {
-  @include bank-colour(var(--ednb-surface-bank-systems));
+[data-bank='engines'] .pipset__name {
+  color: var(--ednb-surface-bank-engines);
 }
 
-[data-bank='engines'] {
-  @include bank-colour(var(--ednb-surface-bank-engines));
-}
-
-[data-bank='weapons'] {
-  @include bank-colour(var(--ednb-surface-bank-weapons));
+[data-bank='weapons'] .pipset__name {
+  color: var(--ednb-surface-bank-weapons);
 }

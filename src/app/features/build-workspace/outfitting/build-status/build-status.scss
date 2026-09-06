@@ -17,10 +17,7 @@
 
 .issues {
   @include layout.stack(var(--ednb-space-stack-tight));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 // The tone's colour is set on the block and inherited, because the canvas sets
@@ -35,12 +32,11 @@
 // `specs/003-ship-statistics/design/status-rail.md`, "The issue block".
 .issue {
   @include layout.stack(var(--ednb-space-stack-tight));
-
-  padding-block: var(--ednb-space-control-block);
-  padding-inline: var(--ednb-space-inline-loose);
-  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-info);
-  background-color: var(--ednb-surface-info-quiet);
-  color: var(--ednb-text-info);
+  @include layout.toned-block(
+    var(--ednb-border-info),
+    var(--ednb-surface-info-quiet),
+    var(--ednb-text-info)
+  );
 }
 
 // The sentence, and the whole of what the block draws. A long canonical
@@ -55,9 +51,11 @@
 
 // The error tone: the hot marker over its own tinted ground.
 .issue--error {
-  border-inline-start-color: var(--ednb-border-danger);
-  background-color: var(--ednb-surface-danger-quiet);
-  color: var(--ednb-text-danger);
+  @include layout.block-tone(
+    var(--ednb-border-danger),
+    var(--ednb-surface-danger-quiet),
+    var(--ednb-text-danger)
+  );
 }
 
 // The warning tone: the accent marker over the quieter accent ground. A
@@ -65,9 +63,11 @@
 // load a pilot chooses, rather than the fit, crosses a limit — so it says less
 // than the error tone and more than the quiet one.
 .issue--warning {
-  border-inline-start-color: var(--ednb-border-accent);
-  background-color: var(--ednb-surface-accent-quiet);
-  color: var(--ednb-text-accent);
+  @include layout.block-tone(
+    var(--ednb-border-accent),
+    var(--ednb-surface-accent-quiet),
+    var(--ednb-text-accent)
+  );
 }
 
 // The quiet tone is the default above. Unreachable from a `ShipLoadout` at the
@@ -89,8 +89,11 @@
 // loadout, so this line remains a departure; what the block settles is the
 // shape a success-toned block is drawn in.
 .issue--valid {
+  @include layout.block-tone(
+    var(--ednb-border-success),
+    var(--ednb-surface-success-quiet),
+    var(--ednb-text-success)
+  );
+
   margin: 0;
-  border-inline-start-color: var(--ednb-border-success);
-  background-color: var(--ednb-surface-success-quiet);
-  color: var(--ednb-text-success);
 }

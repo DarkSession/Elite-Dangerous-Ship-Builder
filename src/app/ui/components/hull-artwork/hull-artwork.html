@@ -20,7 +20,7 @@
     -->
     @if (isLoading()) {
       <p class="artwork__loading">
-        <img class="artwork__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <ednb-waiting-mark />
         <span class="artwork__spoken" [id]="statusId">{{ loadingText() }}</span>
       </p>
     }

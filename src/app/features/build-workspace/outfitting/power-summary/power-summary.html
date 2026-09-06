@@ -60,22 +60,12 @@
             bank's own name above may be hidden: it is inside this one already,
             and announced twice it is noise.
           -->
-          <div class="pips" role="group" [attr.aria-label]="set.label">
-            @for (step of set.steps; track step.id) {
-              <button
-                class="pips__step"
-                type="button"
-                [attr.aria-label]="step.label"
-                (click)="setPips(set.kind, step.value)"
-              >
-                <span
-                  class="pips__fill"
-                  aria-hidden="true"
-                  [style.inline-size.%]="step.fill * 100"
-                ></span>
-              </button>
-            }
-          </div>
+          <ednb-pip-control
+            [bank]="set.kind"
+            [label]="set.label"
+            [steps]="set.steps"
+            (stepRequested)="setPips(set.kind, $event)"
+          />
         </div>
       }
     </div>

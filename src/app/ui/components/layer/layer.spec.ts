@@ -1,28 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Layer } from './layer';
-
-/**
- * `<dialog>` with the modal methods jsdom does not implement, faithful in the
- * one respect these tests are about: `close()` queues a `close` event rather
- * than dispatching it inline, exactly as the HTML specification requires and
- * exactly as a browser does.
- *
- * The other layer specs stub these methods without the event, which is why the
- * behaviour below went unnoticed until a Playwright run in a real browser.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    if (!this.hasAttribute('open')) {
-      return;
-    }
-    this.removeAttribute('open');
-    queueMicrotask(() => this.dispatchEvent(new Event('close')));
-  };
-}
+import { stubNativeDialog } from './layer.spec-helpers';
 
 function render() {
   stubNativeDialog();
@@ -47,6 +25,69 @@ const dialogOf = (fixture: ReturnType<typeof render>['fixture']) =>
 const settle = () => new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 
 describe('Layer', () => {
+  it('hands focus back when the layer is taken away rather than closed', async () => {
+    // A deferred block stands a layer on the screen while its chunk is on the
+    // wire, and the chunk landing takes that layer away without its `open`
+    // input ever falling. A layer that hands focus back only on that input
+    // leaves the reader at the top of the document, and the layer arriving
+    // records the document body as the control that opened it.
+    const invoker = document.createElement('button');
+    document.body.append(invoker);
+    invoker.focus();
+
+    stubNativeDialog();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [Layer] });
+    const fixture = TestBed.createComponent(Layer);
+    fixture.componentRef.setInput('title', 'A layer');
+    fixture.componentRef.setInput('dismissLabel', 'Close');
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    // What `showModal` does in a browser and jsdom does not: the layer takes
+    // the focus off the control that opened it.
+    dialogOf(fixture).querySelector('button')!.focus();
+    expect(document.activeElement).not.toBe(invoker);
+
+    fixture.destroy();
+    await settle();
+
+    expect(document.activeElement).toBe(invoker);
+    invoker.remove();
+  });
+
+  it('does not reach for the control a native close already returned to', async () => {
+    // Escape closes the element itself, and the browser puts focus back where
+    // it came from. The `open` input falls after that, so the branch that would
+    // forget the control never runs, and a teardown that still remembered one
+    // would pull focus off whatever the reader had reached in the meantime.
+    const invoker = document.createElement('button');
+    const elsewhere = document.createElement('button');
+    document.body.append(invoker, elsewhere);
+    invoker.focus();
+
+    stubNativeDialog();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [Layer] });
+    const fixture = TestBed.createComponent(Layer);
+    fixture.componentRef.setInput('title', 'A layer');
+    fixture.componentRef.setInput('dismissLabel', 'Close');
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    // What Escape does: the element closes and dispatches `close` itself.
+    dialogOf(fixture).close();
+    await settle();
+
+    elsewhere.focus();
+    fixture.destroy();
+    await settle();
+
+    expect(document.activeElement).toBe(elsewhere);
+    invoker.remove();
+    elsewhere.remove();
+  });
+
   it('does not report a close its own owner asked for as a dismissal', async () => {
     const { fixture, dismissals } = render();
     expect(dialogOf(fixture).hasAttribute('open')).toBe(true);

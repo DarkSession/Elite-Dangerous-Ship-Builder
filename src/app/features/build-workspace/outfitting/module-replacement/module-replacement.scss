@@ -131,9 +131,6 @@
 
 // Canvas 1c's outlined `REMOVE MODULE`, at the end of the panel header.
 .replacement__remove {
-  @include layout.control-base;
-  @include layout.control-secondary;
-
   flex: none;
 }
 
@@ -160,13 +157,10 @@
 // of the column; where the page scrolls instead, this is what keeps it in view.
 .replacement__foot {
   @include layout.stack(var(--ednb-space-stack-tight));
+  @include layout.panel-foot;
 
-  position: sticky;
-  inset-block-end: 0;
   flex: none;
   padding-block: var(--ednb-space-stack-tight);
-  background-color: var(--ednb-surface-panel-raised);
-  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
 
   // The other half of the short-viewport release above, and it is written here
   // rather than beside it because a media query carries no specificity: stated
@@ -183,15 +177,7 @@
   @include layout.wrapping-row(var(--ednb-space-inline));
 }
 
-.replacement__cancel {
-  @include layout.control-base;
-  @include layout.control-secondary;
-}
-
 .replacement__fit {
-  @include layout.control-base;
-  @include layout.control-primary;
-
   flex: 1;
 }
 

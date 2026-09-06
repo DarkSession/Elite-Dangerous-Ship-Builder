@@ -52,6 +52,7 @@ Reused as they stand:
 | an absent figure                 | `ui/outfitting/unavailable-fact`, `ui/components/unavailable-value`                      |
 | package text with its provenance | `ui/components/game-text`                                                                |
 | the share link                   | `ui/components/share-link-panel`                                                         |
+| the export layer's two regions   | `ui/components/layer/format-layer`                                                       |
 | save, conflict, delete           | `ui/components/choice-dialog`, `confirm-dialog`, `field`, `text-field`, `textarea-field` |
 | the saved list                   | `ui/components/record-list`, `saved-build-card`                                          |
 | tabs, panels, facts, metrics     | `ui/components/tab-group`, `panel`, `fact-list`, `metric-group`                          |

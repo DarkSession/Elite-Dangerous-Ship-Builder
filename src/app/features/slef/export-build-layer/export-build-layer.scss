@@ -14,29 +14,13 @@
 }
 
 .slef-export__link {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
+  @include layout.prose-note;
 }
 
-/*
- * Metadata and actions share one row where there is room, as drawn, and stack
- * where there is not. `wrapping-row` is what makes 200% text and a narrow
- * sheet reflow instead of pushing the actions off the edge.
- */
-.slef-export__footer {
-  @include layout.wrapping-row(var(--ednb-space-inline));
-
-  align-items: center;
-  justify-content: space-between;
-}
-
+// The metadata on the leading edge of the shared footer row, in the mono face
+// every count in this application is set in.
 .slef-export__meta {
   @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
 
   font-family: var(--ednb-font-metric);
-}
-
-.slef-export__actions {
-  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }

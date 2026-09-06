@@ -35,6 +35,34 @@ function helpModal(page: Page) {
   return page.getByRole('dialog', { name: HELP_TITLE });
 }
 
+/**
+ * Waits until the page has stopped asking for things.
+ *
+ * `networkidle` answers a question about the load. The catalogue answers the
+ * pointer after that: where its rail is drawn, a pointer arriving anywhere
+ * opens a hull in it, and a hull screen is a chunk of its own. This watches the
+ * requests themselves, so a measurement starts from a screen that has finished
+ * reacting rather than one that is about to.
+ */
+async function quiet(page: Page): Promise<void> {
+  let seen = -1;
+  let asked = 0;
+  const tally = () => (asked += 1);
+
+  page.on('request', tally);
+  try {
+    // Bounded, so a page that asks for something on a timer fails here saying
+    // it never settled rather than running out the whole test budget.
+    for (let round = 0; round < 8 && seen !== asked; round += 1) {
+      seen = asked;
+      await page.waitForTimeout(700);
+    }
+    expect(asked, 'the screen never stopped asking for things').toBe(seen);
+  } finally {
+    page.off('request', tally);
+  }
+}
+
 async function waitForController(page: Page): Promise<void> {
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null, undefined, {
     timeout: 30_000,
@@ -78,6 +106,16 @@ test.describe('help offline', () => {
     // as though help had asked for them. The screen has to be *done*, not
     // merely drawn, for the measurement underneath to mean anything.
     await page.waitForLoadState('networkidle');
+
+    // The pointer still has to reach the control, and where the catalogue draws
+    // its rail a pointer arriving anywhere opens a hull in it. That is the
+    // catalogue's own behaviour and not help's, so the pointer is parked on the
+    // control first and the screen is allowed to go quiet again.
+    const control = page.getByRole('button', { name: HELP_ACTION });
+    if ((await control.count()) > 0) {
+      await control.first().hover();
+    }
+    await quiet(page);
 
     // Recorded from here: what opening help costs on a screen that has finished
     // loading, offline. Everything it draws was asked for on the online loads

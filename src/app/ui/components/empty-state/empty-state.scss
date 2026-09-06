@@ -1,0 +1,34 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.empty {
+  @include layout.stack(var(--ednb-space-stack));
+
+  max-inline-size: var(--ednb-layout-prose-max);
+}
+
+.empty--centre {
+  margin-inline: auto;
+  text-align: center;
+}
+
+// A leading block shares its width with something else where there is room for
+// both, so it takes the middle only where it is the whole screen.
+@include layout.below-wide {
+  .empty--leading {
+    margin-inline: auto;
+  }
+}
+
+.empty__title {
+  @include layout.display-title(var(--ednb-text-size-heading-md));
+}
+
+.empty__description {
+  @include layout.prose-note;
+
+  margin: 0;
+}

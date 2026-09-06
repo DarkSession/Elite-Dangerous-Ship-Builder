@@ -48,11 +48,24 @@ function readSchematic(symbol: string, side: string): string {
   }
 }
 
-/** Every hull, both sides, read once. */
+/**
+ * Every hull, both sides, read and parsed once.
+ *
+ * The parse is shared because six of the tests below ask the same question of
+ * the same 96 documents. Parsing per test is the same answer computed six
+ * times, and it is the whole cost of this file.
+ *
+ * `parseSchematic` refuses by returning `null` rather than by throwing, so
+ * parsing here cannot take the file down during collection. The refusal itself
+ * is what the second test reads.
+ */
 const documents = SHIPS.map((ship) => ({
   symbol: ship.symbol,
   slots: enumerateSlots(getShipSlots(ship.symbol)!),
-  sides: SCHEMATIC_SIDES.map((side) => ({ side, source: readSchematic(ship.symbol, side) })),
+  sides: SCHEMATIC_SIDES.map((side) => {
+    const source = readSchematic(ship.symbol, side);
+    return { side, source, document: parseSchematic(source, side, ship.symbol) };
+  }),
 }));
 
 describe('installed Almanac hull schematics', () => {
@@ -67,7 +80,7 @@ describe('installed Almanac hull schematics', () => {
   it('carries only static drawing the safe parser accepts', () => {
     const refused = documents.flatMap((hull) =>
       hull.sides
-        .filter(({ side, source }) => parseSchematic(source, side, hull.symbol) === null)
+        .filter(({ document }) => document === null)
         .map(({ side }) => `${hull.symbol}/${side}`),
     );
 
@@ -80,8 +93,7 @@ describe('installed Almanac hull schematics', () => {
     for (const hull of documents) {
       const kindOf = new Map(hull.slots.map((slot) => [slot.key, slot.kind]));
 
-      for (const { side, source } of hull.sides) {
-        const document = parseSchematic(source, side, hull.symbol);
+      for (const { side, document } of hull.sides) {
         for (const annotation of document?.annotations ?? []) {
           const kind = kindOf.get(annotation.journalSlot);
           const expected = kind === undefined ? undefined : MOUNT_FEATURE_OF[kind as never];
@@ -99,9 +111,9 @@ describe('installed Almanac hull schematics', () => {
     const duplicated: string[] = [];
 
     for (const hull of documents) {
-      for (const { side, source } of hull.sides) {
+      for (const { side, document } of hull.sides) {
         const seen = new Set<string>();
-        for (const annotation of parseSchematic(source, side, hull.symbol)?.annotations ?? []) {
+        for (const annotation of document?.annotations ?? []) {
           if (seen.has(annotation.journalSlot)) {
             duplicated.push(`${hull.symbol}/${side}/${annotation.journalSlot}`);
           }
@@ -119,10 +131,7 @@ describe('installed Almanac hull schematics', () => {
     for (const hull of documents) {
       const drawn = new Set(
         hull.sides.flatMap(
-          ({ side, source }) =>
-            parseSchematic(source, side, hull.symbol)?.annotations.map(
-              (annotation) => annotation.journalSlot,
-            ) ?? [],
+          ({ document }) => document?.annotations.map((annotation) => annotation.journalSlot) ?? [],
         ),
       );
 
@@ -139,10 +148,7 @@ describe('installed Almanac hull schematics', () => {
   it('repeats a slot across sides rather than within one, and keeps both drawings', () => {
     const repeated = documents.flatMap((hull) => {
       const perSide = hull.sides.map(
-        ({ side, source }) =>
-          new Set(
-            parseSchematic(source, side, hull.symbol)?.annotations.map((a) => a.journalSlot) ?? [],
-          ),
+        ({ document }) => new Set(document?.annotations.map((a) => a.journalSlot) ?? []),
       );
       return [...perSide[0]]
         .filter((key) => perSide[1].has(key))
@@ -162,8 +168,8 @@ describe('installed Almanac hull schematics', () => {
 
     for (const hull of documents) {
       const kindOf = new Map(hull.slots.map((slot) => [slot.key, slot.kind]));
-      for (const { side, source } of hull.sides) {
-        for (const annotation of parseSchematic(source, side, hull.symbol)?.annotations ?? []) {
+      for (const { side, document } of hull.sides) {
+        for (const annotation of document?.annotations ?? []) {
           const kind = kindOf.get(annotation.journalSlot);
           if (kind !== 'hardpoint' && kind !== 'utility') {
             invented.push(`${hull.symbol}/${side}/${annotation.journalSlot}`);

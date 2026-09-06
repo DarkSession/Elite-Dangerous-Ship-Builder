@@ -67,13 +67,12 @@
 
 .materials__empty,
 .materials__note {
+  @include layout.prose-note;
+
   margin: 0;
   padding-inline: var(--ednb-space-xl);
   font-family: var(--ednb-font-body);
   font-size: var(--ednb-text-size-compact);
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
 }
 
 .materials__note {

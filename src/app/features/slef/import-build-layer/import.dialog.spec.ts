@@ -5,25 +5,10 @@ import { provideIsolatedLocaleEnvironment } from '../../../i18n/testing/localiza
 import { DocumentAdapter } from '../../../platform/browser/document.adapter';
 import { SlefStore } from '../../../application/slef/slef.store';
 import { ImportDialog } from './import.dialog';
+import { stubNativeDialog } from '../../../ui/components/layer/layer.spec-helpers';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
-}
-
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The layer calls them the moment it opens; what these tests are about is what
- * the host decides, not what the browser does with a dialog element.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
 }
 
 describe('the import layer’s host', () => {

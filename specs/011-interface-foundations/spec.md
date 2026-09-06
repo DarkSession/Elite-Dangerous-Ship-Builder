@@ -80,6 +80,9 @@ offered and therefore carries no way to hold the page.
 - **FR-004**: Components MUST be presentation-only and preview every supported populated, empty,
   loading, error and disabled state at desktop, tablet and mobile widths.
 - **FR-005**: A missing reusable pattern MUST be added to the design system before a capability uses it.
+- **FR-029**: A screen that cannot draw its content yet MUST hold the space that content will take,
+  and MUST NOT state a condition that is false while it waits. A wait a Commander cannot perceive
+  MUST NOT draw one.
 
 ### Tool Navigation
 
@@ -291,3 +294,7 @@ translations.
   in both orientations. The tools named are exactly the ones the registry carries; every tool but
   the current one opens the address it declares; and the current one carries no control leading to
   the route in view.
+
+- **SC-010**: Every wait enumerated in `design/waiting-states.md` draws the shared waiting state where
+  the content will be, in the committed language, and none of them states in the meantime that the
+  content is absent.

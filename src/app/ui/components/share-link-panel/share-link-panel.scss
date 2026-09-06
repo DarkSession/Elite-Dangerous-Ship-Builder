@@ -18,9 +18,7 @@
 }
 
 .share-link__slef-unavailable {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
+  @include layout.prose-note;
 }
 
 .share-link__value-label {

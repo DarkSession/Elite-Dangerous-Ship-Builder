@@ -2,16 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import type { CapacitorKind } from '../../../../domain/ships/power-heat/power-heat';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
-
-/** One of the four blocks a bank's pips are drawn and set with. */
-export interface PipStepView {
-  readonly id: string;
-  /** The pip count pressing it asks for. */
-  readonly value: number;
-  /** How much of this block the bank's allocation fills, in `[0, 1]`. */
-  readonly fill: number;
-  readonly label: string;
-}
+import { PipControl, type PipStepView } from '../../../../ui/outfitting/pip-control';
 
 /** One `SYS` / `ENG` / `WEP` row, and the four pip blocks the canvas draws it with. */
 export interface BankRowView {
@@ -53,7 +44,7 @@ export interface PipRequest {
  */
 @Component({
   selector: 'ednb-distributor-block',
-  imports: [UnavailableValue],
+  imports: [PipControl, UnavailableValue],
   templateUrl: './distributor-block.html',
   styleUrl: './distributor-block.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

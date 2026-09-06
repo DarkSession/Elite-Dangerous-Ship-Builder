@@ -14,6 +14,7 @@ import { Formatters } from '../../../../i18n/formatters/formatters';
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
+import { PipControl, type PipStepView } from '../../../../ui/outfitting/pip-control';
 
 /** The bar under the figures, as three lengths and the reading it carries. */
 interface BarView {
@@ -32,16 +33,6 @@ interface PipSetView {
   /** The bank's allocation, said in words for a reader who cannot see the blocks. */
   readonly label: string;
   readonly steps: readonly PipStepView[];
-}
-
-/** One of the four blocks a bank's pips are drawn and set with. */
-interface PipStepView {
-  readonly id: string;
-  /** The pip count pressing it asks for. */
-  readonly value: number;
-  /** How much of this block the bank's allocation fills, in `[0, 1]`. */
-  readonly fill: number;
-  readonly label: string;
 }
 
 /** The bank names, written out rather than composed: `MessageKey` is a union. */
@@ -106,6 +97,7 @@ const PIP_DIGITS = 1;
  */
 @Component({
   selector: 'ednb-power-summary',
+  imports: [PipControl],
   templateUrl: './power-summary.html',
   styleUrl: './power-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

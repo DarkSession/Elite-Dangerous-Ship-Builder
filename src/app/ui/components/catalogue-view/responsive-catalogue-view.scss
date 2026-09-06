@@ -8,22 +8,11 @@
 // from layout and from the accessibility tree.
 .catalogue__cards {
   @include layout.stack(var(--ednb-space-stack));
-
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  @include layout.bare-list;
 }
 
 .catalogue__manifest {
   display: none;
-}
-
-// A short viewport releases the shell's own sticky bar, so the header releases
-// with it rather than freezing over a gap (FR-011).
-@include layout.short-viewport {
-  thead th {
-    position: static;
-  }
 }
 
 @include layout.medium-up {
@@ -121,6 +110,17 @@ thead th {
   // overhang the way that scroller does.
   box-shadow: 0 calc(-1 * var(--ednb-layout-sticky-overhang)) 0 0 var(--ednb-surface-root);
   border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+
+  // A short viewport releases the shell's own bar, and the head releases with
+  // it. Frozen under a bar that is no longer there, it stands part way down the
+  // screen with rows running uncovered above it (FR-011).
+  //
+  // Stated inside this rule, after the pin. Both carry the same selector, and a
+  // media query carries no specificity, so only source order decides which one
+  // takes.
+  @include layout.short-viewport {
+    position: static;
+  }
 }
 
 // The column a list is ordered by takes the reference's amber and its caret

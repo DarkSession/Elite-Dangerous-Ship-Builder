@@ -111,6 +111,21 @@
           fill: #ff7100;
         }
 
+        /*
+          A Commander who asked for less motion gets the mark standing still.
+          The application's own reduced-motion rule cannot reach this file: it
+          is loaded through an `img`, which makes it a document of its own with
+          its own stylesheet. So the rule is here. Each triangle keeps the
+          opacity its own class already sets, which leaves the ring drawn and
+          only the cycle stopped.
+        */
+        @media (prefers-reduced-motion: reduce) {
+          .l1,
+          .l2 {
+            animation: none;
+          }
+        }
+
       ]]>
     </style>
 

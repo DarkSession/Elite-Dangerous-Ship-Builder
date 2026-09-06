@@ -9,9 +9,7 @@
 }
 
 .slef-import__description {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-secondary);
-  text-wrap: pretty;
+  @include layout.prose-note(var(--ednb-text-secondary));
 }
 
 /*
@@ -36,25 +34,9 @@
   list-style: disc;
 }
 
-/*
- * Ruled off from the body, as drawn: what is accepted on one side, the actions
- * on the other, stacking rather than clipping when the room runs out.
- */
-.slef-import__footer {
-  @include layout.wrapping-row(var(--ednb-space-inline));
-
-  align-items: center;
-  justify-content: space-between;
-  padding-block-start: var(--ednb-space-xs);
-  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
-}
-
+// What was accepted, on the leading edge of the shared footer row.
 .slef-import__accepted {
   @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
 
   font-family: var(--ednb-font-metric);
-}
-
-.slef-import__actions {
-  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }

@@ -37,6 +37,7 @@ import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { HullAnatomy, type AnatomyGuestMode } from '../hull-anatomy/hull-anatomy';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
+import { ActionButton } from '../../../../ui/components/action/action-button';
 
 /** The category controls the canvas draws above the ledger. */
 type Category = 'all' | SlotKind;
@@ -92,6 +93,7 @@ const WIDE_CATEGORIES = ['all', ...COMPACT_CATEGORIES] as const;
   selector: 'ednb-outfitting-workspace',
   imports: [
     NgTemplateOutlet,
+    ActionButton,
     BuildStatus,
     CapacitySummary,
     CostMaterials,

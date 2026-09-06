@@ -43,6 +43,7 @@ import {
   type ExperimentalEffectView,
 } from '../../../../ui/outfitting/experimental-effect-list';
 import { GradeSelector } from '../../../../ui/outfitting/grade-selector';
+import { ActionButton } from '../../../../ui/components/action/action-button';
 
 /** What the editor is showing, as one value. */
 export type EngineeringState =
@@ -72,6 +73,7 @@ export type EngineeringState =
 @Component({
   selector: 'ednb-engineering-editor',
   imports: [
+    ActionButton,
     AttributeComparison,
     BlueprintChoiceList,
     ExperimentalEffectList,

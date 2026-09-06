@@ -4,6 +4,7 @@ import { LoadoutStore } from '../../../application/equipment/loadout.store';
 import { provideLocalization } from '../../../i18n/i18n.providers';
 import { BUNDLED_ENGLISH } from '../../../i18n/locale-registry';
 import { ExportLoadoutDialog } from './export-loadout.dialog';
+import { stubNativeDialog } from '../../../ui/components/layer/layer.spec-helpers';
 
 /**
  * The export layer, as canvas 1a draws it.
@@ -19,13 +20,7 @@ describe('ExportLoadoutDialog', () => {
     TestBed.configureTestingModule({ providers: [provideLocalization()] });
     store = TestBed.inject(LoadoutStore);
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
-    // jsdom has no modal dialog, and the layer opens one.
-    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
-      this.open = true;
-    };
-    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
-      this.open = false;
-    };
+    stubNativeDialog();
   });
 
   function render() {

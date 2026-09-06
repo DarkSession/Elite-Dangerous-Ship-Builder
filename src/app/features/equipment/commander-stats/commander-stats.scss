@@ -43,10 +43,7 @@
 .stats__resistances,
 .stats__firepower {
   @include layout.stack(var(--ednb-space-md));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .stats__row {

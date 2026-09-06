@@ -26,7 +26,9 @@ function layer(page: Page) {
 
 async function openExport(page: Page): Promise<void> {
   await reachShellAction(page, /^export$/i);
-  await expect(layer(page)).toBeVisible();
+  // The format list, not the name: while the layer's chunk is on the wire the
+  // shell stands a waiting layer here under the same name, holding a skeleton.
+  await expect(layer(page).getByRole('group', { name: /format/i })).toBeVisible();
 }
 
 async function chooseSlef(page: Page): Promise<void> {
@@ -246,9 +248,13 @@ test.describe('the layer’s semantics', () => {
     await openExport(page);
     const dialog = layer(page);
 
-    expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
     await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible();
     await expect(dialog.getByRole('group', { name: /format/i })).toBeVisible();
+    // Open is not modal. A layer opened with `show` would be visible here and
+    // would leave the screen behind it reachable. Read once, which `openExport`
+    // makes safe: it waits for the loaded layer rather than for the name, which
+    // the waiting layer carries too.
+    expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
     await chooseSlef(page);
     await expect(dialog.getByLabel(/slef payload/i)).toBeVisible();
   });
@@ -276,7 +282,7 @@ test.describe('the layer’s semantics', () => {
     // region carries a floor the taller of the two already stands at.
     await withStockBuild(page);
     await openExport(page);
-    const content = layer(page).locator('.export-dialog__content');
+    const content = layer(page).locator('.format-layer__content');
     await chooseSlef(page);
     const withPayload = await content.boundingBox();
 
@@ -446,9 +452,9 @@ test.describe('the layer, against the canvas', () => {
     // Canvas 1c: `border-right: 1px solid var(--amber-a16)` on the format
     // column, running the height of the panel. Canvas 1d draws no rule.
     const rule = await formats.evaluate((node) => {
-      // The rule closes the region the group is placed in, which is the
-      // component's own host element rather than its fieldset.
-      const style = getComputedStyle(node.closest('ednb-choice-group') ?? node);
+      // The rule closes the region the group is placed in, which is the shared
+      // layer's own list track rather than the group or its fieldset.
+      const style = getComputedStyle(node.closest('.format-layer__list') ?? node);
       return { width: style.borderInlineEndWidth, colour: style.borderInlineEndColor };
     });
 
@@ -462,7 +468,7 @@ test.describe('the layer, against the canvas', () => {
       // at the taller region's content would be the drawn mark at the wrong
       // length.
       const spans = await formats.evaluate((node) => {
-        const region = node.closest('ednb-choice-group') ?? node;
+        const region = node.closest('.format-layer__list') ?? node;
         const body = region.closest('.layer__body')!;
         return Math.abs(
           region.getBoundingClientRect().height - body.getBoundingClientRect().height,

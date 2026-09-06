@@ -28,6 +28,7 @@ import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { ConfirmDialog } from '../../ui/components/confirm-dialog/confirm-dialog';
+import { EmptyState } from '../../ui/components/empty-state/empty-state';
 import {
   RecordManager,
   type ManageableRecord,
@@ -86,6 +87,7 @@ interface PendingDelete {
   imports: [
     ActionButton,
     ConfirmDialog,
+    EmptyState,
     Layer,
     RecordManager,
     ResponsiveRecordList,

@@ -3,17 +3,7 @@ import { LoadoutStore } from '../../../application/equipment/loadout.store';
 import { provideLocalization } from '../../../i18n/i18n.providers';
 import { BUNDLED_ENGLISH } from '../../../i18n/locale-registry';
 import { ModificationChooser } from './modification-chooser';
-
-/** `<dialog>`'s modal methods, which jsdom does not implement. */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
-}
+import { stubNativeDialog } from '../../../ui/components/layer/layer.spec-helpers';
 
 const REGEN = 'suit_increasedshieldregen';
 

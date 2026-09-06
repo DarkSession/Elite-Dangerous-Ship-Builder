@@ -31,22 +31,21 @@
     <p class="slef-export__link">{{ link }}</p>
   }
 
-  <div class="slef-export__footer">
+  <ednb-layer-footer>
     @if (view().metadata; as metadata) {
       <p class="slef-export__meta" data-bidi-isolate>{{ metadata }}</p>
     }
 
-    <div class="slef-export__actions">
-      @for (action of view().actions; track action.action) {
-        <ednb-action-button
-          [label]="action.label"
-          [emphasis]="action.action === 'copy' ? 'primary' : 'secondary'"
-          [disabled]="!ready()"
-          (activated)="request(action.action)"
-        />
-      }
-    </div>
-  </div>
+    @for (action of view().actions; track action.action) {
+      <ednb-action-button
+        actions
+        [label]="action.label"
+        [emphasis]="action.action === 'copy' ? 'primary' : 'secondary'"
+        [disabled]="!ready()"
+        (activated)="request(action.action)"
+      />
+    }
+  </ednb-layer-footer>
 
   @for (action of view().actions; track action.action) {
     @if (action.status; as status) {

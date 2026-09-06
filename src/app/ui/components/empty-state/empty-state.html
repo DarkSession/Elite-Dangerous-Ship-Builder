@@ -1,0 +1,7 @@
+<div [class]="classes()">
+  <h2 class="empty__title">{{ title() }}</h2>
+  @if (description(); as text) {
+    <p class="empty__description">{{ text }}</p>
+  }
+  <ng-content />
+</div>

@@ -260,5 +260,5 @@ Measured from canvas 1a's `SAVED BUILDS` modal and canvas 1b's `ssv-screen`.
 | Record          | Title in condensed 600 tracked 0.09em, a one-line note beneath in Barlow 300, then hull, price and how long ago it was edited in monospace                                              |
 | Issue badge     | A monospace count on a translucent warm plate beside the title                                                                                                                          |
 | Record marker   | A 3px leading edge that takes amber when the record is the current one                                                                                                                  |
-| Empty state     | Centred prose, no panel                                                                                                                                                                 |
+| Empty state     | Centred prose, no panel — the shared `EmptyState`, which is the same block the workspace and an unknown hull draw                                                                       |
 | Footer actions  | The destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge                                                                          |

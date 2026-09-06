@@ -183,17 +183,28 @@ test.describe('engineering a module', () => {
 
     await page.keyboard.press('End');
 
-    const inView = await list.evaluate((box) => {
-      const active = box.querySelector(
-        `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
-      );
-      const listBox = box.getBoundingClientRect();
-      const optionBox = active!.getBoundingClientRect();
-      return optionBox.top >= listBox.top - 1 && optionBox.bottom <= listBox.bottom + 1;
-    });
-
-    expect(inView).toBe(true);
-    expect(await list.evaluate((box) => box.scrollTop)).toBeGreaterThan(0);
+    // The key moves the option the menu is on, and the box scrolls to bring it
+    // into view. Both happen after the event, so the two facts are read together
+    // and until they settle: a sample taken as the key goes down finds the menu
+    // still on its first option, which is in view at a scroll of nought.
+    await expect
+      .poll(() =>
+        list.evaluate((box) => {
+          const active = box.querySelector(
+            `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
+          );
+          if (active === null) {
+            return null;
+          }
+          const listBox = box.getBoundingClientRect();
+          const optionBox = active.getBoundingClientRect();
+          return {
+            inView: optionBox.top >= listBox.top - 1 && optionBox.bottom <= listBox.bottom + 1,
+            scrolled: box.scrollTop > 0,
+          };
+        }),
+      )
+      .toEqual({ inView: true, scrolled: true });
   });
 
   test('opens with nothing selected on an unengineered module', async ({ page }) => {
@@ -382,6 +393,44 @@ test.describe('engineering a module', () => {
     await applyDraft(page);
     await selectMount(page, 'CargoHatch');
     await sweepOutfittingState(page, testInfo, 'engineering/mount takes none');
+  });
+});
+
+test.describe('the editor’s actions on a short viewport', () => {
+  test('releases the pin so the rows are not scrolled under them', async ({ page }) => {
+    // A viewport this short cannot divide the layer into a scroller and a foot
+    // and still show one choice. The actions stop sticking, and the layer's own
+    // scroller carries them (FR-011).
+    //
+    // The release and the pin carry the same class, and a media query carries no
+    // specificity, so only source order decides which one takes. Nothing else in
+    // the suite reads that, and a release stated in the wrong place is silent:
+    // it compiles, it ships, and the foot goes on sticking.
+    // The width the editor is opened at decides whether it is drawn inline or as
+    // a layer, so the viewport is set before the journey rather than during it.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const pin = await page
+      .locator('.engineering__actions')
+      .evaluate((node) => getComputedStyle(node).position);
+
+    expect(pin).toBe('static');
+  });
+
+  test('keeps the pin where the viewport has the height for a foot', async ({ page }) => {
+    // The other direction. Without it a foot that had stopped sticking entirely
+    // would satisfy the release above, and nothing else in the suite reads it.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const pin = await page
+      .locator('.engineering__actions')
+      .evaluate((node) => getComputedStyle(node).position);
+
+    expect(pin).toBe('sticky');
   });
 });
 

@@ -187,6 +187,8 @@
 // card's own siblings, which are positioned too: without it the details card
 // after this one in the document paints over the list.
 .menu__list {
+  @include layout.bare-list;
+
   position: absolute;
   // The list holds the focus while it is drawn, and the option it is on carries
   // the ring instead — a ring around the whole scroll box says only that the
@@ -195,9 +197,6 @@
   inset-inline: 0;
   inset-block-start: 100%;
   z-index: 2;
-  margin: 0;
-  padding: 0;
-  list-style: none;
   max-block-size: var(--ednb-layout-menu-drop);
   overflow-y: auto;
   overscroll-behavior-block: contain;

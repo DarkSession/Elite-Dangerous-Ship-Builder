@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
   effect,
@@ -203,12 +204,38 @@ export class Layer {
       } else if (!this.open() && dialog.open) {
         this.#closingFromInput = true;
         dialog.close();
-        // Restore the invoking context rather than dropping the reader at the
-        // top of the document.
-        this.#invoker?.focus?.();
-        this.#invoker = null;
+        this.#restoreInvoker();
       }
     });
+
+    // A layer can also go without its `open` input ever falling: a deferred
+    // block puts a layer on the screen while its chunk is on the wire, and the
+    // chunk landing takes that layer away and puts the loaded one there. The
+    // dialog leaves the document open, focus falls to the document body, and
+    // the layer arriving records the body as the control that opened it. So the
+    // Commander who presses Export on a slow connection is returned to the top
+    // of the document rather than to Export.
+    inject(DestroyRef).onDestroy(() => {
+      const dialog = this.#dialog();
+      if (dialog?.open) {
+        this.#closingFromInput = true;
+        dialog.close();
+      }
+      this.#restoreInvoker();
+    });
+  }
+
+  /**
+   * Hands focus back to the control the layer was opened from.
+   *
+   * The dialog is closed before this runs. The rest of the document is inert
+   * while a modal layer stands, so a control cannot take focus until the layer
+   * has given it up.
+   */
+  #restoreInvoker(): void {
+    const invoker = this.#invoker;
+    this.#invoker = null;
+    invoker?.focus?.();
   }
 
   /**
@@ -248,6 +275,12 @@ export class Layer {
    * for by whatever lowered it.
    */
   closed(): void {
+    // The element closed itself, so it has already put focus back where it
+    // belongs. Forgetting the control here keeps the teardown from reaching
+    // for it later: `open` falls after the element has closed, so the branch
+    // that would otherwise clear it never runs.
+    this.#invoker = null;
+
     if (this.#closingFromInput) {
       this.#closingFromInput = false;
       return;

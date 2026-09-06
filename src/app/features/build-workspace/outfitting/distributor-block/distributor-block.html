@@ -67,22 +67,12 @@
                   group is named with the allocation it stands at, so the reading
                   is there for anyone who cannot see the blocks.
                 -->
-                <div class="pips" role="group" [attr.aria-label]="bank.pipsLabel">
-                  @for (step of bank.steps; track step.id) {
-                    <button
-                      class="pips__step"
-                      type="button"
-                      [attr.aria-label]="step.label"
-                      (click)="setPips(bank.kind, step.value)"
-                    >
-                      <span
-                        class="pips__fill"
-                        aria-hidden="true"
-                        [style.inline-size.%]="step.fill * 100"
-                      ></span>
-                    </button>
-                  }
-                </div>
+                <ednb-pip-control
+                  [bank]="bank.kind"
+                  [label]="bank.pipsLabel"
+                  [steps]="bank.steps"
+                  (stepRequested)="setPips(bank.kind, $event)"
+                />
               </td>
               <td
                 role="cell"

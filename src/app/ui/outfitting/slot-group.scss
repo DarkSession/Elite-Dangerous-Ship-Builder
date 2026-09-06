@@ -18,13 +18,8 @@
 }
 
 .group__heading {
-  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
-
-  flex: 0 1 auto;
-  min-inline-size: 0;
-  margin: 0;
   // The canvas's 9px group rule, which is this scale's `micro` step.
-  font-size: var(--ednb-text-size-micro);
+  @include layout.section-heading;
 }
 
 // The canvas's `SIZE · NODE NO.`, quieter than the heading and after it.
@@ -38,10 +33,7 @@
 // The hairline that fills what the labels leave, drawn between them and the
 // count exactly as the canvas orders it.
 .group__line {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  block-size: var(--ednb-border-width-hairline);
-  background-color: var(--ednb-rule-section);
+  @include layout.section-line;
 }
 
 .group__count {
@@ -51,14 +43,12 @@
 }
 
 .group__slots {
+  @include layout.bare-list;
+
   // No gap: the canvas separates its ledger rows with their own padding, over
   // one unbroken ground. A hairline gap over a darker rail is what drew a line
   // under every row (wave 7).
   @include layout.stack(0);
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .visually-hidden {

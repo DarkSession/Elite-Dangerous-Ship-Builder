@@ -39,23 +39,14 @@
 // Each of the canvas's cards is a bounded plate on the panel ground, with the
 // same border and padding it gives the power dashboard's blocks.
 .drives__card {
-  @include layout.stack(var(--ednb-space-stack));
-
-  min-inline-size: 0;
-  padding-block: var(--ednb-space-2xl);
-  padding-inline: var(--ednb-space-panel);
-  background-color: var(--ednb-surface-panel);
-  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  @include layout.panel-plate;
 }
 
 // The canvas's identity line: the card's rule at one end, the fitted module's
 // class and blueprint at the other, on one line. It wraps rather than
 // compressing, because German sets `FRAME SHIFT DRIVE` as one unbreakable word.
 .drives__card-header {
-  @include layout.wrapping-row(var(--ednb-space-inline));
-
-  align-items: baseline;
-  justify-content: space-between;
+  @include layout.panel-plate-head(baseline);
 }
 
 // The `SCO` badge rides inside this rule, on its line, so the heading is a row
@@ -211,12 +202,11 @@
 // space" is answered here by a row that measures the space rather than by a
 // rule that assumes it.
 .drives__mass-marks {
+  @include layout.bare-list;
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--ednb-space-inline);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .drives__mass-mark {
@@ -270,24 +260,22 @@
 // longer value pull its bar shorter than the one above, which reads as a
 // difference in the reading when it is only a difference in digits.
 .drives__legend {
+  @include layout.bare-list;
+
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: var(--ednb-space-2xs) var(--ednb-space-inline);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .drives__envelope,
 .drives__ranges {
+  @include layout.bare-list;
+
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: var(--ednb-space-2xs) var(--ednb-space-inline);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .drives__legend-row,
@@ -377,10 +365,8 @@
 // The package's own reasons a mobility reading is unavailable, in its order.
 .drives__issues {
   @include layout.stack(var(--ednb-space-stack-tight));
+  @include layout.bare-list;
 
-  margin: 0;
-  padding: 0;
-  list-style: none;
   color: var(--ednb-text-muted);
 }
 

@@ -44,6 +44,11 @@ export async function openLibrary(page: Page): Promise<void> {
     await reachShellAction(page, /^(Open saved build|Gespeicherten Build öffnen)$/);
   }
   await expect(layer).toBeVisible();
+  // The name alone is not the loaded library: while its chunk is on the wire
+  // the shell stands a waiting layer here under the same name, holding a
+  // skeleton. The search field is the library's own, so it says the layer a
+  // journey means is the one on the screen.
+  await expect(layer.locator('.library__search')).toBeVisible();
 }
 
 /**

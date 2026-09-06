@@ -197,10 +197,7 @@
 
 .anatomy__legend {
   @include layout.wrapping-row(var(--ednb-space-inline));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .anatomy__legend-entry {

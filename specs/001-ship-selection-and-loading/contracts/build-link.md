@@ -37,6 +37,15 @@ Initial app start, address-bar paste, browser navigation and in-app fragment nav
 
 Any parse, integrity, version, identity or reconstruction error leaves the active and stored state unchanged. An async request token ensures a late decode cannot replace a newer navigation.
 
+A Commander waits for steps 3 to 6. On a first visit that wait is real: the codec and its table are a
+chunk of their own, and the application fetches them before it can decode anything.
+
+The pipeline therefore exposes that it is running. The workspace holds the build's place while it
+runs, instead of stating that there is no build — a statement that is false while a link is being
+read (011/FR-029). The state belongs to the read that raised it, and ends when that read ends,
+whether it committed or refused. A fragment that starts no read ends the state only where no read is
+running.
+
 ## Active-edit synchronization
 
 - After a successful modelled edit, encode the latest active build.

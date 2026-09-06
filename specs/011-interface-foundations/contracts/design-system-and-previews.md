@@ -44,12 +44,18 @@ Shared components:
   motion;
 - preserve complete state and reading order across wide, medium and compact compositions.
 
-Feature 011 initially supplies application frame/heading/context actions, buttons/links, labelled
+Feature 011 supplies application frame/heading/context actions, buttons/links, labelled
 input/select/search/textarea, choice/tab/segmented controls, panel/card, semantic collection and
-table shells, definition/metric/status/unavailable patterns, dialog/sheet/full-height layer,
-game-text disclosure and live-announcement outlets. Hull rows, slot rows, anatomy,
-engineering and other domain composites remain owned by their capability features but extend this
-same library.
+table shells, definition/metric/status/unavailable patterns, dialog/sheet/full-height layer, layer
+footer, format layer, empty state, waiting mark/skeleton, game-text disclosure and
+live-announcement outlets. Hull rows, slot rows, anatomy, engineering and other domain composites
+remain owned by their capability features but extend this same library.
+
+A repeated element tree becomes a component here. A repeated declaration body on markup that differs
+becomes a named mixin in the layout primitives instead, because a component there would wrap the
+caller's own children in a projection boundary and gain nothing else.
+`design/shared-patterns.md` records which patterns are shared this way and which library each one
+lives in.
 
 FR-005 is enforced by screen-design review and the exported component inventory. The static checker
 does not pretend to infer that two arbitrary visual trees are duplicates.
@@ -71,7 +77,11 @@ mobile portrait/landscape projects in both engines.
 
 Relevant cross-cutting fixtures add doubled/long copy, RTL direction, reduced motion, German formats,
 canonical package text with untranslated disclosure, absent canonical package text, long unbroken
-identities and nested label/description/error relationships. Fixtures are presentation data. A
+identities and nested label/description/error relationships. The state that animates declares the
+reduced-motion variant, not the still one. A component whose only motion is in its loading state is
+therefore reviewed under reduced motion in that state. The preview sweep renders no state under the
+reduced-motion media, so the declaration is a reviewer's note rather than a check that runs.
+Fixtures are presentation data. A
 package integration fixture may query real package data but cannot turn a copied mock value into an
 application fact.
 

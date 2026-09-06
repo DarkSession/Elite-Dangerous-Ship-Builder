@@ -8,9 +8,14 @@ function adapter(): HistoryLocationAdapter {
 }
 
 describe('HistoryLocationAdapter', () => {
-  beforeEach(() => {
-    history.replaceState(null, '', location.pathname + location.search);
-  });
+  // Every test here writes the document's own address, and the document outlives
+  // the file. The address is put back before and after each of them, so neither
+  // a test here nor a spec that runs after this one reads a fragment or a query
+  // it was never given.
+  const address = `${location.pathname}${location.search}`;
+  const restore = () => history.replaceState(null, '', address);
+  beforeEach(restore);
+  afterEach(restore);
 
   it('reads the current fragment without its leading hash', () => {
     history.replaceState(null, '', `${location.pathname}#b.abc`);

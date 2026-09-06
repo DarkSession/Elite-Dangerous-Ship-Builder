@@ -2,25 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { DocumentAdapter } from '../../platform/browser/document.adapter';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { SaveBuildDialog, type SaveRequest, type SaveSource } from './save-build.dialog';
+import { stubNativeDialog } from '../../ui/components/layer/layer.spec-helpers';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
-}
-
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The layer calls them the moment it opens; what these tests are about is what
- * the layer decides, not what the browser does with a dialog element.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
 }
 
 function render(inputs: Record<string, unknown> = {}) {

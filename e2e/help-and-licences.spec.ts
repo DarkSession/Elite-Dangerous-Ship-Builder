@@ -212,9 +212,6 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     // is waited for is the layer rather than the route component's own host —
     // which has no box of its own once its content is in the top layer.
     await openLibrary(page);
-    await expect(
-      page.getByRole('dialog', { name: englishMessages['library.title'] }),
-    ).toBeVisible();
   },
   'save-build-layer': async (page) => {
     await withStockBuild(page);
@@ -267,12 +264,21 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   'import-layer': async (page) => {
     await page.goto('/outfitting');
     await reachShellAction(page, /^import build$/i);
-    await expect(page.getByRole('dialog', { name: /import build/i })).toBeVisible();
+    // The payload field rather than the name: while the layer's chunk is on the
+    // wire the shell stands a waiting layer here under the same name, and a row
+    // that dismisses that one is answered by the loaded layer opening behind it.
+    await expect(
+      page.getByRole('dialog', { name: /import build/i }).getByLabel(/slef payload/i),
+    ).toBeVisible();
   },
   'export-layer': async (page) => {
     await withStockBuild(page);
     await reachShellAction(page, /^export$/i);
-    await expect(page.getByRole('dialog', { name: /export build/i })).toBeVisible();
+    // The format list rather than the name, for the reason the import row above
+    // states.
+    await expect(
+      page.getByRole('dialog', { name: /export build/i }).getByRole('group', { name: /format/i }),
+    ).toBeVisible();
   },
   'import-outcome': async (page) => {
     await importPayload(page, JSON.stringify(SUPPORTED_PARTIAL_QUALITY));

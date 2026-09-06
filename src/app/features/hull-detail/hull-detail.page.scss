@@ -75,10 +75,7 @@
 
 .detail__mount-list {
   @include layout.wrapping-row(var(--ednb-space-inline-tight));
-
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  @include layout.bare-list;
 }
 
 // The mount chip: a count in amber beside a tracked class name, on an inset

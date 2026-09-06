@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import type { SlefImportView } from '../../../application/slef/slef.presenter';
 import { ActionButton } from '../../../ui/components/action/action-button';
+import { LayerFooter } from '../../../ui/components/layer/layer-footer';
 import { Disclosure } from '../../../ui/components/disclosure/disclosure';
 import { TextareaField } from '../../../ui/components/textarea-field/textarea-field';
 import { DiagnosticList } from '../../../ui/technical/diagnostic-list';
@@ -30,7 +31,7 @@ import { DiagnosticList } from '../../../ui/technical/diagnostic-list';
  */
 @Component({
   selector: 'ednb-slef-import-layer',
-  imports: [ActionButton, Disclosure, DiagnosticList, TextareaField],
+  imports: [ActionButton, Disclosure, DiagnosticList, LayerFooter, TextareaField],
   templateUrl: './import-build-layer.html',
   styleUrl: './import-build-layer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

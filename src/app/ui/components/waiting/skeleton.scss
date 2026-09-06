@@ -1,0 +1,32 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.skeleton {
+  @include layout.stack(var(--ednb-space-stack));
+
+  align-items: center;
+  padding-block: var(--ednb-space-section);
+}
+
+.skeleton__spoken {
+  @include layout.visually-hidden;
+}
+
+.skeleton__bars {
+  @include layout.stack(var(--ednb-space-stack));
+
+  inline-size: 100%;
+  max-inline-size: var(--ednb-layout-prose-max);
+}
+
+// A bar holds the room one line of the content will take. It is the inset
+// ground with nothing on it, which is the plainest way of saying a place is
+// reserved rather than empty.
+.skeleton__bar {
+  display: block;
+  block-size: var(--ednb-layout-skeleton-bar);
+  background-color: var(--ednb-surface-inset);
+}

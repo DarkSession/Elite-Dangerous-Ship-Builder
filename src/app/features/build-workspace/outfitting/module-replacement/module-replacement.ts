@@ -22,6 +22,7 @@ import { Layer } from '../../../../ui/components/layer/layer';
 import { CandidateList } from '../../../../ui/outfitting/candidate-list';
 import type { CandidateManifest } from '../../../../ui/outfitting/manifest';
 import { CandidateSearch } from '../../../../ui/outfitting/candidate-search';
+import { ActionButton } from '../../../../ui/components/action/action-button';
 
 /** What the surface is showing, including the one state the query cannot know. */
 export type ReplacementState = CandidateStatus | 'notReplaceable';
@@ -58,7 +59,7 @@ export type ReplacementState = CandidateStatus | 'notReplaceable';
  */
 @Component({
   selector: 'ednb-module-replacement',
-  imports: [CandidateList, CandidateSearch, Layer, NgTemplateOutlet],
+  imports: [ActionButton, CandidateList, CandidateSearch, Layer, NgTemplateOutlet],
   templateUrl: './module-replacement.html',
   styleUrl: './module-replacement.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

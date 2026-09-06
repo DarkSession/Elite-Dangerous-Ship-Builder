@@ -1,11 +1,26 @@
 import { Location } from '@angular/common';
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  DeferBlockBehavior,
+  DeferBlockState,
+  TestBed,
+  type ComponentFixture,
+} from '@angular/core/testing';
+import {
+  NavigationCancel,
+  NavigationError,
+  RouteConfigLoadEnd,
+  RouteConfigLoadStart,
+  Router,
+  provideRouter,
+  type Route,
+} from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { App, HELP_ACTION } from './app';
 import { routes } from './app.routes';
 import { EquipmentBenchPage } from './features/equipment/equipment-bench.page';
 import { NAVIGATION_ROUTES } from './features/shared/app-navigation';
-import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
 import { FIXTURE_HULL } from './domain/ships/outfitting/outfitting.fixtures';
@@ -22,6 +37,7 @@ import { HelpPresenter } from './application/help/help.presenter';
 import { HELP_MANIFEST } from './platform/build/help-manifest.generated';
 import { EDNB_UPDATE_APPLIED_KEY } from './platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from './platform/storage/storage.spec-helpers';
+import { stubNativeDialog } from './ui/components/layer/layer.spec-helpers';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -296,23 +312,6 @@ class FakeUpdates {
   }
 }
 
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The overlay is a layer, and a layer calls them the moment it opens. What
- * these tests are about is what the shell decides to put up, not what a
- * browser does with a dialog element once it is up.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
-}
-
 describe('App and a newly published version', () => {
   let updates: FakeUpdates;
   let sessionArea: MemoryStorage;
@@ -550,5 +549,380 @@ describe('routes', () => {
     expect(bench?.title).toBe('equipment.title');
     expect(bench?.data?.['description']).toBe('equipment.description');
     expect(await bench?.loadComponent?.()).toBe(EquipmentBenchPage);
+  });
+});
+
+/** A screen with nothing in it, so a navigation activates the outlet. */
+@Component({
+  selector: 'ednb-waiting-screen',
+  template: '<p>screen</p>',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class WaitingScreen {}
+
+/**
+ * The frame's own waiting state.
+ *
+ * Driven from router events rather than from a rendered screen, because that is
+ * what the shell reads: the events say a chunk is on the wire, and nothing else
+ * in the frame knows (011/FR-029).
+ */
+describe('App, waiting for a screen', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideLocalization(),
+        // A screen of its own, so a navigation activates the outlet without
+        // fetching one of the application's real chunks.
+        provideRouter([{ path: 'screen', component: WaitingScreen }]),
+        ...provideMemoryStorage(new MemoryStorage()),
+      ],
+    }).compileComponents();
+  });
+
+  afterEach(() => {
+    TestBed.inject(Location).go('/');
+  });
+
+  /** A route object standing in for one the router would report. */
+  const someRoute = (path: string): Route => ({ path });
+
+  function shell() {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const events = TestBed.inject(Router).events as unknown as {
+      next: (event: unknown) => void;
+    };
+    return { fixture, publish: (event: unknown) => events.next(event) };
+  }
+
+  const skeletonOf = (fixture: ComponentFixture<App>) =>
+    (fixture.nativeElement as HTMLElement).querySelector('ednb-skeleton');
+
+  it('holds the frame open past the fetch, until the screen is there', () => {
+    // The chunk landing and the screen arriving are two moments, and one
+    // navigation can ask for more than one chunk: a cold arrival at a child
+    // address resolves the parent's component and the child's together. The
+    // wait ends where the screen does, so neither gap leaves the frame blank.
+    const { fixture, publish } = shell();
+    const parent = someRoute('ships');
+    const child = someRoute(':hull');
+
+    publish(new RouteConfigLoadStart(parent));
+    publish(new RouteConfigLoadStart(child));
+    publish(new RouteConfigLoadEnd(parent));
+    publish(new RouteConfigLoadEnd(child));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    fixture.componentInstance.routeActivated();
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('keeps the screen a Commander is reading while the next one loads', async () => {
+    // The router leaves a screen activated until the next is ready, which is
+    // the behaviour worth having. A skeleton over it would take a screen away
+    // to say another was coming (011/FR-029).
+    //
+    // The screen is activated by navigating rather than by calling the handler,
+    // so the outlet's own binding is what carries this. Without it the frame
+    // has no way to know a screen is there, and covers it.
+    const { fixture, publish } = shell();
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('stops waiting for a chunk that never arrives', () => {
+    // The router reports the end of a fetch that succeeded and says nothing
+    // about one that failed. Without this the frame would say a screen is
+    // loading for the rest of the session, which is the false statement
+    // FR-029 forbids.
+    const { fixture, publish } = shell();
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    fixture.detectChanges();
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('says so when the screen’s chunk does not arrive', () => {
+    // A skeleton taken down over a frame with no screen behind it leaves the
+    // shell around an empty page. The frame says what happened, and names the
+    // way out: the router asks again on the next navigation.
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    const notice = host.querySelector('ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['route.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+
+    // The frame drew the sentence, and that notice is an alert in its own
+    // right. Speaking it as well tells a Commander the same thing twice for
+    // one refused chunk.
+    expect(TestBed.inject(AnnouncementService).polite()).toBe('');
+  });
+
+  it('takes the failure down when the next screen is asked for', () => {
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+    expect(host.querySelector('ednb-status-notice')).not.toBeNull();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+    expect(skeletonOf(fixture)).not.toBeNull();
+  });
+
+  it('ends the wait on a navigation that is cancelled', () => {
+    // A guard turns the navigation away and the router reports neither an end
+    // nor an error. A skeleton raised by the fetch and lowered by those two
+    // alone would stand over the frame for the rest of the session.
+    const { fixture, publish } = shell();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    fixture.detectChanges();
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    publish(new NavigationCancel(1, '/equipment', ''));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('leaves the screen a Commander is reading alone when a navigation fails', async () => {
+    // The router keeps them where they were. A notice over that would report a
+    // failure by taking away the screen that did not fail.
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    publish(new NavigationError(1, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+  });
+
+  it('says the screen did not arrive, to the reader on the screen it kept', async () => {
+    // Keeping the screen is not the same as saying nothing. Nothing on the page
+    // moves when the chunk is refused, so the press reads as a control that did
+    // nothing, and it will do nothing again for the rest of the session. The
+    // sentence is spoken rather than drawn, because drawing it would take away
+    // the screen the frame is keeping.
+    const { fixture, publish } = shell();
+    const announcements = TestBed.inject(AnnouncementService);
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    publish(new NavigationError(1, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['route.failed.notice']);
+
+    // Pressing again is the same dead control, and a reader who has moved on
+    // hears nothing unless the second attempt is its own event.
+    announcements.clearOutlets();
+    publish(new NavigationError(2, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['route.failed.notice']);
+  });
+
+  it('stays quiet where the screen draws the sentence itself', async () => {
+    // The shipyard's rail holds the sentence in place of the hull, and an error
+    // notice is an alert in its own right. Speaking it as well would tell a
+    // Commander the same thing twice, in two places, for one refused chunk
+    // (011 contracts/feedback-and-semantics.md).
+    const { fixture, publish } = shell();
+    const announcements = TestBed.inject(AnnouncementService);
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    TestBed.inject(ScreenChrome).setOwnsRouteFailure(true);
+    publish(new NavigationError(1, '/ships/anaconda', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe('');
+  });
+});
+
+/**
+ * The two layers a Commander asks for, while the chunk that draws them is on
+ * its way.
+ *
+ * Neither layer is in the shell's own chunk, so a press has a wait behind it.
+ * What stands in the meantime is a layer of the same name, with a skeleton in
+ * it, and a way out that takes back the request (011/FR-029).
+ */
+describe('App, waiting for a layer', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideLocalization(),
+        provideRouter([]),
+        ...provideMemoryStorage(new MemoryStorage()),
+      ],
+      // The blocks are driven by hand. Left to itself a block resolves before a
+      // test can read the state it is being asked about.
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+    }).compileComponents();
+  });
+
+  /** Renders the placeholder of the block at `index`, and returns the frame. */
+  async function waitingLayer(index: number): Promise<HTMLElement> {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[index].render(DeferBlockState.Loading);
+    fixture.detectChanges();
+
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  const titleOf = (host: HTMLElement) =>
+    host.querySelector('.layer__title')?.textContent?.trim() ?? '';
+
+  it('names the exchange layer a Commander asked for', async () => {
+    TestBed.inject(SlefStore).openLayer('import');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('ednb-layer ednb-skeleton')).not.toBeNull();
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.import.title']);
+  });
+
+  it('names the export layer for the exchange it is, before the build is known', async () => {
+    // The name the layer settles on carries the hull, which needs the presenter
+    // whose chunk this is waiting for. The name it stands under is the one the
+    // shell can reach without loading that chunk.
+    TestBed.inject(SlefStore).openLayer('export');
+
+    const host = await waitingLayer(0);
+
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.export.title']);
+  });
+
+  it('stands at the width of the layer it is standing in for', async () => {
+    // A placeholder narrower than what lands grows under the hand that opened
+    // it. The import layer is a panel at the default measure and the export
+    // layer is a wide one, so the placeholder takes whichever was asked for.
+    TestBed.inject(SlefStore).openLayer('export');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('.layer')?.classList).toContain('layer--wide');
+  });
+
+  it('stands at the default measure for the import layer', async () => {
+    TestBed.inject(SlefStore).openLayer('import');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('.layer')?.classList).not.toContain('layer--wide');
+  });
+
+  it('closes the exchange layer that is not there yet', async () => {
+    // The way out cancels the opening rather than the fetch, so the layer that
+    // lands a moment later lands closed.
+    const store = TestBed.inject(SlefStore);
+    store.openLayer('import');
+
+    const host = await waitingLayer(0);
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+
+    expect(store.layer()).toBe('none');
+  });
+
+  it('says so, and stays open, when the chunk does not arrive', async () => {
+    // The block does not try again. Without a word here the layer a Commander
+    // asked for would close on its own, and the control that opened it would do
+    // nothing for the rest of the session.
+    const store = TestBed.inject(SlefStore);
+    store.openLayer('import');
+
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[0].render(DeferBlockState.Error);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    // The words, and the role that carries them. A layer that failed and still
+    // says it is loading is the state this branch exists to replace, and an
+    // error read as an incidental update is not read as a problem.
+    const notice = host.querySelector('ednb-layer ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['layer.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.import.title']);
+    expect(host.querySelector('.layer')?.classList).not.toContain('layer--wide');
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(store.layer()).toBe('none');
+  });
+
+  it('says so when the library’s own chunk does not arrive', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    fixture.componentInstance.library.raise();
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[1].render(DeferBlockState.Error);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const notice = host.querySelector('ednb-layer ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['layer.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['library.title']);
+    expect(host.querySelector('.layer')?.classList).toContain('layer--widest');
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(fixture.componentInstance.library.open()).toBe(false);
+  });
+
+  it('names the library layer, and closes it', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    fixture.componentInstance.library.raise();
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[1].render(DeferBlockState.Loading);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['library.title']);
+    // The library's own measure. A narrower placeholder would widen under the
+    // hand when the chunk lands.
+    expect(host.querySelector('.layer')?.classList).toContain('layer--widest');
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(fixture.componentInstance.library.open()).toBe(false);
   });
 });

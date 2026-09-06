@@ -82,10 +82,7 @@
 // reading it the way it was written.
 .help-dialog__licence-index {
   @include layout.stack(var(--ednb-space-hair));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .help-dialog__licence-line {

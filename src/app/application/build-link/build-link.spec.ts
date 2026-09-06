@@ -47,7 +47,23 @@ function commitAnaconda(active: ActiveBuildStore, hull = 'Anaconda'): void {
   });
 }
 
+/**
+ * Takes the fragment off the address.
+ *
+ * `BuildLinkCoordinator` seeds its reading state from the address it is
+ * constructed at, so a fragment left on the document by anything before this
+ * file would let a test pass on the seed rather than on the read it means. The
+ * document outlives one test, so the address is stated here rather than
+ * inherited.
+ */
+function clearFragment(): void {
+  history.replaceState(history.state, '', location.pathname + location.search);
+}
+
 describe('BuildLinkCoordinator', () => {
+  beforeEach(clearFragment);
+  afterEach(clearFragment);
+
   it('leaves an unrelated fragment uninterpreted and the build untouched', async () => {
     const { ingress, active } = setup();
     commitAnaconda(active);
@@ -125,6 +141,30 @@ describe('BuildLinkCoordinator', () => {
     expect(active.fingerprint()).toBe(before);
   });
 
+  it('stops reading when the read ends, whatever it ends as', async () => {
+    // The screens draw a skeleton for as long as this is raised, and say there
+    // is no build only once it falls. A read that raised it and did not lower
+    // it again would hold that skeleton for the rest of the session
+    // (011/FR-029).
+    const { ingress, active } = setup();
+    commitAnaconda(active);
+
+    await ingress.ingest('b.zzzzzzzzzzzz');
+    expect(ingress.reading()).toBe(false);
+
+    await ingress.ingest(await anacondaFragment());
+    expect(ingress.reading()).toBe(false);
+  });
+
+  it('reads while the read is in flight', async () => {
+    const { ingress } = setup();
+
+    const reading = ingress.ingest('b.zzzzzzzzzzzz');
+    expect(ingress.reading()).toBe(true);
+
+    await reading;
+  });
+
   it('treats a link describing the build already open as nothing to do', async () => {
     const { ingress, active } = setup();
     commitAnaconda(active);
@@ -174,6 +214,14 @@ describe('BuildLinkCoordinator', () => {
 });
 
 describe('FragmentPublisher', () => {
+  // Publishing writes a real fragment onto this document, and one test moves the
+  // path as well. Both are put back, so nothing after this file reads an address
+  // it was never given.
+  const address = `${window.location.pathname}${window.location.search}`;
+  const restore = () => window.history.replaceState(window.history.state, '', address);
+  beforeEach(restore);
+  afterEach(restore);
+
   it('publishes the active build within the published bound, preserving path and query', async () => {
     const { publisher, active, location } = setup();
     commitAnaconda(active);
@@ -205,12 +253,6 @@ describe('FragmentPublisher', () => {
   });
 
   it('stamps no fragment on a screen the Commander moved to while it encoded', async () => {
-    const build = `${window.location.pathname}${window.location.search}`;
-    // Earlier tests here publish onto the same window, and the adapter reads the
-    // address it finds. The condition under test is a *new* fragment appearing,
-    // so the address starts clean.
-    window.history.replaceState(window.history.state, '', build);
-
     const { publisher, active, location } = setup();
     commitAnaconda(active);
     expect(location.fragment()).toBe('');
@@ -228,14 +270,10 @@ describe('FragmentPublisher', () => {
     finish(await anacondaFragment());
     await publishing;
 
-    try {
-      // The shipyard is not a build, and a build link on it would decode into
-      // one the Commander is not editing.
-      expect(location.fragment()).toBe('');
-      expect(window.location.pathname).toBe('/ships');
-    } finally {
-      window.history.replaceState(window.history.state, '', build);
-    }
+    // The shipyard is not a build, and a build link on it would decode into one
+    // the Commander is not editing.
+    expect(location.fragment()).toBe('');
+    expect(window.location.pathname).toBe('/ships');
   });
 
   it('takes down a stale build fragment when there is no build left', async () => {
