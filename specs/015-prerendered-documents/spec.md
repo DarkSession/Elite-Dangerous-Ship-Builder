@@ -4,12 +4,12 @@
 
 **Created**: 2026-09-06
 
-**Status**: Draft — needs clarification
+**Status**: Draft — ready to plan
 
 **Input**: User description: "Prerendered documents for search visibility"
 
-Every address Nav Beacon advertises answers with a document that already states
-what the address is about, before any script runs.
+Every Nav Beacon address that has something to say answers with a document that
+already says it, before any script runs.
 
 Today it does not. The application paints its content after Angular boots, so a
 reader that runs no script is served a shell: the head is correct, the body is
@@ -39,8 +39,25 @@ the content, and how each composes it, is settled at plan time in `design/`.
 
 ### Session 2026-09-06
 
-Two questions are open. Both are marked in the requirements below and must be
-answered before planning.
+- Q: A document can only be written in bundled English, because the build has no
+  browser language to read. What does a Commander whose committed locale is German
+  see as the first frame? → A: **English first, then German.** The document paints
+  English content immediately and the takeover replaces it with the committed
+  locale. A German Commander sees English for the moment before the application
+  starts — where today they see a blank shell for that same moment. So no Commander
+  is worse off than now, and every Commander gains content in an earlier frame.
+  The language change at takeover is the one content change FR-009 permits, and it
+  is permitted only because it replaces text in place: it MUST NOT move layout, and
+  what it may change is the words, never what is on the page.
+
+- Q: The sitemap advertises 52 addresses. Which of them get a generated document?
+  → A: **The 50 that carry content.** The root, the hull catalogue and the 48
+  hulls. `/outfitting` and `/equipment` are benches whose content is the
+  Commander's own work and is empty until they act, so a document for either would
+  state nothing findable while adding surface to keep honest. Both keep today's
+  behaviour and today's head. This is a ruling about which addresses have content
+  to state, not a claim that a bench matters less; a bench that later gains
+  package-derived resting content becomes content-bearing and is generated.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -55,7 +72,7 @@ It does not boot an application, wait for a frame, or run anything.
 Commander from the cost of delivering it. Nothing else in this specification is
 worth doing on its own.
 
-**Independent Test**: Fetch each advertised address with script execution
+**Independent Test**: Fetch each content-bearing address with script execution
 disabled and confirm the response body states the address's subject. For a hull,
 confirm every stated figure is present and matches the package. Delivers the
 whole search-visibility gain with no other story built.
@@ -91,14 +108,14 @@ condition on shipping it. A document that reaches a crawler but costs a Commande
 a visible flash or a reflow under their finger is a net loss: it trades a real
 regression for an invisible gain. This story is what makes story 1 releasable.
 
-**Independent Test**: Open each advertised address on each of the five layout
+**Independent Test**: Open each content-bearing address on each of the five layout
 profiles, record the frames from first paint until the application is
 interactive, and confirm no content moves, changes or blanks across the takeover.
 Testable without story 3.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Commander opens an advertised address, **When** the first frame
+1. **Given** a Commander opens a content-bearing address, **When** the first frame
    paints, **Then** it shows the address's content rather than an empty shell.
 2. **Given** the first frame has painted, **When** the application takes over,
    **Then** no content the Commander can see moves position, and no element they
@@ -154,8 +171,8 @@ Commander data.
   nobody but can be typed. It must behave as it does today rather than answering
   with a generated document for a hull that does not exist.
 - **A Commander whose language is not English.** The document is written in
-  bundled English (see FR-011 and Q1). The committed locale arrives with the
-  application.
+  bundled English and the takeover replaces its text with the committed locale
+  (FR-011). The replacement is in place: the words change, the layout does not.
 - **Script runs but the takeover fails** — a bundle blocked, a chunk that never
   arrives. The document must remain readable rather than becoming an empty page.
 - **The service worker serves a cached shell for an address whose document
@@ -172,7 +189,7 @@ Commander data.
 
 **What a document must contain**
 
-- **FR-001**: Every address the sitemap advertises MUST answer with a document
+- **FR-001**: Every content-bearing advertised address MUST answer with a document
   whose main content is present in the served response, without script execution.
 - **FR-002**: A hull's document MUST state that hull's manufacturer, size,
   maximum speed, base shield, hull mass, crew, mass lock, hardpoint counts by
@@ -208,12 +225,12 @@ Commander data.
   application later refines the composition by measurement, that refinement MUST
   NOT move content the Commander can already see.
 - **FR-011**: A document MUST be written in bundled English. When the committed
-  locale is not English, the application MUST replace the document's text with
-  the committed locale's text on takeover. [NEEDS CLARIFICATION: Q1 — a Commander
-  whose language is German would see English content first and German a moment
-  later. Today they see nothing first and German a moment later. Is the English
-  first frame accepted, or must a non-English Commander be shown no text until
-  the committed locale is ready?]
+  locale is not English, the application MUST replace the document's text with the
+  committed locale's text on takeover. That replacement is the one content change
+  FR-009 permits: it MUST replace text in place, MUST NOT move layout, and MUST NOT
+  add, remove or reorder anything on the page. A Commander whose locale is not
+  English therefore reads English in the first frame rather than the blank shell
+  they are served today.
 - **FR-012**: If the takeover does not complete, the Commander MUST be left with
   the readable document rather than an empty or broken page.
 
@@ -234,13 +251,15 @@ Commander data.
 
 **Which addresses**
 
-- **FR-018**: [NEEDS CLARIFICATION: Q2 — the sitemap advertises 52 addresses: the
-  root, the hull catalogue, the 48 hulls, `/outfitting` and `/equipment`. The
-  first 50 carry package-derived content that a document can state. The two
-  benches are tools whose content is the Commander's own work and is empty until
-  they act. Does this feature generate documents for all 52 addresses, or only
-  for the 50 that have content to state, leaving the two benches as they are
-  today?]
+- **FR-018**: A document MUST be generated for every content-bearing advertised
+  address: the root, the hull catalogue and each of the 48 hulls. `/outfitting`
+  and `/equipment` MUST NOT be generated, and MUST keep today's behaviour and
+  today's head unchanged.
+- **FR-021**: Which advertised addresses are content-bearing MUST be recorded in
+  one place that the build and the verification gate both read, so the two cannot
+  disagree about what should have been generated. An advertised address that is
+  neither generated nor recorded as content-free MUST fail the build rather than
+  be published silently.
 
 **How it is verified**
 
@@ -256,8 +275,13 @@ Commander data.
 ### Key Entities
 
 - **Advertised address**: an address the sitemap lists. Owned by
-  `scripts/generate-sitemap.mjs` and derived from the installed package. The unit
-  this feature generates a document for.
+  `scripts/generate-sitemap.mjs` and derived from the installed package. All 52
+  keep the head feature 011 gave them.
+- **Content-bearing address**: an advertised address whose subject the package can
+  state without a Commander having done anything — the root, the hull catalogue
+  and the 48 hulls. The unit this feature generates a document for. `/outfitting`
+  and `/equipment` are advertised but not content-bearing, because a bench is
+  empty until a Commander fills it.
 - **Generated document**: the HTML served at an advertised address. Carries that
   address's head (feature 011) and, new here, its content. A static asset,
   written by the build, identical for every caller.
@@ -270,8 +294,9 @@ Commander data.
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of advertised addresses state their subject in the served
-  response with no script executed. Today 0% do.
+- **SC-001**: 100% of the 50 content-bearing addresses state their subject in the
+  served response with no script executed. Today 0% do. The two benches are
+  unchanged, and all 52 keep the head they have today.
 - **SC-002**: For all 48 hulls, a reader that runs no script can read every figure
   named in FR-002, and each matches the pinned package exactly.
 - **SC-003**: Across the takeover, visible content moves by zero pixels on all
@@ -307,6 +332,10 @@ Stated so it is not re-derived:
 - **Rich link previews for a build** — a card naming the hull and jump range of a
   shared build. It is a sharing capability rather than a search one, it cannot be
   served from the fragment, and it is not part of this feature.
+- **Documents for the two benches.** `/outfitting` and `/equipment` are advertised
+  but state nothing until a Commander acts, so there is no content for a document
+  to carry. They keep today's behaviour and today's head. A bench that later gains
+  package-derived resting content becomes content-bearing and is generated then.
 - **Structured data per hull.** Feature 011 ruled that a `Product`- or
   `Vehicle`-shaped node would restate package-owned game data in this
   repository's markup. That ruling stands and is not reopened here.

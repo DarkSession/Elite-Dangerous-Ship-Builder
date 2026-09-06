@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,13 +31,17 @@
 
 ## Notes
 
-Two `[NEEDS CLARIFICATION]` markers are open and block `/speckit-plan`:
+All checklist items pass. Both open questions were answered in the clarification
+session of 2026-09-06 and are recorded in the spec:
 
-- **Q1 (FR-011)** — the first frame's language for a Commander whose committed
-  locale is not English. Scope and user experience.
-- **Q2 (FR-018)** — whether `/outfitting` and `/equipment` get generated
-  documents, or only the 50 addresses with package-derived content to state.
-  Scope.
+- **Q1 (FR-011)** — the first frame is bundled English for every Commander, and
+  the takeover replaces the text with the committed locale in place. A Commander
+  whose locale is not English reads English where today they read a blank shell,
+  so no Commander's first frame is worse than it is now.
+- **Q2 (FR-018, FR-021)** — the 50 content-bearing addresses are generated: the
+  root, the hull catalogue and the 48 hulls. `/outfitting` and `/equipment` are
+  advertised but state nothing until a Commander acts, so they keep today's
+  behaviour and today's head.
 
 Named exceptions to "no implementation details", each deliberate:
 
