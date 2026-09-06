@@ -44,10 +44,11 @@
     />
 
     <p class="gate__saved">
-      <!-- The canvas offers two ways past the gate for a Commander who already
-           has a loadout. Only this one exists: importing a journal event is a
-           capability the bench does not have (013 design/reference-review.md). -->
+      <!-- The two ways past the gate the canvas draws for a Commander who
+           already has a loadout: a journal event, and a saved record. -->
       <span class="gate__prompt">{{ prompt() }}</span>
+      <button class="gate__link" type="button" (click)="openImport()">{{ importLabel() }}</button>
+      <span class="gate__separator" aria-hidden="true"></span>
       <button class="gate__link" type="button" (click)="openSaved()">{{ savedLabel() }}</button>
     </p>
   </div>

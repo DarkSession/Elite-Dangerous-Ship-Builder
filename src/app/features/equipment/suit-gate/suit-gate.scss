@@ -137,6 +137,15 @@
   color: var(--ednb-text-subtle);
 }
 
+// The 3px square the canvas sets between the two ways past the gate.
+// Decorative: the two controls name themselves.
+.gate__separator {
+  align-self: center;
+  inline-size: var(--ednb-space-hair);
+  block-size: var(--ednb-space-hair);
+  background-color: var(--ednb-border-decorative-strong);
+}
+
 .gate__link {
   @include layout.target-baseline;
 
@@ -150,10 +159,15 @@
   font: inherit;
   color: var(--ednb-text-accent);
   cursor: pointer;
-  // The canvas draws it in the accent and rules nothing under it; the colour is
-  // not the only carrier, since it is the one control in the block and is named
-  // in words either way.
-  text-decoration: none;
+  // Ruled, which the canvas does not draw. The canvas sets both controls in the
+  // accent and separates them with a 3px square, and that was defensible while
+  // there was one control in the block: since 016 added the journal import
+  // beside it, "Already have a loadout? Import a journal event Open a saved
+  // build" is one run of words in which only the colour says which two parts
+  // are controls (SC 1.4.1, AGENTS.md). The rule is the smallest carrier that
+  // is not colour; the divergence is recorded in the change's design.md.
+  text-decoration: underline;
+  text-underline-offset: var(--ednb-space-hair);
 }
 
 // The slots this previews are the same four the item view draws, so they are

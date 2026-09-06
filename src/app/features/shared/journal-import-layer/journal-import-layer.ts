@@ -1,12 +1,19 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
-import type { SlefImportView } from '../../../application/slef/slef.presenter';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import type { JournalImportView } from '../../../application/journal/journal-import.view';
 import { ActionButton } from '../../../ui/components/action/action-button';
+import { ChoiceGroup, type Choice } from '../../../ui/components/choice-group/choice-group';
 import { Disclosure } from '../../../ui/components/disclosure/disclosure';
+import { FileDrop } from '../../../ui/components/file-drop/file-drop';
 import { TextareaField } from '../../../ui/components/textarea-field/textarea-field';
 import { DiagnosticList } from '../../../ui/technical/diagnostic-list';
 
 /**
- * Where a pasted build comes in, exactly as the reference draws it.
+ * Where a build or a loadout comes in, exactly as the reference draws it.
+ *
+ * One panel for both tools, because both canvases draw one: the Ship Builder's
+ * import (`imp-*`) and the Equipment Builder's (`ge-imp-*`) are the same plate,
+ * the same list, the same rule and the same footer. What differs is the words,
+ * and the words arrive resolved.
  *
  * Description, one editable monospaced field, one status line, then the footer
  * the canvas rules off: what is accepted on the left, Cancel and Load Build on
@@ -29,14 +36,14 @@ import { DiagnosticList } from '../../../ui/technical/diagnostic-list';
  * It renders one immutable localized view and emits intents.
  */
 @Component({
-  selector: 'ednb-slef-import-layer',
-  imports: [ActionButton, Disclosure, DiagnosticList, TextareaField],
-  templateUrl: './import-build-layer.html',
-  styleUrl: './import-build-layer.scss',
+  selector: 'ednb-journal-import-layer',
+  imports: [ActionButton, ChoiceGroup, DiagnosticList, Disclosure, FileDrop, TextareaField],
+  templateUrl: './journal-import-layer.html',
+  styleUrl: './journal-import-layer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ImportBuildLayer {
-  readonly view = input.required<SlefImportView>();
+export class JournalImportLayer {
+  readonly view = input.required<JournalImportView>();
 
   /**
    * Whether the refusal's detail is open.
@@ -51,6 +58,36 @@ export class ImportBuildLayer {
   readonly changed = output<string>();
   readonly submitted = output<void>();
   readonly cancelled = output<void>();
+  /** The journal files a Commander selected or dropped. */
+  readonly filesChosen = output<readonly File[]>();
+  /** Which of the builds a scan found the Commander wants. */
+  readonly picksChosen = output<readonly string[]>();
+
+  /** What the file control takes, in the browser's own spelling. */
+  readonly accept = JOURNAL_FILE_TYPES;
+
+  /**
+   * The builds a scan found, as the design system's own plates.
+   *
+   * The list is a group of checkboxes because that is what it is: several
+   * builds, any number of them chosen. Nothing about the row is new — a marked
+   * card already draws a square, a title and a line under it, and the instant
+   * the journal wrote goes in the plate's far edge.
+   */
+  readonly choices = computed<readonly Choice[]>(() =>
+    this.view().picks.map((pick) => ({
+      value: pick.key,
+      label: pick.title,
+      description: pick.detail,
+      meta: pick.meta,
+    })),
+  );
+
+  readonly selectedKeys = computed(() =>
+    this.view()
+      .picks.filter((pick) => pick.selected)
+      .map((pick) => pick.key),
+  );
 
   /**
    * Submits the draft, and closes the detail with the attempt that opened it.
@@ -66,3 +103,13 @@ export class ImportBuildLayer {
     this.submitted.emit();
   }
 }
+
+/**
+ * What the file control offers to open.
+ *
+ * The three extensions the game and other tools write, and the JSON media type
+ * beside them for a platform that files by type rather than by suffix. It is a
+ * filter on a picker, not a check: what a file holds is decided by the package
+ * that reads it.
+ */
+export const JOURNAL_FILE_TYPES = '.log,.json,.txt,application/json';

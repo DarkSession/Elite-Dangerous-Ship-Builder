@@ -8,6 +8,7 @@ import {
   defaultBuild,
 } from '../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildCandidate } from '../active-build/active-build.models';
@@ -104,6 +105,8 @@ describe('what an import that does not happen costs', () => {
         provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
+        // The import coordinator reaches the record repository to store a batch.
+        ...provideMemoryStorage(new MemoryStorage()),
       ],
     });
     active = TestBed.inject(ActiveBuildStore);

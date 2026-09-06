@@ -5,11 +5,17 @@ import { MessageService } from '../../i18n/message.service';
 import type { MessageKey } from '../../i18n/locale-registry';
 import type { DiagnosticEntry } from '../../ui/technical/diagnostic-list';
 import type {
+  JournalFailureView,
+  JournalImportView,
+  JournalPickView,
+} from '../journal/journal-import.view';
+import type {
   NormalizationRefusal,
   SlefImportFailure,
   SlefPackageDiagnostic,
 } from '../../domain/ships/slef/slef-import.models';
 import type { DeliveryAction, DeliveryOutcome } from '../../domain/ships/slef/slef-export.models';
+import type { JournalFile } from '../../domain/journal/journal-scan';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { SlefDeliveryCoordinator } from './slef-delivery.coordinator';
@@ -17,43 +23,15 @@ import { SlefExportCoordinator } from './slef-export.coordinator';
 import { SlefImportCoordinator, type SlefImportSubmission } from './slef-import.coordinator';
 import { SlefStore, type SlefExportMode } from './slef.store';
 
-/** What the import layer draws, already localized. */
-export interface SlefImportView {
-  readonly title: string;
-  readonly description: string;
-  readonly accepted: string;
-  readonly fieldLabel: string;
-  readonly draft: string;
-  /** The one status line the canvas draws, whatever it currently says. */
-  readonly status: string;
-  readonly busy: boolean;
-  readonly failure: SlefFailureView | null;
-  readonly submitLabel: string;
-  /** The canvas draws Cancel, not Clear: closing is what it does. */
-  readonly cancelLabel: string;
-  readonly canSubmit: boolean;
-}
-
-/** A refusal, in the same three parts every refusal has. */
-export interface SlefFailureView {
-  /** The application's framing of what happened. Never a package sentence. */
-  readonly message: string;
-  /** The package's own diagnostics, unaltered. Empty when it raised none. */
-  readonly diagnostics: readonly DiagnosticEntry[];
-  readonly diagnosticsLabel: string;
-  /** One line per refused partial roll, in exact source identities. */
-  readonly refusals: readonly string[];
-  /**
-   * The control that opens the two lists above.
-   *
-   * A refused paste is answered by one sentence; the slot identities and the
-   * five-field diagnostics behind it are for a Commander who wants to know
-   * which module the library would not take, and they are not what most
-   * refusals need said (Commander request 2026-08-26). Nothing is withheld —
-   * the control is beside the sentence, and it names itself.
-   */
-  readonly advancedLabel: string;
-}
+/**
+ * What the import layer draws for the Ship Builder.
+ *
+ * The shape is the shared one: both tools draw one panel, so both fill one view
+ * (`application/journal/journal-import.view`).
+ */
+export type SlefImportView = JournalImportView;
+export type SlefPickView = JournalPickView;
+export type SlefFailureView = JournalFailureView;
 
 /** One format the export layer offers. */
 export interface SlefExportModeView {
@@ -131,6 +109,11 @@ export class SlefPresenter {
     const status = this.#store.importStatus();
     const failure = this.#store.importFailure();
 
+    const picks = this.#picks();
+    const chosen = this.#store.selectedKeys().length;
+    const scanning = this.#store.scanning();
+    const scanned = this.#store.journalEntries().length > 0;
+
     return {
       title: this.#messages.message('slef.import.title'),
       description: this.#messages.message('slef.import.description'),
@@ -138,12 +121,49 @@ export class SlefPresenter {
       fieldLabel: this.#messages.message('slef.import.field.label'),
       draft: draft.text,
       status: this.#importStatus(),
-      busy: status !== 'editing',
-      failure: failure === null ? null : this.#failureView(failure),
-      submitLabel: this.#messages.message('slef.import.action.submit'),
+      busy: status !== 'editing' || scanning,
+      failure: failure === null ? this.#batchFailureView() : this.#failureView(failure),
+      submitLabel:
+        chosen > 1
+          ? this.#messages.message('slef.import.action.submit.several', {
+              count: this.#formatters.integer(chosen),
+            })
+          : this.#messages.message('slef.import.action.submit'),
       cancelLabel: this.#messages.message('action.cancel'),
-      canSubmit: status === 'editing' && draft.text.trim().length > 0,
+      canSubmit:
+        status === 'editing' && !scanning && (scanned ? chosen > 0 : draft.text.trim().length > 0),
+      dropLabel: this.#messages.message('slef.import.drop.label'),
+      scanned: this.#scanned(),
+      scanning,
+      dividerLabel: this.#messages.message('slef.import.divider'),
+      picks,
+      picksLabel:
+        picks.length === 0
+          ? null
+          : this.#messages.message('slef.import.picks.label', {
+              found: this.#formatters.integer(picks.length),
+              chosen: this.#formatters.integer(chosen),
+            }),
     };
+  });
+
+  /**
+   * What the library says when it opens on a batch import.
+   *
+   * `null` at every other moment, which is every moment a Commander opened the
+   * library themselves. The records are the outcome; this names how many of them
+   * arrived, because a list that grew by three says nothing about why.
+   */
+  readonly importNotice = computed(() => {
+    const outcome = this.#store.batchOutcome();
+    if (outcome === null || outcome.stored === 0) {
+      return null;
+    }
+    return outcome.stored === 1
+      ? this.#messages.message('library.imported.notice.one')
+      : this.#messages.message('library.imported.notice.many', {
+          count: this.#formatters.integer(outcome.stored),
+        });
   });
 
   readonly exportView = computed<SlefExportView>(() => {
@@ -216,6 +236,54 @@ export class SlefPresenter {
     this.#store.setDraft(text);
   }
 
+  /**
+   * Reads the journal files a Commander chose.
+   *
+   * Announced as it starts rather than as it ends: a scan of several files is
+   * the one thing here that takes long enough for a reader to wonder whether
+   * anything happened.
+   */
+  async scanFiles(files: readonly JournalFile[]): Promise<void> {
+    this.#announcements.announce({
+      kind: 'slef.import.scan',
+      revision: this.#store.requestToken,
+      urgency: 'polite',
+      messageKey: 'slef.import.announce.scanning',
+    });
+    await this.#import.scanFiles(files);
+    this.#announceScan();
+  }
+
+  /**
+   * Says how a scan ended, not only that one started.
+   *
+   * The list, the scanned line and the refusal all reach a Commander who is
+   * looking at the panel. A Commander who is not gets one sentence: what came
+   * back. Without it a screen reader hears "Reading journal files." and then
+   * nothing at all, whether three builds arrived or the file held none
+   * (016/FR-004, FR-006).
+   */
+  #announceScan(): void {
+    const found = this.#store.journalEntries().length;
+    this.#announcements.announce({
+      kind: 'slef.import.scan',
+      revision: this.#store.requestToken,
+      urgency: 'polite',
+      messageKey:
+        found === 0
+          ? 'slef.import.announce.scanned.none'
+          : found === 1
+            ? 'slef.import.announce.scanned.one'
+            : 'slef.import.announce.scanned.many',
+      params: { count: this.#formatters.integer(found) },
+    });
+  }
+
+  /** Records which of the builds a scan found the Commander wants. */
+  chooseJournalPicks(keys: readonly string[]): void {
+    this.#store.setSelection(keys);
+  }
+
   async submit(): Promise<SlefImportSubmission> {
     const submission = await this.#import.submit();
     if (submission.kind === 'committed') {
@@ -225,6 +293,17 @@ export class SlefPresenter {
         urgency: 'polite',
         messageKey: 'slef.import.announce.imported',
         params: { hull: this.#active.hullName() ?? '' },
+      });
+    } else if (submission.kind === 'stored') {
+      this.#announcements.announce({
+        kind: 'slef.import',
+        revision: this.#store.requestToken,
+        urgency: 'polite',
+        messageKey:
+          submission.stored === 1
+            ? 'slef.import.announce.stored.one'
+            : 'slef.import.announce.stored.many',
+        params: { count: this.#formatters.integer(submission.stored) },
       });
     } else if (submission.kind === 'failed') {
       // Bounded on purpose: never the draft, never a whole diagnostic list.
@@ -307,6 +386,14 @@ export class SlefPresenter {
    * the field and the footer do not jump apart when a status does arrive.
    */
   #importStatus(): string {
+    const reading = this.#store.scanningFiles();
+    if (reading > 0) {
+      return reading === 1
+        ? this.#messages.message('slef.import.status.scanning.one')
+        : this.#messages.message('slef.import.status.scanning.many', {
+            files: this.#formatters.integer(reading),
+          });
+    }
     if (this.#store.importStatus() !== 'editing') {
       return this.#messages.message('slef.import.status.inspecting');
     }
@@ -314,7 +401,119 @@ export class SlefPresenter {
     if (ending !== null) {
       return this.#messages.message(`slef.import.status.${ending}` as MessageKey);
     }
+    // A file the bound refused while the rest were read. It is stated here
+    // rather than as the panel's refusal, because the scan succeeded: the same
+    // sentence the whole refusal uses, about the one file it is about
+    // (016/FR-002, FR-004).
+    const [refused] = this.#store.scanReport()?.refused ?? [];
+    if (refused !== undefined) {
+      return this.#messages.message('slef.import.failure.fileTooLarge', {
+        file: refused.fileName,
+        limit: this.#formatters.bytes(refused.limitBytes),
+      });
+    }
     return '';
+  }
+
+  /**
+   * The rows the list draws, or none where there is nothing to choose between.
+   *
+   * The hull's name is the package's, resolved here where the locale is known.
+   * Nothing in a row is derived from the symbol the file carried.
+   */
+  #picks(): readonly SlefPickView[] {
+    const entries = this.#store.journalEntries();
+    if (entries.length < 2) {
+      return [];
+    }
+    const chosen = this.#store.selectedKeys();
+
+    return entries.map((entry) => {
+      const facts = entry.value;
+      const hull = this.#gameText.shipName(facts.hullSymbol);
+      const hullName = hull.text ?? facts.hullSymbol;
+      return {
+        key: entry.key,
+        title:
+          facts.shipName === null
+            ? (facts.ident ?? hullName)
+            : facts.ident === null
+              ? facts.shipName
+              : this.#messages.message('slef.import.pick.title', {
+                  name: facts.shipName,
+                  ident: facts.ident,
+                }),
+        detail: this.#messages.message('slef.import.pick.detail', {
+          hull: hullName,
+          modules: this.#formatters.integer(facts.moduleCount),
+        }),
+        meta: entry.timestamp === '' ? '' : this.#stamp(entry.timestamp),
+        selected: chosen.includes(entry.key),
+      };
+    });
+  }
+
+  /** The instant the game wrote, in the active locale, or the text it wrote. */
+  #stamp(timestamp: string): string {
+    const instant = new Date(timestamp);
+    return Number.isNaN(instant.getTime()) ? timestamp : this.#formatters.dateTime(instant);
+  }
+
+  /** What the last scan read: the file's name, or how many files there were. */
+  #scanned(): string | null {
+    const report = this.#store.scanReport();
+    if (report === null) {
+      return null;
+    }
+    const builds =
+      report.eventCount === 1
+        ? this.#messages.message('slef.import.scanned.builds.one')
+        : this.#messages.message('slef.import.scanned.builds.many', {
+            count: this.#formatters.integer(report.eventCount),
+          });
+    const source =
+      report.fileName ??
+      this.#messages.message('slef.import.scanned.files', {
+        files: this.#formatters.integer(report.fileCount),
+      });
+    return this.#messages.message('slef.import.scanned', { source, builds });
+  }
+
+  /**
+   * What a batch left behind, in the shape every refusal here has.
+   *
+   * One sentence saying how many were not saved, one line naming each of them
+   * with the reason beside it, and the package's own diagnostics behind the
+   * same control every other refusal puts them behind. `null` while a batch
+   * either has not happened or took everything it was given.
+   */
+  #batchFailureView(): SlefFailureView | null {
+    const outcome = this.#store.batchOutcome();
+    if (outcome === null || outcome.refused.length === 0) {
+      return null;
+    }
+
+    return {
+      message:
+        outcome.refused.length === 1
+          ? this.#messages.message('slef.import.failure.batch.one')
+          : this.#messages.message('slef.import.failure.batch.many', {
+              count: this.#formatters.integer(outcome.refused.length),
+            }),
+      diagnostics: this.diagnostics(
+        outcome.refused.flatMap((refusal) =>
+          'diagnostics' in refusal.failure ? refusal.failure.diagnostics : [],
+        ),
+      ),
+      diagnosticsLabel: this.#messages.message('slef.diagnostic.title'),
+      refusals: outcome.refused.map((refusal) =>
+        this.#messages.message('slef.import.failure.refused', {
+          title: refusal.title,
+          reason: this.#failureMessage(refusal.failure),
+        }),
+      ),
+      advancedLabel: this.#messages.message('slef.import.advanced'),
+    };
   }
 
   #failureView(failure: SlefImportFailure): SlefFailureView {
@@ -344,6 +543,15 @@ export class SlefPresenter {
         // there is no name to present.
         return this.#messages.message('slef.import.failure.unknownHull', {
           hull: failure.sourceHull,
+        });
+      case 'fileTooLarge':
+        return this.#messages.message('slef.import.failure.fileTooLarge', {
+          file: failure.fileName,
+          limit: this.#formatters.bytes(failure.limitBytes),
+        });
+      case 'noEvents':
+        return this.#messages.message('slef.import.failure.noEvents', {
+          files: failure.fileNames.join(', '),
         });
       case 'normalizationUnsupported':
         return this.#messages.message('slef.import.failure.normalizationUnsupported', {

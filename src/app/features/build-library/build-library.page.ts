@@ -112,6 +112,17 @@ export class BuildLibraryPage {
   readonly #router = inject(Router);
   readonly #presence = inject(LibraryPresence);
 
+  /**
+   * What a journal import stored, when one opened this layer.
+   *
+   * `null` at every other moment. The sentence belongs to the import that made
+   * these records, and this is the surface a Commander reads it on because it
+   * is the surface they were taken to (016/FR-010, 016/FR-017). It arrives with
+   * the raise rather than being fetched from the feature that composed it, so
+   * one list can carry either tool's import without knowing about either.
+   */
+  readonly importNotice = this.#presence.notice;
+
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
   readonly unavailableLabel = this.#messages.messageSignal('library.unavailable.label');

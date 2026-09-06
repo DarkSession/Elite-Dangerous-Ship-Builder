@@ -1,11 +1,31 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
-import { importSlef } from '../../domain/ships/slef/slef-import';
-import type { SlefImportCandidate } from '../../domain/ships/slef/slef-import.models';
+import {
+  scanJournalFiles,
+  type JournalEntry,
+  type JournalFile,
+} from '../../domain/journal/journal-scan';
+import {
+  SHIP_JOURNAL_READER,
+  type JournalLoadoutFacts,
+} from '../../domain/ships/slef/journal-loadouts';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
+import {
+  importJournalEntry,
+  importSlef,
+  type SlefImportResult,
+} from '../../domain/ships/slef/slef-import';
+import type {
+  SlefImportCandidate,
+  SlefRequestToken,
+} from '../../domain/ships/slef/slef-import.models';
 import type { CandidateOutcome } from '../active-build/build-ingress.coordinator';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
-import { SlefStore } from './slef.store';
+import { BuildLibraryStore } from '../build-library/build-library.store';
+import { NamedRecordService } from '../build-library/named-record.service';
+import { ClockAdapter } from '../../platform/browser/clock.adapter';
+import { SlefStore, type SlefBatchRefusal } from './slef.store';
 
 /**
  * How one submitted draft ended, from the layer's point of view.
@@ -20,7 +40,20 @@ export type SlefImportSubmission =
   | { readonly kind: 'committed' }
   | { readonly kind: 'failed' }
   | { readonly kind: 'cancelled' }
-  | { readonly kind: 'superseded' };
+  | { readonly kind: 'superseded' }
+  /**
+   * Several builds were stored and none was opened.
+   *
+   * `refused` is empty on a batch that stored everything the Commander chose,
+   * and only then does the library open: a refusal carries the package's own
+   * diagnostics, and those are read on the layer that was refused rather than
+   * over a list of records.
+   */
+  | {
+      readonly kind: 'stored';
+      readonly stored: number;
+      readonly refused: readonly SlefBatchRefusal[];
+    };
 
 /**
  * The one path from a pasted draft to an active build.
@@ -42,15 +75,167 @@ export class SlefImportCoordinator {
   readonly #ingress = inject(BuildIngressCoordinator);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
+  readonly #named = inject(NamedRecordService);
+  readonly #clock = inject(ClockAdapter);
+  readonly #injector = inject(Injector);
+  /**
+   * The library, resolved when there is something to tell it about.
+   *
+   * Not injected into a field. The store reaches `RetentionService`, which
+   * takes a page nonce from `UuidAdapter`, which throws where there is no
+   * `crypto` rather than fabricating an identity — and the import layer is
+   * mounted in the shell, so a field would construct that chain in the
+   * prerenderer and empty every built document (`app.config.ts`, the sweep's
+   * own initializer; 015/FR-001).
+   */
+  get #library(): BuildLibraryStore {
+    return this.#injector.get(BuildLibraryStore);
+  }
 
-  /** Inspects the current draft and, if it becomes a build, offers it. */
+  /**
+   * Reads the files a Commander chose, and offers what they hold.
+   *
+   * Nothing is imported here. A scan produces a list and stops: what to do with
+   * it is the Commander's next decision, and a file dropped by accident costs
+   * them nothing.
+   */
+  async scanFiles(files: readonly JournalFile[]): Promise<void> {
+    const token = this.#store.issueToken();
+    this.#store.clearScan();
+    this.#store.setScanning(files.length);
+
+    const result = await scanJournalFiles(files, SHIP_JOURNAL_READER);
+
+    if (!this.#store.isCurrent(token)) {
+      return;
+    }
+
+    this.#store.setScanning(0);
+    if (!result.ok) {
+      this.#store.setImportFailure(result.failure);
+      return;
+    }
+    this.#store.setScan(result.report, result.entries);
+  }
+
+  /**
+   * Takes what the Commander chose, whether they pasted it or scanned for it.
+   *
+   * A scan puts the decision in the list, so the box is not read while one
+   * stands. One chosen build replaces the active build, as a paste does; several
+   * are stored and none is opened.
+   */
   async submit(): Promise<SlefImportSubmission> {
+    if (this.#store.journalEntries().length > 0) {
+      return this.#submitSelection();
+    }
+
     const token = this.#store.issueToken();
     const text = this.#store.draft().text;
     this.#store.setImportStatus('inspecting');
 
-    const result = importSlef(text, token);
+    return this.#commit(importSlef(text, token), token);
+  }
 
+  async #submitSelection(): Promise<SlefImportSubmission> {
+    const chosen = this.#store.selectedEntries();
+    if (chosen.length === 0) {
+      this.#store.setImportFailure({ kind: 'nothingSelected' });
+      return { kind: 'failed' };
+    }
+
+    const [only] = chosen;
+    if (chosen.length === 1 && only !== undefined) {
+      const token = this.#store.issueToken();
+      this.#store.setImportStatus('inspecting');
+      return this.#commit(importJournalEntry(only.value.entry, token), token);
+    }
+
+    return this.#storeSelection(chosen);
+  }
+
+  /**
+   * Stores every chosen build as a named record, and opens none of them.
+   *
+   * A refused entry costs only itself: the loop keeps going, the entry is named
+   * with the package's own answer beside it, and nothing partial is written for
+   * it. The build the Commander was working on is never touched — no candidate
+   * reaches feature 001's gate on this path.
+   */
+  async #storeSelection(
+    chosen: readonly JournalEntry<JournalLoadoutFacts>[],
+  ): Promise<SlefImportSubmission> {
+    const token = this.#store.issueToken();
+    this.#store.setImportStatus('inspecting');
+    const now = this.#clock.timestamp();
+
+    let stored = 0;
+    const refused: SlefBatchRefusal[] = [];
+
+    for (const entry of chosen) {
+      const result = importJournalEntry(entry.value.entry, token);
+      if (!result.ok) {
+        refused.push({ title: this.recordName(entry.value), failure: result.failure });
+        continue;
+      }
+
+      const saved = await this.#named.createNamed({
+        name: this.recordName(entry.value),
+        note: null,
+        payload: {
+          tool: 'ship',
+          build: toBuildSnapshotV1(result.candidate.loadout),
+          validation: result.candidate.validation,
+        },
+        now,
+      });
+
+      if (saved.kind === 'saved') {
+        stored += 1;
+      } else {
+        refused.push({ title: this.recordName(entry.value), failure: { kind: 'notStored' } });
+      }
+    }
+
+    // The records exist whatever happened to the layer while they were written.
+    // A token issued mid-batch supersedes a *candidate*, which is a build
+    // nobody has seen yet; it cannot supersede rows already in storage, and
+    // leaving the library unrefreshed would hide records a Commander asked for
+    // until something else happened to reload it.
+    this.#library.refresh();
+
+    // A clean batch is finished with: the draft goes, the layer closes, and the
+    // records are where the Commander goes to choose. A batch carrying a refusal
+    // keeps the layer, because the refusal is read here.
+    //
+    // The outcome is recorded last. Clearing the draft forgets the scan, and the
+    // outcome is the one thing about it that outlives the layer.
+    if (refused.length === 0 && this.#store.isCurrent(token)) {
+      this.#store.clearDraft();
+      this.#store.closeLayer();
+    } else {
+      this.#store.setImportStatus('editing');
+    }
+    this.#store.setBatchOutcome({ stored, refused });
+
+    return { kind: 'stored', stored, refused };
+  }
+
+  /**
+   * The name a stored record takes.
+   *
+   * The build's own ship name, its ident where it has no name, and its hull
+   * where it has neither. The first two are the Commander's own words and the
+   * third is the package's; none of the three is invented here, and the hull is
+   * the one route on which the application supplies a record name at all
+   * (`ship-builder/build-lifecycle`, "Naming, saving and removing a record").
+   */
+  recordName(facts: JournalLoadoutFacts): string {
+    const hull = this.#gameText.shipName(facts.hullSymbol);
+    return facts.shipName ?? facts.ident ?? hull.text ?? facts.hullSymbol;
+  }
+
+  async #commit(result: SlefImportResult, token: SlefRequestToken): Promise<SlefImportSubmission> {
     if (!this.#store.isCurrent(token)) {
       return this.#settle('superseded');
     }
@@ -113,6 +298,10 @@ export class SlefImportCoordinator {
   abandon(): void {
     this.#store.issueToken();
     this.#store.setImportStatus('editing');
+    // A scan in flight now carries a stale token, so it will return without
+    // clearing the counter it raised. Left alone, the panel reopens saying it
+    // is reading a file nobody asked for and refusing to submit anything.
+    this.#store.setScanning(0);
   }
 
   /**

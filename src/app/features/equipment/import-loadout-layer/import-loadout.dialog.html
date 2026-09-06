@@ -1,0 +1,15 @@
+<ednb-layer
+  [title]="view().title"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  (dismissed)="presenter.closeLayer()"
+>
+  <ednb-journal-import-layer
+    [view]="view()"
+    (changed)="presenter.edit($event)"
+    (filesChosen)="scan($event)"
+    (picksChosen)="presenter.choosePicks($event)"
+    (submitted)="submit()"
+    (cancelled)="presenter.closeLayer()"
+  />
+</ednb-layer>

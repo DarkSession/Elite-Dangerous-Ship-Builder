@@ -3,6 +3,10 @@ import { provideRouter } from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { FIXTURE_HULL } from '../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../i18n/i18n.providers';
+import {
+  MemoryStorage,
+  provideMemoryStorage,
+} from '../../../platform/storage/storage.spec-helpers';
 import { provideIsolatedLocaleEnvironment } from '../../../i18n/testing/localization-harness';
 import { DocumentAdapter } from '../../../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../../../platform/browser/navigator.adapter';
@@ -80,6 +84,8 @@ describe('the export layer’s host', () => {
         provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
+        // The import coordinator reaches the record repository to store a batch.
+        ...provideMemoryStorage(new MemoryStorage()),
         { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },
         { provide: NavigatorAdapter, useClass: FakeNavigator },
       ],

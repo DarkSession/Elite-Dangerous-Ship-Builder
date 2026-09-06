@@ -6,12 +6,27 @@ import {
   type SlefImportStatus,
   type SlefRequestToken,
 } from '../../domain/ships/slef/slef-import.models';
+import type { JournalEntry, JournalScanReport } from '../../domain/journal/journal-scan';
+import type { JournalLoadoutFacts } from '../../domain/ships/slef/journal-loadouts';
 import type {
   DeliveryAction,
   DeliveryCapability,
   DeliveryOutcome,
   SlefExportArtifact,
 } from '../../domain/ships/slef/slef-export.models';
+
+/** One build a batch import did not store, and what answered for it. */
+export interface SlefBatchRefusal {
+  /** The build, by the name its record would have taken. */
+  readonly title: string;
+  readonly failure: SlefImportFailure;
+}
+
+/** How a batch import ended: what was stored, and what was not. */
+export interface SlefBatchOutcome {
+  readonly stored: number;
+  readonly refused: readonly SlefBatchRefusal[];
+}
 
 /** How an attempt ended when it changed nothing. `null` while none has. */
 export type SlefImportEnding = 'cancelled' | 'superseded' | null;
@@ -53,6 +68,34 @@ export class SlefStore {
 
   readonly #ending = signal<SlefImportEnding>(null);
 
+  // ---- what a journal scan found -----------------------------------------
+
+  readonly #scanningFiles = signal(0);
+  readonly #entries = signal<readonly JournalEntry<JournalLoadoutFacts>[]>([]);
+  readonly #report = signal<JournalScanReport | null>(null);
+  readonly #selected = signal<readonly string[]>([]);
+
+  /** True while files are being read. The layer says so and stays usable. */
+  readonly scanning = computed(() => this.#scanningFiles() > 0);
+  /** How many files the running scan is reading. */
+  readonly scanningFiles = this.#scanningFiles.asReadonly();
+  /** Every build the last scan found, newest first. Empty before one. */
+  readonly journalEntries = this.#entries.asReadonly();
+  /** What the last scan read, for the sentence the layer states afterwards. */
+  readonly scanReport = this.#report.asReadonly();
+  /** The keys of the builds the Commander chose, in the order they chose them. */
+  readonly selectedKeys = this.#selected.asReadonly();
+
+  /** The chosen builds themselves, in the order the list draws them. */
+  readonly selectedEntries = computed(() =>
+    this.#entries().filter((entry) => this.#selected().includes(entry.key)),
+  );
+
+  readonly #batch = signal<SlefBatchOutcome | null>(null);
+
+  /** What the last batch import stored, and what it did not. */
+  readonly batchOutcome = this.#batch.asReadonly();
+
   readonly importStatus = this.#status.asReadonly();
   readonly importFailure = this.#failure.asReadonly();
 
@@ -87,12 +130,19 @@ export class SlefStore {
     return token === this.#token;
   }
 
-  /** Records an edit. A newer edit clears a failure that described older text. */
+  /**
+   * Records an edit. A newer edit clears a failure that described older text.
+   *
+   * It clears a scan with it. Typing into the box says which payload the
+   * Commander means, and leaving a list of builds standing beside text that is
+   * no longer about them is how the wrong build gets imported.
+   */
   setDraft(text: string): void {
     this.#draftText.set(text);
     this.#failure.set(null);
     this.#ending.set(null);
     this.#status.set('editing');
+    this.clearScan();
   }
 
   clearDraft(): void {
@@ -100,6 +150,61 @@ export class SlefStore {
     this.#failure.set(null);
     this.#ending.set(null);
     this.#status.set('editing');
+    this.clearScan();
+  }
+
+  /** Says a scan of this many files is running. Zero says none is. */
+  setScanning(files: number): void {
+    this.#scanningFiles.set(files);
+    if (files > 0) {
+      this.#failure.set(null);
+      this.#ending.set(null);
+    }
+  }
+
+  /**
+   * Records what a scan found, and chooses the newest build for the Commander.
+   *
+   * One build is chosen rather than none because a scan that found one thing
+   * has nothing to choose between, and a Commander who dropped a file has
+   * already said what they want. Choosing is still theirs: every row can be
+   * turned off, and loading with none on is refused rather than guessed at.
+   */
+  setScan(report: JournalScanReport, entries: readonly JournalEntry<JournalLoadoutFacts>[]): void {
+    const [newest] = entries;
+    this.#report.set(report);
+    this.#entries.set(entries);
+    this.#selected.set(newest === undefined ? [] : [newest.key]);
+    this.#failure.set(null);
+    this.#ending.set(null);
+  }
+
+  /** Replaces the whole selection, as a group of checkboxes reports it. */
+  setSelection(keys: readonly string[]): void {
+    this.#selected.set([...keys]);
+    this.#failure.set(null);
+  }
+
+  /** Turns one build on or off, keeping the order the list draws. */
+  toggleSelection(key: string): void {
+    this.#selected.update((keys) =>
+      keys.includes(key) ? keys.filter((chosen) => chosen !== key) : [...keys, key],
+    );
+    this.#failure.set(null);
+  }
+
+  /** Records how a batch ended. Read by the layer and by the record list. */
+  setBatchOutcome(outcome: SlefBatchOutcome | null): void {
+    this.#batch.set(outcome);
+  }
+
+  /** Forgets a scan. A new scan, a close and a committed import all do this. */
+  clearScan(): void {
+    this.#scanningFiles.set(0);
+    this.#entries.set([]);
+    this.#report.set(null);
+    this.#selected.set([]);
+    this.#batch.set(null);
   }
 
   setImportStatus(status: SlefImportStatus): void {

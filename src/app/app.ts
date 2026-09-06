@@ -30,6 +30,7 @@ import {
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { RenderingTarget } from './platform/browser/rendering-target';
+import { LoadoutImportPresenter } from './application/equipment/loadout-import.presenter';
 import { Layer } from './ui/components/layer/layer';
 
 /** The shell action that opens the import layer, named once. */
@@ -87,6 +88,7 @@ export class App {
   readonly #location = inject(Location);
   readonly #messages = inject(MessageService);
   readonly #slef = inject(SlefStore);
+  readonly #loadoutImport = inject(LoadoutImportPresenter);
   readonly #active = inject(ActiveBuildStore);
   readonly help = inject(HelpPresenter);
   /**
@@ -180,7 +182,11 @@ export class App {
       },
       {
         id: IMPORT_ACTION,
-        label: this.#messages.message('slef.import.title'),
+        label: this.#messages.message(
+          this.#path().startsWith(NAVIGATION_ROUTES.equipment)
+            ? 'equipment.import.title'
+            : 'slef.import.title',
+        ),
         emphasis: 'secondary' as const,
       },
       ...(first === undefined ? [] : [{ ...first, startsGroup: true }, ...rest]),
@@ -434,7 +440,14 @@ export class App {
       return;
     }
     if (id === IMPORT_ACTION) {
-      this.#slef.openLayer('import');
+      // The action belongs to the tool a Commander is in. Both tools import a
+      // journal; what an event becomes is the difference, and the bench is the
+      // only place a suit loadout can land.
+      if (this.#path().startsWith(NAVIGATION_ROUTES.equipment)) {
+        this.#loadoutImport.openLayer();
+      } else {
+        this.#slef.openLayer('import');
+      }
       return;
     }
     if (id === HELP_ACTION) {

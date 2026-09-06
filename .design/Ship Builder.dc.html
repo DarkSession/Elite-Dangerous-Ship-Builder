@@ -1320,6 +1320,29 @@
                         multiple="multiple"
                         style="display: none"
                       />
+                      <div id="imp-pick" style="display: none; flex-direction: column; gap: 7px">
+                        <div
+                          id="imp-picklabel"
+                          style="
+                            font:
+                              600 9px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-2);
+                          "
+                        ></div>
+                        <div
+                          id="imp-list"
+                          style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            max-height: 186px;
+                            overflow-y: auto;
+                            padding-right: 2px;
+                          "
+                        ></div>
+                      </div>
                       <div style="display: flex; align-items: center; gap: 10px">
                         <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                         <div
@@ -4451,6 +4474,29 @@
                         multiple="multiple"
                         style="display: none"
                       />
+                      <div id="simp-pick" style="display: none; flex-direction: column; gap: 7px">
+                        <div
+                          id="simp-picklabel"
+                          style="
+                            font:
+                              600 9px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-2);
+                          "
+                        ></div>
+                        <div
+                          id="simp-list"
+                          style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            max-height: 170px;
+                            overflow-y: auto;
+                            padding-right: 2px;
+                          "
+                        ></div>
+                      </div>
                       <div style="display: flex; align-items: center; gap: 10px">
                         <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                         <div
@@ -25578,6 +25624,28 @@
                         multiple="multiple"
                         style="display: none"
                       />
+                      <div id="mimp-pick" style="display: none; flex-direction: column; gap: 8px">
+                        <div
+                          id="mimp-picklabel"
+                          style="
+                            font:
+                              600 9.5px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.14em;
+                            color: var(--amber-2);
+                          "
+                        ></div>
+                        <div
+                          id="mimp-list"
+                          style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 6px;
+                            max-height: 250px;
+                            overflow-y: auto;
+                          "
+                        ></div>
+                      </div>
                       <div style="display: flex; align-items: center; gap: 10px">
                         <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                         <div
@@ -37783,6 +37851,91 @@
           if (openBtn) openBtn.addEventListener('click', close);
         }
 
+        tryParse(raw) {
+          try { return JSON.parse(raw); } catch (e) { return null; }
+        }
+
+        stampLabel(ts) {
+          const d = ts ? new Date(ts) : null;
+          if (!d || isNaN(d.getTime())) return '';
+          const p = n => String(n).padStart(2, '0');
+          return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+
+        // Journal hull symbols (federal_corvette, typex_3) are not user readable.
+        readableHull(raw) {
+          const MAP = {
+            federal_corvette: 'Federal Corvette', federal_gunship: 'Federal Gunship', federal_dropship: 'Federal Dropship',
+            federal_dropship_mkii: 'Federal Assault Ship', empire_trader: 'Imperial Clipper', empire_courier: 'Imperial Courier',
+            empire_eagle: 'Imperial Eagle', cutter: 'Imperial Cutter', typex: 'Alliance Chieftain', typex_2: 'Alliance Crusader',
+            typex_3: 'Alliance Challenger', independant_trader: 'Keelback', krait_mkii: 'Krait Mk II', krait_light: 'Krait Phantom',
+            diamondback: 'Diamondback Scout', diamondbackxl: 'Diamondback Explorer', asp: 'Asp Explorer', asp_scout: 'Asp Scout',
+            cobramkiii: 'Cobra Mk III', cobramkiv: 'Cobra Mk IV', viper: 'Viper Mk III', viper_mkiv: 'Viper Mk IV',
+            eagle: 'Eagle Mk II', sidewinder: 'Sidewinder', hauler: 'Hauler', adder: 'Adder', vulture: 'Vulture',
+            ferdelance: 'Fer-de-Lance', python: 'Python', python_nx: 'Python Mk II', anaconda: 'Anaconda', orca: 'Orca',
+            dolphin: 'Dolphin', belugaliner: 'Beluga Liner', type6: 'Type-6 Transporter', type7: 'Type-7 Transporter',
+            type8: 'Type-8 Transporter', type9: 'Type-9 Heavy', type9_military: 'Type-10 Defender', mamba: 'Mamba'
+          };
+          const s = String(raw || '').replace(/^\$/, '').replace(/_name;?$/i, '').trim().toLowerCase();
+          if (!s) return '';
+          if (MAP[s]) return MAP[s];
+          if (/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/.test(s) === false) return String(raw).trim();
+          // Unknown or newly released hull: titleize the symbol rather than reject it.
+          return s.replace(/^(.+?)mk([ivx]+|\d+)$/, '$1 mk $2').split(/[_\s]+/).filter(Boolean).map(w => {
+            const mk = w.match(/^mk([ivx]+|\d+)$/);
+            if (mk) return 'Mk ' + mk[1].toUpperCase();
+            if (/^\d+$/.test(w)) return w;
+            return w.charAt(0).toUpperCase() + w.slice(1);
+          }).join(' ');
+        }
+
+        // Normalises a SLEF export or journal Loadout event into a summary row.
+        summariseShip(o) {
+          if (!o || typeof o !== 'object') return null;
+          const slef = o.header && o.data ? o : null;
+          const body = slef ? slef.data : o;
+          if (!body || typeof body !== 'object') return null;
+          if (!slef && String(body.event || '').toLowerCase() !== 'loadout') return null;
+          const mods = body.Modules || [];
+          const loc = String(body.Ship_Localised || '').trim();
+          const hull = this.readableHull(/^\$|_name;$/i.test(loc) || !loc ? body.Ship : loc);
+          return {
+            raw: o,
+            name: body.ShipName || hull || 'Unnamed build',
+            hull: hull,
+            label: hull || 'Unrecognised hull',
+            ident: body.ShipIdent || '',
+            n: Array.isArray(mods) ? mods.length : Object.keys(mods || {}).length,
+            ts: body.timestamp || '',
+            src: slef
+              ? 'SLEF \u00b7 ' + String(slef.header.appName || 'UNKNOWN APP').toUpperCase() + (slef.header.appVersion ? ' ' + slef.header.appVersion : '')
+              : 'JOURNAL LOADOUT'
+          };
+        }
+
+        // Every distinct build in a pasted payload or a whole journal file, newest first.
+        collectLoadouts(text) {
+          const raw = String(text || '').trim();
+          if (!raw) return [];
+          try {
+            const s = this.summariseShip(JSON.parse(raw));
+            if (s) return [s];
+          } catch (e) { /* fall through to line scan */ }
+          const out = [], seen = {};
+          raw.split(/\r?\n/).forEach(line => {
+            const l = line.trim();
+            if (l.charAt(0) !== '{') return;
+            let o; try { o = JSON.parse(l); } catch (e) { return; }
+            const s = this.summariseShip(o);
+            if (!s) return;
+            const key = s.name + '|' + s.hull + '|' + s.ident + '|' + s.n;
+            if (seen[key]) return;
+            seen[key] = 1;
+            out.push(s);
+          });
+          return out.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+        }
+
         // Accepts a SLEF export, a single journal Loadout event, or a whole
         // line-delimited journal file (Journal.*.log) — latest Loadout wins.
         extractLoadout(text) {
@@ -37840,13 +37993,61 @@
             say('');
             if (fileIn) fileIn.value = '';
             if (fname) { fname.textContent = fnameIdle; fname.style.display = 'none'; }
+            picks = []; chosen = [];
+            pickRender();
             if (input) { input.value = ''; input.focus(); }
           };
           const close = () => { modal.style.display = 'none'; };
 
+          let picks = [], chosen = [];
+          const pickWrap = document.getElementById(p + '-pick');
+          const pickList = document.getElementById(p + '-list');
+          const pickLabel = document.getElementById(p + '-picklabel');
+          const goBtn = document.getElementById(p + '-go');
+          const goIdle = goBtn ? goBtn.textContent : '';
+          const pickRender = () => {
+            if (!pickWrap || !pickList) return;
+            if (picks.length < 2) {
+              pickWrap.style.display = 'none';
+              pickList.innerHTML = '';
+              if (goBtn) goBtn.textContent = goIdle;
+              return;
+            }
+            pickWrap.style.display = 'flex';
+            if (pickLabel) pickLabel.textContent = picks.length + ' BUILDS FOUND \u00b7 SELECT ONE OR MORE \u00b7 ' + chosen.length + ' SELECTED';
+            pickList.innerHTML = picks.map((s, i) => {
+              const on = chosen.indexOf(i) > -1;
+              return '<div class="imp-row" data-i="' + i + '" style="display:flex;align-items:center;gap:11px;padding:8px 11px;cursor:pointer;border:1px solid ' + (on ? 'var(--amber-a6)' : 'var(--amber-a14)') + ';background:' + (on ? 'var(--panel-6)' : 'transparent') + '">'
+                + '<div style="flex:none;width:13px;height:13px;border:1px solid ' + (on ? 'var(--amber)' : 'var(--ink-18)') + ';background:' + (on ? 'var(--amber)' : 'transparent') + '"></div>'
+                + '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">'
+                + '<div style="font:600 11.5px/1.2 Barlow,sans-serif;color:' + (on ? 'var(--amber-3)' : 'var(--ink)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + String(s.name).toUpperCase() + (s.ident ? ' \u00b7 ' + String(s.ident).toUpperCase() : '') + '</div>'
+                + '<div style="font:400 8.5px/1.2 \'JetBrains Mono\',monospace;letter-spacing:.05em;color:var(--ink-45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + String(s.label).toUpperCase() + ' \u00b7 ' + s.n + ' MODULES</div>'
+                + '</div>'
+                + '<div style="flex:none;font:400 8.5px/1.2 \'JetBrains Mono\',monospace;color:var(--ink-36);text-align:right">' + this.stampLabel(s.ts) + '</div></div>';
+            }).join('');
+            if (goBtn) goBtn.textContent = chosen.length > 1 ? 'LOAD ' + chosen.length + ' BUILDS' : goIdle;
+          };
+          if (pickList) pickList.addEventListener('click', e => {
+            const row = e.target.closest('.imp-row');
+            if (!row) return;
+            const i = Number(row.dataset.i), at = chosen.indexOf(i);
+            if (at > -1) chosen.splice(at, 1); else chosen.push(i);
+            chosen.sort((a, b) => a - b);
+            const primary = chosen.length ? picks[chosen[0]] : null;
+            if (input) input.value = primary ? JSON.stringify(primary.raw, null, 1) : '';
+            pickRender();
+            say(primary
+              ? chosen.length + ' SELECTED \u00b7 ' + String(primary.name).toUpperCase() + (chosen.length > 1 ? ' OPENS IN THE YARD' : '')
+              : 'NOTHING SELECTED', 'rgba(232,222,209,.62)');
+          });
+
           const apply = (cand, srcLabel) => {
             if (!cand.n) return say(srcLabel + ' \u00b7 NO MODULES IN PAYLOAD', '#ff6b3d');
-            say(srcLabel + ' \u00b7 ' + String(cand.ship).toUpperCase() + ' \u00b7 ' + cand.n + ' MODULES \u00b7 LOADOUT APPLIED', '#7fc46b');
+            if (!cand.hull) return say(srcLabel + ' \u00b7 UNRECOGNISED HULL IN PAYLOAD', '#ff6b3d');
+            const extra = Math.max(0, chosen.length - 1);
+            say(extra
+              ? (extra + 1) + ' BUILDS IMPORTED \u00b7 ' + String(cand.name).toUpperCase() + ' IN THE YARD \u00b7 ' + extra + ' ADDED TO SAVED BUILDS'
+              : srcLabel + ' \u00b7 ' + String(cand.label).toUpperCase() + ' \u00b7 ' + cand.n + ' MODULES \u00b7 LOADOUT APPLIED', '#7fc46b');
             setTimeout(close, 1000);
           };
 
@@ -37854,7 +38055,16 @@
             const raw = (input && input.value || '').trim();
             if (!raw) return say('NOTHING TO IMPORT', '#ff6b3d');
             if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 PASTE SLEF, DROP A JOURNAL FILE OR SELECT ONE', '#ff6b3d');
-            const cand = this.extractLoadout(raw);
+            if (!chosen.length) {
+              const found = this.collectLoadouts(raw);
+              if (found.length > 1) {
+                picks = found; chosen = [0];
+                if (input) input.value = JSON.stringify(found[0].raw, null, 1);
+                pickRender();
+                return say(found.length + ' BUILDS IN PASTED JOURNAL \u00b7 SELECT ONE OR MORE, THEN LOAD', 'rgba(232,222,209,.62)');
+              }
+            }
+            const cand = this.summariseShip(this.tryParse(raw)) || (this.collectLoadouts(raw)[0] || null);
             if (!cand) {
               let err = null;
               try { JSON.parse(raw); } catch (e) { err = e; }
@@ -37873,18 +38083,28 @@
             say('SCANNING ' + list.length + ' FILE' + (list.length > 1 ? 'S' : '') + ' \u2026', 'rgba(232,222,209,.62)');
             Promise.all(list.map(f => f.text().then(t => ({ name: f.name, text: t }), () => ({ name: f.name, text: '' }))))
               .then(res => {
-                let best = null, name = '';
+                const found = [], seen = {};
+                let firstFile = '';
                 res.forEach(r => {
-                  const c = this.extractLoadout(r.text);
-                  if (c && (!best || String(c.ts || '') >= String(best.ts || ''))) { best = c; name = r.name; }
+                  this.collectLoadouts(r.text).forEach(s => {
+                    const key = s.name + '|' + s.hull + '|' + s.ident + '|' + s.n;
+                    if (seen[key]) return;
+                    seen[key] = 1;
+                    if (!firstFile) firstFile = r.name;
+                    found.push(s);
+                  });
                 });
-                if (!best) return say('NO LOADOUT EVENT FOUND IN ' + (list.length > 1 ? list.length + ' FILES' : list[0].name.toUpperCase()), '#ff6b3d');
+                if (!found.length) return say('NO LOADOUT EVENT FOUND IN ' + (list.length > 1 ? list.length + ' FILES' : list[0].name.toUpperCase()), '#ff6b3d');
+                found.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+                picks = found; chosen = [0];
                 if (fname) {
-                  fname.textContent = name.toUpperCase() + (list.length > 1 ? ' \u00b7 ' + (list.length - 1) + ' OTHER FILE' + (list.length > 2 ? 'S' : '') + ' SCANNED' : '');
+                  fname.textContent = (list.length > 1 ? list.length + ' FILES' : firstFile.toUpperCase()) + ' \u00b7 ' + found.length + ' BUILD' + (found.length > 1 ? 'S' : '');
                   fname.style.display = 'block';
                 }
-                if (input) input.value = JSON.stringify(best.raw, null, 1);
-                apply(best, name.toUpperCase() + ' \u00b7 ' + best.src);
+                if (input) input.value = JSON.stringify(found[0].raw, null, 1);
+                pickRender();
+                if (found.length > 1) return say(found.length + ' BUILDS FOUND \u00b7 SELECT ONE OR MORE, THEN LOAD', 'rgba(232,222,209,.62)');
+                apply(found[0], firstFile.toUpperCase() + ' \u00b7 ' + found[0].src);
               });
           };
 

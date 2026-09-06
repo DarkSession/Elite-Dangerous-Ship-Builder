@@ -1,0 +1,5 @@
+{"timestamp": "2026-09-03T10:00:00Z", "event": "Loadout", "Ship": "anaconda", "Modules": [{"Slot": "PowerPlant", "Item": "Int_Powerplant_Size8_Class5"}, {"Slot": "MainEngines", "Item": "Int_Engine_Size7_Class5"}], "ShipName": "Night Watch", "ShipIdent": "NW-01"}
+{"timestamp": "2026-09-01T09:59:00Z", "event": "Docked", "StarSystem": "Shinrarta Dezhra"}
+{"timestamp": "2026-09-02T10:00:00Z", "event": "Loadout", "Ship": "anaconda", "Modules": [{"Slot": "PowerPlant", "Item": "Int_Powerplant_Size8_Class5"}], "ShipIdent": "NW-02"}
+{"timestamp": "2026-09-01T09:59:30Z", "event": "FSDJump", "StarSystem": "Sol"}
+{"timestamp": "2026-09-01T10:00:00Z", "event": "Loadout", "Ship": "sidewinder", "Modules": []}

@@ -1,0 +1,98 @@
+// The dashed plate canvas 1c draws above the paste box: a bordered square
+// holding a glyph, the control's own label beside it, and what the last
+// selection came to underneath.
+.file-drop {
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline-loose);
+  min-block-size: var(--ednb-target-size);
+  padding: var(--ednb-space-md);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-accent);
+  background-color: var(--ednb-surface-inset);
+}
+
+// Files are over the plate. Drawn as the lift the canvas draws — a solid
+// border and a raised ground — rather than as colour alone.
+.file-drop[data-dragging] {
+  border-style: solid;
+  border-color: var(--ednb-border-control-strong);
+  background-color: var(--ednb-surface-panel-raised);
+}
+
+.file-drop[data-busy] {
+  cursor: progress;
+}
+
+// The plate carries the button's focus ring, so what is outlined is the whole
+// target and not the words inside it.
+.file-drop:has(.file-drop__button:focus-visible) {
+  outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+  outline-offset: var(--ednb-focus-ring-offset);
+}
+
+.file-drop__glyph {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ednb-space-xl);
+  block-size: var(--ednb-space-xl);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-accent);
+  font-family: var(--ednb-font-metric);
+  color: var(--ednb-text-accent);
+}
+
+.file-drop__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ednb-space-hair);
+  min-inline-size: 0;
+}
+
+// The button is the plate's heading, in the condensed tracked face the canvas
+// sets every control label in. It stands at the target baseline, because it is
+// the target.
+.file-drop__button {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--ednb-target-size);
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: start;
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-label);
+  font-weight: var(--ednb-text-weight-emphasis);
+  letter-spacing: var(--ednb-text-tracking-label);
+  text-transform: uppercase;
+  color: var(--ednb-text-accent);
+  cursor: pointer;
+}
+
+.file-drop__button:disabled {
+  cursor: not-allowed;
+  color: var(--ednb-text-disabled);
+}
+
+// The ring is the plate's, drawn once.
+.file-drop__button:focus-visible {
+  outline: none;
+}
+
+.file-drop__hint {
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-subtle);
+}
+
+// What was read, in the metric face: a file name and a count are facts.
+.file-drop__scanned {
+  overflow: hidden;
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-caption);
+  color: var(--ednb-text-secondary);
+  text-overflow: ellipsis;
+}
+
+.file-drop__input {
+  display: none;
+}

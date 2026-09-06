@@ -1,0 +1,62 @@
+<div
+  class="file-drop"
+  [attr.data-dragging]="dragging() ? '' : null"
+  [attr.data-busy]="busy() ? '' : null"
+  (dragenter)="over($event)"
+  (dragover)="over($event)"
+  (dragleave)="leave()"
+  (dragend)="leave()"
+  (drop)="drop($event)"
+>
+  <!--
+    The glyph the canvas draws in its own square. Decorative: the label beside
+    it says what the plate is for, and an arrow read aloud says nothing.
+  -->
+  <span class="file-drop__glyph" aria-hidden="true">↑</span>
+
+  <div class="file-drop__text">
+    <!--
+      The control a Commander sees, operates and hears named, in the plate's own
+      words. The file input behind it is a mechanism, not a control: a browser
+      draws it as a button with no text of its own and at whatever size it
+      likes, and neither the visible-text rule nor the target baseline can be
+      met by something the page does not draw (011/FR-003, 011/FR-007).
+    -->
+    <button
+      class="file-drop__button"
+      type="button"
+      [disabled]="disabled()"
+      [attr.aria-busy]="busy() ? 'true' : null"
+      [attr.aria-describedby]="describedBy()"
+      (click)="choose()"
+    >
+      {{ label() }}
+    </button>
+
+    @if (hint(); as hint) {
+      <p class="file-drop__hint" [id]="hintId()">{{ hint }}</p>
+    }
+
+    @if (scanned(); as scanned) {
+      <p class="file-drop__scanned" [id]="scannedId()" data-bidi-isolate>{{ scanned }}</p>
+    }
+  </div>
+
+  <!--
+    Out of the page and out of the accessibility tree: the button above is what
+    is announced and what is reached, and two controls for one action would be
+    read as two.
+  -->
+  <input
+    #control
+    class="file-drop__input"
+    type="file"
+    multiple
+    aria-hidden="true"
+    tabindex="-1"
+    [id]="controlId"
+    [accept]="accept()"
+    [disabled]="disabled() || busy()"
+    (change)="select($event)"
+  />
+</div>

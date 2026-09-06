@@ -2,6 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { LoadoutPresenter } from '../../../application/equipment/loadout.presenter';
 import { provideLocalization } from '../../../i18n/i18n.providers';
+import {
+  MemoryStorage,
+  provideMemoryStorage,
+} from '../../../platform/storage/storage.spec-helpers';
 import { BUNDLED_ENGLISH } from '../../../i18n/locale-registry';
 import { SuitGate } from './suit-gate';
 
@@ -18,7 +22,13 @@ describe('SuitGate', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideLocalization(), provideRouter([])],
+      providers: [
+        provideLocalization(),
+        provideRouter([]),
+        // The gate's import control reaches the record repository, which is
+        // where a batch of imported loadouts is saved.
+        ...provideMemoryStorage(new MemoryStorage()),
+      ],
     });
     presenter = TestBed.inject(LoadoutPresenter);
   });
@@ -70,18 +80,19 @@ describe('SuitGate', () => {
     expect(element.querySelectorAll('.choice').length).toBeGreaterThan(0);
   });
 
-  it('offers the saved builds this bench can open, and no import it cannot', () => {
-    // The canvas draws two ways past the gate. Importing a journal event is not
-    // a capability the bench has (013 design/reference-review.md).
-    //
-    // A control and not a link: the saved builds are a layer over the screen
-    // with no address of its own, so there is no `href` for this to carry
+  it('offers the two ways past the gate the canvas draws', () => {
+    // Controls and not links: neither the import panel nor the saved records
+    // has an address of its own, so there is no `href` for either to carry
     // (Commander request 2026-09-04).
     const element = render().nativeElement as HTMLElement;
+    const links = [...element.querySelectorAll('.gate__link')].map((control) =>
+      control.textContent?.trim(),
+    );
 
     expect(element.querySelectorAll('a').length).toBe(0);
-    expect(element.querySelector('.gate__link')?.textContent?.trim()).toBe(
+    expect(links).toEqual([
+      BUNDLED_ENGLISH['equipment.import.open'],
       BUNDLED_ENGLISH['equipment.gate.saved'],
-    );
+    ]);
   });
 });

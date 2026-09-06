@@ -33,7 +33,7 @@
           [attr.name]="isMultiple() ? null : groupName"
           [checked]="isSelected(choice.value)"
           [attr.aria-checked]="role() ? (isSelected(choice.value) ? 'true' : 'false') : null"
-          [attr.aria-describedby]="choice.description ? choiceDescriptionId(choice.value) : null"
+          [attr.aria-describedby]="choiceDescribedBy(choice)"
           [disabled]="(choice.disabled ?? false) || disabled()"
           (change)="toggle(choice.value)"
         />
@@ -51,6 +51,15 @@
           <p class="choice__description" [id]="choiceDescriptionId(choice.value)">
             {{ choice.description }}
           </p>
+        }
+        <!--
+          The far-edge fact canvas 1c sets against the name. It is described by
+          the control above rather than hidden from it, so it is read with the
+          choice it belongs to instead of being lost to anyone not looking at
+          the plate.
+        -->
+        @if (choice.meta) {
+          <span class="choice__meta" [id]="choiceMetaId(choice.value)">{{ choice.meta }}</span>
         }
       </div>
     }

@@ -4,10 +4,10 @@ import {
   renderComponent,
   textOf,
 } from '../../../ui/components/ui-component.spec-helpers';
-import type { SlefImportView } from '../../../application/slef/slef.presenter';
-import { ImportBuildLayer } from './import-build-layer';
+import type { JournalImportView } from '../../../application/journal/journal-import.view';
+import { JournalImportLayer } from './journal-import-layer';
 
-const BASE: SlefImportView = {
+const BASE: JournalImportView = {
   title: 'Import build',
   description: 'Paste a SLEF export or a journal Loadout event.',
   accepted: 'SLEF v1 · Journal Loadout event',
@@ -19,14 +19,20 @@ const BASE: SlefImportView = {
   submitLabel: 'Load build',
   cancelLabel: 'Cancel',
   canSubmit: false,
+  dropLabel: 'Select or drop journal files',
+  scanned: null,
+  scanning: false,
+  dividerLabel: 'Or paste',
+  picks: [],
+  picksLabel: null,
 };
 
-function view(overrides: Partial<SlefImportView> = {}): SlefImportView {
+function view(overrides: Partial<JournalImportView> = {}): JournalImportView {
   return { ...BASE, ...overrides };
 }
 
-function render(overrides: Partial<SlefImportView> = {}) {
-  return renderComponent(ImportBuildLayer, { view: view(overrides) });
+function render(overrides: Partial<JournalImportView> = {}) {
+  return renderComponent(JournalImportLayer, { view: view(overrides) });
 }
 
 describe('the import layer', () => {
@@ -44,7 +50,11 @@ describe('the import layer', () => {
 
     expect(field.getAttribute('readonly')).toBeNull();
     expect(field.className).toContain('technical');
-    expect(textOf(element(fixture).querySelector('label'))).toContain('SLEF payload');
+    // The layer carries two labels now: the file control's, on the plate above,
+    // and the payload field's. The one under test is the field's own.
+    expect(
+      textOf(element(fixture).querySelector(`label[for="${field.getAttribute('id')}"]`)),
+    ).toContain('SLEF payload');
   });
 
   it('refuses to submit an empty draft, and offers to submit a filled one', () => {
@@ -172,7 +182,9 @@ describe('the import layer', () => {
       textOf(button).toLowerCase(),
     );
 
-    expect(labels).toEqual(['cancel', 'load build']);
+    // The file plate's own control, then the footer. Nothing between them:
+    // neither canvas draws a Clear or a candidate panel.
+    expect(labels).toEqual(['select or drop journal files', 'cancel', 'load build']);
   });
 
   it('emits intents and decides nothing', () => {
@@ -189,5 +201,107 @@ describe('the import layer', () => {
     query(fixture, 'button.action--secondary').click();
 
     expect(emitted).toEqual(['changed:[]', 'submitted', 'cancelled']);
+  });
+});
+
+describe('what a journal source adds to the import layer', () => {
+  const PICKS = [
+    {
+      key: 'a',
+      title: 'Night Watch · NW-01',
+      detail: 'Anaconda · 42 modules',
+      meta: '2026-09-01 10:00',
+      selected: true,
+    },
+    {
+      key: 'b',
+      title: 'Python Mk II',
+      detail: 'Python Mk II · 30 modules',
+      meta: '2026-08-30 21:14',
+      selected: false,
+    },
+  ];
+
+  it('draws the drop plate above the paste box, as the canvas does', () => {
+    const fixture = render();
+    const root = element(fixture);
+    const parts = [...root.querySelectorAll('ednb-file-drop, textarea')];
+
+    expect(parts).toHaveLength(2);
+    expect(parts[0]?.tagName.toLowerCase()).toBe('ednb-file-drop');
+  });
+
+  it('draws no list where a scan found one build to import', () => {
+    const fixture = render({ scanned: 'Journal.01.log · 1 build' });
+
+    expect(element(fixture).querySelector('ednb-choice-group')).toBeNull();
+  });
+
+  it('lists what a scan found, with the chosen builds marked', () => {
+    const fixture = render({
+      picks: PICKS,
+      picksLabel: '2 builds found · select one or more · 1 selected',
+    });
+    const inputs = [...element(fixture).querySelectorAll<HTMLInputElement>('.choice__input')];
+
+    expect(textOf(element(fixture).querySelector('legend'))).toContain('2 builds found');
+    expect(inputs).toHaveLength(2);
+    expect(inputs.map((input) => input.checked)).toEqual([true, false]);
+    expect(inputs.every((input) => input.type === 'checkbox')).toBe(true);
+  });
+
+  it('reports the whole selection when a build is turned on', () => {
+    const fixture = render({ picks: PICKS, picksLabel: '2 builds found' });
+    const chosen: (readonly string[])[] = [];
+    fixture.componentInstance.picksChosen.subscribe((keys) => chosen.push(keys));
+
+    element(fixture).querySelectorAll<HTMLInputElement>('.choice__input')[1]?.click();
+    fixture.detectChanges();
+
+    expect(chosen).toEqual([['a', 'b']]);
+  });
+
+  it('hands on the files that were chosen', () => {
+    const fixture = render();
+    const files: (readonly File[])[] = [];
+    fixture.componentInstance.filesChosen.subscribe((chosen) => files.push(chosen));
+
+    const drop = element(fixture).querySelector('.file-drop');
+    const event = new Event('drop', { bubbles: true, cancelable: true }) as DragEvent;
+    Object.defineProperty(event, 'dataTransfer', {
+      value: { files: [new File(['{}'], 'Journal.01.log')] },
+    });
+    drop?.dispatchEvent(event);
+
+    expect(files[0]?.map((one) => one.name)).toEqual(['Journal.01.log']);
+  });
+
+  it('says what the last scan read', () => {
+    const fixture = render({ scanned: 'Journal.01.log · 4 builds' });
+
+    expect(textOf(element(fixture).querySelector('.file-drop__scanned'))).toBe(
+      'Journal.01.log · 4 builds',
+    );
+  });
+
+  it('closes the file control while a scan is running', () => {
+    const fixture = render({ scanning: true, busy: true });
+
+    expect(query(fixture, 'input[type="file"]').hasAttribute('disabled')).toBe(true);
+  });
+
+  it('counts the selection on the action that loads it', () => {
+    const fixture = render({
+      picks: PICKS,
+      picksLabel: '2 builds found',
+      submitLabel: 'Load 2 builds',
+      canSubmit: true,
+    });
+
+    expect(textOf(query(fixture, 'button.action--primary'))).toContain('Load 2 builds');
+  });
+
+  it('rules the two ways in apart, in words', () => {
+    expect(textOf(element(render()).querySelector('.slef-import__divider'))).toBe('Or paste');
   });
 });

@@ -44,6 +44,7 @@ export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/equipment/modification-journal',
   '@elite-dangerous-almanac/core/equipment/engineering',
   '@elite-dangerous-almanac/core/equipment/tools',
+  '@elite-dangerous-almanac/core/equipment/suit-loadout',
 ];
 
 /** Any import of the package, so a barrel or an unlisted subject is caught too. */

@@ -4,9 +4,11 @@
   [dismissLabel]="dismissLabel()"
   (dismissed)="presenter.closeLayer()"
 >
-  <ednb-slef-import-layer
+  <ednb-journal-import-layer
     [view]="view()"
     (changed)="presenter.edit($event)"
+    (filesChosen)="scan($event)"
+    (picksChosen)="presenter.chooseJournalPicks($event)"
     (submitted)="submit()"
     (cancelled)="presenter.closeLayer()"
   />
