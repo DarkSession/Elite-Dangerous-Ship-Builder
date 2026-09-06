@@ -213,6 +213,14 @@ export default defineConfig({
   // of how much they do, rather than because of the machine, extend their own
   // budget: see `SWEEP_BUDGET_MS` in `e2e/accessibility.ts`.
   timeout: isCI ? 60_000 : 30_000,
+  // The same runner allowance, applied to the parts rather than the whole. A
+  // waiting assertion gets Playwright's own 5 seconds by default, on a runner
+  // as well as on a developer machine, so a test with a 60-second budget could
+  // still fail on a single `toBeVisible()` that lost a CPU race — the failure
+  // reads as a missing element and is a slow one. The split follows the test
+  // budget: double on CI, unchanged locally, so an assertion that is slow
+  // because of what it waits for is still felt where it is written.
+  expect: { timeout: isCI ? 10_000 : 5_000 },
   // Retries are diagnostic only: a test that passes on retry still fails the
   // run, so flakiness cannot be absorbed into a green build. Ungated, so that a
   // local run given retries holds the same line CI does rather than reporting a

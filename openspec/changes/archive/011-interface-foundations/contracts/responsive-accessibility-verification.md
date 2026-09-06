@@ -53,6 +53,13 @@ one sweep's worth, so a three-state sweep is given three sweeps' worth and a fou
 allowance with it rather than moving the test back towards the edge. Neither is a licence to absorb a
 hang — retries stay diagnostic only and `failOnFlakyTests` stays on.
 
+**Assertions, ruled 2026-09-06.** A waiting assertion has a budget of its own, and the test budget
+above it does not scale it. Playwright gives every `expect(locator)` five seconds by default, so a
+test with sixty seconds on a runner could still fail on one visibility wait that lost a CPU race, and
+report a missing element rather than a slow one. `expect.timeout` therefore takes the same split the
+test budget has: ten seconds on CI, five locally. The allowance is stated once, for every assertion
+that waits, rather than added to the one assertion that failed last.
+
 ## Product and preview coverage ledger
 
 Maintain a machine-readable ledger joining:
