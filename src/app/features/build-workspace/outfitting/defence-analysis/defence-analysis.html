@@ -43,50 +43,88 @@
         />
       } @else {
         <!--
-          Every reason the package gave, in the order it gave them and in its own
-          words. No headline, no table and no source rows stand in for them: the
-          package produced no shield, so neither does this.
+          Every reason the package gave, in the order it gave them. No headline,
+          no table and no source rows stand in for them: the package produced no
+          shield, so neither does this.
+
+          A reason states the absence on its own, so no `Shield strength ·
+          Unavailable` sentinel stands beside it: under the card's own heading
+          it said a second time what the sentence already says. There is always
+          a reason to say it — the package types an incomplete result as
+          carrying one issue at least (constitution IV).
         -->
-        <ednb-unavailable-value [label]="shieldUnavailableLabel()" />
         <ul class="issues">
           @for (issue of shieldIssues(); track issue.id) {
             <li class="issue">
-              <ednb-game-text
-                [text]="issue.message.text"
-                [language]="issue.message.language"
-                [translationState]="issue.message.translationState"
-              />
+              <!--
+                This capability's own sentence where it has one for the package's
+                field and reason, and the package's own wording where it has not.
+                The first is ordinary application text with nothing to frame; the
+                second carries the package's language and its canonical disclosure.
+              -->
+              @if (issue.text; as reason) {
+                {{ reason }}
+              } @else if (issue.message; as message) {
+                <ednb-game-text
+                  [text]="message.text"
+                  [language]="message.language"
+                  [translationState]="message.translationState"
+                />
+              }
             </li>
           }
         </ul>
       }
 
-      <hr class="card__rule" />
+      <!--
+        The recovery block, where there is one. The strength above states its
+        reasons. A recovery with no reason of its own would repeat them, so its
+        block is removed: drawn anyway, it would give a Commander one fault to
+        read as two.
+      -->
+      @if (recoveryShown()) {
+        <hr class="card__rule" />
 
-      @if (recoveryFacts().length > 0) {
-        <ednb-metric-group
-          class="card__facts"
-          [label]="recoveryLabel()"
-          [metrics]="recoveryFacts()"
-        />
-      } @else {
-        <!--
-          The recovery is diagnosed on its own: a shield the package could not
-          read and a recovery it could not read are two answers, and either can
-          arrive without the other.
-        -->
-        <ednb-unavailable-value [label]="recoveryLabel()" />
-        <ul class="issues">
-          @for (issue of recoveryIssues(); track issue.id) {
-            <li class="issue">
-              <ednb-game-text
-                [text]="issue.message.text"
-                [language]="issue.message.language"
-                [translationState]="issue.message.translationState"
-              />
-            </li>
-          }
-        </ul>
+        @if (recoveryFacts().length > 0) {
+          <ednb-metric-group
+            class="card__facts"
+            [label]="recoveryLabel()"
+            [metrics]="recoveryFacts()"
+          />
+        } @else {
+          <!--
+            The recovery is diagnosed on its own: a shield the package could not
+            read and a recovery it could not read are two answers, and the
+            contract keeps them independent. What is drawn here is what this
+            result says and the strength did not.
+
+            The block is drawn only where this result has something to say, so
+            a reason is always here to say it. There is no `Shield recovery ·
+            Unavailable` sentinel: it would state a second time what the
+            sentence already states.
+          -->
+          <ul class="issues">
+            @for (issue of recoveryIssues(); track issue.id) {
+              <li class="issue">
+                <!--
+                  This capability's own sentence where it has one for the package's
+                  field and reason, and the package's own wording where it has not.
+                  The first is ordinary application text with nothing to frame; the
+                  second carries the package's language and its canonical disclosure.
+                -->
+                @if (issue.text; as reason) {
+                  {{ reason }}
+                } @else if (issue.message; as message) {
+                  <ednb-game-text
+                    [text]="message.text"
+                    [language]="message.language"
+                    [translationState]="message.translationState"
+                  />
+                }
+              </li>
+            }
+          </ul>
+        }
       }
 
       @if (shieldSources().length > 0) {

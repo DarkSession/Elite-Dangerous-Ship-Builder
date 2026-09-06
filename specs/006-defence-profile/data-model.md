@@ -75,10 +75,11 @@ Rules:
   English `message`.
 - `field` and `reason` are the package's own unions rather than a copy of them, so a package that
   adds a field does not silently fall outside this view. The package's field list is `mass`,
-  `fuelCapacity`, `frameShiftDrive`, `powerCapacity`, `powerDraw`, `thrusters` and
-  `shieldGenerator`; it has no `cargoCapacity`.
+  `fuelCapacity`, `frameShiftDrive`, `powerCapacity`, `powerDraw`, `heatEfficiency`, `thrusters`,
+  `shieldGenerator` and `powerDistributor`; it has no `cargoCapacity`.
 - `slot` and `symbol` remain exact package identities.
-- No issue is collapsed, reordered, deduplicated or relabeled.
+- No issue is collapsed, reordered, deduplicated or relabeled in the projection. What a region draws
+  from the projected issues is `contracts/shield-profile.md`, "Refusal presentation".
 - Incomplete shield/recovery is a valid package state, not a failed `DefenceProjection`.
 
 ## ShieldSnapshot
