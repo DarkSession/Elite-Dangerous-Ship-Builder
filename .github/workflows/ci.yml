@@ -544,22 +544,39 @@ jobs:
       # `pnpm run build` because a preview is built with `pnpm exec ng build`
       # and never runs that script — see "Build the preview" above.
       #
-      # The tag is rewritten rather than added, and the rewrite is checked: an
+      # Every document, not the start page alone. Since feature 015 the build
+      # writes one document per content-bearing address, each with the full body
+      # of its screen. Rewriting `index.html` and leaving the rest would publish
+      # 49 complete near-duplicates of production asking to rank against it,
+      # which is the exact duplicate this step exists to prevent.
+      #
+      # The tag is rewritten rather than added, and the rewrite is counted: an
       # `index,follow` that survived would be this deployment asking to rank
-      # against the site it is a preview of.
+      # against the site it is a preview of, and a count is the only way to
+      # notice one document out of fifty.
       - name: Ask search engines to leave the preview alone
         if: ${{ steps.token.outputs.available == 'true' }}
         working-directory: dist/navbeacon/browser
         run: |
-          sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
-          if ! grep -q '<meta name="robots" content="noindex"' index.html; then
-            echo "::error title=Preview still asks to be indexed::the robots tag was not rewritten."
+          documents=$(find . -name '*.html' | wc -l)
+          find . -name '*.html' -exec \
+            sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' {} +
+          marked=$(grep -rl '<meta name="robots" content="noindex"' --include='*.html' . | wc -l)
+          if [ "$marked" -ne "$documents" ]; then
+            echo "::error title=Preview still asks to be indexed::$marked of $documents documents carry noindex."
             exit 1
           fi
+          echo "::notice title=Preview robots tag::$documents documents marked noindex."
 
+      # Copied from the shell rather than from `index.html`, for the same reason
+      # `publish-static-routes.mjs` copies it from the shell: since feature 015
+      # `index.html` is the start page's own document, and an unmatched address
+      # answered with it would show the start page's content under someone
+      # else's address before the application had a chance to resolve it.
+      # `index.csr.html` is the body-less shell the builder leaves beside it.
       - name: Serve client-side routes from the 404 page
         if: ${{ steps.token.outputs.available == 'true' }}
-        run: cp dist/navbeacon/browser/index.html dist/navbeacon/browser/404.html
+        run: cp dist/navbeacon/browser/index.csr.html dist/navbeacon/browser/404.html
 
       # `public/CNAME` is copied into every build by the asset glob, and it
       # names the production domain. It is inert in a subdirectory — Pages reads
