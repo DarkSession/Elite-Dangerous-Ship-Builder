@@ -138,8 +138,8 @@ test.describe('restoring a build from a link', () => {
     await incoming.goto(`/outfitting#${fragment}`);
     await buildIsOpen(incoming);
     // Polled rather than waited for by a page function, so the wait takes the
-    // assertion allowance: publishing a fragment lazily loads the codec table
-    // and encodes off the main thread.
+    // assertion allowance: publishing a fragment loads the codec chunk and its
+    // table on first use, and the fragment is written when they resolve.
     await expect.poll(() => incoming.evaluate(() => window.location.hash)).toBe(`#${fragment}`);
     await incoming.close();
   });

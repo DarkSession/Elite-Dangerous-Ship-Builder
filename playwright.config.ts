@@ -222,8 +222,9 @@ export default defineConfig({
   // 10 seconds on CI. The local budget stays at 5 so an assertion that is slow
   // because of what it waits for is felt where it is written. `toPass` is
   // outside this — Playwright hands it no budget from here — so each of its call
-  // sites states its own, and the assertions inside one state a shorter budget
-  // so that the block retries rather than spending it all on one attempt.
+  // sites states its own, and the waiting assertions inside one state a shorter
+  // budget so that the block retries rather than spending it all on one
+  // attempt.
   expect: { timeout: isCI ? 10_000 : 5_000 },
   // Retries are diagnostic only: a test that passes on retry still fails the
   // run, so flakiness cannot be absorbed into a green build. Ungated, so that a
