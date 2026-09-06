@@ -436,12 +436,10 @@ test.describe('hull detail', () => {
     // gone. Polled rather than read once, because the second build's own write
     // is coalesced and the status still reads "saved" from the first one.
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-          ),
-        { timeout: 5_000 },
+      .poll(() =>
+        page.evaluate(
+          () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
+        ),
       )
       .toBe(2);
   });

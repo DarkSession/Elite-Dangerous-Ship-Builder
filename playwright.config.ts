@@ -215,13 +215,14 @@ export default defineConfig({
   timeout: isCI ? 60_000 : 30_000,
   // The same runner allowance, applied to the parts rather than the whole. A
   // waiting assertion has a budget of its own, and the test budget above it
-  // does not scale it: Playwright gives every `expect(locator)` five seconds,
-  // so a test with 60 seconds on a runner can still fail on one visibility wait
-  // that lost a CPU race — and the failure reads as a missing element rather
-  // than a slow one. The split follows the test budget: 10 seconds on CI. The
-  // local budget stays at five so an assertion that is slow because of what it
-  // waits for is felt where it is written. `toPass` is outside this — Playwright
-  // hands it no budget from here — so each of its call sites states its own.
+  // does not scale it: Playwright gives every `expect(locator)` and every
+  // `expect.poll` 5 seconds, so a test with 60 seconds on a runner can still
+  // fail on one visibility wait that lost a CPU race — and the failure reads as
+  // a missing element rather than a slow one. The split follows the test budget:
+  // 10 seconds on CI. The local budget stays at 5 so an assertion that is slow
+  // because of what it waits for is felt where it is written. `toPass` is
+  // outside this — Playwright hands it no budget from here — so each of its call
+  // sites states its own.
   expect: { timeout: isCI ? 10_000 : 5_000 },
   // Retries are diagnostic only: a test that passes on retry still fails the
   // run, so flakiness cannot be absorbed into a green build. Ungated, so that a
