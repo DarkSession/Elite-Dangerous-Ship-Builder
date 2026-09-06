@@ -12,6 +12,7 @@ import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
+import { RenderingTarget } from './platform/browser/rendering-target';
 import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
 
 export const appConfig: ApplicationConfig = {
@@ -32,8 +33,20 @@ export const appConfig: ApplicationConfig = {
     // component does: a record that outlives its deadline until the next start
     // costs nothing, and a row vanishing under a Commander reading the library
     // costs trust (FR-013, ruled 2026-08-25).
+    //
+    // Not in the build's renderer. The sweep reaches `TabOwnershipCoordinator`,
+    // which takes a page nonce from `UuidAdapter`, which throws where there is
+    // no `crypto` rather than fabricating an identity (constitution IV). The
+    // renderer has no `crypto`, so an unguarded initializer throws before the
+    // router runs and every one of the 50 documents comes out empty. What is
+    // removed here is the call, not the honesty: `UuidAdapter` keeps throwing,
+    // and the build simply never asks it for something a build has no use for —
+    // there is no Commander at build time and no library to sweep
+    // (015/FR-001, research decision 5).
     provideAppInitializer(() => {
-      inject(RetentionService).sweep();
+      if (inject(RenderingTarget).isBrowser) {
+        inject(RetentionService).sweep();
+      }
     }),
     // The application's only service worker, and its only cache owner.
     //

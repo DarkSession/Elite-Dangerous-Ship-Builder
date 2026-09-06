@@ -48,9 +48,9 @@ answer already:
 
 **Purpose**: Get the toolchain able to prerender at all. Nothing else compiles first.
 
-- [ ] T001 Add `@angular/ssr` and `@angular/platform-server` as dev dependencies at the Angular pin in `package.json`, moving the Angular pin itself if peers demand it, and refresh `pnpm-lock.yaml` (research decision 12)
-- [ ] T002 Create the build-time render entry `src/main.server.ts`, exporting a default that takes `BootstrapContext` and passes it to `bootstrapApplication` — omitting it raises NG0401 and kills the build (research decision 3)
-- [ ] T003 Create `src/app/app.config.server.ts` merging `appConfig` with `provideServerRendering()`, per research decision 2
+- [X] T001 Add `@angular/ssr` and `@angular/platform-server` as dev dependencies at the Angular pin in `package.json`, moving the Angular pin itself if peers demand it, and refresh `pnpm-lock.yaml` (research decision 12)
+- [X] T002 Create the build-time render entry `src/main.server.ts`, exporting a default that takes `BootstrapContext` and passes it to `bootstrapApplication` — omitting it raises NG0401 and kills the build (research decision 3)
+- [X] T003 Create `src/app/app.config.server.ts` merging `appConfig` with `provideServerRendering()`, per research decision 2
 
 **Checkpoint**: `pnpm install` succeeds and the two entries typecheck. Nothing renders yet.
 
@@ -64,11 +64,11 @@ states what a prerender pass is. Every user story depends on all of it.
 **⚠️ CRITICAL**: A prerender configured before T004–T006 is a build that fails on
 every one of the 50 routes.
 
-- [ ] T004 Create `src/app/platform/browser/rendering-target.ts` as the single injectable statement of "is this a browser", wrapping `isPlatformBrowser(inject(PLATFORM_ID))` — **not** a `DOCUMENT.defaultView` check, which the spike proved wrong because the emulation supplies `defaultView` but no `crypto` (research decision 5, constitution III)
-- [ ] T005 Guard the retention sweep in `src/app/app.config.ts` behind `rendering-target.ts`, so `provideAppInitializer` → `RetentionService` → `TabOwnershipCoordinator` → `UuidAdapter.create()` is not reached at build time. `UuidAdapter` keeps throwing rather than fabricating an identity; the call is removed, not the honesty (research decision 5, constitution IV)
-- [ ] T006 Give `observeBanner` in `src/app/ui/components/app-frame/sticky-banner.ts` a `DOCUMENT`-injected view and defer its first `measure()` to `afterNextRender`, following `element-size.adapter.ts:28` and `bench-composition.ts:91-94`. The document must carry neither `frame--released` nor `--ednb-layout-bar-height` (`app-frame.ts:185-186`), and the pass must log no `getBoundingClientRect` error (research decision 6)
-- [ ] T007 [P] Add unit tests for `rendering-target.ts` in `src/app/platform/browser/rendering-target.spec.ts`, covering both platforms
-- [ ] T008 [P] Extend the `sticky-banner` unit tests to assert that no measurement is taken before the first render, so T006's deferral cannot be undone silently
+- [X] T004 Create `src/app/platform/browser/rendering-target.ts` as the single injectable statement of "is this a browser", wrapping `isPlatformBrowser(inject(PLATFORM_ID))` — **not** a `DOCUMENT.defaultView` check, which the spike proved wrong because the emulation supplies `defaultView` but no `crypto` (research decision 5, constitution III)
+- [X] T005 Guard the retention sweep in `src/app/app.config.ts` behind `rendering-target.ts`, so `provideAppInitializer` → `RetentionService` → `TabOwnershipCoordinator` → `UuidAdapter.create()` is not reached at build time. `UuidAdapter` keeps throwing rather than fabricating an identity; the call is removed, not the honesty (research decision 5, constitution IV)
+- [X] T006 Give `observeBanner` in `src/app/ui/components/app-frame/sticky-banner.ts` a `DOCUMENT`-injected view and defer its first `measure()` to `afterNextRender`, following `element-size.adapter.ts:28` and `bench-composition.ts:91-94`. The document must carry neither `frame--released` nor `--ednb-layout-bar-height` (`app-frame.ts:185-186`), and the pass must log no `getBoundingClientRect` error (research decision 6)
+- [X] T007 [P] Add unit tests for `rendering-target.ts` in `src/app/platform/browser/rendering-target.spec.ts`, covering both platforms
+- [X] T008 [P] Extend the `sticky-banner` unit tests to assert that no measurement is taken before the first render, so T006's deferral cannot be undone silently
 - [ ] T009 Add the `contentBearing` registry to `scripts/search/published-addresses.mjs` beside the list it qualifies: one record per advertised address, `reason` required when `false`, 50 true and 2 false ([data-model.md](./data-model.md) `ContentBearing`, FR-021)
 - [ ] T010 [P] Add script tests for the registry in `scripts/search/published-addresses.test.mjs`: every advertised address appears exactly once, `reason` is present wherever `contentBearing` is `false`, and the counts are 52 / 50 / 2
 - [ ] T011 Create `scripts/generate-prerender-routes.mjs`, deriving the routes file from `publishedAddresses(...)` filtered by `contentBearing` — one leading-slash line each, 50 lines, written to the build directory and never committed (address-set.md §4, FR-006)
