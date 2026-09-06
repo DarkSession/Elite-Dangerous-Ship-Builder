@@ -58,7 +58,8 @@ above it does not scale it. Playwright gives every `expect(locator)` five second
 test with sixty seconds on a runner could still fail on one visibility wait that lost a CPU race, and
 report a missing element rather than a slow one. `expect.timeout` therefore takes the same split the
 test budget has: ten seconds on CI, five locally. The allowance is stated once, for every assertion
-that waits, rather than added to the one assertion that failed last.
+that waits, rather than added to the one assertion that failed last. `toPass` is the one exception
+Playwright makes: it takes no budget from `expect.timeout`, so each of its call sites states its own.
 
 ## Product and preview coverage ledger
 
