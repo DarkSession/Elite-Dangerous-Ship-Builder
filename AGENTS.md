@@ -107,6 +107,36 @@ Dangerous. Ship Builder, which plans ship loadouts, is the first of them.
 
 - Package manager is **pnpm**. `pnpm-lock.yaml` is committed; use
   `--frozen-lockfile` in CI.
+- **A release waits seven days before this project may install it.**
+  `pnpm-workspace.yaml` sets `minimumReleaseAge` to 10080 minutes. pnpm skips
+  any version published less than seven days ago. The delay gives a compromised
+  or withdrawn release time to be found and pulled before this project can
+  reach it. CI installs from the committed lockfile, so the delay applies only
+  when a person resolves a new version.
+- **Nothing tells you what the delay holds.** pnpm does not report a held-back
+  version reliably, and `pnpm outdated` hides one. Run `pnpm view <name> time`
+  to read the publish dates and work it out. An exact-version specifier that is
+  too young fails the install with `ERR_PNPM_NO_MATURE_MATCHING_VERSION` rather
+  than resolving an older release.
+- **`minimumReleaseAgeExclude` takes two shapes.** A bare name or pattern
+  exempts every release of a package, now and later. A `name@version` entry
+  exempts one release and keeps the delay over the next one.
+  `@elite-dangerous-almanac/*` is the only standing bare exclusion, because a
+  feature here waits on Almanac releases. A second bare exclusion needs a
+  reason in the commit that adds it.
+- **A security fix does not wait.** To take a fix younger than the delay:
+
+  1. Add the release to `minimumReleaseAgeExclude` as `<name>@<version>`.
+  2. Run `pnpm update <name>`.
+  3. Commit `pnpm-workspace.yaml` and the lockfile. Name the advisory in the
+     commit message.
+  4. Delete the entry once the release is seven days old.
+
+  Step 1 is what holds the fix. Resolve it without the entry and the next
+  `pnpm update` silently takes the older version back. `pnpm audit` does not
+  catch that: an advisory published in the last few days is not in its feed
+  yet.
+
 - **`package.json` declares `major.minor.0`; CI supplies the patch.** Major and
   minor are advanced by hand in a normal reviewed commit. The patch is never
   written down: `scripts/resolve-build-version.mjs` counts the commits since
