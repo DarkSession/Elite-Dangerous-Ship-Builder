@@ -30,13 +30,37 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * journey (`prerendered-first-frame.spec.ts`), and it must not be answered by
  * accident in every other one.
  *
- * The wait is over when no control is still holding a press for the takeover.
- * On a development project there is no rendered document and nothing ever holds
- * one, so this costs a single evaluation and returns.
+ * The wait is over when `main` is on the page and no control is still holding a
+ * press for the takeover. Both halves are asked, because a journey meets two
+ * kinds of document.
+ *
+ * A document with a rendered body states the screen from the first byte, `main`
+ * included. There the held presses are the signal, cleared node by node as the
+ * takeover reaches them.
+ *
+ * A document with no rendered body states neither, and three things serve one.
+ * The build writes one for an advertised address whose screen has no content of
+ * its own, `/outfitting` and `/equipment`. The host answers an address the build
+ * wrote nothing for with `404.html`. The worker answers every navigation with
+ * `index.csr.html` once the network is gone (`ngsw-config.json`,
+ * `navigationRequestStrategy`). None of the three carries a control, so the
+ * presses say nothing there.
+ *
+ * What says the application has drawn on those is `main`, painted on boot. A
+ * production build resolves the route before it boots (`app.config.ts`,
+ * `withEnabledBlockingInitialNavigation`), so the screen is already inside it.
+ * A development build paints the frame first and the route's chunk a moment
+ * later.
+ *
+ * Thirty seconds, because this wait spans a boot rather than a paint. On a shell
+ * the application starts from nothing, and offline it reads every chunk of
+ * itself from the worker's cache.
  */
 export async function waitForTakeover(page: Page): Promise<void> {
   await page.waitForFunction(
-    () => document.querySelectorAll('[jsaction]').length === 0,
+    () =>
+      document.querySelector('main') !== null &&
+      document.querySelectorAll('[jsaction]').length === 0,
     undefined,
     {
       timeout: 30_000,

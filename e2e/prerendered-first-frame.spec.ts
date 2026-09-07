@@ -6,6 +6,7 @@ import {
   MEASURED,
   type Frame,
   frames,
+  openBeforeTheBundleArrives,
   openOnceTheTypefaceHasArrived,
   openWithADelayedBundle,
   openWithoutTheBundle,
@@ -25,6 +26,9 @@ import { waitForTakeover } from './shell';
  * a second later is a worse first frame than the empty shell this feature
  * replaced, and only a browser can catch that (FR-008 through FR-012, SC-003,
  * SC-004).
+ *
+ * The last journey is about the other document the same output serves: the one
+ * with no rendered body, where the takeover starts from an empty shell.
  *
  * It needs the production output for the same reason its sibling does — a
  * development server has no generated documents — so it runs under
@@ -421,5 +425,30 @@ test.describe('a document read by a Commander whose browser asks for German', ()
       await disclosures(page),
       'German said nothing about the untranslated names',
     ).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The other document the production output serves: the one with no rendered
+ * body, which every journey reaches `waitForTakeover` on.
+ *
+ * What the takeover means there, and why the wait asks a second question about
+ * it, is in `shell.ts`. What is claimed here is the journey's half: when that
+ * wait is over, the screen is drawn.
+ */
+test.describe('a document with no rendered body', () => {
+  test('is not taken over until the application has drawn the screen', async ({ page }) => {
+    // The host's fallback rather than the worker's, because a request the
+    // worker answers never reaches the network and cannot be held.
+    await openBeforeTheBundleArrives(page, '/ships/NotAShip');
+
+    await waitForTakeover(page);
+
+    // Read once, with no wait of its own. What the wait above covers is the
+    // whole of what is measured here.
+    expect(
+      await page.getByRole('heading', { name: 'No such hull' }).count(),
+      'the application had drawn the screen when the takeover wait was over',
+    ).toBe(1);
   });
 });
