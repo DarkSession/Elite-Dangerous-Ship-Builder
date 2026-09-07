@@ -60,6 +60,33 @@ context: |
     documents of the features already built. Code and specifications cite them
     by path. Read them; do not extend them.
 
+  Review gates. Two gates review the change, and each starts without being asked
+  for it. Each gate has its own subagent with its own brief, and neither
+  subagent carries the other's:
+
+  - **The planning gate — a specification reviewer.** It runs when the task list
+    is written, the last planning artefact, and before the operator reads the
+    change. Give the subagent the change directory, `openspec/specs/`,
+    `CONSTITUTION.md` and `AGENTS.md`, and no source code. Ask it where the
+    artefacts disagree with one another, with an accepted capability
+    specification, or with the constitution. Ask it where a requirement names a
+    screen, states no source for a value, or carries no scenario. Ask it where a
+    task states no verification.
+  - **The implementation gate — a code reviewer.** It runs when the last task of
+    the change is implemented, and before the work is reported as complete. Give
+    the subagent the diff against the default branch, the change directory and
+    the same documents. Ask it to review the code against the delta
+    specifications, the task list, the constitution and `AGENTS.md`. It judges
+    what the change builds, not the plan the specification reviewer passed.
+
+  Fix every actionable finding, then run the gate again with a subagent of the
+  same kind. Repeat until it reports no actionable finding. Only then present
+  the artefacts, or report the implementation complete. A passed implementation
+  gate is the review a pull request needs. Where it passed and the code has not
+  changed since, open the pull request without repeating it. Any later change to
+  the code needs a new review. The review cycle is how the change gets good; it
+  is not material for an artefact, a commit message or a pull request.
+
   Language: plain, common words. Active voice, present tense, one idea per
   sentence. Simplified Technical English (ASD-STE-100) for anything addressed to
   the operator. No metaphor, no marketing adjectives, no emoji, and no changelog
@@ -67,7 +94,7 @@ context: |
   produced it. British spelling.
 
 rules:
-  spec:
+  specs:
     - Specify a capability, never a screen. A requirement names no component and
       pins no layout.
     - State where a value comes from. If it is game data or a build
@@ -84,3 +111,14 @@ rules:
       observable behaviour.
     - Responsiveness, touch, accessibility, localisation and composition from
       the design system are in scope from the first task, never a later pass.
+    - The task list is the last planning artefact. When it is written, run the
+      planning gate the project context defines, before the operator reads the
+      change.
+
+operations:
+  apply:
+    guidance:
+      - Run the implementation gate when the last task is implemented, and
+        before you report the change complete. The project context defines the
+        gate, the code reviewer it uses, and what that subagent reads.
+      - Run `pnpm run check` before each review round, and report what passed.
