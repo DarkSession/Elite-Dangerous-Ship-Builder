@@ -24,7 +24,14 @@ export interface Frame {
   readonly subject: boolean;
   /** Where the measured boxes are, in the order `MEASURED` names them. */
   readonly boxes: readonly (readonly [number, number, number, number] | null)[];
-  /** Whether the takeover has finished, so nothing is still waiting on it. */
+  /**
+   * Whether the takeover has finished, so nothing is still waiting on it.
+   *
+   * A document with a rendered body is read by the held presses alone. A
+   * document with no rendered body holds none, so this reads true there from the
+   * first frame, for the reason `waitForTakeover` gives. A journey that meets
+   * one asks the question there instead.
+   */
   readonly takenOver: boolean;
   /**
    * Whether the document has finished arriving.
@@ -222,6 +229,26 @@ export async function openWithADelayedBundle(page: Page, path: string): Promise<
     await route.continue();
   });
   await page.goto(`${PRODUCT_URL}${path}`);
+}
+
+/**
+ * Opens an address and returns while the bundle is still on its way.
+ *
+ * `openWithADelayedBundle` waits for `load`, which is over only once the held
+ * bundle has arrived and the application is on its way up. A journey that asks
+ * a question of the document alone needs the navigation over sooner, so this
+ * one returns on the commit.
+ *
+ * A second, which is a whole navigation and a boot on a shared machine. The
+ * hold is what makes the answer the document's rather than the application's,
+ * so it is set long enough to be sure of.
+ */
+export async function openBeforeTheBundleArrives(page: Page, path: string): Promise<void> {
+  await page.route(/\.js(\?.*)?$/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await route.continue();
+  });
+  await page.goto(`${PRODUCT_URL}${path}`, { waitUntil: 'commit' });
 }
 
 /**

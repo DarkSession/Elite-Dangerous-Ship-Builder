@@ -2177,6 +2177,10 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       '015/FR-012',
       '015/SC-003',
       '015/SC-004',
+      // The last journey opens the address the build wrote no document for, and
+      // reads the screen the application resolves it into.
+      '015/FR-015',
+      '015/FR-016',
     ],
     journey: 'product/prerendered-first-frame',
     axe: true,
@@ -2189,6 +2193,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a German Commander’s words are replaced without anything being reordered or removed',
       'the one thing German adds is the note beside each name English has nothing to disclose about',
       'a Commander whose bundle never arrives is left with the readable document',
+      'a document with no rendered body is not taken over until the application has drawn the screen',
     ],
     manualRecord: 'screen-reader',
   },
