@@ -255,9 +255,9 @@
 // appears where all six of them can be read, which means the module cell at its
 // 155px and each figure column at least as wide as the longer of its own head
 // and its own figure. In German the widest head word is still `DURCHSCHLAG` at
-// 73.3px — `SPS FEUERSTOSS` wraps to `FEUERSTOSS` at 66.6px and `DAUERFEUER` is
-// the same 66.6px — against about 50px for `3,000 m`; in English every head is
-// shorter than its own figures. So 155px + 5 × 73.3px + five 10px gutters
+// 73.3px — `SALVEN-DPS` breaks at its own hyphen and `ANHALTEND` is shorter
+// still — against about 50px for `3,000 m`; in English every head is shorter
+// than its own figures. So 155px + 5 × 73.3px + five 10px gutters
 // ≈ 571px — the gutter being `--ednb-space-inline`, which resolves to
 // 0.625rem — and the threshold is the next whole rem above that: 36rem, which
 // leaves each figure track about 74px.

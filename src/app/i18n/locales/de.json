@@ -723,7 +723,7 @@
   "power.heat.scenario.idle.description": "Hardpoints eingefahren, kein Schub",
   "power.heat.scenario.thrusters": "Reiseflug · voller Schub",
   "power.heat.scenario.thrusters.description": "Voller Schub, Hardpoints eingefahren",
-  "power.heat.scenario.fsd-charging": "FSA lädt auf",
+  "power.heat.scenario.fsd-charging": "FSA-Aufladung",
   "power.heat.scenario.fsd-charging.description": "Wärme beim Aufladen des Frameshiftantriebs",
   "power.heat.scenario.firing-sustained": "Anhaltendes Waffenfeuer",
   "power.heat.scenario.firing-sustained.description": "Abzug dauerhaft gedrückt",
