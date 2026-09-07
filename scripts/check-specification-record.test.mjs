@@ -115,7 +115,7 @@ describe('coverage ledger reconciliation', () => {
   });
 
   it('refuses a ledger that covers nothing', () => {
-    const found = rules.ledgerCoverageInputViolations('export const LEDGER = [];', 4);
+    const found = rules.ledgerCoverageInputViolations('export const LEDGER = [];', 4, 12);
 
     assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
     assert.match(found[0].message, /declares no covered features/);
@@ -124,14 +124,24 @@ describe('coverage ledger reconciliation', () => {
   it('refuses an empty specification tree rather than passing over it', () => {
     // The rule would otherwise find nothing to declare, report nothing, and look
     // exactly like a rule that passed.
-    const found = rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 0);
+    const found = rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 0, 0);
 
     assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
     assert.equal(found[0].file, SCOPE.specs);
   });
 
-  it('accepts both inputs when each carries something', () => {
-    assert.deepEqual(rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 4), []);
+  it('refuses a specification tree that declares no requirement', () => {
+    // The tree is there and the ledger covers a feature, but no `Source:` line
+    // survives anywhere. The rule would find nothing to demand evidence for and
+    // report a clean pass over an unverified repository.
+    const found = rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 24, 0);
+
+    assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
+    assert.match(found[0].message, /declares a requirement for a covered feature/);
+  });
+
+  it('accepts every input when each carries something', () => {
+    assert.deepEqual(rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 24, 12), []);
   });
 
   it('reads registered ids only from requirements arrays', () => {
@@ -433,6 +443,7 @@ describe('the screen inventory reconciliation', () => {
       found[0].message,
       /helpRouteCoverage` declaration was not found in e2e\/coverage-ledger\.ts/,
     );
+    assert.equal(found[0].file, where.file, 'a missing declaration is the ledger’s fault');
   });
 
   it('reads only the ledger table, not a four-column table in a later section', () => {

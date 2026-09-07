@@ -131,24 +131,30 @@ jobs:
 
           if [ "$EVENT_NAME" = "pull_request" ]; then
             reason="the diff could not be read"
+            # The three git commands first, and what they returned second. An
+            # assignment carries the exit status of its command substitution,
+            # so a failed `git diff` leaves `changed` set and empty — telling
+            # "the diff failed" from "the diff was empty" needs the two
+            # decisions kept apart rather than folded into one chain.
             if git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}" \
               && base="$(git merge-base "origin/${BASE_REF}" "$HEAD_SHA")" \
-              && changed="$(git diff --no-renames --name-only "$base" "$HEAD_SHA")" \
-              && [ -n "$changed" ]; then
-              product=false
-              reason="every changed path is under openspec/"
-            elif [ "${changed+set}" = set ] && [ -z "$changed" ]; then
-              reason="the diff is empty"
-              while IFS= read -r file; do
-                case "$file" in
-                  openspec/*) ;;
-                  *)
-                    product=true
-                    reason="$file is outside openspec/"
-                    break
-                    ;;
-                esac
-              done <<< "$changed"
+              && changed="$(git diff --no-renames --name-only "$base" "$HEAD_SHA")"; then
+              if [ -z "$changed" ]; then
+                reason="the diff is empty"
+              else
+                product=false
+                reason="every changed path is under openspec/"
+                while IFS= read -r file; do
+                  case "$file" in
+                    openspec/*) ;;
+                    *)
+                      product=true
+                      reason="$file is outside openspec/"
+                      break
+                      ;;
+                  esac
+                done <<< "$changed"
+              fi
             fi
           fi
 

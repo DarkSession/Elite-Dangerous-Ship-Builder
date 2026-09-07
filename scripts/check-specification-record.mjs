@@ -167,7 +167,7 @@ function ledgerCoverageViolations(declared, ledgerSource, ledgerFile) {
  * Separated from the reading so it can be run without a filesystem, which is
  * the only way that silence can be tested for.
  */
-export function ledgerCoverageInputViolations(ledgerSource, specificationCount) {
+export function ledgerCoverageInputViolations(ledgerSource, specificationCount, declaredCount) {
   const fail = (file, message) => [{ file, line: 1, rule: 'unregistered-requirement', message }];
 
   if (coveredFeatures(ledgerSource).size === 0) {
@@ -182,21 +182,27 @@ export function ledgerCoverageInputViolations(ledgerSource, specificationCount) 
       'No capability specification was found, so no requirement was checked for evidence.',
     );
   }
+  if (declaredCount === 0) {
+    return fail(
+      SCOPE.specs,
+      'No capability specification declares a requirement for a covered feature, so nothing was ' +
+        'checked against the ledger. Every requirement carries a trailing `Source: 002/FR-014.` line.',
+    );
+  }
   return [];
 }
 
-/** IO wrapper. */
+/**
+ * IO wrapper.
+ *
+ * Reads all three inputs before it guards any of them, so the guard sees what
+ * the rule would have been given rather than what it was expected to find.
+ */
 async function checkLedgerCoverage() {
   const ledgerFile = SCOPE.ledger;
   const ledgerPath = resolve(ROOT, ledgerFile);
   const ledger = existsSync(ledgerPath) ? await readFile(ledgerPath, 'utf8') : '';
   const specifications = await specificationFiles();
-
-  const missing = ledgerCoverageInputViolations(ledger, specifications.length);
-  if (missing.length > 0) {
-    violations.push(...missing);
-    return;
-  }
 
   // The ledger names feature directories; a trace names the feature number.
   const coveredNumbers = new Set(
@@ -212,6 +218,12 @@ async function checkLedgerCoverage() {
       }
       declared.push({ id, file: repoPath(file) });
     }
+  }
+
+  const missing = ledgerCoverageInputViolations(ledger, specifications.length, declared.length);
+  if (missing.length > 0) {
+    violations.push(...missing);
+    return;
   }
 
   violations.push(...ledgerCoverageViolations(declared, ledger, ledgerFile));
@@ -496,13 +508,17 @@ export function documentedHelpRoutes(inventorySource) {
  * cannot see that; a count can.
  */
 export function screenInventoryViolations(transcribed, documented, { file, document }) {
-  const fail = (message) => [{ file, line: 1, rule: 'screen-inventory', message }];
+  // Each fault is reported against the file that holds it. A missing table is
+  // the document's fault, and reporting it at the ledger sends the reader to
+  // the innocent file — the same mislocation as blaming the document for a
+  // declaration the ledger never carried.
+  const fail = (at, message) => [{ file: at, line: 1, rule: 'screen-inventory', message }];
 
   if (transcribed === null) {
-    return fail(`The \`helpRouteCoverage\` declaration was not found in ${file}.`);
+    return fail(file, `The \`helpRouteCoverage\` declaration was not found in ${file}.`);
   }
   if (documented.length === 0) {
-    return fail(`The Release coverage ledger table was not found in ${document}.`);
+    return fail(document, `The Release coverage ledger table was not found in ${document}.`);
   }
 
   const fromCode = transcribed.map((row) => ({
@@ -519,7 +535,7 @@ export function screenInventoryViolations(transcribed, documented, { file, docum
   // its literal happens to declare its properties, so reordering either literal
   // would make every row mismatch for no change in what either says.
   const name = (row) =>
-    `${row.surface} (${row.owner ?? ''}, ${row.frameEntry ?? ''}, ${(row.applies ?? []).join(' ')})`;
+    `${row.surface ?? ''} (${row.owner ?? ''}, ${row.frameEntry ?? ''}, ${(row.applies ?? []).join(' ')})`;
 
   /** How many times each row appears, keyed by everything it claims. */
   const counted = (rows) => {
@@ -553,7 +569,9 @@ export function screenInventoryViolations(transcribed, documented, { file, docum
   if (unwritten.length > 0) {
     parts.push(`only in helpRouteCoverage: ${unwritten.join('; ')}`);
   }
-  return fail(`The two disagree — ${parts.join(', and ')}.`);
+  // Blamed on the ledger: the export transcribes the document, so a
+  // disagreement is a transcription that has fallen behind.
+  return fail(file, `The two disagree — ${parts.join(', and ')}.`);
 }
 
 /** IO wrapper. */

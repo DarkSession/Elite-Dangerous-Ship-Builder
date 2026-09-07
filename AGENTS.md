@@ -247,8 +247,8 @@ install. The Claude Code flow is `/opsx:explore` (optional) → `/opsx:propose` 
   declares, that a conformance claim in the record names its excluded criteria,
   and that `helpRouteCoverage` transcribes the screen inventory. Nothing else
   reads the record — not the interface-policy checker, not the generated help
-  artifacts, not a suite. A source file may cite a document by path in a comment; it may
-  not open one.
+  artifacts, not a suite. A source file may cite a document by path in a
+  comment; it may not open one.
 - **That is why a specification change is cheap.** A pull request whose every
   changed path is under `openspec/` runs the formatter and that one script, and
   skips the build, the unit tests, the end-to-end matrix and the preview
