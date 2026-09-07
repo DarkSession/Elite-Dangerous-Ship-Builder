@@ -15,7 +15,7 @@ and are not opened here — the Commander ruled for one prefix over a key space 
 | Key                   | Store              | Holds                                                                             |
 | --------------------- | ------------------ | --------------------------------------------------------------------------------- |
 | `ednb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.                   |
-| `ednb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.                   |
+| `ednb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record each tool autosaves into.            |
 | `ednb:catalogue`      | `sessionStorage`   | This tab's browsing position in the catalogue: search, filters, order, anchor.    |
 | `ednb:update-applied` | `sessionStorage`   | That this tab restarted onto a newer version, so the arriving session can say so. |
 | `ednb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.            |
@@ -41,9 +41,12 @@ moment it exists, and the bound on the ones they never named is time rather than
   does not touch `modifiedAt`.
 - Autosave never writes to a named record. The check reads the stored record's own `kind` rather
   than the page's belief about it, so a record named in another tab is covered too.
-- `ednb:tab` carries the unnamed record this page is autosaving into, across a reload. A duplicated
-  tab clones it and claims an id that is already live; the BroadcastChannel handshake forks the
-  later claimant before either page next writes. Two pages holding one _named_ record open is not a
+- `ednb:tab` carries the unnamed record each of this page's tools is autosaving into, across a
+  reload — one id per tool, because a page holds a build and a loadout at once and neither may be
+  written into the other's record. A tool that stops writing to a record releases its own entry and
+  leaves the other tool's where it is. A duplicated tab clones the descriptor and claims ids that
+  are already live; the BroadcastChannel handshake forks the later claimant, one tool at a time,
+  before either page next writes. Two pages holding one _named_ record open is not a
   collision, because neither writes to it.
 
 **Exactly three things remove a record**, and no fourth:

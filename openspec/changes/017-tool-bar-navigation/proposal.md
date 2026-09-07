@@ -68,8 +68,10 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
   (001/FR-012). A record this page holds that turns out to be stored as named is stated as a
   failed write and let go of, rather than refused in silence, so a write the ship tool used
   to drop with no notice and no retry is now one a Commander is told about and can answer
-  (001/FR-014). And a save says the build is stored, where the workspace used to leave
-  whatever the last write had said standing over it.
+  (001/FR-014). A save says the build is stored, where the workspace used to leave whatever
+  the last write had said standing over it. And the full-store notice's own control opens the
+  saved records, where it was drawn and did nothing — which is what a Commander meeting a
+  full store has in front of them (001/FR-013).
   `src/app/platform/storage/tab-descriptor.repository.ts` holds one working record per tool.
   `src/app/platform/storage/local-record.repository.ts` matches an unnamed record by tool.
 - `src/app/application/equipment/loadout.store.ts` implements that port, gaining what
