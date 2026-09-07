@@ -234,6 +234,12 @@ install. The Claude Code flow is `/opsx:explore` (optional) → `/opsx:propose` 
 - `openspec/changes/archive/<NNN>-<short-name>/` holds the design and contract
   documents of the features already built. Source files, tests and
   specifications cite them by path. Read them; do not extend them.
+- **Two reviews run inside the flow**, by two different subagents, and neither
+  waits to be asked. A specification reviewer reads the planning artefacts when
+  the task list is written, before you present them. A code reviewer reads the
+  diff when the last task is done. Fix every actionable finding and run the gate
+  again, until none remains. [`openspec/config.yaml`](./openspec/config.yaml)
+  carries both gates and says what each subagent reads.
 
 ## How to write
 
@@ -313,7 +319,10 @@ layout.
 - **Length follows the change.** Do not inflate a small change into a report,
   and do not compress a large one into a headline.
 
-**Before opening any PR, have a subagent re-review the complete change.** Address
-every actionable finding, then have it review again. Repeat until it reports no
-actionable findings; only then may the PR be opened. The cycle is how the change
-gets good; it is not material for the description.
+**Before opening any PR, a subagent reviews the complete change.** Address every
+actionable finding, then run the gate again. Repeat until it reports no
+actionable findings; only then may the PR be opened. The apply phase's
+implementation gate is this review: where it passed and the code has not changed
+since, open the PR without repeating it. Any later change to the code needs a
+new review. The cycle is how the change gets good; it is not material for the
+description.
