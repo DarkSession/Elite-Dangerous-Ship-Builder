@@ -78,10 +78,10 @@ export class EmptyBenchService {
    * Nothing is flushed on the way out. There is nowhere to flush it to, which
    * is the whole of the event.
    *
-   * What is deleted is the record, not the address. A loadout the address still
-   * carries opens again from there, as any loadout in an address does, and is
-   * autosaved into a record of its own — the deleted one is never written back
-   * (017/FR-008).
+   * What is deleted is the record, not the addresses behind this page. A
+   * loadout one of those still carries opens again from there, as any loadout
+   * in an address does, and is autosaved into a record of its own — the deleted
+   * one is never written back (017/FR-008).
    */
   clearHolding(recordId: string): boolean {
     if (!this.#store.clearIfHolding(recordId)) {
