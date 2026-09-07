@@ -190,7 +190,12 @@ export class WorkingRecordAutosave {
     // A named record is never an autosave target, whatever this page is
     // holding. The check reads the stored record rather than this page's belief
     // about it, so a record named in another tab is covered too (001/FR-008).
+    //
+    // Stated rather than refused in silence: the work is in nothing, and a
+    // Commander who is not told reads a screen that says it is saved
+    // (001/FR-014).
     if (this.#records.isNamed(recordId)) {
+      this.#subject.setPersistence('write-failed');
       return false;
     }
 

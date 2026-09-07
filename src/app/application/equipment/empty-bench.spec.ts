@@ -231,6 +231,7 @@ describe('starting an empty bench', () => {
     bench.start();
 
     expect(store.hasLoadout()).toBe(true);
+    expect(store.persistence()).toBe('write-failed');
   });
 
   it('takes the loadout out of the address without adding a history entry', () => {

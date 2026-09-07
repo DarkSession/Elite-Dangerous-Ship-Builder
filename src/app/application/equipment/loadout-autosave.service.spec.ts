@@ -219,6 +219,9 @@ describe('LoadoutAutosaveService', () => {
     benchLoadout(store);
 
     expect(autosave.flush()).toBe(false);
+    // And said, rather than refused in silence: a screen that still read
+    // "saved" would be stating something untrue.
+    expect(store.persistence()).toBe('write-failed');
   });
 
   it('saves again once the bench holds a record nobody discarded', () => {

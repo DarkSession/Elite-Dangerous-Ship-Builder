@@ -16,6 +16,7 @@ import {
   type StoredRecordEntry,
 } from '../../domain/records/local-record';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
+import { TabOwnershipCoordinator } from '../../application/build-library/tab-ownership.coordinator';
 import { EmptyBenchService } from '../../application/equipment/empty-bench.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
@@ -108,6 +109,7 @@ export class BuildLibraryPage {
   readonly #announcements = inject(AnnouncementService);
   readonly #active = inject(ActiveBuildStore);
   readonly #bench = inject(EmptyBenchService);
+  readonly #ownership = inject(TabOwnershipCoordinator);
   readonly #messages = inject(MessageService);
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
@@ -513,7 +515,9 @@ export class BuildLibraryPage {
    * and this tab's claim on it would outlive the record itself (017/FR-010).
    */
   #letGoOf(recordId: string): void {
-    this.#active.clearIfHolding(recordId);
+    if (this.#active.clearIfHolding(recordId)) {
+      this.#ownership.release('ship');
+    }
     this.#bench.clearHolding(recordId);
   }
 

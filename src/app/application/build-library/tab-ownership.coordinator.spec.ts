@@ -164,6 +164,27 @@ describe('TabOwnershipCoordinator', () => {
     stop();
   });
 
+  it('writes down a fork made for a tool whose screen is not drawn', () => {
+    // Both tools are registered for the whole page, so either can be forked
+    // from any screen — and a tool whose screen is not drawn has no watcher
+    // running to write the new id down. A reload would then restore from the
+    // record the other page is writing to (017/FR-010).
+    const session = new MemoryStorage();
+    const { coordinator, active, channel } = setup(session);
+    hold(active, 'id-held');
+    coordinator.listen();
+
+    const next = coordinator.fork('ship');
+
+    expect(coordinator.claim('ship')).toBe(next);
+    expect(channel.sent.at(-1)).toEqual({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: next,
+      pageNonce: coordinator.pageNonce,
+    });
+  });
+
   it('gives two ordinary tabs distinct records', () => {
     const first = setup();
     hold(first.active, 'first-record');

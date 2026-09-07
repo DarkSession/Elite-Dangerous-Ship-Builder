@@ -66,8 +66,9 @@ Composes: what it composes today, and `ednb-persistence-status` in the place the
 draws it — above the bench regions, under the bar.
 
 - States: ready, saving and saved draw nothing, as in the workspace; a blocked store, a full
-  store, a failed write and a record discarded elsewhere each draw the notice and its one
-  action.
+  store, a failed write and a record discarded elsewhere each draw the notice and the actions
+  that state offers — one for each of them but a full store, which offers a retry beside the
+  way to choose what to discard.
 - The empty bench is a destination as well as a starting state. The suit gate stands and every
   region is drawn and inert, which is canvas `2a`/`2b` and needs no new composition.
 
@@ -161,8 +162,8 @@ migration saved.
 action was pressed, instead of reading `ActiveBuildStore`. The workspace and the bench each
 supply their own.
 
-Alternative: a second component with the same six states, the same three actions and the same
-strings.
+Alternative: a second component with the same seven states, the same three actions and the
+same strings.
 
 ### The page identity is minted where it is first needed
 
@@ -204,6 +205,18 @@ already on the bench states the reason.
 
 Alternative: clear regardless and state the loss. That is a seventh persistence state and a
 string in both catalogues for a case a Commander can already read on the screen.
+
+### A deleted record is not a deleted address
+
+Deleting the record the bench autosaves into clears the bench and takes the loadout out of the
+address this page is on. It does not reach the addresses behind it: the saved records layer
+raises itself by pushing a history entry, so leaving the layer returns to the entry it was
+opened from, which still carries the loadout. The loadout opens again from there, into a
+record of its own, and the record that was deleted is never written back.
+
+Alternative: refuse to read a link the bench has just been cleared of. That makes the address
+and the screen disagree — a loadout in the bar that is not on the bench — and it would also
+refuse a Commander who presses BACK to a loadout they meant to return to.
 
 ### Starting an empty bench is not undoable
 

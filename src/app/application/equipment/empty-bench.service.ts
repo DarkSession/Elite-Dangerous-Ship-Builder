@@ -79,6 +79,11 @@ export class EmptyBenchService {
    *
    * Nothing is flushed on the way out. There is nowhere to flush it to, which
    * is the whole of the event.
+   *
+   * What is deleted is the record, not the address. A loadout the address still
+   * carries opens again from there, as any loadout in an address does, and is
+   * autosaved into a record of its own — the deleted one is never written back
+   * (017/FR-009).
    */
   clearHolding(recordId: string): boolean {
     if (!this.#store.clearIfHolding(recordId)) {
@@ -86,9 +91,9 @@ export class EmptyBenchService {
     }
 
     this.#ownership.release('equipment');
-    // Before anything watching the bench reads the address again: the loadout
-    // is still in the fragment, and a bench cleared while its own link stands
-    // reads that link straight back onto itself.
+    // And out of the address this page is on, before anything watching the
+    // bench reads it: a bench cleared while its own link stands reads that link
+    // straight back onto itself.
     this.#links.publish();
     return true;
   }

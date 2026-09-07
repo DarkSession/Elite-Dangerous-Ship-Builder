@@ -287,6 +287,16 @@ export class TabOwnershipCoordinator {
       this.#onFork.get(tool)?.(previous, next);
     }
 
+    // Remembered and announced here rather than left to the watcher. Both tools
+    // are registered for the whole page, so a tool is forked whether or not its
+    // screen is drawn — and a tool whose screen is not drawn has no watcher
+    // running to write the new id down. Without this, a reload would restore
+    // from the record the other page is writing to, which is the collision the
+    // fork exists to end.
+    this.#announced.set(tool, next);
+    this.#tab.write(tool, next);
+    this.#announce(tool);
+
     return next;
   }
 }

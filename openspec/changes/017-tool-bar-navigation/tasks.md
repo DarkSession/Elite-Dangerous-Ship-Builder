@@ -75,7 +75,7 @@
       test over the deletion broadcast.
 - [x] 4.5 Give `ednb-persistence-status` its state and paused flag as inputs, report
       the pressed action, and draw it on the bench where the workspace draws it. Verify
-      with component tests over all six states in both screens.
+      with component tests over all seven states in both screens.
 - [x] 4.6 Confirm `pnpm run policy` still passes `equipment-ownership.mjs` with the new
       files under `src/app/application/equipment/`, which may import no package
       subpath the capability does not already own.

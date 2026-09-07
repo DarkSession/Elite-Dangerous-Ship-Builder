@@ -55,11 +55,12 @@ the spelling the wordmark on the bar and the design canvases carry. The written 
 the manifest's `name`, `short_name` and `description`, and the Frontier media-usage notice
 in `LICENSE`. The `package.json` name and the project key in `angular.json` are the
 lowercase identifier the same product is filed under, and do not follow the spelling. Everything that names the outfitting bench — `catalogue.title`,
-`navigation.catalogue`, `hullDetail.back`, `workspace.empty.description`,
-`workspace.empty.action` and the help topics that describe the bench's behaviour — names
-the tool, which is what those strings mean under Nav Beacon. `help.purpose` is the one help
-string on the product's side of that line: one dialog opens over both benches, so it opens
-with the product's name rather than a bench's
+`hullDetail.back`, `workspace.empty.description`, `workspace.empty.action` and the help
+topics that describe the bench's behaviour — names the tool, which is what those strings
+mean under Nav Beacon. `navigation.start` and `help.purpose` are the two strings on the
+product's side of that line: the bar's mark leads to the screen that offers the tools, and
+one help dialog opens over both benches, so each carries the product's name rather than a
+bench's
 (`openspec/changes/archive/013-equipment-builder/design/reference-review.md`).
 
 `app.document-title.default` is the one string that says more than the name:

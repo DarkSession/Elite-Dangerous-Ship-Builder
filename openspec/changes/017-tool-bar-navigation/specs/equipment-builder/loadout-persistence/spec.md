@@ -70,7 +70,9 @@ the record was discarded.
 
 A record deleted on this page MUST clear the bench, which is the opposite answer to the
 opposite event: a Commander who deletes the record the bench autosaves into decided that here,
-and writing it back on the next change would undo what they confirmed.
+and writing it back on the next change would undo what they confirmed. The deleted record MUST
+NOT be written again. A loadout the address still carries MUST open again from the address, as
+any loadout in an address does, into a record of its own.
 
 Source: 017/FR-008.
 
@@ -89,7 +91,13 @@ Source: 017/FR-008.
 
 - **WHEN** a Commander deletes the record this bench autosaves into, from this page
 - **THEN** the bench holds no loadout
-- **AND** the record stays deleted, whatever is done on the bench next
+- **AND** the deleted record is never written again
+
+#### Scenario: The address still carries the loadout whose record was deleted
+
+- **WHEN** a Commander returns to an address carrying the loadout whose record they deleted
+- **THEN** the loadout opens from the address, in a record of its own
+- **AND** the record they deleted stays deleted
 
 #### Scenario: Resuming a loadout that has not changed
 

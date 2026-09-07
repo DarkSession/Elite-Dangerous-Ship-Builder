@@ -364,8 +364,6 @@ export class EquipmentBenchPage {
       this.#autosave.flush();
       return;
     }
-    // Choosing what to discard is the saved records layer's own work, so the
-    // status raises it rather than drawing a list of its own.
     this.#libraryLayer.raise();
   }
 
