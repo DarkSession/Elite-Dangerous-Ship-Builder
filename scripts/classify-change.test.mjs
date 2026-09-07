@@ -53,14 +53,22 @@ export function classifierScript(workflowSource) {
   return script;
 }
 
-/** A `git` that answers the three commands the classifier calls. */
-function gitStub({ fetchFails = false, mergeBaseFails = false, diffFails = false, changed = '' }) {
+/**
+ * A `git` that answers the three commands the classifier calls.
+ *
+ * Every invocation is recorded whole, so a case can assert the flags the
+ * classifier depends on as well as the answer it got back. Dropping
+ * `--no-renames` changes what the classifier sees and nothing else, which is
+ * the kind of edit a stub that reads only the subcommand would wave through.
+ */
+function gitStub({ fetchFails = false, mergeBaseFails = false, diffFails = false }) {
   return [
     '#!/bin/sh',
+    'echo "$@" >> "$GIT_CALLS"',
     'case "$1" in',
     `  fetch) exit ${fetchFails ? 1 : 0} ;;`,
     `  merge-base) ${mergeBaseFails ? 'exit 1' : 'echo abc123; exit 0'} ;;`,
-    `  diff) ${diffFails ? 'exit 1' : `printf '%s' "$CHANGED_FIXTURE"; exit 0`} ;;`,
+    `  diff) ${diffFails ? 'exit 1' : `printf '%s\\n' "$CHANGED_FIXTURE"; exit 0`} ;;`,
     'esac',
     'exit 0',
     '',
@@ -73,13 +81,15 @@ function classify({ event = 'pull_request', changed = '', ...failures } = {}) {
   try {
     const bin = join(directory, 'bin');
     execFileSync('mkdir', ['-p', bin]);
-    writeFileSync(join(bin, 'git'), gitStub({ changed, ...failures }), 'utf8');
+    writeFileSync(join(bin, 'git'), gitStub(failures), 'utf8');
     chmodSync(join(bin, 'git'), 0o755);
 
     const output = join(directory, 'output');
     const summary = join(directory, 'summary');
+    const calls = join(directory, 'calls');
     writeFileSync(output, '', 'utf8');
     writeFileSync(summary, '', 'utf8');
+    writeFileSync(calls, '', 'utf8');
 
     execFileSync('bash', ['-c', classifierScript(readFileSync(WORKFLOW, 'utf8'))], {
       env: {
@@ -90,12 +100,14 @@ function classify({ event = 'pull_request', changed = '', ...failures } = {}) {
         CHANGED_FIXTURE: changed,
         GITHUB_OUTPUT: output,
         GITHUB_STEP_SUMMARY: summary,
+        GIT_CALLS: calls,
       },
     });
 
     return {
       product: /product=(\w+)/.exec(readFileSync(output, 'utf8'))?.[1] ?? null,
       summary: readFileSync(summary, 'utf8').trim(),
+      calls: readFileSync(calls, 'utf8').trim().split('\n').filter(Boolean),
     };
   } finally {
     rmSync(directory, { recursive: true, force: true });
@@ -145,6 +157,39 @@ describe('the lane classifier', () => {
 
   it('sends a change to the workflow itself to the product lane', () => {
     assert.equal(classify({ changed: '.github/workflows/ci.yml' }).product, 'true');
+  });
+
+  // The whole split rests on one glob. A path that begins with the directory's
+  // name is not a path inside it, and the prefix is where a tidied-up pattern
+  // would stop telling the two apart.
+  it('sends a path that only begins with openspec to the product lane', () => {
+    for (const path of [
+      'openspec-notes/a.md',
+      'openspecial/b.md',
+      'openspec',
+      'openspec.md',
+      'docs/openspec/c.md',
+    ]) {
+      const { product, summary } = classify({ changed: path });
+
+      assert.equal(product, 'true', path);
+      assert.match(summary, /is outside openspec\//);
+    }
+  });
+
+  // `--no-renames` is what makes a file moved out of the record show as an
+  // addition outside it. Dropping it changes nothing a lane assertion can see.
+  it('asks git for the diff the classification depends on', () => {
+    const { calls } = classify({ changed: 'openspec/specs/a/spec.md' });
+
+    const diff = calls.find((call) => call.startsWith('diff '));
+    assert.ok(diff, 'the classifier read no diff');
+    assert.match(diff, /--no-renames/);
+    assert.match(diff, /--name-only/);
+    assert.ok(
+      calls.some((call) => call.startsWith('merge-base ')),
+      'the classifier compared against something other than the merge base',
+    );
   });
 
   it('reads a deletion from the record as a record change', () => {

@@ -245,10 +245,12 @@ install. The Claude Code flow is `/opsx:explore` (optional) → `/opsx:propose` 
   `openspec/`: that a declared requirement is registered in the coverage ledger,
   that a help topic answers from a requirement or principle something still
   declares, that a conformance claim in the record names its excluded criteria,
-  and that `helpRouteCoverage` transcribes the screen inventory. Nothing else
-  reads the record — not the interface-policy checker, not the generated help
-  artifacts, not a suite. A source file may cite a document by path in a
-  comment; it may not open one.
+  and that `helpRouteCoverage` transcribes the screen inventory. Nothing in the
+  build or the suites opens a file under `openspec/` — not the interface-policy
+  checker, not the generated help artifacts, not a test. A source file may cite
+  a document by path in a comment; it may not open one. One other script reaches
+  the record, and it writes: `slef:corpus` regenerates feature 004's reference
+  corpus on demand, and no gate runs it.
 - **That is why a specification change is cheap.** A pull request whose every
   changed path is under `openspec/` runs the formatter and that one script, and
   skips the build, the unit tests, the end-to-end matrix and the preview
