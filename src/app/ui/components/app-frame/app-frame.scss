@@ -453,7 +453,7 @@
 //
 // Its own step rather than the compact one, because what decides it is the
 // bar's own content: the widest set the application has is the workspace's, and
-// in German it asks for 1070px. Left at the compact step the bar wrapped to two
+// in German it asks for 1098px. Left at the compact step the bar wrapped to two
 // rows on a build while the shipyard's stayed at one, and the page under it
 // moved as a Commander opened a build (`$mode-bar-folded-max`, which carries
 // how the width was chosen; Commander request 2026-08-28).

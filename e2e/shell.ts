@@ -94,7 +94,7 @@ export async function openLibrary(page: Page): Promise<void> {
   // asked for the list it is looking at. Pressing the control again would reach
   // through the layer for a button the layer is covering.
   if (!(await layer.isVisible())) {
-    await reachShellAction(page, /^(Open saved build|Gespeicherten Build öffnen)$/);
+    await reachShellAction(page, /^(Open saved build|Gespeicherten Aufbau öffnen)$/);
   }
   await expect(layer).toBeVisible();
 }

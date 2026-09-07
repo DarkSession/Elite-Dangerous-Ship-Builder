@@ -2547,6 +2547,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'equipment.modifications.count':
       'A composition pattern; both variables and the solidus are language-neutral.',
     'equipment.attribute.dps': 'The in-game abbreviation for damage per second, not translated.',
+    'offence.rail.label': 'The same in-game abbreviation, on the status rail’s offence cell.',
     'equipment.value.perSecond': 'The SI form for “per second”, identical in German.',
     'equipment.damage.plasma': 'Plasma is the ordinary German word.',
     'equipment.stats.regen':
@@ -2588,6 +2589,12 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'hullDetail.fact.boost': 'The in-game term, used untranslated in the German community.',
     'hullDetail.slots.group.hardpoint':
       'The in-game term, used untranslated in the German community.',
+    'catalogue.column.hardpoints': 'The same in-game term, over the catalogue’s hardpoint column.',
+    'catalogue.sort.field.hardpoints':
+      'The same in-game term again, on the control that orders the catalogue by it.',
+    'outfitting.category.hardpoint':
+      'The same in-game term, on the filter that shows the ledger’s hardpoints.',
+    'outfitting.group.hardpoint': 'The same in-game term, over that group of the ledger.',
     'anatomy.mount.name':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'shell.beta':
@@ -2622,6 +2629,9 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'slef.diagnostic.code': '"Code" is the ordinary German word.',
     'slef.export.mode.label': '"Format" is the ordinary German word.',
     'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',
+    'equipment.region.loadout':
+      'Loadout is the in-game term for a kit of fitted equipment, and the word the journal event carries. The German catalogue keeps it untranslated, because Ausrüstung already stands for outfitting and for equipment.',
+    'equipment.tab.loadout': 'The same term, on the tab that reaches that region.',
     'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
       'Merc Coins is the in-game currency name and is not translated.',
@@ -2691,8 +2701,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'Two package-supplied identities joined by a separator; the pattern holds no word in either language.',
     'drives.thrusters.boost':
       'The in-game term, used untranslated in the German community — the same decision already recorded for hullDetail.fact.boost, which names this very reading. "Schub" is thrust, and this figure is a speed.',
-    'drives.fsd.sco':
-      'The in-game abbreviation for Supercruise Overcharge, printed on the drive itself and not translated; the words behind it are carried under drives.fsd.sco.description.',
     'help.section.faq':
       'FAQ is the same borrowed abbreviation in German, and is what a German reader scans a help modal for.',
   },

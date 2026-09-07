@@ -27,7 +27,7 @@ $mode-wide-max: 63.9375rem; // the last width below the wide mode
 // build (Commander request 2026-08-28).
 //
 // The figure is what the **widest shipped language** needs, not what English
-// needs. German asks for 1070px of controls against English's 841, so a step
+// needs. German asks for 1098px of controls against English's 850, so a step
 // chosen from English would leave a German bar wrapping at exactly the widths
 // this exists to fix — a breakpoint that only works in one language is not a
 // breakpoint (constitution VI). Measured at 1152, where the German bar first
