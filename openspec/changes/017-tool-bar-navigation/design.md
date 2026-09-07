@@ -171,6 +171,18 @@ publishing and autosaving. A loadout in the address outranks the restored one, a
 link leaves the restored loadout on the bench. Publishing starts last, so the restored loadout
 cannot overwrite the fragment the page arrived with.
 
+### The sheet's own bar keeps the way back, not the mark
+
+A hull below the wide width is drawn as a sheet over the shipyard, and canvas `1b` gives that
+sheet a bar of its own: the way back, the layer's name and the line under it, with the
+insignia and the identity hidden. The mark is therefore not on that bar, and the entry point
+is reached from the shipyard the arrow leads back to.
+
+The alternative is to draw the mark beside the arrow. It is the one place a 44px press box
+has to be found on a 390px row that already carries both tool tabs, and it would mean the
+sheet's bar drawing something no canvas draws on it. The exception is stated in the
+requirement rather than left to the stylesheet.
+
 ### Starting an empty bench is not undoable
 
 The undo tape is cleared, as it is when a loadout is opened from a record or a link: the

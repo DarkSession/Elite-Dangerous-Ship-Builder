@@ -5,8 +5,10 @@ import {
   type RecordDraft,
 } from '../../domain/records/local-record.serializer';
 import {
+  isEquipmentRecord,
   isShipRecord,
   type LocalRecord,
+  type RecordTool,
   type StoredRecordEntry,
 } from '../../domain/records/local-record';
 import { EDNB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
@@ -133,18 +135,22 @@ export class LocalRecordRepository {
   }
 
   /**
-   * The unnamed record already holding exactly this modelled state, if there is
+   * The unnamed record already holding exactly this stored state, if there is
    * one.
    *
-   * The comparison is the serialized snapshot — the same value the baseline
+   * The comparison is the serialized payload — the same value the baseline
    * fingerprint uses — so "identical" means what a Commander would mean by it
    * and not what two object references would. Named records are excluded
    * because taking one over would make autosave write to it.
    *
+   * The tool is asked for rather than inferred. A fingerprint is a build's or a
+   * loadout's, the two hold different content, and a record of the other tool is
+   * never a match: asking would compare a loadout to something that has none.
+   *
    * Ties go to the oldest entry, so repeating an ingress lands on the record a
    * Commander has had longest rather than shuffling between duplicates.
    */
-  findUnnamedMatching(fingerprint: string): string | null {
+  findUnnamedMatching(fingerprint: string, tool: RecordTool): string | null {
     const listed = this.list();
     if (!listed.ok) {
       return null;
@@ -154,9 +160,11 @@ export class LocalRecordRepository {
       .filter((entry) => entry.available && entry.record.kind === 'working')
       .map((entry) => (entry.available ? entry.record : null))
       .filter((record): record is LocalRecord => record !== null)
-      // The fingerprint is a build's. A loadout record is never a match for
-      // one, and asking would compare a build to something that has no build.
-      .filter((record) => isShipRecord(record) && JSON.stringify(record.build) === fingerprint)
+      .filter((record) =>
+        tool === 'ship'
+          ? isShipRecord(record) && JSON.stringify(record.build) === fingerprint
+          : isEquipmentRecord(record) && JSON.stringify(record.loadout) === fingerprint,
+      )
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 
     return matches[0]?.id ?? null;

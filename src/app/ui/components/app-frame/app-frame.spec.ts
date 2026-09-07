@@ -123,7 +123,64 @@ describe('AppFrame', () => {
     expect(marks.map((node) => node.className)).toEqual(['frame__title', 'frame__beta']);
   });
 
-  it('names the tool a Commander is in, and does not offer it as a way anywhere', () => {
+  it('draws the insignia as a link where it is given a destination', () => {
+    // The application gives it one on every screen. The link is named by the
+    // screen it reaches and the mark carries no alternative text, so the mark
+    // is never announced as a picture of nothing (017/FR-001).
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('home', {
+      id: 'start',
+      label: 'Nav Beacon',
+      href: '/',
+      current: false,
+    });
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const insignia = element.querySelector('a.frame__flag-home');
+
+    expect(insignia?.getAttribute('href')).toBe('/');
+    expect(insignia?.textContent?.trim()).toBe('Nav Beacon');
+    // The mark is inside the link rather than being it, so the press box takes
+    // the target baseline and the drawing keeps its own size (011/FR-012).
+    expect(insignia?.querySelector('img.frame__flag')?.getAttribute('alt')).toBe('');
+  });
+
+  it('draws the insignia as decoration where it is given none', () => {
+    // The component preview catalogue composes the frame with no destination.
+    // A picture that leads nowhere is a picture, not a control.
+    const element = render(null);
+
+    expect(element.querySelector('.frame__flag-home')).toBeNull();
+    expect(element.querySelector('img.frame__flag')).not.toBeNull();
+  });
+
+  it('emits the insignia as an intent rather than navigating itself', () => {
+    // The frame never decides what activating it means: the application answers
+    // a click that leads to the address already open with nothing, and the
+    // preview catalogue lets the browser follow the link (017/FR-002).
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('home', {
+      id: 'start',
+      label: 'Nav Beacon',
+      href: '/',
+      current: false,
+    });
+    fixture.detectChanges();
+
+    let followed: string | null = null;
+    fixture.componentInstance.navigationSelected.subscribe(({ entry }) => {
+      followed = entry.href;
+    });
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('.frame__flag-home')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(followed).toBe('/');
+  });
+
+  it('names the tool a Commander is in, and offers it as well', () => {
     const fixture = TestBed.createComponent(AppFrame);
     fixture.componentRef.setInput('tools', [
       { id: 'ship', label: 'Ship', href: '/ships', current: true },
@@ -138,16 +195,38 @@ describe('AppFrame', () => {
     // "Primary navigation".
     expect(region?.getAttribute('aria-label')).toBe('Tools');
 
-    const current = element.querySelector('.frame__tool--current');
-    expect(current?.tagName).toBe('SPAN');
-    expect(current?.textContent?.trim()).toBe('Ship');
-    // The state is in the tree, not only in the amber the stylesheet draws.
-    expect(current?.getAttribute('aria-current')).toBe('true');
+    // Every tab is a link, so re-entering the open tool is one press on the bar
+    // a Commander is already reading (017/FR-003).
+    const tabs = [...element.querySelectorAll('a.frame__tool')];
+    expect(tabs.map((tab) => tab.getAttribute('href'))).toEqual(['/ships', '/equipment']);
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['Ship', 'On foot']);
 
-    const others = [...element.querySelectorAll('a.frame__tool')];
-    expect(others).toHaveLength(1);
-    expect(others[0].getAttribute('href')).toBe('/equipment');
-    expect(others[0].textContent?.trim()).toBe('On foot');
+    const current = element.querySelector('.frame__tool--current');
+    expect(current).toBe(tabs[0]);
+    // The state is in the tree, not only in the amber the stylesheet draws, and
+    // only the open tool carries it.
+    expect(tabs.map((tab) => tab.getAttribute('aria-current'))).toEqual(['true', null]);
+  });
+
+  it('emits the open tool with the re-entry the registry declared for it', () => {
+    // The frame hands the id back untouched. What re-entering a tool means is
+    // the application's answer, not the bar's (017/FR-004).
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('tools', [
+      { id: 'foot', label: 'On foot', href: '/equipment', current: true, reentry: 'equipment.new' },
+    ]);
+    fixture.detectChanges();
+
+    let chosen: { href: string; reentry?: string } | null = null;
+    fixture.componentInstance.toolSelected.subscribe(({ entry }) => {
+      chosen = { href: entry.href, reentry: entry.reentry };
+    });
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('a.frame__tool')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(chosen).toEqual({ href: '/equipment', reentry: 'equipment.new' });
   });
 
   it('leaves the tool region out of the document where there are no tools', () => {

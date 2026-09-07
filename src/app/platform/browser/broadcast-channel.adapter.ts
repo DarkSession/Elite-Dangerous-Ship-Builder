@@ -1,9 +1,22 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
+import type { RecordTool } from '../../domain/records/local-record';
 import { EDNB_BROADCAST_CHANNEL } from '../storage/storage-keys';
 
 /** What one page tells the others about its persistence state. */
 export type PersistenceBroadcast =
-  | { readonly kind: 'working-claim'; readonly workingRecordId: string; readonly pageNonce: string }
+  | {
+      readonly kind: 'working-claim';
+      /**
+       * Which tool the claimed record belongs to.
+       *
+       * Absent from a claim made by a page running a version that held one
+       * record per tab, which was the ship tool's. A reader treats it as that
+       * rather than as a claim on nothing (017/FR-010).
+       */
+      readonly tool?: RecordTool;
+      readonly workingRecordId: string;
+      readonly pageNonce: string;
+    }
   | { readonly kind: 'record-written'; readonly recordId: string; readonly revisionId: string }
   | { readonly kind: 'record-deleted'; readonly recordId: string };
 

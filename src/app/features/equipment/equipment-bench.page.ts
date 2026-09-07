@@ -15,8 +15,11 @@ import {
   SaveConflictService,
   type ConflictChoice,
 } from '../../application/build-library/save-conflict.service';
+import { TabOwnershipCoordinator } from '../../application/build-library/tab-ownership.coordinator';
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
+import { LoadoutAutosaveService } from '../../application/equipment/loadout-autosave.service';
 import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
+import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
 import { LoadoutPresenter } from '../../application/equipment/loadout.presenter';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import type { EditTarget } from '../../domain/equipment/loadout/loadout-edit';
@@ -24,12 +27,14 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
+import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { relationId } from '../../ui/a11y/text-equivalence';
 import type { IdentityCommit, IdentityField } from '../../ui/outfitting/ship-identity-fields';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { TabGroup, type TabItem } from '../../ui/components/tab-group/tab-group';
 import { observeBenchComposition } from '../../ui/equipment/bench-composition';
+import { PersistenceStatus, type StatusActionId } from '../build-workspace/persistence-status';
 import {
   SaveBuildDialog,
   type SaveRequest,
@@ -80,6 +85,7 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
     LoadoutLedger,
     MaterialRequirements,
     ModificationChooser,
+    PersistenceStatus,
     SaveBuildDialog,
     StatusNotice,
     SuitGate,
@@ -88,6 +94,13 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
   templateUrl: './equipment-bench.page.html',
   styleUrl: './equipment-bench.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // What persistence is doing is state, not decoration. The workspace states it
+  // the same way, and for the same reason: it is the one thing a test can read
+  // to know a write has landed without reaching into storage and re-deriving
+  // the rule it is checking.
+  host: {
+    '[attr.data-persistence]': 'store.persistence()',
+  },
 })
 export class EquipmentBenchPage {
   readonly #messages = inject(MessageService);
@@ -101,6 +114,10 @@ export class EquipmentBenchPage {
   readonly #invalidation = inject(RecordInvalidationService);
   readonly #links = inject(LoadoutLinkCoordinator);
   readonly #linkErrors = inject(LinkErrorMapper);
+  readonly #ownership = inject(TabOwnershipCoordinator);
+  readonly #autosave = inject(LoadoutAutosaveService);
+  readonly #open = inject(LoadoutOpenService);
+  readonly #location = inject(HistoryLocationAdapter);
 
   readonly store = inject(LoadoutStore);
   readonly presenter = inject(LoadoutPresenter);
@@ -181,15 +198,58 @@ export class EquipmentBenchPage {
   );
 
   constructor() {
+    // Ownership first, then restoration, then saving, then the address. The
+    // order is the workspace's, and it is the same order for the same reasons:
+    // this page has to know which record is its own before it can restore from
+    // it, and has to have restored before a loadout in the address can outrank
+    // what was restored (017/FR-009).
+    const heldRecordId = this.#ownership.claim('equipment');
+    this.#ownership.onFork('equipment', () => this.#autosave.adoptForkedRecord());
+
+    // A page with no record behind it has nothing to restore, which is the
+    // ordinary state of a fresh tab rather than a failure. Opening the record
+    // decides whether it becomes this page's autosave target: an unnamed one is
+    // taken over, a named one is only held (001/FR-008).
+    if (!this.store.hasLoadout() && heldRecordId !== null) {
+      this.#open.open(heldRecordId);
+    }
+
+    const stopTracking = this.#ownership.track(this.store);
+    const stopOwnership = this.#ownership.listen();
+    const stopAutosave = this.#autosave.start();
+    const stopInvalidation = this.#invalidation.listen();
+
     // Read the address before publishing to it: a Commander who arrived on a
     // loadout link gets that loadout, and the bench then keeps the fragment
     // showing whatever is actually on it (FR-020, 013
-    // contracts/equipment-loadout-link.md).
+    // contracts/equipment-loadout-link.md). A link that is refused leaves the
+    // restored loadout where it is and says why (017/FR-009).
+    this.#links.ingest(this.#location.fragment());
     const stopListening = this.#links.listen();
     const stopPublishing = this.#links.start();
+
     inject(DestroyRef).onDestroy(() => {
+      // A last best-effort write on the way out, so leaving the bench for
+      // another screen cannot cost a choice.
+      this.#autosave.flush();
       stopPublishing();
       stopListening();
+      stopAutosave();
+      stopInvalidation();
+      stopOwnership();
+      stopTracking();
+    });
+
+    // A record discarded in another tab pauses this page's saving rather than
+    // being silently recreated by the next autosave. The loadout stays on the
+    // bench: nobody here decided anything (017/FR-008).
+    effect(() => {
+      const deleted = this.#invalidation.deleted();
+      const mine = this.store.autosaveRecordId();
+      if (mine !== null && deleted.includes(mine)) {
+        this.#autosave.pauseAfterExternalDelete();
+        this.#invalidation.acknowledgeDeleted(mine);
+      }
     });
 
     // Canvas 1a and 1b put the loadout's own name where every screen's name
@@ -284,6 +344,25 @@ export class EquipmentBenchPage {
     return failure === null ? null : this.#linkErrors.describe(failure, 'equipment');
   });
 
+  /** Whether saving is stopped until the Commander asks for it again. */
+  readonly autosavePaused = this.#autosave.paused;
+
+  /**
+   * Acts on what the status offered.
+   *
+   * Managing records is a navigation the library owns, so the status only says
+   * that it is the thing to do.
+   */
+  actOnPersistence(action: StatusActionId): void {
+    if (action === 'resume') {
+      this.#autosave.resume();
+      return;
+    }
+    if (action === 'retry') {
+      this.#autosave.flush();
+    }
+  }
+
   /** Which identity field the command bar has open for editing, or none. */
   readonly editingIdentity = signal<IdentityField | null>(null);
 
@@ -323,7 +402,7 @@ export class EquipmentBenchPage {
     this.editingIdentity.set(null);
     const name = commit.value?.trim() ?? '';
     if (name === '' || commit.field !== 'name') return;
-    if (this.store.source() === null) {
+    if (this.store.sourceNamed() === null) {
       this.#saveName.set(name);
       this.#saveOpen.set(true);
       return;
@@ -353,7 +432,7 @@ export class EquipmentBenchPage {
    * than two (013 contracts/loadout-persistence.md).
    */
   readonly saveSource = computed<SaveSource | null>(() => {
-    const source = this.store.source();
+    const source = this.store.sourceNamed();
     if (source === null) return null;
     const record = this.#library.find(source.recordId);
     if (record === null || record.name === null) return null;
@@ -437,8 +516,13 @@ export class EquipmentBenchPage {
 
     this.#saving.set(true);
     const now = this.#clock.timestamp();
-    const source = this.store.source();
+    const source = this.store.sourceNamed();
     const payload = { tool: 'equipment', loadout } as const;
+    // The unnamed record these changes have been autosaved into, if any. Saving
+    // consumes it: replacing a saved loadout removes it once that write has
+    // succeeded, and naming the loadout promotes it in place, so a save never
+    // leaves a copy of itself behind (001/FR-008, 001/FR-009).
+    const held = this.store.autosaveRecordId();
 
     const result =
       overwrite && source !== null
@@ -451,9 +535,11 @@ export class EquipmentBenchPage {
               payload,
               now,
             },
-            null,
+            held,
           )
-        : await this.#named.createNamed({ name, note, payload, now });
+        : held !== null
+          ? await this.#named.nameHeldRecord({ recordId: held, name, note, payload, now })
+          : await this.#named.createNamed({ name, note, payload, now });
 
     this.#saving.set(false);
 
@@ -497,9 +583,16 @@ export class EquipmentBenchPage {
     );
   }
 
-  /** The loadout on the bench now belongs to the save that was just written. */
+  /**
+   * The loadout on the bench now belongs to the save that was just written.
+   *
+   * And to no unnamed record: the save consumed the one the changes were
+   * autosaved into, and autosave forks a fresh one at the next change rather
+   * than writing into the save a Commander just made (001/FR-008).
+   */
   #adoptSavedRecord(recordId: string, revisionId: string): void {
-    this.store.named({ recordId, baseRevisionId: revisionId });
+    this.store.markSaved({ recordId, baseRevisionId: revisionId });
+    this.store.setAutosaveRecordId(null);
     this.#invalidation.announceWrite(recordId, revisionId);
   }
 

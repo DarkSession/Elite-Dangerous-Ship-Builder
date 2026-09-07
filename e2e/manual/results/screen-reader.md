@@ -142,3 +142,29 @@ projects.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 19   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 19   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 19   | As stated in the protocol | —      | not run |
+
+## The tool bar's own controls (feature 017)
+
+Step 20 covers the mark and the tool tabs. Three of the four activations it
+walks are deliberately silent — the mark on the entry point, the open tool's
+tab where its re-entry already stands — and whether silence reads as "nothing
+to do here" or as "this control is broken" is the judgment no snapshot of the
+accessibility tree can make.
+
+Each configuration is its own observation for the usual reason: the deck folds
+between the wide and compact modes, so what a reader walks between the mark and
+the tabs is a different bar at each width.
+
+The automated coverage that does exist for the same requirements is
+`e2e/tool-bar-navigation.spec.ts` and `e2e/interface-foundations.spec.ts` —
+the mark asserted to carry an address and an accessible name on every screen,
+the open tool asserted to be a link carrying `aria-current`, every re-entry
+followed to the screen it leads to, an activation that must change neither the
+screen nor the address, and an axe scan of the bar and of the emptied bench in
+all ten projects.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 20   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 20   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 20   | As stated in the protocol | —      | not run |

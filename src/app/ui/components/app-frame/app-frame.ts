@@ -36,13 +36,22 @@ export interface NavigationEntry {
 /**
  * One tool the application carries.
  *
- * The same shape as a navigation entry, and read differently: `current` means
- * the open route belongs to this tool, and the frame then names it rather than
- * offering it. It is a separate type because the two lists mean different
- * things — which screen, and which tool — and one of them will grow fields the
- * other has no use for.
+ * A navigation entry read differently: `current` means the open route belongs
+ * to this tool, which the frame exposes as a state and draws as the accent
+ * wash. The tab is offered either way — a Commander in a tool can re-enter it —
+ * so `current` decides how the tab is announced, not whether it is a control.
  */
-export type ToolEntry = NavigationEntry;
+export interface ToolEntry extends NavigationEntry {
+  /**
+   * What activating this tab does where its own tool is already open.
+   *
+   * An opaque action id the application dispatches, the way it dispatches a
+   * shell action, or absent where re-entering means opening `href`. The frame
+   * hands it back untouched: it knows a tab was activated and nothing about
+   * what re-entering a tool means (017/FR-004).
+   */
+  readonly reentry?: string;
+}
 
 /** One shell action. Always has a text name — never an icon alone. */
 export interface ShellAction {
@@ -214,8 +223,12 @@ export class AppFrame {
    *
    * Every canvas puts the mark on the leading edge of the bar, and the
    * 2026-08-26 revision put it where the outfitting bar's `SHIPYARD` chip used
-   * to be. So the mark carries that trip, and the word is not drawn twice. A
-   * screen that supplies none draws the mark as the decoration it is.
+   * to be. So the mark carries that trip, and the word is not drawn twice.
+   *
+   * The application supplies one on every screen, so the deck holds the same
+   * items wherever a Commander is. A surface that carries no destination at
+   * all — the component preview catalogue is one — draws the mark as the
+   * decoration it is.
    */
   readonly home = input<NavigationEntry | null>(null);
 
@@ -255,8 +268,11 @@ export class AppFrame {
   readonly navigationSelected = output<{ entry: NavigationEntry; event: MouseEvent }>();
 
   /**
-   * A tool was chosen. Only ever one the Commander is not already in: the
-   * current tool is drawn as text and has nothing to activate.
+   * A tool was chosen, including the one a Commander is already in.
+   *
+   * The frame does not decide what that means. A tool the Commander is not in
+   * opens at its own address; the one they are in re-enters, which is the
+   * application's answer and not the bar's (017/FR-003, FR-004).
    */
   readonly toolSelected = output<{ entry: ToolEntry; event: MouseEvent }>();
 

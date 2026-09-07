@@ -12,6 +12,12 @@ screen stays as it is, the address stays as it is, and nothing enters history. I
 be the only way to any other screen, because every tool the application serves stays
 reachable from the tool bar.
 
+A screen the shell draws as a sheet over another one is the one exception. Where the shell
+draws the sheet's own bar — the way back to the screen the sheet was opened over — the way to
+the entry point MAY be absent from that bar, and MUST stand on the screen underneath. The
+sheet's bar MUST still carry the way back, so the entry point is one screen away rather than
+unreachable.
+
 Source: 017/FR-001, 017/FR-002, 017/SC-001.
 
 #### Scenario: A Commander is inside a tool
@@ -25,6 +31,13 @@ Source: 017/FR-001, 017/FR-002, 017/SC-001.
 - **WHEN** a Commander activates the way to the entry point while the entry point is open
 - **THEN** the screen and the address are unchanged
 - **AND** nothing is added to history
+
+#### Scenario: A screen drawn as a sheet over another
+
+- **WHEN** a Commander reads a screen whose bar is the sheet's own — the way back to the screen
+  it was opened over
+- **THEN** the way back is offered
+- **AND** the way to the entry point stands on the screen it leads back to
 
 #### Scenario: It is opened in a new tab
 

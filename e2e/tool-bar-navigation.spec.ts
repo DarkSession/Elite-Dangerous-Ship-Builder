@@ -1,0 +1,214 @@
+import { expect, test, type Page } from '@playwright/test';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
+import { buildStockHull, openLibrary } from './shell';
+
+/**
+ * Getting back, and starting again, from the bar.
+ *
+ * Feature 017's journeys. Three of them: the mark leads to the entry point from
+ * every screen, a tool's own tab re-enters the tool a Commander is already in,
+ * and the bench keeps the loadout on it the way the workspace keeps a build.
+ */
+
+/** The mark on the leading edge of the tool deck. */
+const mark = (page: Page) => page.locator('.frame__flag-home');
+
+/** The tool tabs, in the order the registry carries them. */
+const tools = (page: Page) => page.locator('.frame__tools .frame__tool');
+
+/** The entry point, whatever else the address carries. */
+async function expectEntryPoint(page: Page): Promise<void> {
+  await expect(page).toHaveURL(/\/(#.*)?$/);
+  await expect(page.getByRole('main').getByRole('heading').first()).toHaveText(
+    'Tools for Commanders',
+  );
+}
+
+/**
+ * Whether this screen is drawn as a sheet, with a bar of its own.
+ *
+ * Waited for rather than read once. The sheet's bar is published by the screen's
+ * own effect, so it arrives after that route's chunk has loaded and run — and a
+ * question asked before then is answered by the shipyard's bar, which is still
+ * the one on screen.
+ */
+async function sheetBar(page: Page): Promise<boolean> {
+  let drawn = true;
+  await expect(page.locator('.frame__return'))
+    .toBeVisible({ timeout: 5_000 })
+    .catch(() => {
+      drawn = false;
+    });
+  return drawn;
+}
+
+/** Wears a suit from the gate, which is what an empty bench offers. */
+async function wearSuit(page: Page, name: string): Promise<void> {
+  await page.locator('.gate__suits .choice').filter({ hasText: name }).click();
+  await expect(page.locator('.gate')).toHaveCount(0);
+}
+
+/** Waits for the bench to have written what is on it, rather than for a delay. */
+async function autosaved(page: Page): Promise<void> {
+  await expect(page.locator('ednb-equipment-bench-page')).toHaveAttribute(
+    'data-persistence',
+    'saved',
+  );
+}
+
+test.describe('the mark leads to the entry point', () => {
+  test('from a hull, the workspace and the bench (017/FR-001)', async ({ page }) => {
+    // One way back, in the same place on every screen, whichever tool a
+    // Commander is in and however deep they are in it.
+    await page.goto('/ships/Anaconda');
+    await expect(page.getByRole('main')).toBeVisible();
+    if (await sheetBar(page)) {
+      // The one exception, stated in the requirement: below the wide width a
+      // hull is a sheet over the shipyard, and canvas 1b gives it a bar of its
+      // own — the way back, and no mark beside it. The entry point stands on
+      // the screen that arrow leads to.
+      await expect(mark(page)).toBeHidden();
+      await page.locator('.frame__return-back').click();
+      await expect(page).toHaveURL(/\/ships$/);
+    }
+    await expect(mark(page)).toHaveAttribute('href', '/');
+    await mark(page).click();
+    await expectEntryPoint(page);
+
+    await page.goto('/ships/Anaconda');
+    await buildStockHull(page, 'Build');
+    await expect(page).toHaveURL(/\/outfitting#b\./);
+    await mark(page).click();
+    await expectEntryPoint(page);
+    // The address the workspace published goes with the screen it described.
+    expect(new URL(page.url()).hash).toBe('');
+
+    await page.goto('/equipment');
+    await expect(page.locator('.gate')).toBeVisible();
+    await mark(page).click();
+    await expectEntryPoint(page);
+  });
+
+  test('and answers with nothing on the entry point itself (017/FR-002)', async ({ page }) => {
+    // Drawn and offered there as everywhere else — the browser states where it
+    // goes and a new tab opens it — and a plain press changes nothing.
+    await page.goto('/');
+    await expectEntryPoint(page);
+
+    const heading = page.getByRole('main').getByRole('heading').first();
+    await mark(page).click();
+
+    await expectEntryPoint(page);
+    // The same screen, not a second copy of it opened over the first.
+    await expect(heading).toBeVisible();
+  });
+});
+
+test.describe('a tool’s tab re-enters the tool', () => {
+  test('opens the list of ships from a hull and from the workspace (017/FR-004)', async ({
+    page,
+  }) => {
+    await page.goto('/ships/Anaconda');
+    await expect(page.getByRole('main')).toBeVisible();
+    await tools(page).first().click();
+    await expect(page).toHaveURL(/\/ships$/);
+
+    await page.goto('/ships/Anaconda');
+    await buildStockHull(page, 'Build');
+    await expect(page).toHaveURL(/\/outfitting#b\./);
+    await tools(page).first().click();
+
+    // The build is not discarded by leaving it: the record it autosaves into
+    // keeps it (017/FR-004).
+    await expect(page).toHaveURL(/\/ships$/);
+    expect(
+      await page.evaluate(
+        () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
+      ),
+    ).toBeGreaterThan(0);
+  });
+
+  test('changes nothing where the list of ships is already open (017/FR-005)', async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.getByRole('main')).toBeVisible();
+    const current = tools(page).first();
+
+    // Offered as a link, and marked as the tool being read: both, at once
+    // (017/FR-003, 017/SC-002).
+    await expect(current).toHaveAttribute('href', '/ships');
+    await expect(current).toHaveAttribute('aria-current', 'true');
+
+    await current.click();
+
+    await expect(page).toHaveURL(/\/ships$/);
+    await expect(page.getByRole('main')).toBeVisible();
+  });
+
+  test('leaves an empty bench when the bench is open (017/FR-006)', async ({ page }) => {
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await expect(page).toHaveURL(/\/equipment#e\./);
+    await autosaved(page);
+
+    await tools(page).nth(1).click();
+
+    // Canvas 2a and 2b: the suit gate stands and nothing was asked.
+    await expect(page.locator('.gate')).toBeVisible();
+    await expect(page).toHaveURL(/\/equipment$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+});
+
+test.describe('the bench keeps the loadout on it', () => {
+  test('restores it after a reload, and lets a Commander start again (017/FR-007)', async ({
+    page,
+  }) => {
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await autosaved(page);
+
+    // Nothing was saved and nothing was asked for: what is restored is what
+    // autosave wrote (017/SC-003).
+    await page.goto('/equipment');
+    await expect(page.locator('.gate')).toHaveCount(0);
+    await expect(page.locator('ednb-equipment-bench-page')).toContainText('Dominator Suit');
+
+    // And starting again leaves what was on the bench where it is: it is listed
+    // as its own record, and opening it puts it back.
+    await tools(page).nth(1).click();
+    await expect(page.locator('.gate')).toBeVisible();
+
+    await openLibrary(page);
+    const library = page.getByRole('dialog', { name: 'Saved builds' });
+    const row = library.getByRole('button', { name: /Dominator Suit/i }).first();
+    await expect(row).toContainText('Equipment Builder');
+
+    await expect(async () => {
+      await row.click({ timeout: 2_000 });
+      await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
+    await library.getByRole('button', { name: 'Open in outfitting', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/equipment(#|$)/);
+    await expect(page.locator('.gate')).toHaveCount(0);
+    await expect(page.locator('ednb-equipment-bench-page')).toContainText('Dominator Suit');
+  });
+});
+
+test.describe('the bar with the open tool drawn as a control', () => {
+  test('scans clean at every layout profile, in both engines', async ({ page }, testInfo) => {
+    // The states this change adds: a tab that is a link and current at once,
+    // and the empty bench that re-entering the bench leaves behind.
+    await page.goto('/ships');
+    await expect(page.getByRole('main')).toBeVisible();
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'tool-bar-current' });
+
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await autosaved(page);
+    await tools(page).nth(1).click();
+    await expect(page.locator('.gate')).toBeVisible();
+
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'bench-after-re-entry' });
+  });
+});

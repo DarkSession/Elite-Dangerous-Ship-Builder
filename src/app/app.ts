@@ -12,7 +12,11 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { MessageService } from './i18n/message.service';
-import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
+import {
+  AppNavigation,
+  EQUIPMENT_REENTRY_ACTION,
+  NAVIGATION_ROUTES,
+} from './features/shared/app-navigation';
 import { BuildLibraryPage } from './features/build-library/build-library.page';
 import { LibraryPresence } from './features/build-library/library-presence';
 import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
@@ -23,6 +27,7 @@ import { ImportDialog } from './features/slef/import-build-layer/import.dialog';
 import { AnnouncementService } from './ui/announcements/announcement.service';
 import {
   AppFrame,
+  type NavigationEntry,
   type ToolEntry,
   type ShellAction,
   type ShellStatus,
@@ -30,6 +35,7 @@ import {
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { RenderingTarget } from './platform/browser/rendering-target';
+import { EmptyBenchService } from './application/equipment/empty-bench.service';
 import { LoadoutImportPresenter } from './application/equipment/loadout-import.presenter';
 import { Layer } from './ui/components/layer/layer';
 
@@ -89,6 +95,7 @@ export class App {
   readonly #messages = inject(MessageService);
   readonly #slef = inject(SlefStore);
   readonly #loadoutImport = inject(LoadoutImportPresenter);
+  readonly #emptyBench = inject(EmptyBenchService);
   readonly #active = inject(ActiveBuildStore);
   readonly help = inject(HelpPresenter);
   /**
@@ -113,10 +120,10 @@ export class App {
    * 2026-09-04). `Location.path()` answers before the router has run, in the
    * browser and in the prerender alike.
    */
-  readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.catalogue);
+  readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.start);
 
-  /** Where the bar's insignia goes: the shipyard, from every screen but itself. */
-  readonly home = computed(() => this.#navigation.home(this.#path()));
+  /** Where the bar's insignia goes: the entry point, from every screen. */
+  readonly home = computed(() => this.#navigation.home());
 
   /** The tools the shell names, with the open route's own marked as current. */
   readonly tools = computed(() => this.#navigation.tools(this.#path()));
@@ -406,8 +413,15 @@ export class App {
    * is the one thing navigating between screens must never do. Modified clicks
    * — new tab, new window, download — are left to the browser, because that is
    * what the reader asked for.
+   *
+   * A plain click on a link that leads to the address already open is answered
+   * with nothing: no navigation, no history entry, no scroll of a page that did
+   * not change. The link is still a link — the browser states where it goes, a
+   * new tab opens it and its address copies — which is what the entry keeps by
+   * being drawn on every screen rather than taken away where it leads
+   * (017/FR-002, FR-005).
    */
-  navigateFromShell({ entry, event }: { entry: ToolEntry; event: MouseEvent }): void {
+  navigateFromShell({ entry, event }: { entry: NavigationEntry; event: MouseEvent }): void {
     if (event.defaultPrevented || event.button !== 0) {
       return;
     }
@@ -415,7 +429,36 @@ export class App {
       return;
     }
     event.preventDefault();
+    if (this.#navigation.alreadyOpen(entry.href, this.#path())) {
+      return;
+    }
     void this.#router.navigateByUrl(entry.href);
+  }
+
+  /**
+   * Follows a tool's tab, or re-enters the tool a Commander is already in.
+   *
+   * Every tab is a link and every tab is offered, so this is asked about the
+   * open tool as well as the others. The tool a Commander is not in opens at
+   * its own address. The one they are in re-enters by the action the registry
+   * declares with it — the bench clears for the next loadout — and, where the
+   * tool declares none, by opening its own address, which is how a build or a
+   * hull returns to the list of ships and how the list itself answers with
+   * nothing (017/FR-003, FR-004, FR-005).
+   */
+  selectTool({ entry, event }: { entry: ToolEntry; event: MouseEvent }): void {
+    if (event.defaultPrevented || event.button !== 0) {
+      return;
+    }
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    if (entry.current === true && entry.reentry !== undefined) {
+      event.preventDefault();
+      this.selectAction(entry.reentry);
+      return;
+    }
+    this.navigateFromShell({ entry, event });
   }
 
   /** Shell actions are navigation intents; the frame never navigates itself. */
@@ -448,6 +491,12 @@ export class App {
       } else {
         this.#slef.openLayer('import');
       }
+      return;
+    }
+    if (id === EQUIPMENT_REENTRY_ACTION) {
+      // The bench is what this clears, and the application layer is how the
+      // shell reaches it: the frame draws tabs and imports no screen.
+      this.#emptyBench.start();
       return;
     }
     if (id === HELP_ACTION) {

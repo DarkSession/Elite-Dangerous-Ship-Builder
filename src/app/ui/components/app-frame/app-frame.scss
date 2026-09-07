@@ -130,8 +130,8 @@
 }
 
 // The tool a Commander is in: the accent wash, the accent ink, and the canvas's
-// underline. It is a word rather than a link, so none of this is a hover or a
-// press state.
+// underline. It is a link like the others and this is none of its states: it
+// says which tool the screen belongs to, whatever the pointer is doing.
 //
 // A wash rather than the ground the plate already carries: one plate means a
 // fill of that ground would be no fill at all.
@@ -168,7 +168,10 @@
 }
 
 @media (hover: hover) {
-  a.frame__tool:hover {
+  // The tool a Commander is in keeps its accent ink under the pointer. The
+  // hover ink is a step down from it, so a current tab that took it would
+  // announce being hovered by looking less current.
+  a.frame__tool:not(.frame__tool--current):hover {
     color: var(--ednb-text-accent);
   }
 }

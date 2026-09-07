@@ -1,22 +1,22 @@
 import { Injectable, Injector, inject } from '@angular/core';
+import { WorkingRecordAutosave } from '../build-library/working-record.autosave';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
-import { ActiveBuildStore } from '../active-build/active-build.store';
-import { WorkingRecordAutosave } from './working-record.autosave';
+import { LoadoutStore } from './loadout.store';
 
 /**
- * Keeping this page's build recoverable.
+ * Keeping the loadout on this page's bench recoverable.
  *
- * The shared autosave, bound to the ship tool's own store. Everything it does
- * is in `WorkingRecordAutosave`; what is here is which work it keeps.
+ * The shared autosave, bound to the bench's own store. Everything it does is in
+ * `WorkingRecordAutosave`; what is here is which work it keeps.
  */
 @Injectable({ providedIn: 'root' })
-export class AutosaveService extends WorkingRecordAutosave {
+export class LoadoutAutosaveService extends WorkingRecordAutosave {
   constructor() {
     super(
-      inject(ActiveBuildStore),
+      inject(LoadoutStore),
       inject(LocalRecordRepository),
       inject(PageLifecycleAdapter),
       inject(UuidAdapter),

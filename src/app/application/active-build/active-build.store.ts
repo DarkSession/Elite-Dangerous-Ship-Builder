@@ -3,15 +3,17 @@ import type { PartialEngineeringFailure } from '../../domain/ships/build/build-i
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildSnapshotV1 } from '../../domain/ships/build/build-snapshot';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
-import { baselineFingerprint, isDirty } from '../../domain/ships/build/build-fingerprint';
+import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
+import { isDirty } from '../../domain/records/record-fingerprint';
 import type {
   ActiveBuildState,
   BuildCandidate,
   BuildProvenance,
   LinkPublicationState,
   NamedSource,
-  PersistenceStatus,
 } from './active-build.models';
+import type { PersistenceStatus, WorkingRecordSubject } from '../build-library/working-record.port';
+import type { RecordPayload } from '../../domain/records/local-record.serializer';
 
 /**
  * The one live build, and everything the application knows about it.
@@ -28,7 +30,7 @@ import type {
  * loadout object alone could not: the reference never changes.
  */
 @Injectable({ providedIn: 'root' })
-export class ActiveBuildStore {
+export class ActiveBuildStore implements WorkingRecordSubject {
   readonly #loadout = signal<ShipLoadout | null>(null);
   readonly #hullName = signal<string | null>(null);
   readonly #revision = signal(0);
@@ -39,6 +41,14 @@ export class ActiveBuildStore {
   readonly #persistence = signal<PersistenceStatus>('ready');
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
   readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
+
+  /**
+   * Which tool's records this store's work is written into.
+   *
+   * The one thing autosave asks that is not a fact about this build: a loadout
+   * record is never a target for one, and never a match for one either.
+   */
+  readonly tool = 'ship' as const;
 
   readonly loadout = this.#loadout.asReadonly();
   /** The active hull's name in the Commander's language, as committed. */
@@ -79,6 +89,25 @@ export class ActiveBuildStore {
 
   /** Whether replacing this build would lose work. */
   readonly dirty = computed(() => isDirty(this.fingerprint(), this.#baseline()));
+
+  /**
+   * What autosave writes for this build, or `null` while there is none.
+   *
+   * The package's own verdict travels with it rather than being recomputed on
+   * read, so a listing states what was true when the record was written
+   * (001/FR-011).
+   */
+  payload(): RecordPayload | null {
+    const build = this.snapshot();
+    if (build === null) {
+      return null;
+    }
+    return {
+      tool: 'ship',
+      build,
+      validation: this.validation() ?? { valid: false, complete: false },
+    };
+  }
 
   /** The package's own verdict on the active build. `null` when there is none. */
   readonly validation = computed(() => {

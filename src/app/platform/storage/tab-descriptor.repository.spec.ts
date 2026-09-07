@@ -24,19 +24,46 @@ describe('TabDescriptorRepository', () => {
   it('remembers this tab’s working record across a reload', () => {
     const { tab, session } = setup();
 
-    tab.write('working-1');
+    tab.write('ship', 'working-1');
 
     expect(
       setup((storage) =>
         storage.entries.set(EDNB_TAB_KEY, session.entries.get(EDNB_TAB_KEY)!),
       ).tab.read(),
-    ).toEqual({ version: 1, workingRecordId: 'working-1' });
+    ).toEqual({ version: 2, workingRecords: { ship: 'working-1' } });
+  });
+
+  it('remembers one working record per tool', () => {
+    // A page holds a build and a loadout at once, and each is autosaved into an
+    // unnamed record of its own. Claiming one leaves the other where it is
+    // (017/FR-010).
+    const { tab, session } = setup();
+
+    tab.write('ship', 'working-1');
+    tab.write('equipment', 'working-2');
+
+    expect(
+      setup((storage) =>
+        storage.entries.set(EDNB_TAB_KEY, session.entries.get(EDNB_TAB_KEY)!),
+      ).tab.read(),
+    ).toEqual({ version: 2, workingRecords: { ship: 'working-1', equipment: 'working-2' } });
+  });
+
+  it('reads a descriptor from before a tab held two records as the ship tool’s', () => {
+    // Applying a published update restarts the page in the same tab, where
+    // session storage survives. A tab that forgot its record would leave the
+    // build it was writing to behind and start a second one.
+    const { tab } = setup((storage) =>
+      storage.entries.set(EDNB_TAB_KEY, JSON.stringify({ version: 1, workingRecordId: 'older' })),
+    );
+
+    expect(tab.read()).toEqual({ version: 2, workingRecords: { ship: 'older' } });
   });
 
   it('writes only its own key', () => {
     const { tab, session } = setup();
 
-    tab.write('working-1');
+    tab.write('ship', 'working-1');
 
     expect([...session.entries.keys()]).toEqual([EDNB_TAB_KEY]);
   });
@@ -52,7 +79,14 @@ describe('TabDescriptorRepository', () => {
   });
 
   it('ignores a malformed descriptor', () => {
-    for (const value of ['not json', '{}', JSON.stringify({ version: 1 }), JSON.stringify(null)]) {
+    for (const value of [
+      'not json',
+      '{}',
+      JSON.stringify({ version: 1 }),
+      JSON.stringify({ version: 2 }),
+      JSON.stringify({ version: 2, workingRecords: 'nothing' }),
+      JSON.stringify(null),
+    ]) {
       const { tab } = setup((storage) => storage.entries.set(EDNB_TAB_KEY, value));
 
       expect(tab.read(), value).toBeNull();
@@ -61,7 +95,7 @@ describe('TabDescriptorRepository', () => {
 
   it('forgets the tab’s claim on request', () => {
     const { tab, session } = setup();
-    tab.write('working-1');
+    tab.write('ship', 'working-1');
 
     tab.clear();
 

@@ -3,11 +3,16 @@ import { provideRouter } from '@angular/router';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
+import { LoadoutAutosaveService } from '../../application/equipment/loadout-autosave.service';
 import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
+import { encodeEquipmentLinkFragment } from '../../domain/equipment/loadout-link/equipment-link-codec';
 import { isEquipmentRecord } from '../../domain/records/local-record';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
+import { recordKey } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { declareMeasurement, declareResizeObserver } from '../../ui/measurement.spec-helpers';
 import { BENCH_WIDE_MINIMUM_REM } from '../../ui/equipment/bench-composition';
@@ -223,7 +228,7 @@ describe('EquipmentBenchPage', () => {
     expect(record !== null && isEquipmentRecord(record) && record.loadout.suitFamily).toBe(
       'tacticalsuit',
     );
-    expect(store.source()?.recordId).toBe(record?.id);
+    expect(store.sourceNamed()?.recordId).toBe(record?.id);
   });
 
   it('opens a saved loadout back onto the bench, exactly as it was saved', async () => {
@@ -236,7 +241,7 @@ describe('EquipmentBenchPage', () => {
       note: null,
       overwrite: false,
     });
-    const recordId = store.source()!.recordId;
+    const recordId = store.sourceNamed()!.recordId;
 
     store.open(null);
     expect(store.hasLoadout()).toBe(false);
@@ -261,6 +266,120 @@ describe('EquipmentBenchPage', () => {
     // Never Frontier's journal key, and never the bench's own loadout.
     expect(notice?.textContent).not.toContain('PrimaryWeapon');
     expect(store.loadout()).toBe(before);
+  });
+
+  /**
+   * A page that was autosaving a loadout before a reload: the record, and this
+   * tab's claim on it.
+   */
+  const heldRecord = (suitFamily: string, id = 'working-loadout'): string => {
+    // Written now, because an unnamed record is swept once its seven days have
+    // run out and the library sweeps as the page is built.
+    const now = new Date().toISOString();
+    records.write({
+      id,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: now,
+      modifiedAt: now,
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout(suitFamily)! },
+    });
+    TestBed.inject(TabDescriptorRepository).write('equipment', id);
+    return id;
+  };
+
+  /** An address carrying this fragment, as a Commander would have arrived on. */
+  const arriveOn = (fragment: string): void => {
+    history.replaceState(null, '', `${location.pathname}#${fragment}`);
+  };
+
+  it('restores the loadout it was autosaving before a reload (017/FR-007)', () => {
+    const id = heldRecord('tacticalsuit');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+    // Taken over rather than copied, and nothing is owed on it: opening a
+    // record does not restart the seven days it is counting down.
+    expect(store.autosaveRecordId()).toBe(id);
+    expect(store.dirty()).toBe(false);
+    fixture.destroy();
+  });
+
+  it('opens the loadout in the address over the one it restored (017/FR-009)', () => {
+    heldRecord('tacticalsuit');
+    arriveOn(encodeEquipmentLinkFragment(newLoadout('utilitysuit')!));
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('utilitysuit');
+    // A link is nobody's record: the restored one is left where it is rather
+    // than written over with what the address carried.
+    expect(store.autosaveRecordId()).toBeNull();
+    fixture.destroy();
+  });
+
+  it('keeps the restored loadout when the address carries a link it cannot read', () => {
+    heldRecord('tacticalsuit');
+    arriveOn('e.notaloadoutatall');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+    const notice = (fixture.nativeElement as HTMLElement).querySelector('ednb-status-notice');
+    expect(notice?.textContent).toContain('could not be read');
+    fixture.destroy();
+  });
+
+  it('writes the loadout on the way out, so leaving the bench costs no choice', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    // Before the coalescing window closes: leaving is what makes the write due.
+    fixture.destroy();
+
+    const listed = records.list();
+    const stored = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(stored.length).toBe(1);
+    expect(stored[0]?.available === true && stored[0].record.kind).toBe('working');
+  });
+
+  it('pauses saving and keeps the loadout when another page deletes its record', () => {
+    // Nobody at this page decided anything, so the bench is not cleared and
+    // nothing is recreated behind the Commander's back (017/FR-008).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const mine = store.autosaveRecordId()!;
+
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+
+    expect(store.persistence()).toBe('record-deleted-externally');
+    expect(store.hasLoadout()).toBe(true);
+    fixture.destroy();
+  });
+
+  it('draws what persistence is doing where the workspace draws it', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    store.setPersistence('quota-full');
+    fixture.detectChanges();
+
+    const status = (fixture.nativeElement as HTMLElement).querySelector('ednb-persistence-status');
+    // The bench's own words, not the ship tool's: what a Commander is asked to
+    // discard is a loadout (017/FR-008).
+    expect(status?.textContent).toContain('discard a loadout');
+    fixture.destroy();
   });
 
   it('synthesizes no heading of its own', () => {

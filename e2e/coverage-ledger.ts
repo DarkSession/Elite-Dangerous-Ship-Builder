@@ -48,6 +48,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '014-start-page',
   '015-prerendered-documents',
   '016-journal-import',
+  '017-tool-bar-navigation',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -236,6 +237,53 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'shell/entry-point-mark',
+    requirements: ['017/FR-001', '017/FR-002', '017/SC-001'],
+    journey: 'shell/tool-bar',
+    axe: true,
+    assertions: [
+      'the mark leads to the entry point from a hull, the workspace and the bench',
+      'it carries an address, so a new tab opens it and its address copies',
+      'it is named for where it goes rather than announced as a picture',
+      'pressing it on the entry point changes neither the screen nor the address',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'shell/tool-re-entry',
+    requirements: ['017/FR-003', '017/FR-004', '017/FR-005', '017/SC-002'],
+    journey: 'shell/tool-bar',
+    axe: true,
+    assertions: [
+      'the open tool is a link carrying aria-current, offered as well as named',
+      'the ship tool’s tab opens the list of ships from a hull and from the workspace',
+      'on the list of ships it changes nothing and adds no history entry',
+      'the equipment tool’s tab leaves an empty bench with the suit gate standing',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'equipment/bench-persistence',
+    requirements: [
+      '017/FR-006',
+      '017/FR-007',
+      '017/FR-008',
+      '017/FR-009',
+      '017/FR-010',
+      '017/SC-003',
+    ],
+    journey: 'equipment/bench-persistence',
+    axe: true,
+    assertions: [
+      'a loadout assembled on the bench is restored after a reload, unasked for',
+      'starting an empty bench keeps the loadout that was on it as its own record',
+      'a loadout in the address outranks the record the page restored',
+      'a store that refuses a write is stated in the bench’s own words, and the loadout stays usable',
+      'one unnamed record per tool per page, so a build and a loadout are held at once',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/tool-navigation',
     requirements: ['011/FR-028', '011/SC-009'],
     journey: 'product/semantics',
@@ -243,7 +291,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'every address the ship tool owns names that tool, at all five layout profiles',
       'the tool region is a navigation landmark named apart from the primary navigation',
-      'the current tool is a word carrying aria-current rather than a link to the open screen',
+      'the current tool is a link carrying aria-current, offered as well as named',
       'the region names exactly the tools the registry carries and nothing else',
     ],
     manualRecord: 'screen-reader',

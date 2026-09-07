@@ -75,16 +75,54 @@ describe('AppNavigation tools', () => {
     expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.outfitting}#b.abc`)[0].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
-
-    // And the insignia reads the same address, so it still knows it is home.
-    expect(navigation().home(`${NAVIGATION_ROUTES.catalogue}?q=viper`)).toBeNull();
-    expect(navigation().home(`${NAVIGATION_ROUTES.equipment}#e.abc`)).not.toBeNull();
   });
 
-  it('carries the same address the insignia does, so one registry answers both', () => {
-    expect(navigation().tools(NAVIGATION_ROUTES.outfitting)[0].href).toBe(
-      navigation().home(NAVIGATION_ROUTES.outfitting)?.href,
+  it('leads to the entry point from every screen, the entry point included', () => {
+    // One answer everywhere. The mark is the only way to the screen that offers
+    // the tools, so a screen it went missing from would be a screen with no way
+    // there at all (017/FR-001).
+    for (const path of [
+      NAVIGATION_ROUTES.start,
+      NAVIGATION_ROUTES.catalogue,
+      `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
+      NAVIGATION_ROUTES.outfitting,
+      NAVIGATION_ROUTES.equipment,
+    ]) {
+      const home = navigation().home();
+
+      expect(home.href).toBe(NAVIGATION_ROUTES.start);
+      expect(home.label).toBe('Nav Beacon');
+      expect(
+        navigation()
+          .tools(path)
+          .some((tool) => tool.href === home.href),
+      ).toBe(false);
+    }
+  });
+
+  it('reads an entry as leading nowhere only where its own address is open', () => {
+    // What the shell answers a plain click with nothing on. A shared build and
+    // a shared loadout arrive as a fragment on the tool's own address, and a
+    // Commander reading one of those is on that screen (017/FR-002, FR-005).
+    const registry = navigation();
+
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.start, NAVIGATION_ROUTES.start)).toBe(true);
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.equipment, `${NAVIGATION_ROUTES.equipment}#e.abc`),
+    ).toBe(true);
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, `${NAVIGATION_ROUTES.catalogue}?q=viper`),
+    ).toBe(true);
+
+    // And everywhere else it leads somewhere: a hull is not the ship list, the
+    // workspace is not the ship list, and no tool's address is the entry point.
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, `${NAVIGATION_ROUTES.catalogue}/Anaconda`),
+    ).toBe(false);
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.outfitting)).toBe(
+      false,
     );
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.start, NAVIGATION_ROUTES.equipment)).toBe(false);
   });
 });
 

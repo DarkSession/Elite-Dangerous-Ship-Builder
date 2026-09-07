@@ -34,7 +34,7 @@ import { ActionLink } from '../../ui/components/action/action-link';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
-import { PersistenceStatus } from './persistence-status';
+import { PersistenceStatus, type StatusActionId } from './persistence-status';
 import { SaveBuildDialog, type SaveRequest, type SaveSource } from './save-build.dialog';
 
 /**
@@ -106,6 +106,27 @@ export class BuildWorkspacePage {
 
   /** What persistence is doing, as the shared state name. */
   readonly persistence = computed(() => this.#active.persistence());
+
+  /** Whether saving is stopped until the Commander asks for it again. */
+  readonly autosavePaused = this.#autosave.paused;
+
+  /**
+   * Acts on what the status offered.
+   *
+   * The status says which action was pressed and nothing more: it draws for
+   * both tools, and each of them holds its own autosave. Managing records is a
+   * navigation the workspace owns, so the status only says that it is the thing
+   * to do.
+   */
+  actOnPersistence(action: StatusActionId): void {
+    if (action === 'resume') {
+      this.#autosave.resume();
+      return;
+    }
+    if (action === 'retry') {
+      this.#autosave.flush();
+    }
+  }
 
   /** The package's verdict as a state name, drawn or not. */
   readonly validationState = computed(() => {
@@ -277,8 +298,8 @@ export class BuildWorkspacePage {
     // workspace contract states: this tab has to know which record is its own
     // before it can restore from it, and has to have restored before an
     // incoming link is treated as a replacement for something.
-    const heldRecordId = this.#ownership.claim();
-    this.#ownership.onFork(() => this.#autosave.adoptForkedRecord());
+    const heldRecordId = this.#ownership.claim('ship');
+    this.#ownership.onFork('ship', () => this.#autosave.adoptForkedRecord());
 
     // A page with no record behind it has nothing to restore, which is the
     // ordinary state of a fresh tab rather than a failure. Opening the record
@@ -289,7 +310,7 @@ export class BuildWorkspacePage {
         ? this.#open.open(heldRecordId)
         : Promise.resolve(null);
 
-    const stopTracking = this.#ownership.track();
+    const stopTracking = this.#ownership.track(this.#active);
     const stopOwnership = this.#ownership.listen();
     const stopAutosave = this.#autosave.start();
     const stopInvalidation = this.#invalidation.listen();
@@ -358,7 +379,7 @@ export class BuildWorkspacePage {
     // being silently recreated by the next autosave.
     effect(() => {
       const deleted = this.#invalidation.deleted();
-      const mine = this.#ownership.autosaveRecordId();
+      const mine = this.#active.autosaveRecordId();
       if (mine !== null && deleted.includes(mine)) {
         this.#autosave.pauseAfterExternalDelete();
         this.#invalidation.acknowledgeDeleted(mine);

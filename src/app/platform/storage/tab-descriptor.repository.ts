@@ -1,15 +1,16 @@
 import { Injectable, inject } from '@angular/core';
+import type { RecordTool } from '../../domain/records/local-record';
 import { EDNB_TAB_KEY } from './storage-keys';
 import { SESSION_STORAGE_PORT } from './web-storage.port';
 
 /** The only published tab-descriptor version. */
-export const TAB_DESCRIPTOR_VERSION = 1;
+export const TAB_DESCRIPTOR_VERSION = 2;
 
 /** What this top-level browsing context remembers about itself. */
-export interface TabDescriptorV1 {
+export interface TabDescriptorV2 {
   readonly version: typeof TAB_DESCRIPTOR_VERSION;
-  /** The working record this tab autosaves to, across reloads. */
-  readonly workingRecordId: string;
+  /** The working record this tab autosaves to, per tool, across reloads. */
+  readonly workingRecords: Readonly<Partial<Record<RecordTool, string>>>;
 }
 
 /**
@@ -21,6 +22,9 @@ export interface TabDescriptorV1 {
  * point, and does not survive the tab, which is also correct — the record it
  * names does survive, and the library is where it is found again.
  *
+ * One record per tool. A page holds a build and a loadout at the same time, and
+ * each is autosaved into an unnamed record of its own (017/FR-010).
+ *
  * A duplicated tab is the exception the descriptor cannot handle alone: the
  * copy inherits the original's session storage, so both pages believe they own
  * one record. The broadcast claim resolves that; this only remembers.
@@ -29,8 +33,8 @@ export interface TabDescriptorV1 {
 export class TabDescriptorRepository {
   readonly #session = inject(SESSION_STORAGE_PORT);
 
-  /** The working record this tab owns, or `null` when it has none yet. */
-  read(): TabDescriptorV1 | null {
+  /** The working records this tab owns, by tool. Empty where it owns none. */
+  read(): TabDescriptorV2 | null {
     const raw = this.#session.read(EDNB_TAB_KEY);
     if (!raw.ok || raw.value === null) {
       return null;
@@ -47,24 +51,50 @@ export class TabDescriptorRepository {
       return null;
     }
     const descriptor = value as Record<string, unknown>;
-    // A newer descriptor is not guessed at: this tab simply starts a new
-    // working record rather than adopting a record it cannot describe.
+
+    // A descriptor written before a page held two records named one, and it
+    // named the ship tool's. It is read as that rather than discarded: applying
+    // a published update restarts the page in the same tab, where session
+    // storage survives, and a tab that forgot its record would leave the build
+    // it was writing to behind and start a second one.
+    if (descriptor['version'] === 1) {
+      const workingRecordId = descriptor['workingRecordId'];
+      return typeof workingRecordId === 'string' && workingRecordId.length > 0
+        ? { version: TAB_DESCRIPTOR_VERSION, workingRecords: { ship: workingRecordId } }
+        : null;
+    }
+
+    // A newer descriptor is not guessed at: this tab simply starts new working
+    // records rather than adopting records it cannot describe.
     if (descriptor['version'] !== TAB_DESCRIPTOR_VERSION) {
       return null;
     }
-    const workingRecordId = descriptor['workingRecordId'];
-    if (typeof workingRecordId !== 'string' || workingRecordId.length === 0) {
+
+    const stored = descriptor['workingRecords'];
+    if (typeof stored !== 'object' || stored === null) {
       return null;
     }
 
-    return { version: TAB_DESCRIPTOR_VERSION, workingRecordId };
+    const workingRecords: Partial<Record<RecordTool, string>> = {};
+    for (const tool of ['ship', 'equipment'] as const) {
+      const id = (stored as Record<string, unknown>)[tool];
+      if (typeof id === 'string' && id.length > 0) {
+        workingRecords[tool] = id;
+      }
+    }
+
+    return { version: TAB_DESCRIPTOR_VERSION, workingRecords };
   }
 
-  /** Claims a working record for this tab. Best effort, like every session write. */
-  write(workingRecordId: string): void {
+  /** Claims a working record for one tool. Best effort, like every session write. */
+  write(tool: RecordTool, workingRecordId: string): void {
+    const held = this.read()?.workingRecords ?? {};
     this.#session.write(
       EDNB_TAB_KEY,
-      JSON.stringify({ version: TAB_DESCRIPTOR_VERSION, workingRecordId }),
+      JSON.stringify({
+        version: TAB_DESCRIPTOR_VERSION,
+        workingRecords: { ...held, [tool]: workingRecordId },
+      }),
     );
   }
 

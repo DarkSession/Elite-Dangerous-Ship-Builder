@@ -11,9 +11,21 @@ import { openLibrary, reachShellAction } from './shell';
  * FR-018).
  */
 
-/** Wears a suit from the gate, which is what an empty bench offers. */
+/**
+ * Wears a suit from the gate, which is what an empty bench offers.
+ *
+ * The bench restores the loadout it was holding, so opening `/equipment` a
+ * second time in one journey lands on that loadout rather than on the gate.
+ * Starting again is the equipment tool's own tab, which is how a Commander
+ * does it (017/FR-006, FR-007).
+ */
 async function wearSuit(page: Page, name: string): Promise<void> {
   await page.goto('/equipment');
+  await expect(page.locator('ednb-equipment-bench-page')).toBeVisible();
+  if ((await page.locator('.gate').count()) === 0) {
+    await page.locator('.frame__tools .frame__tool--current').click();
+    await expect(page.locator('.gate')).toBeVisible();
+  }
   await page.locator('.gate__suits .choice').filter({ hasText: name }).click();
   await expect(page.locator('.gate')).toHaveCount(0);
 }

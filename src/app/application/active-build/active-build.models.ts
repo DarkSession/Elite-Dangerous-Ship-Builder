@@ -1,5 +1,6 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildLinkCodecErrorCode } from '../../domain/build-link/build-link-codec-error';
+import type { PersistenceStatus } from '../build-library/working-record.port';
 
 /**
  * Where the active build came from, as a workflow fact.
@@ -15,22 +16,6 @@ export interface NamedSource {
   readonly recordId: string;
   readonly baseRevisionId: string;
 }
-
-/**
- * What persistence is currently doing, or currently unable to do.
- *
- * None of these states makes the build unusable. That is the point of naming
- * them separately from the build: editing, calculating, sharing and exporting
- * all continue while persistence is unavailable, full or failing (FR-014).
- */
-export type PersistenceStatus =
-  | 'ready'
-  | 'saving'
-  | 'saved'
-  | 'quota-full'
-  | 'unavailable'
-  | 'write-failed'
-  | 'record-deleted-externally';
 
 /**
  * Why a build link could not be used.

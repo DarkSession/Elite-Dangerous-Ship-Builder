@@ -130,9 +130,8 @@ test.describe('the reference visual language', () => {
   test('leads the tool deck with the insignia', async ({ page }) => {
     // Canvas 4c puts the mark in flow at the head of the upper deck with the
     // tabs following it, and both decks then sit on the plate's own inset. The
-    // shipyard draws the mark bare and every other screen wraps it in the way
-    // home; either way it is the tool deck's first child
-    // (`application-shell.md`, "The tool bar").
+    // every screen wraps it in the way to the entry point, and it is the tool
+    // deck's first child (`application-shell.md`, "The tool bar").
     const placed = await page.evaluate(() => {
       const deck = document.querySelector('.frame__deck') as HTMLElement;
       const mark = deck.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');
@@ -256,16 +255,15 @@ test.describe('the reference visual language', () => {
     expect(mark.width).toBe(mark.height);
   });
 
-  test('draws the insignia at one size whether or not it is the way home', async ({ page }) => {
-    // The shipyard draws the mark as decoration; every other screen makes it
-    // the way home, which is a control and is held to the 44px press baseline.
-    // The baseline is paid by a box around the mark, so the mark is the size
-    // canvas 3b draws it on both — a mark that took the target's own box would
-    // be drawn half as large again on a build as on the shipyard
-    // (`canvas-extraction.md`, "Command bar"; Commander request 2026-08-28).
-    // Measured against the token the canvas's figure lives in rather than
-    // against the other screen alone: a mark that grew on both would still
-    // match itself.
+  test('draws the insignia at one size on every screen it leads from', async ({ page }) => {
+    // The mark is the way to the entry point from every screen, which is a
+    // control and is held to the 44px press baseline. The baseline is paid by a
+    // box around the mark, so the mark itself stays the size canvas 3b draws it
+    // — a mark that took the target's own box would be drawn half as large
+    // again (`canvas-extraction.md`, "Command bar"; Commander request
+    // 2026-08-28). Measured against the token the canvas's figure lives in
+    // rather than against the other screen alone: a mark that grew on both
+    // would still match itself.
     const measure = async () =>
       await page.locator('.frame__flag').evaluate((element) => {
         const box = element.getBoundingClientRect();
@@ -289,7 +287,9 @@ test.describe('the reference visual language', () => {
     const shipyard = await measure();
     expect(shipyard.width).toBe(shipyard.declaredWidth);
     expect(shipyard.height).toBe(shipyard.declaredHeight);
-    expect(await page.locator('.frame__flag-home').count()).toBe(0);
+    // A control here too: the entry point is a screen the shipyard leads to
+    // like any other (017/FR-001).
+    await expect(page.locator('.frame__flag-home')).toHaveCount(1);
 
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');

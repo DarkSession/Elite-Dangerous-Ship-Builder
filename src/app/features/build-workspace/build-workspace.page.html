@@ -11,7 +11,11 @@
 }
 
 @if (hasBuild()) {
-  <ednb-persistence-status />
+  <ednb-persistence-status
+    [status]="persistence()"
+    [paused]="autosavePaused()"
+    (actionSelected)="actOnPersistence($event)"
+  />
 
   @if (validationProblem(); as verdict) {
     <ednb-status-notice [tone]="verdict.tone" [message]="verdict.message" />
