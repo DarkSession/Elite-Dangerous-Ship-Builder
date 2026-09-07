@@ -1246,7 +1246,6 @@ registerPreview({
         'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current tool exposes aria-current',
         'the tool region is the shell\u2019s navigation landmark, with a name of its own',
-        'the tool a Commander is in is a word carrying aria-current, never a link to the open screen',
         'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],

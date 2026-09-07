@@ -11,7 +11,7 @@ import { LoadoutStore } from './loadout.store';
  * tool's own tab for an empty one, and the bench comes back to the state it
  * holds before a suit is chosen, with the suit gate standing (017/FR-006); a
  * Commander who deletes the record the bench is autosaved into leaves it with
- * nowhere to be kept, and it goes the same way (017/FR-009). Both are here so
+ * nowhere to be kept, and it goes the same way (017/FR-008). Both are here so
  * that what the loadout leaves behind — this tab's claim on its record and the
  * loadout the address carries — goes with it either time.
  *

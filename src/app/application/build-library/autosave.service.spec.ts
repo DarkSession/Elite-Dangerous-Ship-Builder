@@ -302,6 +302,40 @@ describe('AutosaveService', () => {
     expect(storage.entries.has(recordKey(id))).toBe(true);
   });
 
+  it('resumes a build that has not changed since the record was discarded', () => {
+    // The state on this page is exactly what the discarded record held, so the
+    // ordinary "nothing is owed" rule would answer an explicit resume by
+    // writing nothing at all (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.flush();
+    active.markSaved(null);
+
+    autosave.pauseAfterExternalDelete();
+    storage.entries.delete(recordKey(HELD));
+
+    autosave.resume();
+
+    expect(storage.entries.has(recordKey(HELD))).toBe(true);
+  });
+
+  it('lifts the pause once the build is written somewhere else', () => {
+    // The pause is about one record. A Commander who opens another build has
+    // moved off the record somebody discarded, and saving that build recreates
+    // nothing anybody decided against (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.pauseAfterExternalDelete();
+
+    const loadout = commitBuild(active, 'Anaconda', 'another-record');
+    loadout.setModulePriority('FrameShiftDrive', 2);
+    active.touch();
+    autosave.flush();
+
+    expect(autosave.paused()).toBe(false);
+    expect(storage.entries.has(recordKey('another-record'))).toBe(true);
+  });
+
   it('writes nothing while the build matches what its record already holds', () => {
     // Taking a record over is not modifying it. If this wrote, `modifiedAt`
     // would move and the seven days the entry is counting down would restart

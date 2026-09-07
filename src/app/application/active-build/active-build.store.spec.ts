@@ -106,6 +106,19 @@ describe('ActiveBuildStore', () => {
     expect(active.link()).toEqual({ kind: 'absent' });
   });
 
+  it('does not state a discarded record over the build that opens next', () => {
+    // The notice is about the record another page discarded. A Commander who
+    // answers it by opening another build has left that record behind, and the
+    // alert would otherwise stand with nothing left to resume (001/FR-012).
+    const active = store();
+    active.commit(candidate());
+    active.setPersistence('record-deleted-externally');
+
+    active.commit(candidate({ provenance: 'link' }));
+
+    expect(active.persistence()).toBe('ready');
+  });
+
   it('publishes the package’s own validation verdict', () => {
     const active = store();
     active.commit(candidate());

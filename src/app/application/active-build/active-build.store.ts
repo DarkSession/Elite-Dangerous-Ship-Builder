@@ -133,7 +133,9 @@ export class ActiveBuildStore implements WorkingRecordSubject {
    * Every field that describes where the build came from moves together: a
    * committed link build cannot be left carrying the previous build's named
    * source, and a transient notice about the previous build is not about this
-   * one.
+   * one. The persistence state is one of those notices: a build whose record
+   * another page discarded is answered by opening another, and the alert about
+   * the discarded one would otherwise stand over a build nobody discarded.
    */
   commit(candidate: BuildCandidate): void {
     this.#loadout.set(candidate.loadout);
@@ -144,6 +146,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
     this.#baseline.set(candidate.baseline);
     this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
+    this.#persistence.set('ready');
     this.#revision.update((revision) => revision + 1);
   }
 

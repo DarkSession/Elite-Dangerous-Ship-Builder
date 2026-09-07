@@ -4,7 +4,10 @@
 
 A record deleted by another live page MUST NOT clear that page's active build. The build MUST remain
 usable, autosave MUST pause, and resuming MUST be an explicit Commander action, because nobody at
-this page decided anything.
+this page decided anything. Resuming MUST write the build, whether or not it has changed since the
+record was discarded. The pause MUST be about the discarded record alone: a page that moves onto
+another record MUST autosave into it unasked, and MUST NOT keep stating a discard that is not about
+the build it now holds.
 
 Two live pages MUST NOT autosave to one record. Each page's autosave target is an unnamed record it
 minted or took over for itself, one for each tool it carries, because a page holds a build and a
@@ -14,13 +17,25 @@ either page next writes, and MUST leave its other tool's record where it is. Two
 same named record open, because neither autosaves into it; concurrent manual writes to one record
 MUST offer overwrite, keep both and cancel.
 
-Source: 001/FR-012, 017/FR-010.
+Source: 001/FR-012, 017/FR-008, 017/FR-010.
 
 #### Scenario: Another page deletes this page's record
 
 - **WHEN** another live page deletes the record this page is autosaving into
 - **THEN** this page keeps its build usable and pauses autosave
 - **AND** the Commander resumes autosave by an explicit action
+
+#### Scenario: Resuming a build that has not changed
+
+- **WHEN** a Commander resumes autosave after another page deleted the record, without having
+  changed the build
+- **THEN** the build is written to a record again
+
+#### Scenario: Another build is opened while autosave is paused
+
+- **WHEN** a Commander opens another build while autosave is paused on a discarded record
+- **THEN** the build that opens is autosaved without being asked for
+- **AND** the workspace states nothing about the record that was discarded
 
 #### Scenario: Two pages claim one autosave identity
 
