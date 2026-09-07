@@ -2547,6 +2547,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'equipment.modifications.count':
       'A composition pattern; both variables and the solidus are language-neutral.',
     'equipment.attribute.dps': 'The in-game abbreviation for damage per second, not translated.',
+    'offence.rail.label': 'The same in-game abbreviation, on the status rail’s offence cell.',
     'equipment.value.perSecond': 'The SI form for “per second”, identical in German.',
     'equipment.damage.plasma': 'Plasma is the ordinary German word.',
     'equipment.stats.regen':
@@ -2588,6 +2589,12 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'hullDetail.fact.boost': 'The in-game term, used untranslated in the German community.',
     'hullDetail.slots.group.hardpoint':
       'The in-game term, used untranslated in the German community.',
+    'catalogue.column.hardpoints': 'The same in-game term, over the catalogue’s hardpoint column.',
+    'catalogue.sort.field.hardpoints':
+      'The same in-game term again, on the control that orders the catalogue by it.',
+    'outfitting.category.hardpoint':
+      'The same in-game term, on the filter that shows the ledger’s hardpoints.',
+    'outfitting.group.hardpoint': 'The same in-game term, over that group of the ledger.',
     'anatomy.mount.name':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'shell.beta':
