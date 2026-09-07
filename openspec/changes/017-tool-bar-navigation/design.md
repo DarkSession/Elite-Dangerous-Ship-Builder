@@ -234,7 +234,7 @@ safe is the record, not the tape.
   Only the plain click is answered with nothing, and only where the answer would be the screen
   already on the page.
 - The current tool becoming a control changes what a screen reader announces → `aria-current`
-  is unchanged and the tab's text is unchanged, so the state is still spoken. Step 16 of
+  is unchanged and the tab's text is unchanged, so the state is still spoken. Step 20 of
   `e2e/manual/screen-reader.protocol.md` is where a reader disagreeing sends this back.
 - A page now writes two working records, so an ordinary session leaves more behind → the
   seven-day expiry already removes them and the take-over rule keeps one record per state.

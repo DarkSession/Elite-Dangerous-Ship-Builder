@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 9.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 11.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -145,7 +145,7 @@ projects.
 
 ## The tool bar's own controls (feature 017)
 
-Step 20 covers the mark and the tool tabs. Three of the four activations it
+Step 20 covers the mark and the tool tabs. Two of the five activations it
 walks are deliberately silent — the mark on the entry point, the open tool's
 tab where its re-entry already stands — and whether silence reads as "nothing
 to do here" or as "this control is broken" is the judgment no snapshot of the

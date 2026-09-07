@@ -3,10 +3,11 @@
 - [x] 1.1 Add the mark's destination to both message catalogues — the name a reader
       hears for the way to the entry point — and verify with `pnpm run policy`, which
       fails on a key missing from either catalogue.
-- [x] 1.2 Make `AppNavigation.home()` answer with the entry point from every screen,
-      the entry point included. Verify with unit tests over the entry point, the ship
-      list, a hull, the workspace and the bench, including a fragment-carrying
-      address.
+- [x] 1.2 Make `AppNavigation.home()` answer with the entry point, one answer for
+      every screen: the reading takes no address, so no screen can be given a
+      different one. Verify with unit tests over that answer, over no tool carrying
+      the mark's address, and over `alreadyOpen` reading the entry point, a
+      fragment-carrying address and a query-carrying one.
 - [x] 1.3 Draw the mark as a link on every screen in `app-frame.html`, keeping the
       insignia at the size its token declares and the press box at the 44px baseline.
       Verify with `e2e/design-reference.spec.ts`, which measures the drawn mark and its

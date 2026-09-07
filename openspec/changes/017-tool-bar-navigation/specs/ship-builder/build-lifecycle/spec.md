@@ -17,7 +17,7 @@ either page next writes, and MUST leave its other tool's record where it is. Two
 same named record open, because neither autosaves into it; concurrent manual writes to one record
 MUST offer overwrite, keep both and cancel.
 
-Source: 001/FR-012, 017/FR-008, 017/FR-010.
+Source: 001/FR-012, 017/FR-010.
 
 #### Scenario: Another page deletes this page's record
 

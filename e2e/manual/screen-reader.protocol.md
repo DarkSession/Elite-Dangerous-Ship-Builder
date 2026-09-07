@@ -398,8 +398,8 @@ disagrees or where the announcement is correct but unusable.
     to be asked about the loadout that was on it.
 
     The judgment this step exists for: whether a control that is deliberately
-    silent reads as working or as broken. Three of the four activations above
-    do nothing on purpose, and a Commander who hears nothing has to be able to
+    silent reads as working or as broken. Two of the five activations above do
+    nothing on purpose, and a Commander who hears nothing has to be able to
     tell that from a Commander who hears nothing because the control failed.
 
 ## Recording the result
