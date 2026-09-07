@@ -290,6 +290,43 @@ describe('TabOwnershipCoordinator', () => {
     expect(coordinator.heldLive('their-record')).toBe(true);
   });
 
+  it('forgets a record another page said it had let go of', () => {
+    // A claim it never hears the end of would keep a record nobody is writing
+    // to alive for as long as that page runs (001/FR-013).
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    coordinator.listen();
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'equipment',
+      workingRecordId: 'their-loadout',
+      pageNonce: 'another-page',
+    });
+    expect(coordinator.heldLive('their-loadout')).toBe(true);
+
+    channel.deliver({ kind: 'working-release', tool: 'equipment', pageNonce: 'another-page' });
+
+    expect(coordinator.heldLive('their-loadout')).toBe(false);
+  });
+
+  it('says out loud that it has let a record go', () => {
+    const session = new MemoryStorage();
+    const { coordinator, active, channel } = setup(session);
+    hold(active, 'id-held');
+    const stop = coordinator.track(active);
+    TestBed.tick();
+
+    coordinator.release('ship');
+
+    expect(channel.sent.at(-1)).toEqual({
+      kind: 'working-release',
+      tool: 'ship',
+      pageNonce: coordinator.pageNonce,
+    });
+    stop();
+  });
+
   it('forgets a record another page has stepped off', () => {
     // Held by page, not as a growing set of ids: a page that forks stops
     // protecting the record it left behind, which is free to expire.

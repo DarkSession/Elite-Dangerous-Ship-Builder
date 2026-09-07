@@ -211,6 +211,28 @@ describe('starting an empty bench', () => {
     expect(store.persistence()).toBe('record-deleted-externally');
   });
 
+  it('leaves the loadout on the bench when its record was named in another tab', () => {
+    // Autosave refuses a named target, so the change on this bench is in
+    // nothing. Clearing it would be the loss the action promises to avoid.
+    const { bench, store, records } = setup();
+    records.write({
+      id: 'their-save',
+      kind: 'named',
+      revisionId: 'revision-1',
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+      name: 'Their save',
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout('utilitysuit')! },
+    });
+    store.open(newLoadout('tacticalsuit')!, null, { autosaveRecordId: 'their-save' });
+
+    bench.start();
+
+    expect(store.hasLoadout()).toBe(true);
+  });
+
   it('takes the loadout out of the address without adding a history entry', () => {
     const { bench, store, links, location } = setup();
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });

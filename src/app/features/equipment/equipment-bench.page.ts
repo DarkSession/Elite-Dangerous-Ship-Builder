@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
+import { LibraryPresence } from '../build-library/library-presence';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import {
@@ -109,6 +110,7 @@ export class EquipmentBenchPage {
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
   readonly #library = inject(BuildLibraryStore);
+  readonly #libraryLayer = inject(LibraryPresence);
   readonly #named = inject(NamedRecordService);
   readonly #conflicts = inject(SaveConflictService);
   readonly #invalidation = inject(RecordInvalidationService);
@@ -350,8 +352,8 @@ export class EquipmentBenchPage {
   /**
    * Acts on what the status offered.
    *
-   * Managing records is a navigation the library owns, so the status only says
-   * that it is the thing to do.
+   * Choosing what to discard is the saved records layer's own work, so the
+   * status raises that layer rather than drawing a list of its own.
    */
   actOnPersistence(action: StatusActionId): void {
     if (action === 'resume') {
@@ -360,7 +362,11 @@ export class EquipmentBenchPage {
     }
     if (action === 'retry') {
       this.#autosave.flush();
+      return;
     }
+    // Choosing what to discard is the saved records layer's own work, so the
+    // status raises it rather than drawing a list of its own.
+    this.#libraryLayer.raise();
   }
 
   /** Which identity field the command bar has open for editing, or none. */

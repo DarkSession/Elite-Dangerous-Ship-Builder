@@ -16,6 +16,7 @@ import { FragmentPublisher } from '../../application/build-link/fragment-publish
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
+import { LibraryPresence } from '../build-library/library-presence';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
@@ -84,6 +85,7 @@ export class BuildWorkspacePage {
   readonly #named = inject(NamedRecordService);
   readonly #conflicts = inject(SaveConflictService);
   readonly #library = inject(BuildLibraryStore);
+  readonly #libraryLayer = inject(LibraryPresence);
   readonly #formatters = inject(Formatters);
   readonly #clock = inject(ClockAdapter);
   readonly #invalidation = inject(RecordInvalidationService);
@@ -114,9 +116,9 @@ export class BuildWorkspacePage {
    * Acts on what the status offered.
    *
    * The status says which action was pressed and nothing more: it draws for
-   * both tools, and each of them holds its own autosave. Managing records is a
-   * navigation the workspace owns, so the status only says that it is the thing
-   * to do.
+   * both tools, and each of them holds its own autosave. Choosing what to
+   * discard is the saved records layer's own work, so the status raises that
+   * layer rather than drawing a list of its own.
    */
   actOnPersistence(action: StatusActionId): void {
     if (action === 'resume') {
@@ -125,7 +127,11 @@ export class BuildWorkspacePage {
     }
     if (action === 'retry') {
       this.#autosave.flush();
+      return;
     }
+    // Choosing what to discard is the saved records layer's own work, so the
+    // status raises it rather than drawing a list of its own.
+    this.#libraryLayer.raise();
   }
 
   /** The package's verdict as a state name, drawn or not. */

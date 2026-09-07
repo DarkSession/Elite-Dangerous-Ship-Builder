@@ -16,6 +16,7 @@ import {
   type StoredRecordEntry,
 } from '../../domain/records/local-record';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
+import { EmptyBenchService } from '../../application/equipment/empty-bench.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
@@ -106,6 +107,7 @@ export class BuildLibraryPage {
   readonly #clock = inject(ClockAdapter);
   readonly #announcements = inject(AnnouncementService);
   readonly #active = inject(ActiveBuildStore);
+  readonly #bench = inject(EmptyBenchService);
   readonly #messages = inject(MessageService);
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
@@ -470,10 +472,10 @@ export class BuildLibraryPage {
       return;
     }
 
-    // If that was the record this page is autosaving into, the workspace goes
-    // back to holding no build. The library stays open on the rest of the list:
-    // the current-record marker simply has nowhere to sit (FR-009).
-    this.#active.clearIfHolding(pending.recordId);
+    // If that was the record this page is autosaving into, the tool it belongs
+    // to goes back to holding nothing. The library stays open on the rest of
+    // the list: the current-record marker simply has nowhere to sit (FR-009).
+    this.#letGoOf(pending.recordId);
 
     this.#invalidation.announceDelete(pending.recordId);
     this.#library.refresh();
@@ -494,12 +496,25 @@ export class BuildLibraryPage {
       if (removed.ok) {
         // Selected deliberately, one by one, so the same rule applies as to a
         // single confirmed deletion.
-        this.#active.clearIfHolding(id);
+        this.#letGoOf(id);
         this.#invalidation.announceDelete(id);
       }
     }
     this.#selectedForDiscard.set([]);
     this.#library.refresh();
+  }
+
+  /**
+   * Lets whichever tool was autosaving into a deleted record go of it.
+   *
+   * The library stands over either screen, so the record a Commander deletes
+   * here can be the build's or the loadout's. A tool told nothing would write
+   * the record back on its next edit, which undoes a deletion they confirmed —
+   * and this tab's claim on it would outlive the record itself (017/FR-010).
+   */
+  #letGoOf(recordId: string): void {
+    this.#active.clearIfHolding(recordId);
+    this.#bench.clearHolding(recordId);
   }
 
   #toSavedBuild(entry: StoredRecordEntry): SavedBuild | null {

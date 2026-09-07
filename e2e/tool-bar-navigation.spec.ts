@@ -286,6 +286,44 @@ test.describe('the bench and the address', () => {
   });
 });
 
+test.describe('deleting the record the bench is autosaving into', () => {
+  test('lets the bench go of it, and it stays deleted (017/FR-008)', async ({ page }) => {
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await autosaved(page);
+    const deleted = await page.evaluate(() =>
+      Object.keys(localStorage).find((key) => key.startsWith('ednb:record:'))!,
+    );
+
+    await openLibrary(page);
+    const library = page.getByRole('dialog', { name: 'Saved builds' });
+    const row = library.getByRole('button', { name: /Dominator Suit/i }).first();
+    await expect(async () => {
+      await row.click({ timeout: 2_000 });
+      await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
+
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Delete', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'Delete this build' }).click();
+
+    // The Commander deleted it here, so the bench lets go of it rather than
+    // keeping a loadout with nowhere to be saved.
+    await expect(page.locator('.gate')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Close' }).first().click();
+
+    // Leaving the layer returns to the address the bench published, and a
+    // loadout in the address outranks anything this page holds — so the loadout
+    // is read back from there and written to a record of its own. What is never
+    // written back is the record the Commander deleted (017/FR-009).
+    await autosaved(page);
+    expect(await page.evaluate((key) => localStorage.getItem(key), deleted)).toBeNull();
+  });
+});
+
 test.describe('the bar with the open tool drawn as a control', () => {
   test('scans clean at every layout profile, in both engines', async ({ page }, testInfo) => {
     // The states this change adds: a tab that is a link and current at once,

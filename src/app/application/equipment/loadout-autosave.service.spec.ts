@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
+import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';
@@ -163,6 +164,61 @@ describe('LoadoutAutosaveService', () => {
 
     autosave.resume();
     expect(storage.entries.has(recordKey(HELD))).toBe(true);
+  });
+
+  it('resumes a loadout that has not changed since the record was discarded', () => {
+    // A loadout opened from a record matches what that record held, so the
+    // ordinary "nothing is owed" rule would answer an explicit request with no
+    // write at all — and the one action the bench offers would remove itself by
+    // failing (017/FR-008).
+    const { autosave, store, storage } = setup();
+    const loadout = newLoadout('tacticalsuit')!;
+    store.open(loadout, null, { autosaveRecordId: HELD, baseline: loadoutFingerprint(loadout) });
+    expect(store.dirty()).toBe(false);
+
+    autosave.pauseAfterExternalDelete();
+    storage.entries.delete(recordKey(HELD));
+    autosave.resume();
+
+    expect(storage.entries.has(recordKey(HELD))).toBe(true);
+    expect(store.persistence()).toBe('saved');
+  });
+
+  it('says whether the work is in a record it can be opened from again', () => {
+    // What whoever is about to let go of the loadout reads (017/FR-006).
+    const { autosave, store, storage } = setup();
+    benchLoadout(store);
+
+    expect(autosave.flush()).toBe(true);
+
+    // Nothing owed on it, so it is still where it was left.
+    store.markSaved(null);
+    expect(autosave.flush()).toBe(true);
+
+    store.dispatch({ kind: 'setSuitGrade', grade: 4 });
+    storage.writeError = quotaError();
+    expect(autosave.flush()).toBe(false);
+  });
+
+  it('says the work is nowhere when the record it holds is named elsewhere', () => {
+    // Named in another tab while this page was on another screen, so no fork
+    // was heard. Autosave refuses a named target, which leaves the change on
+    // this page in nothing (001/FR-008).
+    const { autosave, store, records } = setup();
+    records.write({
+      id: HELD,
+      kind: 'named',
+      revisionId: 'r',
+      createdAt: '2026-01-02T03:04:05.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+      name: 'Their save',
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout('utilitysuit')! },
+    });
+    benchLoadout(store);
+
+    expect(autosave.flush()).toBe(false);
   });
 
   it('saves again once the bench holds a record nobody discarded', () => {

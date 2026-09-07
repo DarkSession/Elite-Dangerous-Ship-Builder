@@ -17,6 +17,19 @@ export type PersistenceBroadcast =
       readonly workingRecordId: string;
       readonly pageNonce: string;
     }
+  | {
+      /**
+       * This page has stopped writing to the record it claimed for one tool.
+       *
+       * What a sibling page needs in order to stop protecting that record from
+       * the expiry sweep: a claim it never hears the end of would keep a record
+       * nobody is working on alive for as long as the claiming page runs
+       * (001/FR-013).
+       */
+      readonly kind: 'working-release';
+      readonly tool?: RecordTool;
+      readonly pageNonce: string;
+    }
   | { readonly kind: 'record-written'; readonly recordId: string; readonly revisionId: string }
   | { readonly kind: 'record-deleted'; readonly recordId: string };
 
@@ -92,6 +105,7 @@ export function isPersistenceBroadcast(value: unknown): value is PersistenceBroa
   const message = value as { kind?: unknown };
   return (
     message.kind === 'working-claim' ||
+    message.kind === 'working-release' ||
     message.kind === 'record-written' ||
     message.kind === 'record-deleted'
   );

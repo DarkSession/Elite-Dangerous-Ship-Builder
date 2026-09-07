@@ -55,10 +55,11 @@ export class WorkingRecordAutosave {
    * Paused after the record this tab owns is discarded somewhere else.
    *
    * A pause is about one record. Once this tool holds a different one — a
-   * record opened from the saved list, a loadout arriving in a link, or an
-   * emptied bench — writing recreates nothing that anybody discarded, so the
-   * pause lifts on its own. Read as a computed rather than kept as a flag,
-   * because a flag left standing stops every later save in silence.
+   * record opened from the saved list, a loadout arriving in a link, or none at
+   * all after the record was discarded here — writing recreates nothing that
+   * anybody discarded, so the pause lifts on its own. Read as a computed rather
+   * than kept as a flag, because a flag left standing stops every later save in
+   * silence.
    */
   readonly paused = computed(() => {
     const on = this.#pausedOn();
@@ -135,42 +136,62 @@ export class WorkingRecordAutosave {
     this.#subject.setPersistence('record-deleted-externally');
   }
 
-  /** Resumes after an explicit request, writing the current state immediately. */
+  /**
+   * Resumes after an explicit request, writing the current state immediately.
+   *
+   * The write is not conditional on the work having changed. What was paused is
+   * a record another page discarded, and the state on this page matches what
+   * that record held — so the ordinary "nothing is owed" rule would answer a
+   * Commander's explicit request by writing nothing at all.
+   */
   resume(): void {
     this.#pausedOn.set(null);
-    this.flush();
+    this.#writeNow(true);
   }
 
-  /** Writes now, rather than at the end of the coalescing window. */
-  flush(): void {
+  /**
+   * Writes now, rather than at the end of the coalescing window.
+   *
+   * Answers whether the work is in a record it can be opened from again. False
+   * says the last write did not land: the store refused it, saving is paused,
+   * or the record this page holds turned out to be named elsewhere. Whoever is
+   * about to let go of the work reads it (017/FR-006).
+   */
+  flush(): boolean {
+    return this.#writeNow(false);
+  }
+
+  #writeNow(force: boolean): boolean {
     this.#clearTimer();
 
     if (this.paused()) {
-      return;
+      return false;
     }
 
     const payload = this.#subject.payload();
     if (payload === null) {
-      return;
+      // No work, so nothing to keep and nothing owed on it.
+      return true;
     }
 
     // Nothing is owed while the work matches what a record already holds. This
     // is what makes opening a record free: taking one over writes nothing, so it
     // does not restart the expiry the entry is counting down (001/FR-013).
-    if (!this.#subject.dirty()) {
-      return;
+    if (!force && !this.#subject.dirty()) {
+      return true;
     }
 
     const recordId = this.#allocate();
     if (recordId === null) {
-      return;
+      // Taken over: the record already holds this exact state.
+      return true;
     }
 
     // A named record is never an autosave target, whatever this page is
     // holding. The check reads the stored record rather than this page's belief
     // about it, so a record named in another tab is covered too (001/FR-008).
     if (this.#records.isNamed(recordId)) {
-      return;
+      return false;
     }
 
     this.#subject.setPersistence('saving');
@@ -201,7 +222,7 @@ export class WorkingRecordAutosave {
 
     if (written.ok) {
       this.#subject.setPersistence('saved');
-      return;
+      return true;
     }
 
     this.#subject.setPersistence(
@@ -211,6 +232,7 @@ export class WorkingRecordAutosave {
           ? 'unavailable'
           : 'write-failed',
     );
+    return false;
   }
 
   /** Copies the current state into a freshly forked record. */

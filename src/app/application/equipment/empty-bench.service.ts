@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import type { PersistenceStatus } from '../build-library/working-record.port';
 import { TabOwnershipCoordinator } from '../build-library/tab-ownership.coordinator';
 import { LoadoutAutosaveService } from './loadout-autosave.service';
 import { LoadoutLinkCoordinator } from './loadout-link.coordinator';
@@ -19,9 +18,10 @@ import { LoadoutStore } from './loadout.store';
  * touched at all: autosave never writes to one.
  *
  * Which is why the bench stays as it is where that write cannot happen. A
- * blocked store, a full one and a paused autosave each leave the loadout in
- * nothing, and clearing the bench would then be the loss the action is offered
- * on the promise of avoiding. The notice already on the bench says why.
+ * blocked store, a full one, a paused autosave and a record named in another
+ * tab each leave the loadout in nothing, and clearing the bench would then be
+ * the loss the action is offered on the promise of avoiding. The notice already
+ * on the bench says why.
  *
  * The tape goes with it, as it does when a loadout is opened from a record or a
  * link: the choices before it belong to a loadout that is no longer on the
@@ -32,14 +32,6 @@ import { LoadoutStore } from './loadout.store';
  * tool bar reaches it: the shell dispatches the action the registry declares
  * beside the tool and imports no bench component to do it.
  */
-/** The states that say the last write did not land. */
-const UNWRITTEN: ReadonlySet<PersistenceStatus> = new Set<PersistenceStatus>([
-  'quota-full',
-  'unavailable',
-  'write-failed',
-  'record-deleted-externally',
-]);
-
 @Injectable({ providedIn: 'root' })
 export class EmptyBenchService {
   readonly #store = inject(LoadoutStore);
@@ -55,14 +47,13 @@ export class EmptyBenchService {
 
     // Before the bench lets go of it. A loadout that has just been changed has
     // a write owed on it, and this is the last moment anything holds it.
-    this.#autosave.flush();
-
-    // And only once it is somewhere. What makes this action safe to offer
+    //
+    // And only once that write has landed. What makes this action safe to offer
     // without asking is that the loadout stays as the record it is autosaved
     // to; where the store cannot hold it, clearing the bench would lose work
-    // instead. The bench stays as it is, and the notice already on it says why
-    // (017/FR-006).
-    if (!this.#kept()) {
+    // instead. The bench then stays as it is, and the notice already on it says
+    // why (017/FR-006).
+    if (!this.#autosave.flush()) {
       return;
     }
 
@@ -77,8 +68,28 @@ export class EmptyBenchService {
     this.#links.publish();
   }
 
-  /** Whether the loadout on the bench is in a record that can be opened again. */
-  #kept(): boolean {
-    return !this.#autosave.paused() && !UNWRITTEN.has(this.#store.persistence());
+  /**
+   * Lets the bench go of a record deleted on this page, and says whether it did.
+   *
+   * The opposite event to a record discarded in another tab, and it takes the
+   * opposite answer: a Commander who deletes the record the bench autosaves
+   * into decided that here, so keeping the loadout would leave it with nowhere
+   * to be saved and writing it back would undo what they confirmed
+   * (001/FR-009).
+   *
+   * Nothing is flushed on the way out. There is nowhere to flush it to, which
+   * is the whole of the event.
+   */
+  clearHolding(recordId: string): boolean {
+    if (!this.#store.clearIfHolding(recordId)) {
+      return false;
+    }
+
+    this.#ownership.release('equipment');
+    // Before anything watching the bench reads the address again: the loadout
+    // is still in the fragment, and a bench cleared while its own link stands
+    // reads that link straight back onto itself.
+    this.#links.publish();
+    return true;
   }
 }

@@ -238,4 +238,24 @@ describe('what autosave reads from the bench', () => {
 
     expect(store().persistence()).toBe('quota-full');
   });
+
+  it('clears the bench when the record it writes to is deleted here', () => {
+    // A Commander who deletes the record this bench autosaves into decided that
+    // on this page. Writing it back on the next change would undo what they
+    // confirmed (001/FR-009).
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().setAutosaveRecordId('working-2');
+
+    expect(store().clearIfHolding('working-2')).toBe(true);
+    expect(store().hasLoadout()).toBe(false);
+    expect(store().autosaveRecordId()).toBeNull();
+  });
+
+  it('leaves the bench alone when the record deleted is somebody else’s', () => {
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().setAutosaveRecordId('working-2');
+
+    expect(store().clearIfHolding('someone-elses')).toBe(false);
+    expect(store().hasLoadout()).toBe(true);
+  });
 });

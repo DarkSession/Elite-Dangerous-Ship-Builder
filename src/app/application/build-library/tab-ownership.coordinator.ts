@@ -154,6 +154,10 @@ export class TabOwnershipCoordinator {
   release(tool: RecordTool): void {
     this.#announced.delete(tool);
     this.#tab.release(tool);
+    // And said out loud, so a sibling page stops protecting a record nobody is
+    // writing to any more. A claim it never hears the end of would keep the
+    // entry alive for as long as this page runs (001/FR-013).
+    this.#channel.post({ kind: 'working-release', tool, pageNonce: this.pageNonce });
   }
 
   /** Says which record a tool is autosaving into, if it is holding one. */
@@ -225,10 +229,15 @@ export class TabOwnershipCoordinator {
 
   #subscribe(): () => void {
     return this.#channel.subscribe((message) => {
-      if (message.kind !== 'working-claim') {
+      if (message.kind !== 'working-claim' && message.kind !== 'working-release') {
         return;
       }
       if (message.pageNonce === this.pageNonce) {
+        return;
+      }
+
+      if (message.kind === 'working-release') {
+        this.#claimsElsewhere.delete(`${message.pageNonce}:${message.tool ?? 'ship'}`);
         return;
       }
 

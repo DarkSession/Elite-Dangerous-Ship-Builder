@@ -9,7 +9,8 @@
       address.
 - [x] 1.3 Draw the mark as a link on every screen in `app-frame.html`, keeping the
       insignia at the size its token declares and the press box at the 44px baseline.
-      Verify with component tests at desktop, tablet and mobile profiles.
+      Verify with `e2e/design-reference.spec.ts`, which measures the drawn mark and its
+      press box at all five layout profiles.
 - [x] 1.4 Return from `App.navigateFromShell` without navigating when the entry's
       address is the address already open, after the modified-click guard. Verify
       with unit tests asserting no router call and no history entry for a plain

@@ -280,6 +280,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a loadout in the address outranks the record the page restored',
       'a store that refuses a write is stated in the bench’s own words, and the loadout stays usable',
       'one unnamed record per tool per page, so a build and a loadout are held at once',
+      'deleting the record the bench autosaves into lets the bench go of it, and it stays deleted',
     ],
     manualRecord: null,
   },

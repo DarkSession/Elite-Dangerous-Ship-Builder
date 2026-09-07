@@ -184,6 +184,27 @@ export class LoadoutStore implements WorkingRecordSubject {
     this.#revision.update((revision) => revision + 1);
   }
 
+  /**
+   * Clears the bench if the loadout on it lives in this record, and says
+   * whether it did.
+   *
+   * The answer to a Commander deleting the record this page is autosaving into.
+   * Keeping the loadout on the bench would leave it with nowhere to be saved,
+   * and writing it back would undo the deletion they just confirmed. The same
+   * rule the workspace follows for a build (001/FR-009, ruled 2026-08-25).
+   *
+   * Only ever this page's own autosave record. The same deletion made in
+   * another page is a different event with a different answer: the loadout
+   * stays on the bench and autosave pauses (001/FR-012).
+   */
+  clearIfHolding(recordId: string): boolean {
+    if (this.#autosaveRecordId() !== recordId) {
+      return false;
+    }
+    this.open(null);
+    return true;
+  }
+
   /** Shows one item in the item view, or none. */
   select(target: EditTarget | null): void {
     this.#selected.set(target);

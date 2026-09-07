@@ -65,7 +65,12 @@ be stated in words rather than by an unchanged control.
 
 A record deleted by another live page MUST NOT clear the bench. The loadout MUST stay usable,
 autosave MUST pause, and resuming MUST be an explicit Commander action, because nobody at this
-page decided anything.
+page decided anything. Resuming MUST write the loadout, whether or not it has changed since
+the record was discarded.
+
+A record deleted on this page MUST clear the bench, which is the opposite answer to the
+opposite event: a Commander who deletes the record the bench autosaves into decided that here,
+and writing it back on the next change would undo what they confirmed.
 
 Source: 017/FR-008.
 
@@ -79,6 +84,18 @@ Source: 017/FR-008.
 
 - **WHEN** the browser store is full and autosave cannot write
 - **THEN** the bench states what happened and offers a way to choose records to discard
+
+#### Scenario: This page deletes the record the bench autosaves into
+
+- **WHEN** a Commander deletes the record this bench autosaves into, from this page
+- **THEN** the bench holds no loadout
+- **AND** the record stays deleted, whatever is done on the bench next
+
+#### Scenario: Resuming a loadout that has not changed
+
+- **WHEN** a Commander resumes autosave after another page deleted the record, without
+  having changed the loadout
+- **THEN** the loadout is written to a record again
 
 #### Scenario: Another page deletes this page's record
 

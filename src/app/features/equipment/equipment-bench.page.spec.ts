@@ -17,6 +17,7 @@ import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.r
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { declareMeasurement, declareResizeObserver } from '../../ui/measurement.spec-helpers';
 import { BENCH_WIDE_MINIMUM_REM } from '../../ui/equipment/bench-composition';
+import { LibraryPresence } from '../build-library/library-presence';
 import { ScreenChrome } from '../shared/screen-chrome';
 import { EquipmentBenchPage } from './equipment-bench.page';
 
@@ -405,6 +406,20 @@ describe('EquipmentBenchPage', () => {
     // The bench's own words, not the ship tool's: what a Commander is asked to
     // discard is a loadout (017/FR-008).
     expect(status?.textContent).toContain('discard a loadout');
+    fixture.destroy();
+  });
+
+  it('raises the saved records layer when asked to choose what to discard', () => {
+    // The action the full-store notice offers. Choosing what to discard is the
+    // layer's own work, so the bench raises it rather than drawing a list of
+    // its own — and a control that did nothing would read as a broken one.
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    fixture.componentInstance.actOnPersistence('manage');
+
+    expect(TestBed.inject(LibraryPresence).open()).toBe(true);
     fixture.destroy();
   });
 
