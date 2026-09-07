@@ -5,13 +5,19 @@
  * These are the rules that cannot be expressed as a type or a unit test,
  * because they are about what must *not* appear anywhere: a hard-coded English
  * label, a hex colour outside the token sources, a component nobody previews, a
- * requirement nobody verifies.
+ * skipped interface suite.
  *
  * The checks parse rather than grep. Angular's own template parser reads
  * templates, the TypeScript compiler reads component metadata, and the
  * `postcss-scss` parser reads stylesheets — so structural punctuation, token
  * calculations and dynamic bindings are understood as what they are, instead of
  * tripping a regular expression.
+ *
+ * Every rule here reads the product and the four documents that state the
+ * conformance target. None of them reads `openspec/`: the rules that reconcile
+ * the specification record against this repository are
+ * `scripts/check-specification-record.mjs`, so a change to a specification
+ * cannot fail this checker and does not need the pipeline this checker gates.
  *
  * Exit code 0 means every rule passed. Any violation prints its file, line and
  * the reason, and fails the build (FR-024).
@@ -31,6 +37,7 @@ import {
   readSitemap,
 } from './search/published-addresses.mjs';
 import { prerenderRoutes } from './generate-prerender-routes.mjs';
+import { conformanceClaimViolations } from './conformance-claims.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -57,27 +64,12 @@ export const SCOPE = {
    * one that sets it has a hole in the middle of it.
    */
   conformanceDocuments: ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'CONSTITUTION.md'],
-  /**
-   * Feature documentation whose conformance statements are also qualified.
-   *
-   * A specification that claims the target for its own surfaces is a statement
-   * about those surfaces, and an unqualified one there is as strong a claim as
-   * an unqualified one in the README.
-   *
-   * The whole tree, deliberately. A per-feature list is a rule that does not
-   * point at the files most likely to break it: an amendment to the excluded
-   * set is carried through the guarded directories and silently missed
-   * everywhere else, which leaves the constitution asserting one number and
-   * three dozen documents enumerating another.
-   */
-  conformanceSpecs: ['openspec/specs', 'openspec/changes'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/navbeacon/browser',
   /** Where the build is configured to place the copied hull schematics. */
   extractedSchematics: 'public/assets/ships',
   previewManifest: 'src/app/ui/previews/preview-manifest.ts',
   uiComponents: 'src/app/ui/components',
-  specs: 'openspec/specs',
   /** Interface suites that may never be skipped, focused or quarantined. */
   testGlobs: ['e2e', 'src/app/ui', 'src/app/i18n', 'src/app/platform'],
   /**
@@ -894,109 +886,6 @@ async function checkTestDiscipline() {
 }
 
 // ---------------------------------------------------------------------------
-// Rule: every declared requirement is registered in the coverage ledger
-// ---------------------------------------------------------------------------
-
-/** The feature directories the ledger source declares it covers. */
-function coveredFeatures(ledgerSource) {
-  const match = ledgerSource.match(/COVERED_FEATURES[^=]*=\s*\[([^\]]*)\]/);
-  return new Set([...(match?.[1] ?? '').matchAll(/'([^']+)'/g)].map((m) => m[1]));
-}
-
-/**
- * Requirement ids a capability specification *declares*.
- *
- * A requirement states the feature and id it was accepted under on a trailing
- * `Source: 011/FR-011, 011/SC-003.` line, and that line is the declaration.
- * Matching the trace rather than a bare mention keeps the rule the same one it
- * has always been: a requirement quoted in passing does not register itself,
- * and a withdrawn id carries no trace, so it demands no evidence.
- */
-function declaredRequirementIds(specSource) {
-  return specSource
-    .split('\n')
-    .filter((line) => /^\s*Source:/.test(line))
-    .flatMap((line) => [...line.matchAll(/\d{3}\/(?:FR|SC)-\d{3}/g)].map((match) => match[0]));
-}
-
-/**
- * Ids the ledger registers.
- *
- * Only ids inside a `requirements` array count. Scanning the whole file would
- * let an id mentioned in a comment register itself, which is exactly the silent
- * coverage the ledger exists to prevent.
- */
-function registeredRequirementIds(ledgerSource) {
-  return new Set(
-    [...ledgerSource.matchAll(/requirements\s*:\s*\[([^\]]*)\]/g)].flatMap((block) =>
-      [...block[1].matchAll(/'(\d{3}\/(?:FR|SC)-\d{3})'/g)].map((match) => match[1]),
-    ),
-  );
-}
-
-/**
- * Compares declared ids against registered ones.
- *
- * `declared` is a list of `{ id, file }`. Ids are feature-qualified, so one
- * feature's coverage can never satisfy another's.
- */
-function ledgerCoverageViolations(declared, ledgerSource, ledgerFile) {
-  const registered = registeredRequirementIds(ledgerSource);
-  const unregistered = [...new Map(declared.map((entry) => [entry.id, entry.file])).entries()]
-    .filter(([id]) => !registered.has(id))
-    .map(([id, file]) => `${id} (${file})`)
-    .sort();
-
-  if (unregistered.length === 0) {
-    return [];
-  }
-  return [
-    {
-      file: ledgerFile,
-      line: 1,
-      rule: 'unregistered-requirement',
-      message: `These declared ids are not registered in the coverage ledger: ${unregistered.join('; ')}.`,
-    },
-  ];
-}
-
-/** IO wrapper. */
-async function checkLedgerCoverage() {
-  const ledgerPath = resolve(ROOT, SCOPE.ledger);
-  const ledgerFile = relative(ROOT, ledgerPath);
-  const ledger = existsSync(ledgerPath) ? await readFile(ledgerPath, 'utf8') : '';
-
-  const covered = coveredFeatures(ledger);
-  if (covered.size === 0) {
-    report(
-      ledgerPath,
-      1,
-      'unregistered-requirement',
-      'The coverage ledger declares no covered features, so no requirement can be verified as registered.',
-    );
-    return;
-  }
-
-  // The ledger names feature directories; a trace names the feature number.
-  const coveredNumbers = new Set([...covered].map((directory) => directory.split('-')[0]));
-  const specFiles = (await walk(SCOPE.specs, ['.md'])).filter((file) => file.endsWith('spec.md'));
-
-  const declared = [];
-  for (const file of specFiles) {
-    const relativePath = relative(ROOT, file).split('\\').join('/');
-    const source = await readFile(file, 'utf8');
-    for (const id of declaredRequirementIds(source)) {
-      if (!coveredNumbers.has(id.split('/')[0])) {
-        continue;
-      }
-      declared.push({ id, file: relativePath });
-    }
-  }
-
-  violations.push(...ledgerCoverageViolations(declared, ledger, ledgerFile));
-}
-
-// ---------------------------------------------------------------------------
 
 /** Runs every rule and returns the violations found. */
 export async function runChecks({ scope = SCOPE } = {}) {
@@ -1028,7 +917,6 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkPreviewCoverage();
   await checkDuplicatedSteps();
   await checkTestDiscipline();
-  await checkLedgerCoverage();
   await checkCatalogues();
   await checkServiceWorkerOwnership(sources);
   await checkConformanceClaims(sources);
@@ -1314,16 +1202,6 @@ async function checkConformanceClaims(sources) {
       contents[document] = await readFile(path, 'utf8');
     }
   }
-  for (const directory of SCOPE.conformanceSpecs) {
-    const path = resolve(ROOT, directory);
-    if (!existsSync(path)) {
-      continue;
-    }
-    for (const file of await walk(path, ['.md'])) {
-      contents[relative(ROOT, file).split('\\').join('/')] = await readFile(file, 'utf8');
-    }
-  }
-
   violations.push(...conformanceClaimViolations(contents));
 }
 
@@ -1735,19 +1613,6 @@ function headContent(document, attribute, key) {
     'i',
   ).exec(document);
   return tag?.[3] ?? null;
-}
-
-/**
- * One string as a pattern that matches exactly itself.
- *
- * Every metacharacter, not just the dot. Escaping the one character a caller
- * happens to pass today is how a hand-rolled escape becomes wrong later: a
- * criterion, a rel or a key that ever contains a backslash would otherwise
- * escape the character after it instead of itself, and the pattern would match
- * something the caller never wrote.
- */
-function escapedForRegExp(literal) {
-  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** One `<link>` element's href, by its relationship. */
@@ -2416,86 +2281,6 @@ export function ledgerReconciliationViolations(input) {
 }
 
 // ---------------------------------------------------------------------------
-// Rule: no unqualified WCAG 2.2 AA claim
-// ---------------------------------------------------------------------------
-
-/**
- * The criteria the constitution excludes from the conformance target.
- *
- * Seven are the keyboard-operation block principle V excludes. The eighth,
- * 2.2.1, is excluded for applying an update and for nothing else: a published
- * version is applied without asking, so the announcement before it carries
- * nothing that calls it off, and the notice on the other side of the restart
- * takes itself down. Neither time limit meets any of that criterion's
- * conditions (constitution 9.0.0).
- */
-export const EXCLUDED_CRITERIA = [
-  '2.1.1',
-  '2.1.2',
-  '2.1.4',
-  '2.2.1',
-  '2.4.1',
-  '2.4.3',
-  '2.4.7',
-  '2.4.11',
-];
-
-/** A claim of WCAG 2.2 AA conformance, however it is phrased. */
-const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
-
-/**
- * Rejects a conformance claim that does not name its exclusions.
- *
- * The target is WCAG 2.2 AA *minus eight criteria*, and a claim that omits that
- * qualification is not a shorthand — it is a stronger claim than the project
- * can support, made to whoever reads it. Every statement therefore carries the
- * criteria it excludes, in the same sentence, so it cannot be quoted without
- * them (FR-015).
- *
- * `sources` is `{ [file]: contents }`. A claim qualifies when its own paragraph
- * names all eight criteria.
- */
-export function conformanceClaimViolations(sources) {
-  const found = [];
-
-  for (const [file, contents] of Object.entries(sources)) {
-    const paragraphs = contents.split(/\n\s*\n/);
-    let offset = 0;
-
-    for (const paragraph of paragraphs) {
-      const line = contents.slice(0, offset).split('\n').length;
-      offset += paragraph.length + 2;
-
-      CONFORMANCE_CLAIM.lastIndex = 0;
-      if (!CONFORMANCE_CLAIM.test(paragraph)) {
-        continue;
-      }
-
-      // Bounded by digits rather than matched as a substring. `2.4.1` occurs
-      // inside `2.4.11`, so a plain `includes` accepts a statement that names
-      // seven criteria and omits 2.4.1 — a different seven from the one FR-015
-      // calls out, and exactly the half-carried amendment this rule exists to
-      // fail.
-      const missing = EXCLUDED_CRITERIA.filter(
-        (criterion) => !new RegExp(`(?<!\\d)${escapedForRegExp(criterion)}(?!\\d)`).test(paragraph),
-      );
-      if (missing.length > 0) {
-        found.push({
-          file,
-          line,
-          rule: 'unqualified-conformance-claim',
-          message:
-            'A WCAG 2.2 AA claim does not name the excluded criteria ' +
-            `${missing.join(', ')}. State the target as AA except ${EXCLUDED_CRITERIA.join(', ')}.`,
-        });
-      }
-    }
-  }
-
-  return found;
-}
-
-// ---------------------------------------------------------------------------
 // Rule: every shipped catalogue matches bundled English exactly
 // ---------------------------------------------------------------------------
 
@@ -2968,10 +2753,6 @@ export const rules = {
   previewCoverageViolations,
   testDisciplineViolations,
   duplicatedStepViolations,
-  ledgerCoverageViolations,
-  declaredRequirementIds,
-  registeredRequirementIds,
-  coveredFeatures,
   isTokenisedValue,
   isStructuralText,
 };

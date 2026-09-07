@@ -103,9 +103,14 @@ It runs the format check, the generated help artifacts check, the typecheck, bot
 repository policy scripts, the codec capacity check, the script tests, the unit tests with coverage,
 and the Playwright suites. It is the same gate a reviewer expects to have passed.
 
-CI runs most of it. `pnpm run policy`, `help:artifacts:check`, `build:preview`, `codec:capacity`,
-`e2e:timing` and `e2e:offline` run only in `pnpm run check`, so a green pull request does not prove
-they passed. Run the whole gate locally.
+CI runs most of it. `pnpm run policy` (apart from `policy:specs`, which CI runs in both lanes),
+`help:artifacts:check`, `build:preview`, `codec:capacity` and `e2e:timing` run only in
+`pnpm run check`, so a green pull request does not prove they passed. Run the whole gate locally.
+
+A pull request whose every changed path is under `openspec/` runs a limited set: the format check and
+`pnpm run policy:specs`, which holds every rule that reads the specification record. The build, the
+unit tests, the end-to-end matrix and the preview are skipped, because nothing in them reads a
+specification. Run the whole gate locally all the same if you touched anything else.
 
 Playwright needs its browsers once:
 

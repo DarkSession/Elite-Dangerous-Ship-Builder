@@ -1,5 +1,4 @@
 import { execFile } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import applicationManifest from '../package.json';
@@ -445,89 +444,12 @@ async function importPayload(page: Page, payload: string): Promise<void> {
 /** Every row the ledger transcribes, with the recipe that brings it on screen. */
 const ROWS: readonly HelpRouteRow[] = helpRouteCoverage;
 
-/**
- * The Release coverage ledger as the screen inventory writes it.
- *
- * Read from the document rather than restated here, because the point of the
- * reconciliation is that the two are compared — a copy in this file would be a
- * third thing to keep in step, and it would agree with whichever of the other
- * two it was last edited beside.
- */
-function inventoryLedger(): {
-  surface: string;
-  owner: string;
-  frameEntry: string;
-  applies: string[];
-}[] {
-  // Relative to the repository root, which is where the suite runs from — the
-  // same convention the disclaimer comparison below reads root `LICENSE` by.
-  const source = readFileSync(
-    'openspec/changes/archive/012-help-and-licences/design/screen-inventory.md',
-    'utf8',
-  );
-  const section = source.slice(source.indexOf('## Release coverage ledger'));
-  const table = section.slice(section.indexOf('| Capability / surface'));
-
-  return table
-    .split('\n')
-    .filter((line) => line.startsWith('|'))
-    .map((line) =>
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim()),
-    )
-    .filter((cells) => cells.length === 4 && !/^-+$/.test(cells[0] ?? ''))
-    .slice(1)
-    .map(([surface, owner, frameEntry, applies]) => ({
-      // Backticks are the document's code formatting around a route, not part
-      // of the surface's name.
-      surface: (surface ?? '').replace(/`/g, ''),
-      owner: owner ?? '',
-      frameEntry: frameEntry ?? '',
-      applies: [...(applies ?? '').matchAll(/FR-\d{3}/g)].map((match) => match[0]),
-    }));
-}
-
 test.describe('reaching help from every shipped surface', () => {
   test('the transcription and this suite name the same rows', () => {
     const transcribed = ROWS.map((row) => row.id).sort();
     const driven = Object.keys(REACH).sort();
 
     expect(driven).toEqual(transcribed);
-  });
-
-  test('the transcription and the screen inventory agree, in both directions', () => {
-    // T063. The `helpRouteCoverage` export transcribes the Release coverage
-    // ledger; it does not re-derive it. So the check is equality rather than
-    // containment: a row in the document and not in the code is an untested
-    // claim, and a row in the code and not in the document is a claim nobody
-    // wrote down. Both are the drift the ledger exists to prevent.
-    const inventory = inventoryLedger();
-    expect(inventory.length, 'the screen inventory’s ledger table was not found').toBeGreaterThan(
-      0,
-    );
-
-    const fromCode = ROWS.map((row) => ({
-      surface: row.surface,
-      owner: row.owner,
-      // The document writes the dismissible half of the state in prose; the
-      // export carries the state alone, because the dismissal is a property of
-      // every layer rather than of this ledger.
-      frameEntry: row.frameEntry === 'obscured' ? 'obscured, dismissible' : row.frameEntry,
-      applies: [...row.requirements].map((id) => id.replace('012/', '')).sort(),
-    })).sort((left, right) => left.surface.localeCompare(right.surface));
-
-    const fromDocument = inventory
-      .map((row) => ({
-        surface: row.surface,
-        owner: row.owner,
-        frameEntry: row.frameEntry,
-        applies: [...row.applies].sort(),
-      }))
-      .sort((left, right) => left.surface.localeCompare(right.surface));
-
-    expect(fromCode).toEqual(fromDocument);
   });
 
   for (const row of ROWS) {

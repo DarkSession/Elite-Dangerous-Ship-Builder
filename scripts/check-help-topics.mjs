@@ -5,11 +5,14 @@
  * A help answer is a claim this application makes about itself, and the only
  * thing separating a useful one from a confident invention is whether anything
  * accepted actually says it. So every topic names the requirements and
- * principles it answers from, this script resolves each of those against the
- * artifact that declares it, and a reference that no longer exists fails the
- * build rather than becoming a footnote nobody reads.
+ * principles it answers from, and a topic that names nothing fails here.
+ * Whether what it names still exists is resolved against the specification
+ * record by `scripts/check-specification-record.mjs`. The two are apart on
+ * purpose: this script runs ahead of every Angular, Playwright and typecheck
+ * command, and a build that reads `openspec/` puts the specification record
+ * inside the product pipeline.
  *
- * It then emits a browser module carrying the ids and the two message keys, and
+ * It emits a browser module carrying the ids and the two message keys, and
  * nothing else. The governing references stay here: they are review evidence,
  * and a specification index has no business inside a product download
  * (help-navigation contract, "Required help topics").
@@ -25,7 +28,7 @@
  * FAQ with no answer about build links would reasonably conclude there was
  * nothing to say about build links.
  */
-import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,12 +51,6 @@ export const OUTPUT_PATH = 'src/app/platform/build/help-topics.generated.ts';
  * German answer preserves the reviewed meaning.
  */
 export const SHIPPED_LOCALES = Object.freeze(['en', 'de']);
-
-/** The constitution, which declares the numbered principles. */
-const CONSTITUTION_PATH = 'CONSTITUTION.md';
-
-/** Where the capability specifications live. */
-const SPECS_DIR = 'openspec/specs';
 
 /** Wording the reference mock carries and this application must not. */
 const PROHIBITED_WORDING = Object.freeze([
@@ -115,70 +112,6 @@ export function assertDeclaredSet(definitions) {
       );
     }
   });
-}
-
-/**
- * Resolves one governing reference against the artifact that declares it.
- *
- * A requirement is matched on its declaration form — the trailing
- * `Source: 001/FR-008.` line a capability requirement carries — and not merely
- * on the string appearing somewhere. A withdrawn id carries no trace, and a
- * paragraph that mentions one in passing is not a declaration, so neither can
- * govern a help answer.
- */
-export async function resolveReference(reference, { repoRoot = ROOT } = {}) {
-  if (reference.kind === 'principle') {
-    const path = join(repoRoot, CONSTITUTION_PATH);
-    if (!existsSync(path)) {
-      throw new HelpTopicError(CONSTITUTION_PATH, 'is missing, so no principle can be resolved.');
-    }
-    const text = await readFile(path, 'utf8');
-    const declared = new RegExp(`^### ${reference.numeral}\\.\\s`, 'm').test(text);
-    if (!declared) {
-      throw new HelpTopicError(
-        `principle ${reference.numeral}`,
-        `is not declared in ${CONSTITUTION_PATH}.`,
-      );
-    }
-    return `${CONSTITUTION_PATH}#${reference.numeral}`;
-  }
-
-  if (reference.kind !== 'requirement') {
-    throw new HelpTopicError(String(reference.kind), 'is not a kind of governing reference.');
-  }
-
-  const specsRoot = join(repoRoot, SPECS_DIR);
-  if (!existsSync(specsRoot)) {
-    throw new HelpTopicError(SPECS_DIR, 'is missing, so no requirement can be resolved.');
-  }
-  const trace = `${reference.feature.split('-')[0]}/${reference.id}`;
-  for (const file of await specFiles(specsRoot)) {
-    const text = await readFile(file, 'utf8');
-    // The id ends where the trace does. `002/FR-002` must not resolve against a
-    // trace that carries only `002/FR-002a`, which is a different requirement.
-    const declares = new RegExp(`${trace.replace('/', '\\/')}(?![0-9a-z])`);
-    const declared = text
-      .split('\n')
-      .some((line) => /^\s*Source:/.test(line) && declares.test(line));
-    if (declared) {
-      return `${relative(repoRoot, file).split('\\').join('/')}#${trace}`;
-    }
-  }
-  throw new HelpTopicError(
-    trace,
-    'is not a declared requirement. A withdrawn or reassigned id cannot govern a help answer.',
-  );
-}
-
-/** Every capability specification under a specifications root. */
-async function specFiles(root) {
-  const found = [];
-  for (const entry of await readdir(root, { withFileTypes: true, recursive: true })) {
-    if (entry.isFile() && entry.name === 'spec.md') {
-      found.push(join(entry.parentPath, entry.name));
-    }
-  }
-  return found.sort();
 }
 
 /** Reads one shipped locale catalogue. */
@@ -278,14 +211,12 @@ export async function checkHelpTopics({
 } = {}) {
   assertDeclaredSet(definitions);
 
-  const resolved = [];
+  const cited = [];
   for (const definition of definitions) {
     if (!Array.isArray(definition.governedBy) || definition.governedBy.length === 0) {
       throw new HelpTopicError(definition.id, 'cites no governing source.');
     }
-    for (const reference of definition.governedBy) {
-      resolved.push(await resolveReference(reference, { repoRoot }));
-    }
+    cited.push(...definition.governedBy);
   }
 
   await assertShippedMessages(definitions, { repoRoot });
@@ -311,12 +242,12 @@ export async function checkHelpTopics({
         );
       }
     }
-    return { module, resolved, written: false };
+    return { module, cited, written: false };
   }
 
   await mkdir(join(repoRoot, 'src/app/platform/build'), { recursive: true });
   await writeFile(outputPath, module, 'utf8');
-  return { module, resolved, written: true };
+  return { module, cited, written: true };
 }
 
 const invokedDirectly =
@@ -325,10 +256,10 @@ const invokedDirectly =
 if (invokedDirectly) {
   const mode = process.argv.includes('--check') ? 'check' : 'emit';
   try {
-    const { resolved, written } = await checkHelpTopics({ mode });
+    const { cited, written } = await checkHelpTopics({ mode });
     if (written) {
       process.stdout.write(
-        `help topics: ${HELP_TOPIC_IDS.length} topics, ${resolved.length} governing references resolved\n`,
+        `help topics: ${HELP_TOPIC_IDS.length} topics, ${cited.length} governing references cited\n`,
       );
     }
   } catch (error) {

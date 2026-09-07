@@ -139,7 +139,7 @@ Firefox. Every rendered product and preview state is scanned with
 - The ledger registers which test evidences which requirement id. A capability
   requirement declares its id on a trailing `Source: 002/FR-014.` line — write
   that line on any requirement you add or move, or its coverage stops being
-  checked.
+  checked. `pnpm run policy:specs` is what reconciles the two.
 - If a preinstalled browser does not match the version Playwright pins, point at
   its executable (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing
   the config.
@@ -240,6 +240,21 @@ install. The Claude Code flow is `/opsx:explore` (optional) → `/opsx:propose` 
   diff when the last task is done. Fix every actionable finding and run the gate
   again, until none remains. [`openspec/config.yaml`](./openspec/config.yaml)
   carries both gates and says what each subagent reads.
+- **One script reads the record.** `scripts/check-specification-record.mjs`
+  (`pnpm run policy:specs`) holds every rule that opens a file under
+  `openspec/`: that a declared requirement is registered in the coverage ledger,
+  that a help topic answers from a requirement or principle something still
+  declares, that a conformance claim in the record names its excluded criteria,
+  and that `helpRouteCoverage` transcribes the screen inventory. Nothing else
+  reads the record — not the policy checker, not the generated help artifacts,
+  not a suite. A source file may cite a document by path in a comment; it may
+  not open one.
+- **That is why a specification change is cheap.** A pull request whose every
+  changed path is under `openspec/` runs the formatter and that one script, and
+  skips the build, the unit tests, the end-to-end matrix and the preview
+  (`.github/workflows/ci.yml`, the `Scope` job). Add a rule that reads a
+  specification from the product pipeline and the split becomes a hole in the
+  gate rather than a saving.
 
 ## How to write
 

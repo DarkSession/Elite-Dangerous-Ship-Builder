@@ -1,15 +1,28 @@
 # Runs most of the gate `pnpm run check` runs, split into individual steps so a
-# failure names the stage that broke: formatting, types, the script tests,
-# build, unit tests (with the 80% coverage thresholds from angular.json) and the
-# Playwright end-to-end suite across the desktop, tablet and mobile viewports.
-# It has one stage of its own, between the checks and the build: the version
-# stamp, which only a deployable build needs.
+# failure names the stage that broke: formatting, the specification record,
+# types, the script tests, build, unit tests (with the 80% coverage thresholds
+# from angular.json) and the Playwright end-to-end suite across the desktop,
+# tablet and mobile viewports. It has one stage of its own, between the checks
+# and the build: the version stamp, which only a deployable build needs.
 #
-# Most, not all. `pnpm run policy`, `help:artifacts:check`, `build:preview`,
-# `codec:capacity` and `e2e:timing` are in `check` and not here, so they are a
-# contributor's gate rather than this one's (README, "Run `pnpm run check`
-# before proposing a change"). Said plainly because a header claiming to be the
-# whole gate is how a check stops being run at all.
+# **Two lanes.** A pull request whose every changed path is under `openspec/`
+# runs the `Scope` and `Specification record` jobs and nothing else — about two
+# minutes against the hour and a half the product lane costs. Everything else,
+# a push to `main` included, runs the whole thing.
+#
+# The lane is honest because nothing in the product pipeline reads a
+# specification. The four reconciliations between the record and the code that
+# answers for it live in `scripts/check-specification-record.mjs`, which the
+# `Specification record` job runs in both lanes; the policy checker, the
+# generated help artifacts, the build and the suites read the product alone. A
+# rule that read `openspec/` from any of those would put the record back inside
+# the pipeline and make this split a hole in the gate rather than a saving.
+#
+# Most, not all. The rest of `pnpm run policy`, `help:artifacts:check`,
+# `build:preview`, `codec:capacity` and `e2e:timing` are in `check` and not
+# here, so they are a contributor's gate rather than this one's (README, "Run
+# `pnpm run check` before proposing a change"). Said plainly because a header
+# claiming to be the whole gate is how a check stops being run at all.
 #
 # `e2e:timing` stays out for a reason of its own rather than for cost. It
 # measures under CPU throttling, and what makes that measurement honest is that
@@ -70,8 +83,113 @@ env:
   E2E_SHARDS: 16
 
 jobs:
+  # Which lane a run belongs to. Every job below that costs more than a minute
+  # is gated on `product`, so this is the one place the answer is decided.
+  scope:
+    name: Scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      product: ${{ steps.classify.outputs.product }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+        with:
+          # Both ends of the comparison. A shallow checkout has no merge base,
+          # and the classifier answers `true` when it cannot find one.
+          fetch-depth: 0
+
+      # `false` only for a pull request whose every changed path is under
+      # `openspec/`. Everything else — a push, a fork, a classifier that could
+      # not read the diff — is a product change, because the cost of running the
+      # whole gate on a specification change is a wasted hour and the cost of
+      # skipping it on a product change is a defect nobody caught.
+      #
+      # `--no-renames` so a file moved out of the record shows as an addition
+      # outside it rather than as a rename the filter would read by its old
+      # path alone.
+      - name: Classify the change
+        id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -uo pipefail
+
+          product=true
+          reason="not a pull request"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            reason="the diff could not be read"
+            if git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}" \
+              && base="$(git merge-base "origin/${BASE_REF}" "$HEAD_SHA")" \
+              && changed="$(git diff --no-renames --name-only "$base" "$HEAD_SHA")" \
+              && [ -n "$changed" ]; then
+              product=false
+              reason="every changed path is under openspec/"
+              while IFS= read -r file; do
+                case "$file" in
+                  openspec/*) ;;
+                  *)
+                    product=true
+                    reason="$file is outside openspec/"
+                    break
+                    ;;
+                esac
+              done <<< "$changed"
+            fi
+          fi
+
+          echo "product=$product" >> "$GITHUB_OUTPUT"
+          if [ "$product" = "true" ]; then
+            echo "Product lane: $reason." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Specification lane: $reason, so the product jobs are skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # The whole gate for a specification-only pull request, and one job of the
+  # product lane's gate as well. It is the only thing in this repository that
+  # reads `openspec/`: the four reconciliations between the record and the code
+  # that answers for it (`scripts/check-specification-record.mjs`). Nothing else
+  # in the pipeline reads a specification, which is what lets the jobs below be
+  # skipped when only specifications changed.
+  #
+  # It owns the formatter too, because the formatter reads the record's Markdown
+  # and this is the job that always runs.
+  specification:
+    name: Specification record
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+      - name: Reconcile the specification record
+        run: pnpm run policy:specs
+
   check:
     name: Check
+    needs: scope
+    if: ${{ needs.scope.outputs.product == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -97,9 +215,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Check formatting
-        run: pnpm run format:check
 
       - name: Typecheck
         run: pnpm run typecheck
@@ -207,6 +322,8 @@ jobs:
 
   e2e:
     name: End-to-end (shard ${{ matrix.shard }})
+    # Skipped with the Check job it needs, which is how the specification lane
+    # reaches the shards: a skipped dependency skips its dependants.
     needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -279,8 +396,10 @@ jobs:
   e2e-report:
     name: End-to-end report
     # Runs on failure too: a red run is exactly when someone needs the report.
-    if: ${{ !cancelled() }}
-    needs: e2e
+    # Not in the specification lane, where there is no suite to report on and
+    # the skipped shards below are the intended outcome rather than a fault.
+    if: ${{ !cancelled() && needs.scope.outputs.product == 'true' }}
+    needs: [scope, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
