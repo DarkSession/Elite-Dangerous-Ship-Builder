@@ -119,8 +119,7 @@ test.describe('offline', () => {
     // Given longer than the default, because this is the one address in the
     // suite where the answer is drawn from nothing: the fallback states
     // nothing, so the application has to boot from the worker's cache and
-    // resolve the address itself before there is a heading at all, and a loaded
-    // runner has taken more than five seconds to do it.
+    // resolve the address itself before there is a heading at all.
     await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible({
       timeout: 15_000,
     });

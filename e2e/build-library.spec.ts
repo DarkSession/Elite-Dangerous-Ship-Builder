@@ -609,9 +609,7 @@ test.describe('the build library', () => {
 
     await page.getByRole('searchbox', { name: 'Search saved builds' }).fill('python');
 
-    await expect
-      .poll(() => page.locator('.library__count').innerText(), { timeout: 5_000 })
-      .toBe('1 of 2 builds');
+    await expect.poll(() => page.locator('.library__count').innerText()).toBe('1 of 2 builds');
     await expect(page.locator('[data-record-id="b"]')).toBeVisible();
     await expect(page.locator('[data-record-id="a"]')).toHaveCount(0);
     // Narrowing changes no record and removes nothing.

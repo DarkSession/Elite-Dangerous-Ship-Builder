@@ -679,12 +679,10 @@ test.describe('the saved-build surface', () => {
     // coalesces, and a status still reading "ready" is a write that is owed
     // rather than one that failed.
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-          ),
-        { timeout: 10_000 },
+      .poll(() =>
+        page.evaluate(
+          () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
+        ),
       )
       .toBe(1);
     await openLibrary(page);

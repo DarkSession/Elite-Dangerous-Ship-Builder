@@ -115,6 +115,8 @@ test.describe('offline capability', () => {
 
   test('keeps an illustration that has been seen once', async ({ page, context }) => {
     await withWorker(page, '/ships/Anaconda');
+    // Ten seconds in both environments for the two illustration waits: each is
+    // a fetch, from the network first and then from the worker's cache.
     await expect.poll(() => illustrationLoaded(page), { timeout: 10_000 }).toBe(true);
 
     await context.setOffline(true);

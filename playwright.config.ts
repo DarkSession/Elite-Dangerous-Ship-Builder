@@ -213,6 +213,19 @@ export default defineConfig({
   // of how much they do, rather than because of the machine, extend their own
   // budget: see `SWEEP_BUDGET_MS` in `e2e/accessibility.ts`.
   timeout: isCI ? 60_000 : 30_000,
+  // The same runner allowance, applied to the parts rather than the whole. A
+  // waiting assertion has a budget of its own, and the test budget above it
+  // does not scale it: Playwright gives every `expect(locator)` and every
+  // `expect.poll` 5 seconds, so a test with 60 seconds on a runner can still
+  // fail on one visibility wait that lost a CPU race — and the failure reads as
+  // a missing element rather than a slow one. The split follows the test budget:
+  // 10 seconds on CI. The local budget stays at 5 so an assertion that is slow
+  // because of what it waits for is felt where it is written. `toPass` is
+  // outside this — Playwright hands it no budget from here — so each of its call
+  // sites states its own, and the waiting assertions inside one state a shorter
+  // budget so that the block retries rather than spending it all on one
+  // attempt.
+  expect: { timeout: isCI ? 10_000 : 5_000 },
   // Retries are diagnostic only: a test that passes on retry still fails the
   // run, so flakiness cannot be absorbed into a green build. Ungated, so that a
   // local run given retries holds the same line CI does rather than reporting a
