@@ -16,7 +16,6 @@ import {
   checkHelpTopics,
   interpolationVariables,
   renderTopicsModule,
-  resolveReference,
 } from './check-help-topics.mjs';
 
 const temporaryRoots = [];
@@ -35,55 +34,13 @@ function catalogue(overrides = {}) {
 /**
  * A throwaway repository carrying only what this check reads.
  *
- * Every governing reference the real definitions cite is declared here in the
- * form the resolver looks for, so a fixture proves the resolver rather than the
- * repository it happens to be running in.
+ * The locale catalogues and nothing else. Whether a governing reference still
+ * resolves is `scripts/check-specification-record.mjs`, so no fixture here
+ * needs a constitution or a specification tree.
  */
-async function fixtureRepo({ locales = {}, principles, requirements } = {}) {
+async function fixtureRepo({ locales = {} } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'help-topics-'));
   temporaryRoots.push(root);
-
-  const declaredPrinciples = principles ?? ['I', 'II', 'III', 'IV'];
-  await writeFile(
-    join(root, 'CONSTITUTION.md'),
-    [
-      '# Constitution',
-      '',
-      ...declaredPrinciples.map((numeral) => `### ${numeral}. A principle`),
-    ].join('\n'),
-    'utf8',
-  );
-
-  const declaredRequirements = requirements ?? {
-    '001-ship-selection-and-loading': ['FR-004', 'FR-006', 'FR-008', 'FR-013', 'FR-014', 'FR-015'],
-    '002-module-outfitting': ['FR-013'],
-    '003-ship-statistics': ['FR-002'],
-    '005-power-and-heat': ['FR-003'],
-  };
-  for (const [feature, ids] of Object.entries(declaredRequirements)) {
-    const capability = join(root, 'openspec/specs/ship-builder', feature);
-    await mkdir(capability, { recursive: true });
-    await writeFile(
-      join(capability, 'spec.md'),
-      [
-        '## Purpose',
-        '',
-        'A fixture capability.',
-        '',
-        '## Requirements',
-        '',
-        ...ids.flatMap((id) => [
-          `### Requirement: Something accepted (${id})`,
-          '',
-          'The application MUST do something accepted.',
-          '',
-          `Source: ${feature.split('-')[0]}/${id}.`,
-          '',
-        ]),
-      ].join('\n'),
-      'utf8',
-    );
-  }
 
   await mkdir(join(root, 'src/app/i18n/locales'), { recursive: true });
   for (const locale of SHIPPED_LOCALES) {
@@ -159,14 +116,14 @@ describe('the help topic catalogue', () => {
   });
 
   describe('what an answer is allowed to be based on', () => {
-    it('resolves every reference the shipped definitions cite', async () => {
-      const { resolved } = await run(await fixtureRepo());
-      const cited = HELP_TOPIC_DEFINITIONS.reduce(
+    it('names every reference the shipped definitions cite', async () => {
+      const { cited } = await run(await fixtureRepo());
+      const declared = HELP_TOPIC_DEFINITIONS.reduce(
         (total, definition) => total + definition.governedBy.length,
         0,
       );
 
-      assert.equal(resolved.length, cited);
+      assert.equal(cited.length, declared);
     });
 
     it('refuses a topic that cites nothing at all', async () => {
@@ -178,60 +135,6 @@ describe('the help topic catalogue', () => {
             : definition,
         ),
       });
-    });
-
-    it('refuses a principle the constitution does not declare', async () => {
-      const root = await fixtureRepo({ principles: ['I', 'II', 'III'] });
-
-      await refuses(root, /principle IV: is not declared/);
-    });
-
-    it('refuses a requirement the feature does not declare', async () => {
-      const root = await fixtureRepo({
-        requirements: {
-          '001-ship-selection-and-loading': ['FR-015'],
-          '002-module-outfitting': ['FR-013'],
-          '003-ship-statistics': ['FR-002'],
-          '005-power-and-heat': ['FR-003'],
-        },
-      });
-
-      await refuses(root, /001\/FR-008: is not a declared requirement/);
-    });
-
-    it('refuses a feature that has no specification at all', async () => {
-      const root = await fixtureRepo({
-        requirements: {
-          '002-module-outfitting': ['FR-013'],
-          '003-ship-statistics': ['FR-002'],
-          '005-power-and-heat': ['FR-003'],
-        },
-      });
-
-      await refuses(root, /001\/FR-008: is not a declared requirement/);
-    });
-
-    it('refuses a repository with no capability specifications', async () => {
-      const root = await fixtureRepo();
-      await rm(join(root, 'openspec/specs'), { recursive: true });
-
-      await refuses(root, /openspec\/specs: is missing/);
-    });
-
-    // A withdrawal table names a dozen reassigned ids in prose. Resolving one
-    // of those would let a help answer cite the paragraph that says it is no
-    // longer true.
-    it('refuses an id that appears only in a withdrawal table', async () => {
-      const root = await fixtureRepo();
-      const path = join(root, 'openspec/specs/ship-builder/001-ship-selection-and-loading/spec.md');
-      const text = await readFile(path, 'utf8');
-      await writeFile(
-        path,
-        `${text.replace('Source: 001/FR-008.', '')}\n\n| \`001/FR-008\` | Was a thing | **Reassigned** |\n`,
-        'utf8',
-      );
-
-      await refuses(root, /001\/FR-008: is not a declared requirement/);
     });
   });
 
@@ -365,16 +268,6 @@ describe('the help topic catalogue', () => {
 
       assert.match(module, /assertCompleteHelpTopicCatalogue/);
       assert.match(module, /Do not edit/);
-    });
-  });
-
-  describe('the references the shipped definitions actually cite', () => {
-    it('resolves every one of them against this repository', async () => {
-      for (const definition of HELP_TOPIC_DEFINITIONS) {
-        for (const reference of definition.governedBy) {
-          await resolveReference(reference);
-        }
-      }
     });
   });
 });

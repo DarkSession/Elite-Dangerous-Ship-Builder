@@ -2286,8 +2286,9 @@ export interface HelpRouteRow {
  *
  * Transcribed one row at a time from the Release coverage ledger in
  * `openspec/changes/archive/012-help-and-licences/design/screen-inventory.md`; it is not
- * re-derived here, and the two are reconciled in both directions before
- * release. A row is added whenever a feature adds a capability, a
+ * re-derived here. `scripts/check-specification-record.mjs` reconciles the two
+ * in both directions, so the suite below reads these rows and never the
+ * document. A row is added whenever a feature adds a capability, a
  * package-backed surface or a layer that covers the frame.
  *
  * This export is the only part of this file feature 012 owns. Feature 011's

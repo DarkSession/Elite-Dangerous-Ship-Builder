@@ -45,19 +45,20 @@ pnpm start        # dev server on http://localhost:4200/
 
 ## Scripts
 
-| Command                | What it does                                                           |
-| ---------------------- | ---------------------------------------------------------------------- |
-| `pnpm start`           | Run the dev server with hot reload                                     |
-| `pnpm run build`       | Production build into `dist/`                                          |
-| `pnpm test`            | Run the unit tests with coverage                                       |
-| `pnpm run e2e`         | Run the Playwright suite across all ten projects                       |
-| `pnpm run e2e:ui`      | Run Playwright in interactive UI mode                                  |
-| `pnpm run e2e:offline` | Serve the production build and run the service-worker journeys         |
-| `pnpm run ui:preview`  | Serve the tooling-only component preview catalogue                     |
-| `pnpm run policy`      | Run the repository interface-policy checks                             |
-| `pnpm run typecheck`   | Type-check the project without emitting                                |
-| `pnpm run format`      | Format the repository with Prettier                                    |
-| `pnpm run check`       | Format check, typecheck, builds, policy, unit tests and the E2E suites |
+| Command                 | What it does                                                            |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `pnpm start`            | Run the dev server with hot reload                                      |
+| `pnpm run build`        | Production build into `dist/`                                           |
+| `pnpm test`             | Run the unit tests with coverage                                        |
+| `pnpm run e2e`          | Run the Playwright suite across all ten projects                        |
+| `pnpm run e2e:ui`       | Run Playwright in interactive UI mode                                   |
+| `pnpm run e2e:offline`  | Serve the production build and run the service-worker journeys          |
+| `pnpm run ui:preview`   | Serve the tooling-only component preview catalogue                      |
+| `pnpm run policy`       | Run the repository interface-policy checks                              |
+| `pnpm run policy:specs` | Reconcile the specification record against the code that answers for it |
+| `pnpm run typecheck`    | Type-check the project without emitting                                 |
+| `pnpm run format`       | Format the repository with Prettier                                     |
+| `pnpm run check`        | Format check, typecheck, builds, policy, unit tests and the E2E suites  |
 
 Run `pnpm run check` before proposing a change.
 
@@ -333,6 +334,16 @@ Codex reads the same six skills from `.agents/skills` under their own names —
 The CLI is a devDependency, so `pnpm exec openspec list --specs`,
 `pnpm exec openspec view` and `pnpm exec openspec validate --specs --strict`
 work without a global install.
+
+`scripts/check-specification-record.mjs` (`pnpm run policy:specs`) is the one
+script that reads `openspec/`. It reconciles the record against the code that
+answers for it: a declared requirement is registered in the coverage ledger, a
+help topic answers from a requirement or principle something still declares, a
+conformance claim in the record names its excluded criteria, and
+`helpRouteCoverage` transcribes feature 012's screen inventory. Nothing else in
+the pipeline opens a specification, so a pull request that changes only the
+record runs the formatter and that script — about two minutes — and skips the
+build, the unit tests, the end-to-end matrix and the preview.
 
 ## Contributing
 
