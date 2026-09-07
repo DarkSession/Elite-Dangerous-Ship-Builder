@@ -39,13 +39,15 @@
 
 - [x] 3.1 Introduce the port `AutosaveService` and `TabOwnershipCoordinator` read —
       revision, fingerprint, dirty, record id, named source, persistence and the
-      record body — and implement it for `ActiveBuildStore`. Four behaviours change
+      record body — and implement it for `ActiveBuildStore`. Five behaviours change
       for the ship tool: a record autosave was handed keeps the instant it says it was
       created (001/FR-013), resuming writes the build whether or not it has changed,
-      the pause is about the discarded record alone (001/FR-012), and a target that
-      turns out to be named is stated as a failed write rather than refused in silence
-      (001/FR-014). Verify with the existing autosave, ownership and workspace unit
-      tests staying green, and an assertion over each of the four.
+      the pause is about the discarded record alone whether the page opens another
+      build or saves the one it holds (001/FR-012), a target that turns out to be named
+      is stated as a failed write and let go of rather than refused in silence
+      (001/FR-014), and a save says the build is stored. Verify with the existing
+      autosave, ownership and workspace unit tests staying green, and an assertion over
+      each of the five.
 - [x] 3.2 Give `LocalRecordRepository.findUnnamedMatching` the tool it is matching, so
       a loadout never takes over a build's record. Verify with unit tests over a store
       holding an unnamed record of each tool with the same fingerprint.

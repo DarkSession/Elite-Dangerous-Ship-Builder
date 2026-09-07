@@ -198,8 +198,12 @@ export class WorkingRecordAutosave {
     //
     // Stated rather than refused in silence: the work is in nothing, and a
     // Commander who is not told reads a screen that says it is saved
-    // (001/FR-014).
+    // (001/FR-014). And let go of, so that the retry the notice offers has
+    // somewhere to land: held on to, every later write would read the same
+    // named record and fail the same way, and the one control on the notice
+    // would do nothing however often it is pressed.
     if (stored?.record.kind === 'named') {
+      this.#subject.setAutosaveRecordId(null);
       this.#subject.setPersistence('write-failed');
       return false;
     }

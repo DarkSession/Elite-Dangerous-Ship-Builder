@@ -14,6 +14,7 @@ import { ActiveBuildStore } from '../../application/active-build/active-build.st
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
+import { adoptSavedRecord } from '../../application/build-library/adopt-saved-record';
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { LibraryPresence } from '../build-library/library-presence';
@@ -586,30 +587,9 @@ export class BuildWorkspacePage {
     this.#conflicts.clear();
   }
 
-  /**
-   * Takes up the named record a save produced, and lets go of the unnamed one.
-   *
-   * Letting go is the part that matters. The page now holds a named record, and
-   * autosave has no path to one — so the id it was writing to is cleared and the
-   * next modelled edit forks a fresh unnamed record, rather than autosave
-   * silently going idle against a record it is no longer allowed to touch
-   * (FR-008, persistence contract, "Autosaved records").
-   */
+  /** The build now belongs to the save that was just written. */
   #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
-    this.#active.markSaved({ recordId, baseRevisionId: revisionId });
-    this.#active.setAutosaveRecordId(null);
-    // The work is in a record again, said in the words the screen draws. A page
-    // paused on a record another tab discarded moves off it by saving as much
-    // as by opening another, and the notice about the discarded one would
-    // otherwise stand with nothing left to resume (001/FR-012).
-    this.#active.setPersistence('saved');
-    this.#invalidation.announceWrite(recordId, revisionId);
-
-    if (held !== null && held !== recordId) {
-      // Consumed, not deleted by anyone: other pages listing it need to stop
-      // showing it, and the page that had it open is this one.
-      this.#invalidation.announceDelete(held);
-    }
+    adoptSavedRecord(this.#active, this.#invalidation, { recordId, revisionId, held });
   }
 }
 

@@ -444,6 +444,25 @@ describe('AutosaveService', () => {
     // refusal that drew no notice left the Commander with nothing to answer it
     // with (001/FR-014).
     expect(active.persistence()).toBe('write-failed');
+    // And let go of, so the retry the notice offers has somewhere to land.
+    expect(active.autosaveRecordId()).toBeNull();
+  });
+
+  it('answers a retry after a named target with a record of its own', () => {
+    // The notice draws one control. Held on to, the named record would refuse
+    // every later write the same way and the control would do nothing however
+    // often it is pressed (001/FR-008, 001/FR-014).
+    const { autosave, active, storage } = setup((store) =>
+      store.setItem(recordKey(HELD), storedNamedRecord(HELD)),
+    );
+    commitBuild(active);
+    autosave.flush();
+
+    autosave.flush();
+
+    expect(active.persistence()).toBe('saved');
+    const written = [...storage.entries.keys()].filter((key) => key.startsWith('ednb:record:'));
+    expect(written).toHaveLength(2);
   });
 
   it('coalesces a burst of edits into one write', async () => {

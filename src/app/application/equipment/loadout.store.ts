@@ -168,6 +168,11 @@ export class LoadoutStore implements WorkingRecordSubject {
    * that arrives in no record — a link, or one read from a journal — has no
    * baseline, which is what sends autosave to mint or take over a record for it
    * (001/FR-008, 017/FR-007).
+   *
+   * The persistence state goes back to `ready` with it. What it said was about
+   * the loadout that was on the bench — a store that refused a write, or a
+   * record another page discarded — and a notice about that one standing over
+   * this one states something a Commander cannot act on (017/FR-008).
    */
   open(
     loadout: EquipmentLoadout | null,

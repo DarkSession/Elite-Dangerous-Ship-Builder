@@ -107,6 +107,11 @@ autosave MUST pause, and resuming MUST be an explicit Commander action, because 
 page decided anything. Resuming MUST write the loadout, whether or not it has changed since
 the record was discarded.
 
+The pause MUST be about the discarded record alone. A bench that takes up another record —
+by opening a saved loadout, by reading one from an address, or by saving the loadout under a
+name — MUST store into that record unasked, and MUST NOT keep stating a discard that is not
+about the loadout it now holds.
+
 A record deleted on this page MUST clear the bench, which is the opposite answer to the
 opposite event: a Commander who deletes the record the bench autosaves into decided that here,
 and writing it back on the next change would undo what they confirmed. The deleted record MUST
@@ -143,6 +148,12 @@ Source: 017/FR-008.
 - **WHEN** a Commander resumes autosave after another page deleted the record, without
   having changed the loadout
 - **THEN** the loadout is written to a record again
+
+#### Scenario: Another loadout is opened while saving is paused
+
+- **WHEN** a Commander opens another loadout while autosave is paused on a discarded record
+- **THEN** the loadout that opens is stored without being asked for
+- **AND** the bench states nothing about the record that was discarded
 
 #### Scenario: Another page deletes this page's record
 

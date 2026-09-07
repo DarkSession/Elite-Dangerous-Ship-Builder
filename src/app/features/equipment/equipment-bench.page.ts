@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
+import { adoptSavedRecord } from '../../application/build-library/adopt-saved-record';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { LibraryPresence } from '../build-library/library-presence';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
@@ -524,7 +525,7 @@ export class EquipmentBenchPage {
     // The unnamed record these changes have been autosaved into, if any. Saving
     // consumes it: replacing a saved loadout removes it once that write has
     // succeeded, and naming the loadout promotes it in place, so a save never
-    // leaves a copy of itself behind (001/FR-008, 001/FR-009).
+    // leaves a copy of itself behind (013/FR-016, 017/FR-007).
     const held = this.store.autosaveRecordId();
 
     const result =
@@ -587,28 +588,9 @@ export class EquipmentBenchPage {
     );
   }
 
-  /**
-   * The loadout on the bench now belongs to the save that was just written.
-   *
-   * And to no unnamed record: the save consumed the one the changes were
-   * autosaved into, and autosave forks a fresh one at the next change rather
-   * than writing into the save a Commander just made (001/FR-008).
-   */
+  /** The loadout on the bench now belongs to the save that was just written. */
   #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
-    this.store.markSaved({ recordId, baseRevisionId: revisionId });
-    this.store.setAutosaveRecordId(null);
-    // The work is in a record again, said in the words the screen draws. A page
-    // paused on a record another tab discarded moves off it by saving as much
-    // as by opening another, and the notice about the discarded one would
-    // otherwise stand with nothing left to resume (001/FR-012).
-    this.store.setPersistence('saved');
-    this.#invalidation.announceWrite(recordId, revisionId);
-
-    if (held !== null && held !== recordId) {
-      // Consumed, not deleted by anyone: other pages listing it need to stop
-      // showing it, and the page that had it open is this one.
-      this.#invalidation.announceDelete(held);
-    }
+    adoptSavedRecord(this.store, this.#invalidation, { recordId, revisionId, held });
   }
 
   showTab(tab: string): void {

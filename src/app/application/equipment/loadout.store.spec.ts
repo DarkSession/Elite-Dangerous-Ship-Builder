@@ -5,6 +5,16 @@ import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equip
 
 const RIFLE = 'wpn_m_assaultrifle_plasma_fauto';
 
+/** A loadout arriving from somewhere else, as `open` takes one. */
+function worn(suitFamily: string): EquipmentLoadout {
+  return {
+    suitFamily,
+    suitGrade: 1,
+    suitModifications: [null, null, null, null],
+    weapons: [null, null, null],
+  } as EquipmentLoadout;
+}
+
 describe('LoadoutStore', () => {
   const store = (): LoadoutStore => TestBed.inject(LoadoutStore);
 
@@ -237,6 +247,20 @@ describe('what autosave reads from the bench', () => {
     store().setPersistence('quota-full');
 
     expect(store().persistence()).toBe('quota-full');
+  });
+
+  it('does not state a discarded record over the loadout that opens next', () => {
+    // The notice was about the record another page discarded. A Commander who
+    // answers it by opening another loadout has left that record behind, and
+    // the notice would otherwise stand with nothing left to resume
+    // (017/FR-008).
+    const bench = store();
+    bench.open(worn('tacticalsuit'), null, { autosaveRecordId: 'working-1' });
+    bench.setPersistence('record-deleted-externally');
+
+    bench.open(worn('flightsuit'), null, { autosaveRecordId: 'working-2' });
+
+    expect(bench.persistence()).toBe('ready');
   });
 
   it('clears the bench when the record it writes to is deleted here', () => {

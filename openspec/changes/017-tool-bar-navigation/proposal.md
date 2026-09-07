@@ -19,8 +19,9 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
   `aria-current`, so which tool is open is still stated rather than drawn.
 - Activating the ship tool's tab opens the ship list. From a hull and from the outfitting
   workspace it leaves the screen; on the ship list itself it does nothing.
-- Activating the equipment tool's tab starts an empty bench, ready for a suit. The loadout
-  that was on it stays as the record it is autosaved to.
+- Activating the equipment tool's tab on the bench starts an empty bench, ready for a suit.
+  The loadout that was on it stays as the record it is autosaved to. From a screen the
+  re-entry does not lead to, the tab opens the bench and leaves what is on it.
 - The bench autosaves the open loadout into an unnamed record of its own, restores it after
   a reload, and reports a store that refuses a write. The rules are the ones the record
   store already carries: one working record per tool per page, a named record never written
@@ -53,16 +54,18 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 - `src/app/application/build-library/working-record.autosave.ts` and
   `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone, over the
   port each tool's store implements, `working-record.port.ts`; `autosave.service.ts` is left
-  holding only which store the ship tool keeps. Four ship behaviours change as a result. A
+  holding only which store the ship tool keeps. Five ship behaviours change as a result. A
   record autosave was handed keeps the instant it says it was created, instead of being
   stamped with the moment of the write that followed a reload (001/FR-013). Resuming after
   another page discarded the record writes the build even where it has not changed, rather
   than writing nothing at all. The pause is about the discarded record alone, so opening
-  another build saves it unasked instead of leaving a stopped autosave behind a notice about
-  a build that is no longer open (001/FR-012). And a record this page holds that turns out
-  to be stored as named is stated as a failed write rather than refused in silence, so a
-  write the ship tool used to drop with no notice and no retry is now one a Commander is
-  told about and can answer (001/FR-014).
+  another build — or saving the one that is open under a name — stores it unasked instead of
+  leaving a stopped autosave behind a notice about a build that is no longer open
+  (001/FR-012). A record this page holds that turns out to be stored as named is stated as a
+  failed write and let go of, rather than refused in silence, so a write the ship tool used
+  to drop with no notice and no retry is now one a Commander is told about and can answer
+  (001/FR-014). And a save says the build is stored, where the workspace used to leave
+  whatever the last write had said standing over it.
   `src/app/platform/storage/tab-descriptor.repository.ts` holds one working record per tool.
   `src/app/platform/storage/local-record.repository.ts` matches an unnamed record by tool.
 - `src/app/application/equipment/loadout.store.ts` implements that port, gaining what

@@ -40,6 +40,8 @@ function declareWideBench(): () => void {
 
 /** A lock that serializes without a browser: what is under test is the save. */
 class FakeLocks {
+  readonly available = true;
+
   async request<T>(_name: string, operation: () => Promise<T>): Promise<T> {
     return operation();
   }
@@ -415,6 +417,37 @@ describe('EquipmentBenchPage', () => {
     const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
     expect(saved.length).toBe(1);
     expect(saved[0]?.available === true && saved[0].record.kind).toBe('named');
+    fixture.destroy();
+  });
+
+  it('removes the record it was autosaved into when it replaces a saved loadout', async () => {
+    // The other half of the same rule: written into the record it replaced, the
+    // unnamed one it came from goes (013/FR-016, 017/FR-007).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+    store.dispatch({ kind: 'setSuitGrade', grade: 3 });
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const held = store.autosaveRecordId();
+    expect(held).not.toBeNull();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: true,
+    });
+
+    const listed = records.list();
+    const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(saved.map((entry) => (entry.available === true ? entry.record.id : ''))).not.toContain(
+      held,
+    );
+    expect(saved.length).toBe(1);
     fixture.destroy();
   });
 
