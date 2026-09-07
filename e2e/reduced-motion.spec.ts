@@ -8,6 +8,8 @@ import { expectLandmarks, expectNoDocumentOverflow } from './accessibility/asser
  * by the animation in the first place. With motion removed, every state and
  * every piece of feedback must still be present, still readable and still
  * exposed programmatically (FR-013).
+ *
+ * Two passes over one page: what the preference removed, and what it left.
  */
 test.describe('reduced motion', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,15 +20,13 @@ test.describe('reduced motion', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('reports the reduced-motion preference to the page', async ({ page }) => {
+  test('reports the preference and removes the motion it asks about', async ({ page }) => {
     const reduced = await page.evaluate(
       () => matchMedia('(prefers-reduced-motion: reduce)').matches,
     );
 
     expect(reduced).toBe(true);
-  });
 
-  test('removes nonessential transitions and animations', async ({ page }) => {
     const moving = await page.locator('body *').evaluateAll((nodes) =>
       nodes
         .filter((node) => {
@@ -46,12 +46,10 @@ test.describe('reduced motion', () => {
     expect(moving, 'nonessential motion survives the reduced-motion preference').toEqual([]);
   });
 
-  test('keeps every landmark and control', async ({ page }) => {
+  test('keeps every landmark, action and reading without motion', async ({ page }) => {
     await expectLandmarks(page);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  });
 
-  test('keeps every action visible with its text', async ({ page }) => {
     const controls = page.getByRole('button');
     const count = await controls.count();
 
@@ -60,15 +58,10 @@ test.describe('reduced motion', () => {
       await expect(control).toBeVisible();
       expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
     }
-  });
 
-  test('keeps visible feedback present without motion', async ({ page }) => {
     // The status region is ordinary content, so removing transitions cannot
     // remove it — it was never revealed by an animation.
     await expect(page.getByRole('status')).toHaveCount(1);
-  });
-
-  test('does not scroll the document horizontally', async ({ page }) => {
     await expectNoDocumentOverflow(page);
   });
 });

@@ -1,14 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   expectLandmarks,
   expectNameMatchesVisibleText,
-  expectNoDocumentOverflow,
   expectNoRawMessages,
   expectOrderedHeadings,
   expectRootLanguage,
   expectSingleVisibleH1,
-  expectTargetSizes,
 } from './accessibility/assertions';
 
 /**
@@ -21,6 +18,13 @@ import {
  *
  * Runs in all ten projects. Keyboard operation is constitutionally excluded
  * from the conformance claim, which does not weaken any of this.
+ *
+ * **One claim, one owner.** The entry point is one document, and every suite
+ * that opens it renders the same tree, so a measurement made here is a
+ * measurement nobody else needs to repeat. This suite owns the semantics of
+ * that tree. `responsive` owns how it holds its width, `target-and-contrast`
+ * owns the target baseline and the colour minima, and `start-page` owns the
+ * screen's own content and its scan.
  */
 test.describe('product semantics', () => {
   test.beforeEach(async ({ page }) => {
@@ -28,16 +32,16 @@ test.describe('product semantics', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('exposes the application landmarks', async ({ page }) => {
+  test('presents the landmarks, headings and language a reader navigates by', async ({ page }) => {
     await expectLandmarks(page);
-  });
-
-  test('exposes one visible top-level heading', async ({ page }) => {
     await expectSingleVisibleH1(page);
-  });
-
-  test('descends heading levels without skipping', async ({ page }) => {
     await expectOrderedHeadings(page);
+    await expectRootLanguage(page, { lang: 'en', dir: 'ltr' });
+    await expectNoRawMessages(page);
+
+    // Visible feedback is ordinary semantic content, not a live region: a
+    // Commander must be able to find and re-read it, not only hear it once.
+    await expect(page.getByRole('status')).toHaveCount(1);
   });
 
   test('gives every control an accessible name matching its visible text', async ({ page }) => {
@@ -45,28 +49,15 @@ test.describe('product semantics', () => {
     const count = await controls.count();
 
     for (let index = 0; index < count; index += 1) {
-      await expectNameMatchesVisibleText(controls.nth(index));
+      const control = controls.nth(index);
+
+      // Present in the accessibility tree and not hidden from view: an action
+      // that is merely off-screen is an action a Commander cannot take, and one
+      // that survives as an unlabelled glyph has not survived either.
+      await expect(control).toBeVisible();
+      expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
+      await expectNameMatchesVisibleText(control);
     }
-  });
-
-  test('meets the target-size baseline for every interactive control', async ({ page }) => {
-    await expectTargetSizes(page);
-  });
-
-  test('never scrolls the document horizontally', async ({ page }) => {
-    await expectNoDocumentOverflow(page);
-  });
-
-  test('publishes the root language and direction', async ({ page }) => {
-    await expectRootLanguage(page, { lang: 'en', dir: 'ltr' });
-  });
-
-  test('shows no raw message key or unresolved placeholder', async ({ page }) => {
-    await expectNoRawMessages(page);
-  });
-
-  test('passes an accessibility scan', async ({ page }, testInfo) => {
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'product-shell' });
   });
 
   test('names the tool the open screen belongs to, and does not offer it', async ({ page }) => {
@@ -125,12 +116,5 @@ test.describe('product semantics', () => {
     }
 
     expect(await named()).toBe('Ship Builder');
-  });
-
-  test('exposes a named status region in ordinary reading order', async ({ page }) => {
-    // Visible feedback is ordinary semantic content, not a live region: a
-    // Commander must be able to find and re-read it, not only hear it once.
-    const status = page.getByRole('status');
-    await expect(status).toHaveCount(1);
   });
 });

@@ -1,6 +1,4 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
 import {
   buildStockHull,
   openLibrary,
@@ -23,6 +21,14 @@ import {
  * here is that arithmetic: four builds leave four records, opening a save writes
  * nothing to it, the first edit forks, and naming or overwriting returns the
  * count to where it belongs (FR-008, FR-009).
+ *
+ * The workspace holding one of those builds is one of the four routes
+ * `interface-conformance` walks and scans, so its landmarks, its heading, its
+ * width and its axe scan are evidenced there (ledger surface
+ * `system/cross-route-conformance`). The persistence notice is silent unless
+ * there is a problem to act on, so a build that has reached storage and one that
+ * has not render the same tree, and one scan covers both. What parts them is the
+ * host attribute `savedToBrowser` reads.
  */
 
 /** Creates a stock build and lands in the workspace. */
@@ -437,14 +443,5 @@ test.describe('the tab’s working build', () => {
     // The unsaved entry these edits were in is consumed by the save that
     // replaced the build they came from.
     await expectRecords(page, 1);
-  });
-
-  test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {
-    await createBuild(page);
-    await savedToBrowser(page);
-
-    await expectSingleVisibleH1(page);
-    await expectNoDocumentOverflow(page);
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'workspace-working-build' });
   });
 });

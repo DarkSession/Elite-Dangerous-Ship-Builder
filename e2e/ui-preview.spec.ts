@@ -3,7 +3,6 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   expectNoDocumentOverflow,
   expectNoRawMessages,
-  expectTargetSizes,
   expectTextEquivalent,
 } from './accessibility/assertions';
 import { previewUrl } from './servers';
@@ -12,9 +11,14 @@ import { previewUrl } from './servers';
  * The preview sweep (US1).
  *
  * Renders every applicable declaration in the manifest and holds it to the same
- * bar as a product screen: an axe scan, the named semantic assertions, target
- * sizes and no document overflow. A component that only behaves inside one
- * carefully arranged screen is not a shared component.
+ * bar as a product screen: an axe scan, the named semantic assertions and no
+ * document overflow. A component that only behaves inside one carefully
+ * arranged screen is not a shared component.
+ *
+ * The catalogue index renders every shared cell at once, so a pass over it is a
+ * pass over all of them and is made once here. The target baseline and the
+ * colour minima over the same page are `target-and-contrast`, and the
+ * right-to-left reading order is `expansion-rtl`.
  *
  * Passing here never claims product usability on its own — a fixture is not a
  * journey. That is what the product suite and the screen-reader protocols are
@@ -34,7 +38,9 @@ test.describe('component preview catalogue', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('renders the catalogue against the production tokens', async ({ page }) => {
+  test('renders every registered state on the production ground, at its own address', async ({
+    page,
+  }) => {
     // The preview imports the product style entry point, so the one dark
     // ground is present. A preview rendering on a different surface would hide
     // exactly the contrast problems it exists to expose.
@@ -42,20 +48,16 @@ test.describe('component preview catalogue', () => {
 
     expect(background).not.toBe('rgba(0, 0, 0, 0)');
     expect(background).not.toBe('rgb(255, 255, 255)');
-  });
 
-  test('states honestly when nothing is registered', async ({ page }) => {
     const cells = await addresses(page);
 
+    // A catalogue with nothing in it says so, rather than drawing an empty page
+    // that looks like a render.
     if (cells.length === 0) {
       await expect(page.locator('[data-preview-empty]')).toBeVisible();
     } else {
       await expect(page.locator('[data-preview-empty]')).toHaveCount(0);
     }
-  });
-
-  test('gives every rendered state a stable address', async ({ page }) => {
-    const cells = await addresses(page);
 
     for (const address of cells) {
       expect(address).toMatch(/^[a-z0-9-]+--(default|empty|loading|error|disabled)$/);
@@ -79,19 +81,12 @@ test.describe('component preview catalogue', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'preview-catalogue' });
   });
 
-  test('meets the target-size baseline in every rendered state', async ({ page }) => {
-    await expectTargetSizes(page);
-  });
-
-  test('never scrolls the document horizontally', async ({ page }) => {
+  test('says everything in words, and fits the page it is drawn on', async ({ page }) => {
     await expectNoDocumentOverflow(page);
-  });
-
-  test('resolves every fixture string through the message facade', async ({ page }) => {
+    // Every fixture string through the message facade, and every visual carrier
+    // with a text equivalent beside it.
     await expectNoRawMessages(page);
-  });
 
-  test('gives every visual carrier a text equivalent', async ({ page }) => {
     const carriers = page.locator('[data-visual-carrier]');
     const count = await carriers.count();
 
@@ -171,20 +166,5 @@ test.describe('component preview catalogue', () => {
         expect(Math.abs(run - cell.edge)).toBeLessThanOrEqual(1);
       }
     }
-  });
-
-  test('renders right-to-left without changing semantic order', async ({ page }) => {
-    const order = await page
-      .locator('[data-preview-address]')
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-preview-address')));
-
-    await page.goto(previewUrl(undefined, 'rtl'));
-    await expect(page.getByRole('main')).toHaveAttribute('dir', 'rtl');
-
-    const rtlOrder = await page
-      .locator('[data-preview-address]')
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-preview-address')));
-
-    expect(rtlOrder).toEqual(order);
   });
 });

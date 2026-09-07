@@ -2,7 +2,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
-  expectNoDocumentOverflow,
   expectNoRawMessages,
   expectOrderedHeadings,
   expectSingleVisibleH1,
@@ -538,18 +537,18 @@ test.describe('hull detail', () => {
     expect(plate.height).toBeLessThanOrEqual(bound / 1.5 + 1);
   });
 
-  test('never scrolls the document sideways', async ({ page }) => {
-    await expectNoDocumentOverflow(page);
-  });
-
-  test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {
+  test('stays sound on a hull it cannot show, and on a second build', async ({
+    page,
+  }, testInfo) => {
+    // The two states no other scan reaches. A hull's populated detail is one of
+    // the four routes `interface-conformance` walks and scans, so it is scanned
+    // there rather than a second time here (ledger surface
+    // `system/cross-route-conformance`).
+    await page.goto('/ships/Nonexistent_Hull');
+    await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible();
     await expectSingleVisibleH1(page);
     await expectOrderedHeadings(page);
     await expectNoRawMessages(page);
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-populated' });
-
-    await page.goto('/ships/Nonexistent_Hull');
-    await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-unknown' });
 
     await page.goto(ANACONDA);

@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   clippedText,
   expectLandmarks,
@@ -20,14 +19,20 @@ import { reachShellAction } from './shell';
  *
  * Runs in all ten projects, so each assertion is made at five viewport and
  * orientation profiles in both engines.
+ *
+ * This suite owns how a screen holds its width. The other three claims made of
+ * the entry point are owned one each: its semantics by `interface-foundations`,
+ * its target baseline and colour minima by `target-and-contrast`, and its axe
+ * scan by `start-page`. Each is made once over the one document the four of
+ * them open.
  */
 /**
  * The bench at every profile.
  *
- * The shell's own journey above opens on the catalogue. The bench is the second
- * tool and lays itself out on its own container rather than on the window, so
- * the same claim is made of it directly: no capability is dropped and nothing
- * is cut off at any of the ten profiles (013/FR-025).
+ * The shell's own journey below opens on the entry point. The bench is the
+ * second tool and lays itself out on its own container rather than on the
+ * window, so the same claim is made of it directly: no capability is dropped
+ * and nothing is cut off at any of the ten profiles (013/FR-025).
  */
 test.describe('the equipment bench, responsively', () => {
   test.beforeEach(async ({ page }) => {
@@ -39,20 +44,11 @@ test.describe('the equipment bench, responsively', () => {
     await expect(page.locator('.gate')).toHaveCount(0);
   });
 
-  test('never scrolls the document horizontally', async ({ page }) => {
-    await expectNoDocumentOverflow(page);
-  });
-
-  test('keeps every datum readable rather than clipping it', async ({ page }) => {
-    expect(await clippedText(page), 'content is cut off with no way to reach it').toEqual([]);
-  });
-
-  test('meets the target baseline at every profile', async ({ page }) => {
-    await expectTargetSizes(page);
-  });
-
-  test('keeps the landmarks at every profile', async ({ page }) => {
+  test('keeps every landmark, target and datum at this profile', async ({ page }) => {
     await expectLandmarks(page);
+    await expectNoDocumentOverflow(page);
+    await expectTargetSizes(page);
+    expect(await clippedText(page), 'content is cut off with no way to reach it').toEqual([]);
   });
 
   test('takes the arrangement its own width has room for', async ({ page }) => {
@@ -94,37 +90,12 @@ test.describe('responsive availability', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('keeps the landmarks at every profile', async ({ page }) => {
-    await expectLandmarks(page);
-  });
-
-  test('never scrolls the document horizontally', async ({ page }) => {
+  test('never scrolls the document horizontally, and cuts nothing off', async ({ page }) => {
     await expectNoDocumentOverflow(page);
-  });
-
-  test('keeps every action reachable and named', async ({ page }) => {
-    const controls = page.getByRole('button');
-    const count = await controls.count();
-
-    for (let index = 0; index < count; index += 1) {
-      const control = controls.nth(index);
-
-      // Present in the accessibility tree and not hidden from view: an action
-      // that is merely off-screen is an action a Commander cannot take.
-      await expect(control).toBeVisible();
-      expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
-    }
-  });
-
-  test('keeps every datum readable rather than clipping it', async ({ page }) => {
     // The same measurement expanded copy, mirrored direction and 400% zoom use:
     // truncation is one failure, and one detector keeps the engines' sub-pixel
     // disagreements in one place rather than four.
     expect(await clippedText(page), 'content is cut off with no way to reach it').toEqual([]);
-  });
-
-  test('meets the target baseline at every profile', async ({ page }) => {
-    await expectTargetSizes(page);
   });
 
   test('completes the primary journey by tap on touch profiles and click on desktop', async ({
@@ -211,11 +182,5 @@ test.describe('responsive availability', () => {
     // whole of it: that is what parts a sheet from a full-height layer, and a
     // bound equal to the screen would not.
     expect(measured.height).toBeLessThan(measured.viewport);
-  });
-
-  test('passes an accessibility scan at every profile', async ({ page }, testInfo) => {
-    await expectNoAccessibilityViolations(page, testInfo, {
-      label: `responsive-${testInfo.project.name}`,
-    });
   });
 });

@@ -745,19 +745,19 @@ async function renderedTopics(page: Page): Promise<[string, string][]> {
 }
 
 test.describe('the questions the modal answers', () => {
-  test('answers every topic, once each, in the declared order', async ({ page }) => {
+  test('answers every declared topic, once each, in words of its own', async ({ page }) => {
+    // One modal, read several ways. Reaching it costs a stock build and a shell
+    // action, and none of the readings below changes what it is reading, so the
+    // modal is opened once and every claim is made against it.
     await withStockBuild(page);
     await openHelp(page);
 
+    // Every topic the manifest declares, once each, in the declared order.
     expect(await renderedTopics(page)).toEqual(
       HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
     );
-  });
 
-  test('gives every question its own heading over its own answer', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
+    // Each question its own heading over its own answer.
     const shape = await helpModal(page)
       .locator('.help-dialog__topic')
       .evaluateAll((topics) =>
@@ -771,6 +771,40 @@ test.describe('the questions the modal answers', () => {
     for (const topic of shape) {
       expect(topic.heading).toBe('h4');
       expect(topic.answers).toBe(1);
+    }
+
+    // Nested under the FAQ heading rather than standing beside it.
+    const faq = helpModal(page).locator('.help-dialog__section').nth(1);
+    await expect(faq.locator('.help-dialog__heading')).toHaveText(
+      new RegExp(englishMessages['help.section.faq'], 'i'),
+    );
+    await expect(faq.locator('.help-dialog__topic')).toHaveCount(HELP_TOPIC_TEXT.length);
+
+    // And no raw key, blank answer, unresolved variable or markup in any of it.
+    for (const [question, answer] of await renderedTopics(page)) {
+      for (const text of [question, answer]) {
+        expect(text.length).toBeGreaterThan(0);
+        expect(text).not.toMatch(/^help\./);
+        expect(text).not.toContain('{{');
+        expect(text).not.toMatch(/<[a-z/]/i);
+      }
+    }
+  });
+
+  test('claims nothing the reference claims and this application cannot do', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+    const text = (await helpModal(page).textContent()) ?? '';
+
+    // The reference FAQ says an imported module keeps its real roll, which
+    // contradicts feature 002 FR-013 and constitution IV, and promises an
+    // import behaviour feature 004 owns. Neither is a topic here.
+    expect(text).not.toMatch(/retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i);
+    expect(text).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
+
+    // Nor any of the five questions withdrawn from the set.
+    for (const question of WITHDRAWN_HELP_QUESTIONS) {
+      expect(text).not.toMatch(question);
     }
   });
 
@@ -787,54 +821,6 @@ test.describe('the questions the modal answers', () => {
     expect(await renderedTopics(page)).toEqual(
       HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
     );
-  });
-
-  test('carries no raw key, blank answer, unresolved variable or markup', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
-    for (const [question, answer] of await renderedTopics(page)) {
-      for (const text of [question, answer]) {
-        expect(text.length).toBeGreaterThan(0);
-        expect(text).not.toMatch(/^help\./);
-        expect(text).not.toContain('{{');
-        expect(text).not.toMatch(/<[a-z/]/i);
-      }
-    }
-  });
-
-  test('makes neither reference claim this application cannot support', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const text = (await helpModal(page).textContent()) ?? '';
-
-    // The reference FAQ says an imported module keeps its real roll, which
-    // contradicts feature 002 FR-013 and constitution IV, and promises an
-    // import behaviour feature 004 owns. Neither is a topic here.
-    expect(text).not.toMatch(/retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i);
-    expect(text).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
-  });
-
-  test('asks none of the five questions withdrawn from the set', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const text = (await helpModal(page).textContent()) ?? '';
-
-    for (const question of WITHDRAWN_HELP_QUESTIONS) {
-      expect(text).not.toMatch(question);
-    }
-  });
-
-  test('nests the questions under the FAQ heading rather than beside it', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
-    const faq = helpModal(page).locator('.help-dialog__section').nth(1);
-
-    await expect(faq.locator('.help-dialog__heading')).toHaveText(
-      new RegExp(englishMessages['help.section.faq'], 'i'),
-    );
-    await expect(faq.locator('.help-dialog__topic')).toHaveCount(HELP_TOPIC_TEXT.length);
   });
 });
 
@@ -867,29 +853,34 @@ test.describe('the one legal body the modal embeds', () => {
     return stdout;
   }
 
-  test('renders the disclaimer exactly as root LICENSE holds it', async ({ page }) => {
+  test('embeds the one legal body, opened by the summary that points at it', async ({ page }) => {
+    // One modal, opened once: the excerpt, the summary above it and the
+    // measure it wraps within are three readings of the same rendered section.
     await withStockBuild(page);
     await openHelp(page);
+    const modal = helpModal(page);
 
-    const excerpt = helpModal(page).locator('.legal-excerpt__body');
+    // One body and no other document, asserted before the body is read: reading
+    // it is strict, so a second `.legal-excerpt__body` would fail there with a
+    // resolution error rather than here with the sentence that says why it is
+    // wrong (FR-004).
+    const excerpt = modal.locator('.legal-excerpt__body');
+    await expect(excerpt).toHaveCount(1);
+
+    // The disclaimer exactly as root LICENSE holds it.
     const rendered = await excerpt.evaluate((node) => node.textContent ?? '');
     const expected = await freshDisclaimer();
 
     expect(expected.length).toBeGreaterThan(0);
     expect(rendered).toBe(expected);
     await expect(excerpt).toHaveAttribute('lang', 'en');
-  });
-
-  test('opens the section with the summary, one claim to a line', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const lines = helpModal(page).locator('.help-dialog__licence-line');
 
     // Five claims about five different things: this application's own code,
     // the library it was built against, the icon files it serves, the game data
     // and imagery, and the typefaces. Two of them carry the link to the
     // complete terms they summarise, which is what a summary of what covers
     // what was missing while there was nowhere to point.
+    const lines = modal.locator('.help-dialog__licence-line');
     await expect(lines).toHaveCount(5);
     await expect(lines).toHaveText([
       new RegExp(englishMessages['help.licence.link.application'], 'i'),
@@ -907,35 +898,22 @@ test.describe('the one legal body the modal embeds', () => {
     await expect(lines.nth(1)).toContainText(
       englishMessages['help.licence.index.library'].replace('{{licence}}', '').trim(),
     );
-  });
 
-  test('embeds one legal body and no other document', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const modal = helpModal(page);
-
-    await expect(modal.locator('.legal-excerpt__body')).toHaveCount(1);
     // The MIT grant, the Almanac licence and the package's third-party notices
     // are named and pointed at, never reproduced (FR-004).
     await expect(modal).not.toContainText('Permission is hereby granted');
     await expect(modal).not.toContainText('THIRD_PARTY_NOTICES');
-  });
 
-  test('wraps the excerpt within the measure rather than sideways', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
-    const overflow = await helpModal(page)
-      .locator('.legal-excerpt__body')
-      .evaluate((node) => ({
-        clipped: node.scrollWidth > node.clientWidth + 1,
-        hidden: node.scrollHeight > node.clientHeight + 1,
-      }));
+    // And it wraps within the measure rather than sideways.
+    const overflow = await excerpt.evaluate((node) => ({
+      clipped: node.scrollWidth > node.clientWidth + 1,
+      hidden: node.scrollHeight > node.clientHeight + 1,
+    }));
 
     expect(overflow.clipped, 'the excerpt needs a sideways drag to be read').toBe(false);
     expect(overflow.hidden, 'part of the excerpt is cut off').toBe(false);
 
-    // And the document itself has not been pushed sideways by it.
+    // The document itself has not been pushed sideways by it either.
     const document = await page.evaluate(() => ({
       scroll: window.document.documentElement.scrollWidth,
       client: window.document.documentElement.clientWidth,
@@ -1009,7 +987,10 @@ test.describe('the three destinations the modal points at', () => {
     expect(await page.locator('link[rel="preconnect"], link[rel="prefetch"]').count()).toBe(0);
   });
 
-  test('leaves deliberately, says so, and takes no session with it', async ({ page }) => {
+  test('leaves deliberately, says nothing about this session, and reads as it looks', async ({
+    page,
+  }) => {
+    // Three readings of the same three links, so the modal is opened once.
     await withStockBuild(page);
     const fragment = new URL(await settled(page)).hash;
     expect(fragment.length).toBeGreaterThan(0);
@@ -1038,14 +1019,14 @@ test.describe('the three destinations the modal points at', () => {
       expect(href.protocol).toBe('https:');
       expect(href.search).toBe('');
       expect(href.hash).toBe('');
+
+      // No reader-only sentence appended to any name. What each link is, is
+      // what it reads as on screen, and which document a licence link covers is
+      // its line's own leading label rather than a second sentence only some
+      // people get.
+      await expect(link).toHaveAccessibleName((await link.textContent())?.trim() ?? '');
     }
-  });
 
-  test('carries no URL in its rendered text, and nothing about this session', async ({ page }) => {
-    await withStockBuild(page);
-    const fragment = new URL(await settled(page)).hash;
-
-    await openHelp(page);
     const text = (await helpModal(page).textContent()) ?? '';
 
     // The destinations are in `href`s. A URL drawn as words is a thing to
@@ -1055,19 +1036,6 @@ test.describe('the three destinations the modal points at', () => {
     // records is drawn either.
     expect(text).not.toContain(fragment.slice(1));
     expect(text).not.toContain('ednb:');
-  });
-
-  test('says the same thing on screen as it says to a reader', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
-    // No reader-only sentence appended to any name. What each link is, is what
-    // it reads as on screen, and which document a licence link covers is its
-    // line's own leading label rather than a second sentence only some people
-    // get.
-    for (const link of await helpModal(page).getByRole('link').all()) {
-      await expect(link).toHaveAccessibleName((await link.textContent())?.trim() ?? '');
-    }
   });
 });
 
@@ -1110,60 +1078,46 @@ test.describe('which artifact a Commander is looking at', () => {
       ) as Promise<[string, string][]>;
   }
 
-  test('names the versions the shipped root and installed manifests carry', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const facts = new Map(await identityFacts(page));
-
-    expect(facts.get(englishMessages['help.about.version.application'])).toBe(
-      applicationManifest.version,
-    );
-    expect(facts.get(englishMessages['help.about.version.almanac'])).toBe(
-      await installedAlmanacVersion(),
-    );
-  });
-
-  test('says nothing about release state, which the reference draws nowhere', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
-    // The generator still classifies the build — a mismatched
-    // `SHIP_BUILDER_RELEASE_TAG` fails generation — but FR-007's display half
-    // is withdrawn with the rest of what the reference does not draw.
-    await expect(helpModal(page).getByText(/non-release|release/i)).toHaveCount(0);
-  });
-
-  test('reads each identity as a term with its own value', async ({ page }) => {
+  test('names the two artifacts it is made of, and claims nothing else', async ({ page }) => {
+    // The ABOUT section, read once. Every claim below is about the same
+    // rendered section, so it is rendered once.
     await withStockBuild(page);
     await openHelp(page);
     const facts = await identityFacts(page);
-    const terms = facts.map(([term]) => term);
+    const byTerm = new Map(facts);
 
+    // The versions the shipped root and installed manifests carry.
+    expect(byTerm.get(englishMessages['help.about.version.application'])).toBe(
+      applicationManifest.version,
+    );
+    expect(byTerm.get(englishMessages['help.about.version.almanac'])).toBe(
+      await installedAlmanacVersion(),
+    );
+
+    // Each identity a term with its own value, and no term twice.
     expect(facts.length).toBe(2);
-    expect(new Set(terms).size).toBe(2);
+    expect(new Set(facts.map(([term]) => term)).size).toBe(2);
     for (const [term, value] of facts) {
       expect(term.length).toBeGreaterThan(0);
       expect(value.length).toBeGreaterThan(0);
     }
-  });
 
-  test('claims nothing about a live game or a live catalogue', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
+    // Nothing about release state. The generator still classifies the build — a
+    // mismatched `SHIP_BUILDER_RELEASE_TAG` fails generation — but FR-007's
+    // display half is withdrawn with the rest of what the reference does not
+    // draw.
+    await expect(helpModal(page).getByText(/non-release|release/i)).toHaveCount(0);
 
+    // And nothing about a live game or a live catalogue, which this
+    // application has no way to know.
     await expect(
       helpModal(page).getByText(/live game|live catalogue|up to date|latest version/i),
     ).toHaveCount(0);
-  });
 
-  // Three sentences, in one order, before the facts. The reference draws only
-  // the first; the second is the owner's maintainer line and the third is
-  // where the source is, with the destination named inside the sentence
-  // (FR-008).
-  test('reads purpose, maintainer and source before the facts', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
+    // Three sentences, in one order, before the facts. The reference draws only
+    // the first; the second is the owner's maintainer line and the third is
+    // where the source is, with the destination named inside the sentence
+    // (FR-008).
     const about = helpModal(page).locator('.help-dialog__section').first();
     const prose = await about
       .locator('p')
@@ -1175,12 +1129,8 @@ test.describe('which artifact a Commander is looking at', () => {
       englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
     ]);
     await expect(about.locator('ednb-version-facts')).toHaveCount(1);
-  });
 
-  test('wraps long identities within the measure rather than sideways', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-
+    // A long identity wraps within the measure rather than sideways.
     const overflow = await helpModal(page)
       .locator('.version-facts')
       .evaluate((node) => node.scrollWidth - node.clientWidth);

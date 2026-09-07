@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { previewUrl } from './servers';
-import { openActionLayer } from './shell';
 
 /**
  * What a screen reader is given (US1).
@@ -16,7 +15,7 @@ import { openActionLayer } from './shell';
  * which is what `e2e/manual/screen-reader.protocol.md` is still for.
  */
 test.describe('accessibility tree', () => {
-  test('presents the shell as one named banner carrying the heading', async ({ page }) => {
+  test('presents the shell as one named banner, landmark and pair of outlets', async ({ page }) => {
     await page.goto('/');
 
     // Roles and nesting only. The names are catalogue text and are asserted
@@ -33,10 +32,6 @@ test.describe('accessibility tree', () => {
       - alert
       - status
     `);
-  });
-
-  test('offers the screens it navigates to as one named landmark', async ({ page }) => {
-    await page.goto('/');
 
     // One navigation landmark in the banner, and it is the tool deck canvas 4c
     // draws. There were two until the saved builds stopped being a place with
@@ -54,10 +49,6 @@ test.describe('accessibility tree', () => {
     await expect(screens).toHaveCount(1);
     await expect(screens).toBeVisible();
     await expect(screens).toHaveAccessibleName(/.+/);
-  });
-
-  test('names the announcement outlets rather than leaving them anonymous', async ({ page }) => {
-    await page.goto('/');
 
     // Two live regions with different urgency. A reader that meets an unnamed
     // one cannot tell the Commander where the speech came from.
