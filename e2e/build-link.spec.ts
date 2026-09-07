@@ -137,11 +137,10 @@ test.describe('restoring a build from a link', () => {
     const incoming = await page.context().newPage();
     await incoming.goto(`/outfitting#${fragment}`);
     await buildIsOpen(incoming);
-    await incoming.waitForFunction(
-      (expected) => window.location.hash === `#${expected}`,
-      fragment,
-      { timeout: 5_000 },
-    );
+    // Polled rather than waited for by a page function, so the wait takes the
+    // assertion allowance: the restored build is re-encoded asynchronously, and
+    // the fragment is replaced when that encode resolves.
+    await expect.poll(() => incoming.evaluate(() => window.location.hash)).toBe(`#${fragment}`);
     await incoming.close();
   });
 });

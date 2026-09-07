@@ -113,7 +113,7 @@ async function recordCount(page: Page): Promise<number> {
  * is still owed.
  */
 async function expectRecords(page: Page, count: number): Promise<void> {
-  await expect.poll(() => recordCount(page), { timeout: 5_000 }).toBe(count);
+  await expect.poll(() => recordCount(page)).toBe(count);
 }
 
 /** The exact bytes one record is stored as, so "untouched" can be checked. */
