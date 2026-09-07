@@ -2630,7 +2630,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'slef.export.mode.label': '"Format" is the ordinary German word.',
     'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',
     'equipment.region.loadout':
-      'Loadout is the in-game term for an on-foot kit, and the word the journal event carries. The German catalogue keeps it untranslated, because Ausrüstung already stands for outfitting and for equipment.',
+      'Loadout is the in-game term for a kit of fitted equipment, and the word the journal event carries. The German catalogue keeps it untranslated, because Ausrüstung already stands for outfitting and for equipment.',
     'equipment.tab.loadout': 'The same term, on the tab that reaches that region.',
     'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
@@ -2701,8 +2701,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'Two package-supplied identities joined by a separator; the pattern holds no word in either language.',
     'drives.thrusters.boost':
       'The in-game term, used untranslated in the German community — the same decision already recorded for hullDetail.fact.boost, which names this very reading. "Schub" is thrust, and this figure is a speed.',
-    'drives.fsd.sco':
-      'The in-game abbreviation for Supercruise Overcharge, printed on the drive itself and not translated; the words behind it are carried under drives.fsd.sco.description.',
     'help.section.faq':
       'FAQ is the same borrowed abbreviation in German, and is what a German reader scans a help modal for.',
   },
