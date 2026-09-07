@@ -302,10 +302,9 @@ describe('LoadoutAutosaveService', () => {
     expect(storage.entries.get(recordKey('a-build'))).toContain('"tool":"ship"');
   });
 
-  it('keeps the instant a record it takes over was created (001/FR-013)', () => {
-    // Taking over is not creating. Stamping the entry with now would restart
-    // the seven days it has been counting down, which is the one thing the
-    // take-over rule exists to avoid.
+  it('keeps the instant a record it takes over was created', () => {
+    // Taking over is not creating. Stamping the entry with now would have it
+    // state a moment that did not happen (constitution IV).
     const { autosave, store, records, storage } = setup();
     const loadout = newLoadout('utilitysuit')!;
     records.write({

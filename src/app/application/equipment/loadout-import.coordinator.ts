@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { getSuitByFamily } from '@elite-dangerous-almanac/core/equipment/suits';
 import type { SuitLoadoutImportOutcome } from '@elite-dangerous-almanac/core/equipment/suit-loadout';
 import {
@@ -55,20 +55,7 @@ export class LoadoutImportCoordinator {
   readonly #clock = inject(ClockAdapter);
   readonly #gameText = inject(GameTextPresenter);
   readonly #messages = inject(MessageService);
-  readonly #injector = inject(Injector);
-  /**
-   * The library, resolved when there is something to tell it about.
-   *
-   * Not injected into a field. The store reaches `RetentionService`, which
-   * takes a page nonce from `UuidAdapter`, which throws where there is no
-   * `crypto` rather than fabricating an identity — and the import layer is
-   * mounted in the shell, so a field would construct that chain in the
-   * prerenderer and empty every built document (`app.config.ts`, the sweep's
-   * own initializer; 015/FR-001).
-   */
-  get #library(): BuildLibraryStore {
-    return this.#injector.get(BuildLibraryStore);
-  }
+  readonly #library = inject(BuildLibraryStore);
 
   /**
    * Reads the journal files a Commander chose. Imports nothing.

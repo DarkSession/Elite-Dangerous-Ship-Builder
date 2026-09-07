@@ -101,14 +101,9 @@ export class TabDescriptorRepository {
   /**
    * Lets go of one tool's working record, leaving the other tool's alone.
    *
-   * What a tool calls when it stops writing to a record and is not taking up
-   * another one: the bench was emptied, or the record was deleted on this page.
-   * Without it the claim outlives the work, and the next page built in this tab
-   * restores what a Commander cleared or names a record that is gone
-   * (017/FR-006, FR-008).
-   *
-   * The record itself is not touched here. Whether one is still there is the
-   * caller's to know.
+   * Removes the entry and nothing else: not the record, and not the other
+   * tool's claim on one. When a tool lets go, and what letting go costs if it
+   * does not, is `TabOwnershipCoordinator.release`.
    */
   release(tool: RecordTool): void {
     const held = this.read()?.workingRecords;

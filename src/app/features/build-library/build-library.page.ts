@@ -16,6 +16,7 @@ import {
   type StoredRecordEntry,
 } from '../../domain/records/local-record';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
+import { LoadoutStore } from '../../application/equipment/loadout.store';
 import { TabOwnershipCoordinator } from '../../application/build-library/tab-ownership.coordinator';
 import { EmptyBenchService } from '../../application/equipment/empty-bench.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
@@ -108,6 +109,7 @@ export class BuildLibraryPage {
   readonly #clock = inject(ClockAdapter);
   readonly #announcements = inject(AnnouncementService);
   readonly #active = inject(ActiveBuildStore);
+  readonly #loadout = inject(LoadoutStore);
   readonly #bench = inject(EmptyBenchService);
   readonly #ownership = inject(TabOwnershipCoordinator);
   readonly #messages = inject(MessageService);
@@ -319,12 +321,21 @@ export class BuildLibraryPage {
    * withdrawn on 2026-08-25, and expiry never raises it: expiry is not a way out
    * of a full quota, and offering it as one would suggest the application had
    * removed something to make room (FR-013).
+   *
+   * Asked of both tools, because either can be the one that could not write and
+   * either can be the screen this layer was raised from. The words name the
+   * work the Commander was doing when the store refused it; a store full for
+   * both is stated in the ship tool's, which is what the list opens on
+   * (017/FR-008).
    */
-  readonly manageReason = computed(() =>
-    this.#active.persistence() === 'quota-full'
-      ? this.#messages.message('persistence.quota-full')
-      : null,
-  );
+  readonly manageReason = computed(() => {
+    if (this.#active.persistence() === 'quota-full') {
+      return this.#messages.message('persistence.quota-full');
+    }
+    return this.#loadout.persistence() === 'quota-full'
+      ? this.#messages.message('persistence.loadout.quota-full')
+      : null;
+  });
 
   readonly #selectedForDiscard = signal<readonly string[]>([]);
   readonly selectedForDiscard = this.#selectedForDiscard.asReadonly();

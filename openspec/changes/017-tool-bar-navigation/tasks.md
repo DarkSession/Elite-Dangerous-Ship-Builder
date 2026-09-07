@@ -92,6 +92,11 @@
       loadout is written into the record it replaced — and end a pause about it. Verify
       with bench page tests over one record left after a save and over the notice about
       a discarded record ending at the save.
+- [x] 4.8 Clear the bench when the record it autosaves into is deleted on this page,
+      letting go of this tab's claim on it and taking the loadout out of the address so
+      the link does not read it straight back. Verify with unit tests over a deletion
+      the bench is holding and one it is not, and with an end-to-end journey deleting
+      the bench's own record from the saved list and returning to an empty bench.
 
 ## 5. Starting an empty bench
 

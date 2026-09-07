@@ -210,11 +210,17 @@ export class WorkingRecordAutosave {
 
     this.#subject.setPersistence('saving');
     const now = this.#clock.timestamp();
-    // A record that already exists keeps the instant it was created. Stamping
-    // it with now would restart the seven days it is counting down, which is
-    // exactly what taking a record over must not do — and a restored record and
-    // a taken-over one both reach this holding an id they did not mint
-    // (001/FR-013).
+    // A record that already exists keeps the instant it was created, because a
+    // later write is not a creation: stamping one with now would have the
+    // record state a moment that did not happen (constitution IV). A restored
+    // record and a taken-over one both reach this holding an id they did not
+    // mint, so both are records this has to be true of.
+    //
+    // Not what protects the expiry. That is counted from `modifiedAt`, which
+    // this same write stamps with now whatever is done here; what keeps a
+    // take-over from restarting the seven days is that a clean subject is not
+    // written at all, above. What `createdAt` decides is which of several
+    // identical unnamed records the take-over rule picks — the oldest.
     //
     // Read from the record on every write rather than remembered, because the
     // record this tool writes to changes under it: a loadout opened from the

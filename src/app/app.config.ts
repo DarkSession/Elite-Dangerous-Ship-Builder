@@ -91,15 +91,9 @@ export const appConfig: ApplicationConfig = {
     // costs nothing, and a row vanishing under a Commander reading the library
     // costs trust (FR-013, ruled 2026-08-25).
     //
-    // Not in the build's renderer. The sweep reaches `TabOwnershipCoordinator`,
-    // which takes a page nonce from `UuidAdapter`, which throws where there is
-    // no `crypto` rather than fabricating an identity (constitution IV). The
-    // renderer has no `crypto`, so an unguarded initializer throws before the
-    // router runs and every one of the 50 documents comes out empty. What is
-    // removed here is the call, not the honesty: `UuidAdapter` keeps throwing,
-    // and the build simply never asks it for something a build has no use for —
-    // there is no Commander at build time and no library to sweep
-    // (015/FR-001, research decision 5).
+    // Not in the build's renderer. What the sweep removes are records from a
+    // browser's own store, and the renderer has none: there is no Commander at
+    // build time and no library to sweep (015/FR-001).
     provideAppInitializer(() => {
       if (inject(RenderingTarget).isBrowser) {
         inject(RetentionService).sweep();

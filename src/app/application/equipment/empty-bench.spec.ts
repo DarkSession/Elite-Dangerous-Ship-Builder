@@ -262,3 +262,56 @@ describe('starting an empty bench', () => {
     expect(stored(records)).toEqual([]);
   });
 });
+
+describe('a record deleted on this page', () => {
+  it('clears the bench holding it, and lets go of this tab’s claim on it', () => {
+    // The opposite answer to the opposite event: a deletion made here was
+    // decided here, so writing the loadout back on the next change would undo
+    // what the Commander confirmed (017/FR-008).
+    const { bench, store, autosave, tab, ownership } = setup();
+    // What the bench does on the way in, so that the claim this asks about is
+    // one something actually wrote.
+    const stopTracking = ownership.track(store);
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    autosave.flush();
+    TestBed.tick();
+    const mine = store.autosaveRecordId()!;
+    expect(tab.read()?.workingRecords.equipment).toBe(mine);
+
+    expect(bench.clearHolding(mine)).toBe(true);
+
+    expect(store.hasLoadout()).toBe(false);
+    expect(store.autosaveRecordId()).toBeNull();
+    // A claim outliving the record would have the next page built in this tab
+    // restore from an entry that is gone.
+    expect(tab.read()?.workingRecords.equipment).toBeUndefined();
+    stopTracking();
+  });
+
+  it('takes the loadout out of the address, so the link does not read it back', () => {
+    const { bench, store, autosave, links, location } = setup();
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    autosave.flush();
+    links.publish();
+    expect(location.fragmentValue.startsWith('e.')).toBe(true);
+
+    bench.clearHolding(store.autosaveRecordId()!);
+
+    expect(location.fragmentValue).toBe('');
+    expect(links.link()).toEqual({ kind: 'absent' });
+  });
+
+  it('leaves a bench holding another record entirely alone', () => {
+    const { bench, store, autosave, location } = setup();
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    autosave.flush();
+    const mine = store.autosaveRecordId();
+    const replacements = location.replacements;
+
+    expect(bench.clearHolding('someone-elses')).toBe(false);
+
+    expect(store.hasLoadout()).toBe(true);
+    expect(store.autosaveRecordId()).toBe(mine);
+    expect(location.replacements).toBe(replacements);
+  });
+});

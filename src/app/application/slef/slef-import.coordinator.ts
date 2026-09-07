@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import {
@@ -77,20 +77,7 @@ export class SlefImportCoordinator {
   readonly #router = inject(Router);
   readonly #named = inject(NamedRecordService);
   readonly #clock = inject(ClockAdapter);
-  readonly #injector = inject(Injector);
-  /**
-   * The library, resolved when there is something to tell it about.
-   *
-   * Not injected into a field. The store reaches `RetentionService`, which
-   * takes a page nonce from `UuidAdapter`, which throws where there is no
-   * `crypto` rather than fabricating an identity — and the import layer is
-   * mounted in the shell, so a field would construct that chain in the
-   * prerenderer and empty every built document (`app.config.ts`, the sweep's
-   * own initializer; 015/FR-001).
-   */
-  get #library(): BuildLibraryStore {
-    return this.#injector.get(BuildLibraryStore);
-  }
+  readonly #library = inject(BuildLibraryStore);
 
   /**
    * Reads the files a Commander chose, and offers what they hold.

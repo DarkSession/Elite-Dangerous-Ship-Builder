@@ -50,6 +50,7 @@ class FakeLocks {
 describe('EquipmentBenchPage', () => {
   let store: LoadoutStore;
   let records: LocalRecordRepository;
+  let storage: MemoryStorage;
 
   beforeEach(async () => {
     // The bench publishes the loadout it holds into the address, and the
@@ -65,7 +66,7 @@ describe('EquipmentBenchPage', () => {
         provideRouter([]),
         // The bench saves into the one record library, so it reaches storage
         // the moment it is created.
-        ...provideMemoryStorage(new MemoryStorage()),
+        ...provideMemoryStorage((storage = new MemoryStorage())),
         { provide: WebLocksAdapter, useValue: new FakeLocks() },
       ],
     }).compileComponents();
@@ -497,14 +498,20 @@ describe('EquipmentBenchPage', () => {
     const autosave = TestBed.inject(LoadoutAutosaveService);
     autosave.flush();
     const mine = store.autosaveRecordId()!;
+    // Gone from the store as well as announced, so that the record standing
+    // afterwards is one the resume wrote rather than the one it was told about.
+    storage.entries.delete(recordKey(mine));
     window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
     fixture.detectChanges();
     expect(autosave.paused()).toBe(true);
+    expect(storage.entries.has(recordKey(mine))).toBe(false);
 
     fixture.componentInstance.actOnPersistence('resume');
 
     expect(autosave.paused()).toBe(false);
-    expect(records.open(mine).ok).toBe(true);
+    // Asked of the stored bytes. `open` answers whether the store could be
+    // reached, and says `ok` for a record that is not there at all.
+    expect(storage.entries.has(recordKey(mine))).toBe(true);
     fixture.destroy();
   });
 
@@ -516,7 +523,7 @@ describe('EquipmentBenchPage', () => {
     fixture.componentInstance.actOnPersistence('retry');
 
     expect(store.autosaveRecordId()).not.toBeNull();
-    expect(records.open(store.autosaveRecordId()!).ok).toBe(true);
+    expect(storage.entries.has(recordKey(store.autosaveRecordId()!))).toBe(true);
     fixture.destroy();
   });
 

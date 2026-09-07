@@ -14,7 +14,7 @@ and are not opened here — the Commander ruled for one prefix over a key space 
 
 | Key                   | Store              | Holds                                                                             |
 | --------------------- | ------------------ | --------------------------------------------------------------------------------- |
-| `ednb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.                   |
+| `ednb:record:<uuid>`  | `localStorage`     | One build or one loadout, named or not. One key per record; no index.             |
 | `ednb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record each tool autosaves into.            |
 | `ednb:catalogue`      | `sessionStorage`   | This tab's browsing position in the catalogue: search, filters, order, anchor.    |
 | `ednb:update-applied` | `sessionStorage`   | That this tab restarted onto a newer version, so the arriving session can say so. |

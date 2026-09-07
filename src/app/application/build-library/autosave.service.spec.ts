@@ -254,10 +254,10 @@ describe('AutosaveService', () => {
     expect(active.loadout()).not.toBeNull();
   });
 
-  it('keeps the instant a record it was handed was created (FR-013)', () => {
-    // A build restored after a reload arrives holding an id it did not mint.
-    // Stamping that record with now would restart the seven days it is counting
-    // down, which is the one thing restoring it must not do.
+  it('keeps the instant a record it was handed was created', () => {
+    // A build restored after a reload arrives holding an id it did not mint,
+    // and writing to that record is not creating it. Stamping it with now would
+    // have the record state a moment that did not happen (constitution IV).
     const { autosave, active, storage } = setup();
     TestBed.inject(LocalRecordRepository).write({
       id: HELD,

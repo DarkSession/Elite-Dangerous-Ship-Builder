@@ -263,6 +263,38 @@ test.describe('the bench and the address', () => {
     await context.close();
   });
 
+  test('a full store offers the bench a way to choose what to discard (017/FR-008)', async ({
+    page,
+  }) => {
+    // The notice draws one control, and the layer it raises has to open on the
+    // chooser rather than on the ordinary list — the Commander pressed it to
+    // make room, and a layer with no chooser reads as a control that failed.
+    await page.addInitScript(() => {
+      for (const size of [64 * 1024, 1024, 64, 1]) {
+        const chunk = 'x'.repeat(size);
+        for (let index = 0; ; index += 1) {
+          try {
+            localStorage.setItem(`filler:${size}:${index}`, chunk);
+          } catch {
+            break;
+          }
+        }
+      }
+    });
+
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+
+    await expect(page.getByText(/storage is full/i)).toBeVisible();
+    await page.getByRole('button', { name: 'Choose loadouts to discard' }).click();
+
+    // The chooser itself, and in the bench's own words: what a Commander is
+    // asked to discard here is a loadout.
+    const manager = page.locator('ednb-record-manager');
+    await expect(manager).toBeVisible();
+    await expect(manager).toContainText(/discard a loadout to make room/i);
+  });
+
   test('one unnamed record per tool, so a page holds a build and a loadout (017/FR-010)', async ({
     page,
   }) => {
