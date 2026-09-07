@@ -221,9 +221,9 @@ export class AppFrame {
   /**
    * Where the bar's own insignia goes, when it goes anywhere.
    *
-   * Every canvas puts the mark on the leading edge of the bar, and the
-   * 2026-08-26 revision put it where the outfitting bar's `SHIPYARD` chip used
-   * to be. So the mark carries that trip, and the word is not drawn twice.
+   * Every canvas puts the mark on the leading edge of the bar, where the
+   * 2026-08-26 revision put it: the place the outfitting bar's `SHIPYARD` chip
+   * used to hold. Where it goes is the entry point, which the application says.
    *
    * The application supplies one on every screen, so the deck holds the same
    * items wherever a Commander is. A surface that carries no destination at

@@ -4,7 +4,9 @@ import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channe
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { ActiveBuildStore } from '../active-build/active-build.store';
+import { LoadoutAutosaveService } from '../equipment/loadout-autosave.service';
 import { LoadoutStore } from '../equipment/loadout.store';
+import { AutosaveService } from './autosave.service';
 import type { WorkingRecordSubject } from './working-record.port';
 
 /**
@@ -45,6 +47,8 @@ export class TabOwnershipCoordinator {
   readonly #channel = inject(BroadcastChannelAdapter);
   readonly #uuid = inject(UuidAdapter);
   readonly #injector = inject(Injector);
+  readonly #shipAutosave = inject(AutosaveService);
+  readonly #benchAutosave = inject(LoadoutAutosaveService);
 
   #nonce: string | null = null;
 
@@ -76,8 +80,19 @@ export class TabOwnershipCoordinator {
     ['equipment', inject(LoadoutStore)],
   ]);
 
-  /** Called when a tool has had to fork, so the caller can copy the work. */
-  readonly #onFork = new Map<RecordTool, (previousId: string, nextId: string) => void>();
+  /**
+   * What copies a tool's work into the record a fork moved it onto.
+   *
+   * Bound here, beside the subjects, and for the same reason they are: a tool
+   * is forked whether or not its screen has ever been drawn, and a fork nobody
+   * answered would leave the work in the record the other page took and nothing
+   * at all in the fresh one (001/FR-012). Bound to the autosave rather than to
+   * a screen, which is what a screen would have handed over anyway.
+   */
+  readonly #copyOnFork = new Map<RecordTool, () => void>([
+    ['ship', () => this.#shipAutosave.adoptForkedRecord()],
+    ['equipment', () => this.#benchAutosave.adoptForkedRecord()],
+  ]);
 
   /** The last id announced for each tool, so one id is not announced twice. */
   readonly #announced = new Map<RecordTool, string>();
@@ -145,11 +160,12 @@ export class TabOwnershipCoordinator {
   /**
    * Lets go of one tool's record, without touching the other tool's.
    *
-   * Called where a tool stops writing to a record and takes up no other:
-   * starting an empty bench. The claim is what a reload reads, so a claim left
-   * behind would restore the loadout a Commander cleared (017/FR-006). What is
-   * released is the claim, never the record — the work it holds is exactly what
-   * makes clearing the bench safe to offer without asking.
+   * Called where a tool stops writing to a record and takes up no other: the
+   * bench was emptied, in which case the record keeps the work, or the record
+   * was deleted on this page, in which case there is nothing left to keep. The
+   * claim is what a reload reads, so one left behind would restore what a
+   * Commander cleared, or name a record that is gone (017/FR-006, FR-008).
+   * What is released is the claim, never the record.
    */
   release(tool: RecordTool): void {
     this.#announced.delete(tool);
@@ -178,9 +194,8 @@ export class TabOwnershipCoordinator {
    * Says which records this page is autosaving into.
    *
    * `except` leaves one tool out, for the tool that has just forked: the fork
-   * announced the new id itself, and announcing it twice would answer a
-   * collision with a second claim on the record the other page is being told to
-   * keep.
+   * announced the new id itself, so announcing it again would send one claim
+   * twice.
    */
   #announceAll(except: RecordTool | null = null): void {
     for (const tool of this.#subjects.keys()) {
@@ -188,20 +203,6 @@ export class TabOwnershipCoordinator {
         this.#announce(tool);
       }
     }
-  }
-
-  /**
-   * Registers what to do when a tool forks: copy the work into the new id.
-   *
-   * Held for the run rather than while a screen is drawn, for the reason `fork`
-   * states: a tool is forked whether or not its screen is up, and a fork nobody
-   * answered would leave the work in the record the other page took and nothing
-   * at all in the new one. So a handler may hold only what outlives a screen —
-   * a component captured here would be kept alive by this map for as long as
-   * the page runs.
-   */
-  onFork(tool: RecordTool, handler: (previousId: string, nextId: string) => void): void {
-    this.#onFork.set(tool, handler);
   }
 
   /**
@@ -309,7 +310,7 @@ export class TabOwnershipCoordinator {
 
     subject?.setAutosaveRecordId(next);
     if (previous !== null) {
-      this.#onFork.get(tool)?.(previous, next);
+      this.#copyOnFork.get(tool)?.();
     }
 
     // Remembered and announced here rather than left to the watcher. Both tools

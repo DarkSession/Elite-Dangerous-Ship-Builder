@@ -206,11 +206,6 @@ export class EquipmentBenchPage {
     // it, and has to have restored before a loadout in the address can outrank
     // what was restored (017/FR-009).
     const heldRecordId = this.#ownership.claim('equipment');
-    // The autosave rather than this screen: the registration outlives the
-    // screen, and a handler closing over `this` would keep a destroyed one
-    // alive with it.
-    const autosave = this.#autosave;
-    this.#ownership.onFork('equipment', () => autosave.adoptForkedRecord());
 
     // A page with no record behind it has nothing to restore, which is the
     // ordinary state of a fresh tab rather than a failure. Opening the record

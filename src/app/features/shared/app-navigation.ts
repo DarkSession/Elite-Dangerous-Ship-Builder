@@ -173,16 +173,14 @@ export class AppNavigation {
    *
    * No canvas draws a `SHIPYARD` chip on the outfitting bar. What every
    * artboard draws on the leading edge is the mark, and the 2026-08-26 revision
-   * put it exactly where the word used to be — so the mark is the control, and
-   * the word is not drawn twice. It keeps its `href`, so it can be opened in a
-   * new tab and its address copied like any other link, and it carries the
-   * screen name it goes to as its accessible name.
+   * put it exactly where the word used to be. The ship list is reached from the
+   * ship tool's own tab; the mark goes to the entry point. It keeps its `href`,
+   * so it can be opened in a new tab and its address copied like any other
+   * link, and it carries the screen name it goes to as its accessible name.
    *
    * The same answer on every screen, the entry point included. The mark is the
    * one way to the screen that offers the tools, so a screen it went missing
-   * from would be a screen with no way there at all; the ship list is reached
-   * from the ship tool's own tab, which is where its name is already written.
-   * On the entry point itself the link is drawn and activating it does nothing,
+   * from would be a screen with no way there at all. On the entry point itself the link is drawn and activating it does nothing,
    * which the shell decides rather than this: a way that disappeared where it
    * leads would move every other item on the deck (017/FR-001, FR-002).
    */

@@ -7,6 +7,7 @@ import {
 } from '../../platform/browser/broadcast-channel.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { recordKey } from '../../platform/storage/storage-keys';
 import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
 import { ActiveBuildStore } from '../active-build/active-build.store';
@@ -49,10 +50,11 @@ class CountingUuid {
 }
 
 function setup(session = new MemoryStorage(), channel = new FakeChannel()) {
+  const storage = new MemoryStorage();
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
-      ...provideMemoryStorage(new MemoryStorage(), session),
+      ...provideMemoryStorage(storage, session),
       { provide: BroadcastChannelAdapter, useValue: channel },
       { provide: UuidAdapter, useValue: new CountingUuid() },
     ],
@@ -62,6 +64,7 @@ function setup(session = new MemoryStorage(), channel = new FakeChannel()) {
     active: TestBed.inject(ActiveBuildStore),
     channel,
     session,
+    storage,
   };
 }
 
@@ -242,12 +245,13 @@ describe('TabOwnershipCoordinator', () => {
   });
 
   it('forks when another live page claims the record it writes to', () => {
-    const { coordinator, active, channel } = setup();
+    // And the work follows the identity. A fork that moved the claim and left
+    // the fresh record empty would leave this page writing to nothing and a
+    // reload with nothing to restore (001/FR-012).
+    const { coordinator, active, channel, storage } = setup();
     hold(active, 'id-held');
     coordinator.track(active);
     coordinator.listen();
-    const forks: [string, string][] = [];
-    coordinator.onFork('ship', (previous: string, next: string) => forks.push([previous, next]));
 
     channel.deliver({
       kind: 'working-claim',
@@ -255,8 +259,9 @@ describe('TabOwnershipCoordinator', () => {
       pageNonce: 'another-page',
     });
 
-    expect(active.autosaveRecordId()).not.toBe('id-held');
-    expect(forks).toEqual([['id-held', active.autosaveRecordId()!]]);
+    const forked = active.autosaveRecordId();
+    expect(forked).not.toBe('id-held');
+    expect(storage.entries.has(recordKey(forked!))).toBe(true);
   });
 
   it('ignores its own claim echoing back', () => {
@@ -338,9 +343,9 @@ describe('TabOwnershipCoordinator', () => {
       .filter((message) => message.kind === 'working-claim')
       .map((message) => message.workingRecordId);
     expect(claimed).toContain('a-loadout');
-    // And the record it forked off is not claimed again: the newcomer was told
-    // to keep it.
-    expect(claimed.filter((id) => id === 'id-held').length).toBe(1);
+    // And the fork's own claim is sent once: the fork announced it, so the
+    // sweep of the other tools leaves it out.
+    expect(claimed.filter((id) => id === active.autosaveRecordId()).length).toBe(1);
   });
 
   it('forgets a record another page said it had let go of', () => {
