@@ -66,6 +66,18 @@ async function openScreen(
 test.describe('cross-route semantics', () => {
   for (const screen of SCREENS) {
     test(`is structurally sound: ${screen}`, async ({ page }, testInfo) => {
+      // One screen, opened once. The workspace and the library each cost a
+      // stock build to reach, and every pass below reads the tree that build
+      // produced.
+      //
+      // Eight passes over that tree, one of them an axe analysis and one a walk
+      // of every control on the screen. On a CI runner sharing its cores with
+      // three other workers that is more than the default budget allows, so the
+      // test states what it costs, as `SWEEP_BUDGET_MS` does in
+      // `e2e/accessibility.ts`. Twenty seconds is the allowance
+      // `help-and-licences` and `outfitting-accessibility` take for a test of
+      // this shape.
+      testInfo.setTimeout(testInfo.timeout + 20_000);
       await openScreen(page, screen);
 
       await expectLandmarks(page);
@@ -75,11 +87,6 @@ test.describe('cross-route semantics', () => {
       await expectNoRawMessages(page);
       await expectNoDocumentOverflow(page);
       await expectTargetSizes(page);
-      await expectNoAccessibilityViolations(page, testInfo, { label: `conformance-${screen}` });
-    });
-
-    test(`names every control with the words on screen: ${screen}`, async ({ page }) => {
-      await openScreen(page, screen);
 
       const controls = page.getByRole('button');
       const count = await controls.count();
@@ -88,6 +95,8 @@ test.describe('cross-route semantics', () => {
       for (let index = 0; index < count; index += 1) {
         await expectNameMatchesVisibleText(controls.nth(index));
       }
+
+      await expectNoAccessibilityViolations(page, testInfo, { label: `conformance-${screen}` });
     });
   }
 

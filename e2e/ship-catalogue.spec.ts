@@ -295,15 +295,18 @@ test.describe('hull catalogue', () => {
     await expectNoDocumentOverflow(page);
   });
 
-  test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {
+  test('stays sound with nothing to list', async ({ page }, testInfo) => {
+    // The state a search can leave the manifest in, which no other scan
+    // reaches. The populated manifest is one of the four routes
+    // `interface-conformance` walks and scans, so it is scanned there rather
+    // than a second time here (ledger surface `system/cross-route-conformance`).
+    await search(page).fill('no such hull anywhere');
+    await expect(visibleHulls(page)).toHaveCount(0);
+
     await expectLandmarks(page);
     await expectSingleVisibleH1(page);
     await expectOrderedHeadings(page);
     await expectNoRawMessages(page);
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'catalogue-populated' });
-
-    await search(page).fill('no such hull anywhere');
-    await expect(visibleHulls(page)).toHaveCount(0);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'catalogue-no-matches' });
   });
 });

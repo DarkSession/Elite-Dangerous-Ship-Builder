@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   clippedText,
@@ -37,7 +37,24 @@ const ZOOM_400 = { viewport: { width: 320, height: 256 }, deviceScaleFactor: 4 }
  *
  * What a person still has to judge at real zoom is whether the result remains
  * usable, which no assertion decides. Everything measurable is measured here.
+ *
+ * A condition costs a page: applying it, loading the entry point and letting it
+ * settle. So a condition is set up once and everything measurable under it is
+ * measured on that one page, rather than a page per measurement.
  */
+
+/** Every action still on screen, still carrying the words that name it. */
+async function expectEveryActionSurvives(page: Page): Promise<void> {
+  const controls = page.getByRole('button');
+  const count = await controls.count();
+
+  for (let index = 0; index < count; index += 1) {
+    const control = controls.nth(index);
+    await expect(control).toBeVisible();
+    // An action that survives as an unlabelled glyph has not survived.
+    expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
+  }
+}
 
 test.describe('200% text scale', () => {
   test.beforeEach(async ({ page }) => {
@@ -56,22 +73,11 @@ test.describe('200% text scale', () => {
     expect(rootSize).toBeGreaterThan(24);
   });
 
-  test('keeps the document from scrolling horizontally', async ({ page }) => {
+  test('keeps every landmark, action and target at doubled text', async ({ page }) => {
     await expectNoDocumentOverflow(page);
-  });
-
-  test('keeps every landmark and control', async ({ page }) => {
     await expectLandmarks(page);
     await expectTargetSizes(page);
-  });
-
-  test('keeps every action visible with its text', async ({ page }) => {
-    const controls = page.getByRole('button');
-    const count = await controls.count();
-
-    for (let index = 0; index < count; index += 1) {
-      await expect(controls.nth(index)).toBeVisible();
-    }
+    await expectEveryActionSurvives(page);
   });
 
   test('leaves a screen under the banner rather than freezing over it', async ({ page }) => {
@@ -96,35 +102,12 @@ test.describe('400% browser zoom', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('keeps the document from scrolling horizontally', async ({ page }) => {
+  test('keeps the whole entry point at the zoom-equivalent viewport', async ({ page }) => {
     await expectNoDocumentOverflow(page);
-  });
-
-  test('keeps every landmark', async ({ page }) => {
     await expectLandmarks(page);
-  });
-
-  test('keeps every action available with its text', async ({ page }) => {
-    const controls = page.getByRole('button');
-    const count = await controls.count();
-
-    for (let index = 0; index < count; index += 1) {
-      const control = controls.nth(index);
-      await expect(control).toBeVisible();
-      // An action that survives as an unlabelled glyph has not survived.
-      expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
-    }
-  });
-
-  test('keeps every target reachable', async ({ page }) => {
+    await expectEveryActionSurvives(page);
     await expectTargetSizes(page);
-  });
-
-  test('releases the banner instead of occupying the viewport with it', async ({ page }) => {
     await expectBannerReleasesShortViewport(page);
-  });
-
-  test('cuts no meaning off', async ({ page }) => {
     expect(await clippedText(page), 'content is truncated with no way to read it').toEqual([]);
   });
 

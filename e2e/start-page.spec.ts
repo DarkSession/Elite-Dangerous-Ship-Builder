@@ -1,6 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { expectNoDocumentOverflow } from './accessibility/assertions';
 import englishMessages from '../src/app/i18n/locales/en.json';
 
 /**
@@ -182,11 +181,12 @@ test.describe('start page', () => {
     }
   });
 
-  test('does not scroll the page sideways', async ({ page }) => {
-    await expectNoDocumentOverflow(page);
-  });
-
   test('passes an accessibility scan', async ({ page }, testInfo) => {
+    // The entry point is one document, and the four suites that make a
+    // cross-cutting claim about it make one each. This is its scan;
+    // `interface-foundations` reads its semantics, `responsive` measures how it
+    // holds its width and `target-and-contrast` measures its targets and its
+    // colours. None of them repeats the pass made here.
     await expectNoAccessibilityViolations(page, testInfo, { label: 'start-page' });
   });
 });

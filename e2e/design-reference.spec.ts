@@ -530,13 +530,17 @@ test.describe('the wide manifest', () => {
   // manifest header does not change with the engine.
   test.use({ viewport: { width: 1320, height: 900 } });
 
-  test('sets the column headers as tracked monospace over one rule', async ({ page }) => {
-    // Canvas 1a: `font: 500 9px 'JetBrains Mono'`, `letter-spacing: .16em`,
-    // over `border-bottom: 1px solid var(--amber-a16)`.
+  test('sets the manifest’s headers, order mark, numerals and rows as the canvas does', async ({
+    page,
+  }) => {
+    // Four readings of one manifest. None of them changes it, so it is loaded
+    // once.
     await page.goto('/ships');
     const header = page.locator('thead th').first();
     await expect(header).toBeVisible();
 
+    // Canvas 1a: `font: 500 9px 'JetBrains Mono'`, `letter-spacing: .16em`,
+    // over `border-bottom: 1px solid var(--amber-a16)`.
     expect(await style(header, 'font-family')).toContain('JetBrains Mono');
     expect(await style(header, 'font-weight')).toBe('500');
     const size = parseFloat(await style(header, 'font-size'));
@@ -549,30 +553,34 @@ test.describe('the wide manifest', () => {
     const sort = page.locator('.catalogue__sort').first();
     expect(await style(sort, 'text-transform')).toBe('uppercase');
     expect(await sort.evaluate((element: HTMLElement) => element.innerText)).toMatch(/^SHIP/);
-  });
 
-  test('marks the column the manifest is ordered by with amber and a caret', async ({ page }) => {
     // Canvas 1a `paintSort`: the active header takes `#ffb060` and a `▲`/`▼`
     // caret. The caret is decoration; `aria-sort` carries the same fact.
-    await page.goto('/ships');
     const sorted = page.locator('thead th[aria-sort]');
     await expect(sorted).toHaveCount(1);
-
     expect(await style(sorted, 'color')).toBe(AMBER_3);
     await expect(sorted.locator('.catalogue__caret')).toHaveText(/[▲▼]/);
     await expect(sorted.locator('.catalogue__caret')).toHaveAttribute('aria-hidden', 'true');
-  });
 
-  test('sets the mount mix and the price against the trailing edge', async ({ page }) => {
     // Canvas 1a: `text-align: right` on the hardpoint and price columns, so a
     // digit lines up with the digit above it.
-    await page.goto('/ships');
     const cells = page.locator('tbody tr').first().locator('td.catalogue__numeric');
     await expect(cells).toHaveCount(2);
-
     for (const cell of await cells.all()) {
       expect(await style(cell, 'text-align')).toBe('end');
     }
+
+    // Canvas 1a: `padding: 12px` around a 16px name, so a row is a little over
+    // forty pixels tall and every row is the same.
+    await expect(page.locator('tbody tr').first()).toBeVisible();
+    const heights = await page
+      .locator('tbody tr')
+      .evaluateAll((rows) => [
+        ...new Set(rows.map((row) => Math.round(row.getBoundingClientRect().height))),
+      ]);
+
+    expect(heights).toHaveLength(1);
+    expect(heights[0]).toBeLessThanOrEqual(48);
   });
 
   test('keeps the search, the size strip and the column headers in place', async ({ page }) => {
@@ -605,8 +613,11 @@ test.describe('the wide manifest', () => {
 
   // Canvas 1a draws the rail as a column of its own ground running from the
   // command bar's rule down. A column does not slide: it starts where it
-  // freezes, so the first turn of the wheel moves the manifest and nothing else.
-  test('holds the inspector rail still while the manifest scrolls', async ({ page }) => {
+  // freezes, so the wheel moves the manifest and nothing else, and the hull the
+  // rail describes stays on screen however far the manifest has gone.
+  test('holds the inspector rail still, with its hull, while the manifest scrolls', async ({
+    page,
+  }) => {
     await page.goto('/ships/Anaconda');
     const rail = page.locator('.catalogue__inspector');
     await expect(rail).toBeVisible();
@@ -616,6 +627,12 @@ test.describe('the wide manifest', () => {
     await page.waitForTimeout(200);
 
     expect((await rail.boundingBox())!.y).toBeCloseTo(resting.y, 0);
+
+    await page.mouse.wheel(0, 800);
+    await page.waitForTimeout(200);
+
+    expect((await rail.boundingBox())!.y).toBeCloseTo(resting.y, 0);
+    await expect(page.locator('.detail__name')).toBeInViewport();
   });
 
   // Canvas 1a draws the manifest as a grid with one track list:
@@ -640,32 +657,6 @@ test.describe('the wide manifest', () => {
 
     await page.getByRole('radio', { name: 'Large' }).check();
     expect(await widths()).toEqual(before);
-  });
-
-  // Canvas 1a: `padding: 12px` around a 16px name, so a row is a little over
-  // forty pixels tall and every row is the same.
-  test('sets every row to one height, close to the reference row', async ({ page }) => {
-    await page.goto('/ships');
-    await expect(page.locator('tbody tr').first()).toBeVisible();
-    const heights = await page
-      .locator('tbody tr')
-      .evaluateAll((rows) => [
-        ...new Set(rows.map((row) => Math.round(row.getBoundingClientRect().height))),
-      ]);
-
-    expect(heights).toHaveLength(1);
-    expect(heights[0]).toBeLessThanOrEqual(48);
-  });
-
-  test('keeps the inspector with the hull it describes', async ({ page }) => {
-    await page.goto('/ships/Anaconda');
-    const rail = page.locator('.catalogue__inspector');
-    await expect(rail).toBeVisible();
-
-    await page.mouse.wheel(0, 1200);
-    await page.waitForTimeout(200);
-
-    await expect(page.locator('.detail__name')).toBeInViewport();
   });
 });
 
@@ -703,32 +694,29 @@ test.describe('the saved-build surface', () => {
   /** The library's own framed layer, of the several a page may hold. */
   const surface = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
 
-  test('frames the library as a dialog with its own title bar', async ({ page }) => {
-    // Canvas 1a: the saved-build list is a centred dialog on a near-opaque
-    // scrim, opened by a darker title bar with the title tracked 0.22em and a
-    // monospace dismiss beside it.
+  test('draws the saved-build surface as canvas 1a sets it', async ({ page }) => {
+    // Reaching this surface costs a stock build, an autosave and a shell
+    // action, and every claim below reads computed style off the layer that
+    // reaching it opens. So the build is made once, and the canvas is compared
+    // with that one layer region by region.
     await withOneBuild(page);
     const dialog = surface(page);
     await expect(dialog).toBeVisible();
 
+    // Canvas 1a: the saved-build list is a centred dialog on a near-opaque
+    // scrim, opened by a darker title bar with the title tracked 0.22em and a
+    // monospace dismiss beside it.
     const title = dialog.locator('.layer__title').first();
-    const size = parseFloat(await style(title, 'font-size'));
-    expect(parseFloat(await style(title, 'letter-spacing')) / size).toBeGreaterThan(0.15);
+    const titleSize = parseFloat(await style(title, 'font-size'));
+    expect(parseFloat(await style(title, 'letter-spacing')) / titleSize).toBeGreaterThan(0.15);
     expect(await style(title, 'text-transform')).toBe('uppercase');
     expect(await style(dialog.locator('.layer__dismiss'), 'font-family')).toContain(
       'JetBrains Mono',
     );
-  });
 
-  test('draws the surface at the width the canvas sets, with nothing inset twice', async ({
-    page,
-  }) => {
     // Canvas 1a draws the saved-build modal at 860px, and runs every region in
     // it edge to edge: the hairline under the search, the plate the column
     // headers sit on and the footer's own plate all reach the panel's sides.
-    await withOneBuild(page);
-    const dialog = surface(page);
-
     const box = await dialog.boundingBox();
     expect(box?.width).toBeCloseTo(860, 0);
 
@@ -738,15 +726,11 @@ test.describe('the saved-build surface', () => {
     const columnsBox = await columns.boundingBox();
     // Inside the panel's own hairline, and nothing further.
     expect((columnsBox?.width ?? 0) + 2).toBeCloseTo(box?.width ?? 0, 0);
-  });
 
-  test('searches from a placeholder, with the count on the same line', async ({ page }) => {
     // Canvas 1a puts the search field's words in its placeholder and the count
     // in monospace beside it, on one row. The label stays a real one, bound to
     // the control and read aloud, because a placeholder goes as soon as
     // somebody types.
-    await withOneBuild(page);
-
     const search = page.getByRole('searchbox', { name: 'Search saved builds' });
     await expect(search).toHaveAttribute('placeholder', 'Search saved builds');
     const label = await page.locator('.library__search .field__label').boundingBox();
@@ -754,47 +738,36 @@ test.describe('the saved-build surface', () => {
 
     // One line: the field and the count share a horizontal band.
     const field = await search.boundingBox();
-    const count = await page.locator('.library__count').boundingBox();
-    expect(count?.y).toBeGreaterThan((field?.y ?? 0) - (field?.height ?? 0));
-    expect(count?.y).toBeLessThan((field?.y ?? 0) + (field?.height ?? 0));
-    await expect(page.locator('.library__count')).toHaveText('1 builds');
-  });
-
-  test('sets the record count and the column headers in tracked monospace', async ({ page }) => {
-    // Canvas 1a's header row — a search field beside a monospace count — over
-    // column headers on a slightly lighter plate.
-    await withOneBuild(page);
-
     const count = page.locator('.library__count');
     await expect(count).toBeVisible();
+    const countBox = await count.boundingBox();
+    expect(countBox?.y).toBeGreaterThan((field?.y ?? 0) - (field?.height ?? 0));
+    expect(countBox?.y).toBeLessThan((field?.y ?? 0) + (field?.height ?? 0));
+    await expect(count).toHaveText('1 builds');
+
+    // Canvas 1a's header row — a search field beside a monospace count — over
+    // column headers on a slightly lighter plate.
     expect(await style(count, 'font-family')).toContain('JetBrains Mono');
 
     const header = page.locator('.records__columns span').first();
     await expect(header).toBeVisible();
     expect(await style(header, 'font-family')).toContain('JetBrains Mono');
     expect(await style(header, 'text-transform')).toBe('uppercase');
-    const size = parseFloat(await style(header, 'font-size'));
-    expect(parseFloat(await style(header, 'letter-spacing')) / size).toBeGreaterThan(0.1);
-  });
+    const headerSize = parseFloat(await style(header, 'font-size'));
+    expect(parseFloat(await style(header, 'letter-spacing')) / headerSize).toBeGreaterThan(0.1);
 
-  test('opens every row with a 3px marker and fills the current one amber', async ({ page }) => {
     // Canvas 1a: a 3px leading edge on every row, taking amber on the record
     // the workspace is holding.
-    await withOneBuild(page);
     const current = page.locator('.record[aria-current="true"]').first();
     await expect(current).toBeVisible();
-
     expect(await style(current, 'border-inline-start-width')).toBe('3px');
     expect(await style(current, 'border-inline-start-color')).toBe(AMBER);
     // Never the only carrier: the row says so, and so does aria-current.
     await expect(current).toContainText('Current build');
-  });
 
-  test('commits from a footer, destructive first and opening last', async ({ page }) => {
     // Canvas 1a and 1b both close the surface with a committing footer: the
     // destructive action bordered warm on the leading edge, the opening action
     // filled amber on the trailing edge.
-    await withOneBuild(page);
     const footer = page.locator('.library__footer');
     await expect(footer).toBeVisible();
 
@@ -853,7 +826,10 @@ test.describe('the save-build surface', () => {
     return layer;
   }
 
-  test('titles the layer in tracked uppercase over a monospace dismiss', async ({ page }) => {
+  test('draws the save layer as canvas 1c sets it', async ({ page }) => {
+    // A stock build with `SAVE BUILD` open over it, made once: the title, the
+    // absence of a mode to choose and the footer are three readings of that one
+    // layer.
     const layer = await withSaveOpen(page);
 
     const title = layer.locator('.layer__title').first();
@@ -863,6 +839,26 @@ test.describe('the save-build surface', () => {
     expect(await style(layer.locator('.layer__dismiss'), 'font-family')).toContain(
       'JetBrains Mono',
     );
+
+    // A choice of one is not a choice: a build that came from nowhere has one
+    // thing SAVE BUILD can do, and the canvas draws the pair or neither.
+    await expect(layer.locator('.save__modes .choice')).toHaveCount(0);
+
+    // Canvas 1c: a rule, then the message on the leading edge and the two
+    // commitments on the trailing one, cancel bordered and save filled amber.
+    const footer = layer.locator('.save__footer');
+    expect(await style(footer, 'border-block-start-width')).toBe('1px');
+    expect(await style(layer.locator('.save__message'), 'font-family')).toContain('JetBrains Mono');
+
+    const labels = await layer.locator('.save__actions button').allInnerTexts();
+    expect(labels).toHaveLength(2);
+    expect(labels[0]).toMatch(/^CANCEL/i);
+    expect(labels[1]).toMatch(/^SAVE BUILD/i);
+
+    // Polled, because the control fades from its disabled ground to the filled
+    // one as the build takes a name.
+    const commit = layer.locator('.save__actions button').last();
+    await expect.poll(() => style(commit, 'background-color')).toBe(AMBER);
   });
 
   test('draws the modes as bordered cards, washing and marking only the selected one', async ({
@@ -905,33 +901,5 @@ test.describe('the save-build surface', () => {
     // tree, so it takes a box of a pixel rather than none.
     const legend = await layer.locator('.choice-group__legend').boundingBox();
     expect(legend?.height ?? 0).toBeLessThanOrEqual(1);
-  });
-
-  test('draws no mode at all where there is nothing to replace', async ({ page }) => {
-    // A choice of one is not a choice: a build that came from nowhere has one
-    // thing SAVE BUILD can do, and the canvas draws the pair or neither.
-    const layer = await withSaveOpen(page);
-
-    await expect(layer.locator('.save__modes .choice')).toHaveCount(0);
-  });
-
-  test('closes the layer with a hairline over a monospace message line', async ({ page }) => {
-    // Canvas 1c: a rule, then the message on the leading edge and the two
-    // commitments on the trailing one, cancel bordered and save filled amber.
-    const layer = await withSaveOpen(page);
-
-    const footer = layer.locator('.save__footer');
-    expect(await style(footer, 'border-block-start-width')).toBe('1px');
-    expect(await style(layer.locator('.save__message'), 'font-family')).toContain('JetBrains Mono');
-
-    const labels = await layer.locator('.save__actions button').allInnerTexts();
-    expect(labels).toHaveLength(2);
-    expect(labels[0]).toMatch(/^CANCEL/i);
-    expect(labels[1]).toMatch(/^SAVE BUILD/i);
-
-    // Polled, because the control fades from its disabled ground to the filled
-    // one as the build takes a name.
-    const commit = layer.locator('.save__actions button').last();
-    await expect.poll(() => style(commit, 'background-color')).toBe(AMBER);
   });
 });

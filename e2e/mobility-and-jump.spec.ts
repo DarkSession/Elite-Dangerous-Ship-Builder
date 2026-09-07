@@ -6,7 +6,6 @@ import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   fitCommitted,
-  isCompactWorkspace,
   statusRailIsColumn,
   openChooserRows,
   revealMount,
