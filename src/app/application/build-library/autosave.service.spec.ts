@@ -8,8 +8,10 @@ import {
   provideMemoryStorage,
   quotaError,
 } from '../../platform/storage/storage.spec-helpers';
+import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { recordKey } from '../../platform/storage/storage-keys';
 import { ActiveBuildStore } from '../active-build/active-build.store';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { AutosaveService } from './autosave.service';
 
 /** A lifecycle adapter a test can fire on demand. */
@@ -250,6 +252,38 @@ describe('AutosaveService', () => {
     expect(active.persistence()).toBe('quota-full');
     expect(storage.entries.get(recordKey('their-save'))).toBe(before);
     expect(active.loadout()).not.toBeNull();
+  });
+
+  it('keeps the instant a record it was handed was created (FR-013)', () => {
+    // A build restored after a reload arrives holding an id it did not mint.
+    // Stamping that record with now would restart the seven days it is counting
+    // down, which is the one thing restoring it must not do.
+    const { autosave, active, storage } = setup();
+    TestBed.inject(LocalRecordRepository).write({
+      id: HELD,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: '2025-11-01T00:00:00.000Z',
+      modifiedAt: '2025-11-01T00:00:00.000Z',
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: {
+        tool: 'ship',
+        build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+        validation: { valid: true, complete: true },
+      },
+    });
+    const loadout = commitBuild(active);
+    loadout.setModulePriority('FrameShiftDrive', 2);
+    active.touch();
+
+    autosave.flush();
+
+    expect(JSON.parse(storage.entries.get(recordKey(HELD))!)).toMatchObject({
+      createdAt: '2025-11-01T00:00:00.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+    });
   });
 
   it('pauses after the record is discarded elsewhere, until an explicit resume', () => {

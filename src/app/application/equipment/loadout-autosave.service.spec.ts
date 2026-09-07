@@ -150,6 +150,70 @@ describe('LoadoutAutosaveService', () => {
     expect(store.dirty()).toBe(false);
   });
 
+  it('pauses after the record is discarded elsewhere, until an explicit resume', () => {
+    const { autosave, store, storage } = setup();
+    benchLoadout(store);
+
+    autosave.pauseAfterExternalDelete();
+    storage.entries.delete(recordKey(HELD));
+    autosave.flush();
+
+    expect(store.persistence()).toBe('record-deleted-externally');
+    expect(storage.entries.has(recordKey(HELD))).toBe(false);
+
+    autosave.resume();
+    expect(storage.entries.has(recordKey(HELD))).toBe(true);
+  });
+
+  it('saves again once the bench holds a record nobody discarded', () => {
+    // The pause is about one record. A Commander who opens another loadout, or
+    // pastes a link, is not asking to recreate what they discarded elsewhere —
+    // and a pause left standing would stop every later save in silence.
+    const { autosave, store, storage } = setup();
+    benchLoadout(store);
+    autosave.pauseAfterExternalDelete();
+    storage.entries.delete(recordKey(HELD));
+
+    store.open(newLoadout('utilitysuit')!, null, { autosaveRecordId: 'another-record' });
+    autosave.flush();
+
+    expect(autosave.paused()).toBe(false);
+    expect(storage.entries.has(recordKey('another-record'))).toBe(true);
+    // And the record that was discarded stays discarded.
+    expect(storage.entries.has(recordKey(HELD))).toBe(false);
+  });
+
+  it('stamps a record it is handed with that record’s own creation instant', () => {
+    // The bench writes to whatever record it is handed, and a Commander opening
+    // a second unnamed loadout hands it another. An instant remembered from the
+    // first would be stamped onto the second (001/FR-013).
+    const { autosave, store, records, storage } = setup();
+    records.write({
+      id: 'second',
+      kind: 'working',
+      revisionId: 'r',
+      createdAt: '2025-11-01T00:00:00.000Z',
+      modifiedAt: '2025-11-01T00:00:00.000Z',
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout('utilitysuit')! },
+    });
+
+    // A first record, written under this page's own instant.
+    benchLoadout(store);
+    autosave.flush();
+
+    // Then the second, opened from the saved list and changed.
+    store.open(newLoadout('utilitysuit')!, null, { autosaveRecordId: 'second' });
+    store.dispatch({ kind: 'setSuitGrade', grade: 3 });
+    autosave.flush();
+
+    expect(JSON.parse(storage.entries.get(recordKey('second'))!)).toMatchObject({
+      createdAt: '2025-11-01T00:00:00.000Z',
+    });
+  });
+
   it('never takes over a record of the other tool (017/FR-010)', () => {
     // The one record this browser holds is a build's. A loadout minting its own
     // rather than writing into it is the whole rule: the two hold different

@@ -72,6 +72,8 @@ test.describe('the mark leads to the entry point', () => {
       await expect(page).toHaveURL(/\/ships$/);
     }
     await expect(mark(page)).toHaveAttribute('href', '/');
+    // Named for where it goes, rather than announced as a picture.
+    await expect(mark(page)).toHaveAccessibleName('Nav Beacon');
     await mark(page).click();
     await expectEntryPoint(page);
 
@@ -138,10 +140,15 @@ test.describe('a tool’s tab re-enters the tool', () => {
     await expect(current).toHaveAttribute('href', '/ships');
     await expect(current).toHaveAttribute('aria-current', 'true');
 
+    const entries = await page.evaluate(() => history.length);
+
     await current.click();
 
     await expect(page).toHaveURL(/\/ships$/);
     await expect(page.getByRole('main')).toBeVisible();
+    // And no entry to press BACK through: the press led where the Commander
+    // already was, so it is not a place they can return from.
+    expect(await page.evaluate(() => history.length)).toBe(entries);
   });
 
   test('leaves an empty bench when the bench is open (017/FR-006)', async ({ page }) => {
@@ -196,7 +203,7 @@ test.describe('the bench keeps the loadout on it', () => {
 });
 
 test.describe('the bench and the address', () => {
-  test('a loadout in the address outranks the record restored (017/FR-008)', async ({ page }) => {
+  test('a loadout in the address outranks the record restored (017/FR-009)', async ({ page }) => {
     await page.goto('/equipment');
     await wearSuit(page, 'Dominator Suit');
     await autosaved(page);
@@ -219,7 +226,7 @@ test.describe('the bench and the address', () => {
     await expect(suit).not.toContainText('Maverick Suit');
   });
 
-  test('a store that refuses a write is stated in the bench’s own words (017/FR-009)', async ({
+  test('a store that refuses a write is stated in the bench’s own words (017/FR-008)', async ({
     browser,
   }) => {
     const context = await browser.newContext();

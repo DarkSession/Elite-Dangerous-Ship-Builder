@@ -195,6 +195,16 @@ has to be found on a 390px row that already carries both tool tabs, and it would
 sheet's bar drawing something no canvas draws on it. The exception is stated in the
 requirement rather than left to the stylesheet.
 
+### Starting an empty bench needs the loadout to be somewhere first
+
+The action flushes autosave and then reads what that write did. Where the store refuses it,
+is full, or autosave is paused after an external delete, the bench keeps the loadout: nothing
+holds it, so clearing it would be a loss rather than a free action, and the persistence notice
+already on the bench states the reason.
+
+Alternative: clear regardless and state the loss. That is a seventh persistence state and a
+string in both catalogues for a case a Commander can already read on the screen.
+
 ### Starting an empty bench is not undoable
 
 The undo tape is cleared, as it is when a loadout is opened from a record or a link: the

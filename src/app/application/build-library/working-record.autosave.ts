@@ -1,4 +1,4 @@
-import { Injector, effect, signal } from '@angular/core';
+import { Injector, computed, effect, signal } from '@angular/core';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
@@ -47,11 +47,23 @@ const COALESCE_MS = 400;
  */
 export class WorkingRecordAutosave {
   #timer: ReturnType<typeof setTimeout> | null = null;
-  #createdAt: string | null = null;
 
-  /** Paused after the record this tab owns is discarded somewhere else. */
-  readonly #paused = signal(false);
-  readonly paused = this.#paused.asReadonly();
+  /** The record a pause is about, and whether one stands. */
+  readonly #pausedOn = signal<string | null>(null);
+
+  /**
+   * Paused after the record this tab owns is discarded somewhere else.
+   *
+   * A pause is about one record. Once this tool holds a different one — a
+   * record opened from the saved list, a loadout arriving in a link, or an
+   * emptied bench — writing recreates nothing that anybody discarded, so the
+   * pause lifts on its own. Read as a computed rather than kept as a flag,
+   * because a flag left standing stops every later save in silence.
+   */
+  readonly paused = computed(() => {
+    const on = this.#pausedOn();
+    return on !== null && on === this.#subject.autosaveRecordId();
+  });
 
   readonly #subject: WorkingRecordSubject;
   readonly #records: LocalRecordRepository;
@@ -118,14 +130,14 @@ export class WorkingRecordAutosave {
    * decision they made on purpose.
    */
   pauseAfterExternalDelete(): void {
-    this.#paused.set(true);
+    this.#pausedOn.set(this.#subject.autosaveRecordId());
     this.#clearTimer();
     this.#subject.setPersistence('record-deleted-externally');
   }
 
   /** Resumes after an explicit request, writing the current state immediately. */
   resume(): void {
-    this.#paused.set(false);
+    this.#pausedOn.set(null);
     this.flush();
   }
 
@@ -133,7 +145,7 @@ export class WorkingRecordAutosave {
   flush(): void {
     this.#clearTimer();
 
-    if (this.#paused()) {
+    if (this.paused()) {
       return;
     }
 
@@ -168,13 +180,18 @@ export class WorkingRecordAutosave {
     // exactly what taking a record over must not do — and a restored record and
     // a taken-over one both reach this holding an id they did not mint
     // (001/FR-013).
-    this.#createdAt ??= this.#createdAtOf(recordId) ?? now;
+    //
+    // Read from the record on every write rather than remembered, because the
+    // record this tool writes to changes under it: a loadout opened from the
+    // saved list arrives holding an id of its own, and a remembered instant
+    // would be stamped onto a record it does not belong to.
+    const createdAt = this.#createdAtOf(recordId) ?? now;
 
     const written = this.#records.write({
       id: recordId,
       kind: 'working',
       revisionId: this.#uuid.create(),
-      createdAt: this.#createdAt,
+      createdAt,
       modifiedAt: now,
       name: null,
       note: null,
@@ -198,7 +215,6 @@ export class WorkingRecordAutosave {
 
   /** Copies the current state into a freshly forked record. */
   adoptForkedRecord(): void {
-    this.#createdAt = null;
     this.flush();
   }
 
@@ -226,9 +242,6 @@ export class WorkingRecordAutosave {
     const identical =
       fingerprint === null ? null : this.#records.findUnnamedMatching(fingerprint, this.tool);
     if (identical !== null) {
-      // Its own instant, not the one this page last wrote under: the entry a
-      // Commander is taking over has been counting down since it was written.
-      this.#createdAt = null;
       this.#subject.setAutosaveRecordId(identical);
       this.#subject.markSaved(null);
       this.#subject.setPersistence('saved');
@@ -236,7 +249,6 @@ export class WorkingRecordAutosave {
     }
 
     const minted = this.#uuid.create();
-    this.#createdAt = null;
     this.#subject.setAutosaveRecordId(minted);
     return minted;
   }
@@ -248,7 +260,7 @@ export class WorkingRecordAutosave {
   }
 
   #schedule(): void {
-    if (this.#paused() || this.#subject.fingerprint() === null) {
+    if (this.paused() || this.#subject.fingerprint() === null) {
       return;
     }
     this.#clearTimer();

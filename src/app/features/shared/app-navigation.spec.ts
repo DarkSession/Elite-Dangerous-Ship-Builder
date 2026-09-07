@@ -77,10 +77,17 @@ describe('AppNavigation tools', () => {
     expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
   });
 
-  it('leads to the entry point from every screen, the entry point included', () => {
-    // One answer everywhere. The mark is the only way to the screen that offers
-    // the tools, so a screen it went missing from would be a screen with no way
-    // there at all (017/FR-001).
+  it('answers with the entry point, whatever screen asks', () => {
+    // One answer everywhere, and the reading takes no address, so no screen can
+    // be given a different one (017/FR-001).
+    const home = navigation().home();
+
+    expect(home.href).toBe(NAVIGATION_ROUTES.start);
+    expect(home.label).toBe('Nav Beacon');
+  });
+
+  it('gives no tool the address the mark already leads to', () => {
+    // Two controls to one place would make the mark mean the tool beside it.
     for (const path of [
       NAVIGATION_ROUTES.start,
       NAVIGATION_ROUTES.catalogue,
@@ -88,14 +95,11 @@ describe('AppNavigation tools', () => {
       NAVIGATION_ROUTES.outfitting,
       NAVIGATION_ROUTES.equipment,
     ]) {
-      const home = navigation().home();
-
-      expect(home.href).toBe(NAVIGATION_ROUTES.start);
-      expect(home.label).toBe('Nav Beacon');
       expect(
         navigation()
           .tools(path)
-          .some((tool) => tool.href === home.href),
+          .some((tool) => tool.href === NAVIGATION_ROUTES.start),
+        path,
       ).toBe(false);
     }
   });

@@ -114,6 +114,7 @@ describe('App', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const insignia = element.querySelector('.frame__flag-home');
+    const named = insignia?.textContent?.trim();
 
     // The 2026-08-26 revision puts the mark where the `SHIPYARD` word used to
     // be, so the mark is the control and the word is not drawn twice. It is a
@@ -125,6 +126,23 @@ describe('App', () => {
     // The mark is inside the link rather than being it, so the press keeps the
     // target baseline while the insignia keeps the size the canvas draws it.
     expect(insignia?.querySelector('.frame__flag')).not.toBeNull();
+
+    // The same answer from every screen, however deep in a tool it is asked
+    // from: one way back, in one place (017/FR-001).
+    for (const path of [
+      NAVIGATION_ROUTES.catalogue,
+      `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
+      NAVIGATION_ROUTES.equipment,
+    ]) {
+      TestBed.inject(Location).go(path);
+      const opened = TestBed.createComponent(App);
+      opened.detectChanges();
+      const mark = (opened.nativeElement as HTMLElement).querySelector('.frame__flag-home');
+
+      expect(mark?.getAttribute('href'), path).toBe(NAVIGATION_ROUTES.start);
+      expect(mark?.textContent?.trim(), path).toBe(named);
+      opened.destroy();
+    }
   });
 
   it('draws the insignia as a control on the entry point too, and answers with nothing', () => {

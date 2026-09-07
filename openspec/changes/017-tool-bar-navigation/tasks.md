@@ -37,9 +37,11 @@
 
 - [x] 3.1 Introduce the port `AutosaveService` and `TabOwnershipCoordinator` read —
       revision, fingerprint, dirty, record id, named source, persistence and the
-      record body — and implement it for `ActiveBuildStore` with no behaviour change.
-      Verify with the existing autosave, ownership and workspace unit tests staying
-      green.
+      record body — and implement it for `ActiveBuildStore`. The one behaviour that
+      changes for the ship tool: a record autosave was handed keeps the instant it says
+      it was created (001/FR-013). Verify with the existing autosave, ownership and
+      workspace unit tests staying green, and a new one over the creation instant of a
+      restored record.
 - [x] 3.2 Give `LocalRecordRepository.findUnnamedMatching` the tool it is matching, so
       a loadout never takes over a build's record. Verify with unit tests over a store
       holding an unnamed record of each tool with the same fingerprint.
@@ -108,6 +110,8 @@
 - [x] 6.5 Scan the bar and the bench with axe at all five layout profiles in both
       engines, with the open tool drawn as a control, and assert zero violations of
       the in-scope criteria.
-- [x] 6.6 Record a screen-reader pass over the bar in `e2e/manual/results/`, covering
-      the mark's name, the current tool's state and a tab that answers with nothing.
+- [x] 6.6 Register the bar's screen-reader step in `e2e/manual/screen-reader.protocol.md`,
+      covering the mark's name, the current tool's state and a tab that answers with
+      nothing, and open its rows in `e2e/manual/results/screen-reader.md`. Verify by the
+      protocol version bump and one result row per configuration, each awaiting a pass.
 - [ ] 6.7 Run `pnpm run check` end to end and keep unit coverage at or above 80%.

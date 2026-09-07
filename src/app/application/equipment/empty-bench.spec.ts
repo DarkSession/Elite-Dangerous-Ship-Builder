@@ -6,10 +6,15 @@ import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adap
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { recordKey } from '../../platform/storage/storage-keys';
 import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
-import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import {
+  MemoryStorage,
+  provideMemoryStorage,
+  quotaError,
+} from '../../platform/storage/storage.spec-helpers';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { TabOwnershipCoordinator } from '../build-library/tab-ownership.coordinator';
 import { EmptyBenchService } from './empty-bench.service';
+import { LoadoutAutosaveService } from './loadout-autosave.service';
 import { LoadoutLinkCoordinator } from './loadout-link.coordinator';
 import { LoadoutStore } from './loadout.store';
 
@@ -71,6 +76,7 @@ function setup() {
     store: TestBed.inject(LoadoutStore),
     links: TestBed.inject(LoadoutLinkCoordinator),
     records: TestBed.inject(LocalRecordRepository),
+    autosave: TestBed.inject(LoadoutAutosaveService),
     tab: TestBed.inject(TabDescriptorRepository),
     ownership: TestBed.inject(TabOwnershipCoordinator),
   };
@@ -175,6 +181,34 @@ describe('starting an empty bench', () => {
     // equipment tool's action and says nothing about the build (017/FR-010).
     expect(ownership.claim('ship')).toBe('a-build');
     expect(ownership.claim('equipment')).toBeNull();
+  });
+
+  it('leaves the loadout on the bench where the store cannot hold it', () => {
+    // The action is free to offer because the loadout stays as a record. Where
+    // that write cannot happen, clearing the bench would lose it, so the bench
+    // stays as it is and the notice on it says why (017/FR-006).
+    const { bench, store, storage } = setup();
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    storage.writeError = quotaError();
+
+    bench.start();
+
+    expect(store.hasLoadout()).toBe(true);
+    expect(store.persistence()).toBe('quota-full');
+  });
+
+  it('leaves the loadout on the bench while saving is paused', () => {
+    // Paused because the record was discarded in another tab. Nothing is
+    // written until a Commander asks for it, so there is nothing to leave the
+    // loadout in.
+    const { bench, store, autosave } = setup();
+    store.open(newLoadout('tacticalsuit')!, null, { autosaveRecordId: 'discarded' });
+    autosave.pauseAfterExternalDelete();
+
+    bench.start();
+
+    expect(store.hasLoadout()).toBe(true);
+    expect(store.persistence()).toBe('record-deleted-externally');
   });
 
   it('takes the loadout out of the address without adding a history entry', () => {
