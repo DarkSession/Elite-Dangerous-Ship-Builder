@@ -318,7 +318,7 @@ test.describe('deleting the record the bench is autosaving into', () => {
     // Leaving the layer returns to the address the bench published, and a
     // loadout in the address outranks anything this page holds — so the loadout
     // is read back from there and written to a record of its own. What is never
-    // written back is the record the Commander deleted (017/FR-009).
+    // written back is the record the Commander deleted (017/FR-008).
     await autosaved(page);
     expect(await page.evaluate((key) => localStorage.getItem(key), deleted)).toBeNull();
   });

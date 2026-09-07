@@ -180,9 +180,10 @@ export class AppNavigation {
    *
    * The same answer on every screen, the entry point included. The mark is the
    * one way to the screen that offers the tools, so a screen it went missing
-   * from would be a screen with no way there at all. On the entry point itself the link is drawn and activating it does nothing,
-   * which the shell decides rather than this: a way that disappeared where it
-   * leads would move every other item on the deck (017/FR-001, FR-002).
+   * from would be a screen with no way there at all. On the entry point itself
+   * the link is drawn and activating it does nothing, which the shell decides
+   * rather than this: a way that disappeared where it leads would move every
+   * other item on the deck (017/FR-001, FR-002).
    */
   home(): NavigationEntry {
     return {

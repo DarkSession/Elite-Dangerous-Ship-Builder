@@ -32,8 +32,8 @@
       from a hull, from the workspace and from the ship list, and over the equipment
       tool from the bench and from elsewhere.
 - [x] 2.4 Update `e2e/design-reference.spec.ts`, which reads the mark as decoration on
-      the shipyard and the current tool as a word. Verify by running the design
-      reference project.
+      the shipyard, and `e2e/interface-foundations.spec.ts`, which reads the current
+      tool as a word. Verify by running both projects.
 
 ## 3. One autosave, two tools
 

@@ -81,7 +81,7 @@ export class EmptyBenchService {
    * What is deleted is the record, not the address. A loadout the address still
    * carries opens again from there, as any loadout in an address does, and is
    * autosaved into a record of its own — the deleted one is never written back
-   * (017/FR-009).
+   * (017/FR-008).
    */
   clearHolding(recordId: string): boolean {
     if (!this.#store.clearIfHolding(recordId)) {

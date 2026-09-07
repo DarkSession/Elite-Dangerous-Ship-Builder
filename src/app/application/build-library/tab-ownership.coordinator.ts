@@ -83,11 +83,8 @@ export class TabOwnershipCoordinator {
   /**
    * What copies a tool's work into the record a fork moved it onto.
    *
-   * Bound here, beside the subjects, and for the same reason they are: a tool
-   * is forked whether or not its screen has ever been drawn, and a fork nobody
-   * answered would leave the work in the record the other page took and nothing
-   * at all in the fresh one (001/FR-012). Bound to the autosave rather than to
-   * a screen, which is what a screen would have handed over anyway.
+   * Bound here rather than by a screen, for the reason `fork` states, and bound
+   * to the autosave, which is what a screen would have handed over anyway.
    */
   readonly #copyOnFork = new Map<RecordTool, () => void>([
     ['ship', () => this.#shipAutosave.adoptForkedRecord()],
@@ -196,6 +193,11 @@ export class TabOwnershipCoordinator {
    * `except` leaves one tool out, for the tool that has just forked: the fork
    * announced the new id itself, so announcing it again would send one claim
    * twice.
+   *
+   * The rest are announced on purpose, and a page that answers one by forking
+   * is the point rather than the hazard: whichever of the two pages steps off
+   * a record copies its work into the record it steps onto, so no claim sent
+   * here can cost a write.
    */
   #announceAll(except: RecordTool | null = null): void {
     for (const tool of this.#subjects.keys()) {
