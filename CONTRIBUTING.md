@@ -112,6 +112,10 @@ A pull request whose every changed path is under `openspec/` runs a limited set:
 unit tests, the end-to-end matrix and the preview are skipped, because nothing in them reads a
 specification. Run the whole gate locally all the same if you touched anything else.
 
+The `Scope` and `Specification record` jobs must both be required status checks on `main`. A skipped
+job satisfies a required check, so a specification-lane pull request proves nothing unless the two
+jobs that do run are the ones being required.
+
 Playwright needs its browsers once:
 
 ```bash

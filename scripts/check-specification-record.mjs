@@ -14,8 +14,8 @@
  * | A conformance claim in the record and its excluded criteria    | `unqualified-conformance-claim` |
  * | The help route ledger and the screen inventory it transcribes  | `screen-inventory` |
  *
- * They are here rather than in the checkers that used to hold them because of
- * what reads what. A rule that reads `openspec/` makes a change to a
+ * They are here rather than in the product policy checkers because of what
+ * reads what. A rule that reads `openspec/` makes a change to a
  * specification able to fail the checker, the generated help artifacts, the
  * build that emits them and the end-to-end suite that runs against it. Held
  * here, the whole of that coupling is one script: the product policy, the
@@ -156,29 +156,55 @@ function ledgerCoverageViolations(declared, ledgerSource, ledgerFile) {
   ];
 }
 
+/**
+ * The two inputs this rule needs before it can find anything.
+ *
+ * Both are guarded, and a missing one is a violation rather than a quiet pass.
+ * A rule that reports nothing because it was given nothing is not a gate: an
+ * empty ledger would retire every requirement's evidence at once, and an empty
+ * specification tree would retire the rule itself, both in silence.
+ *
+ * Separated from the reading so it can be run without a filesystem, which is
+ * the only way that silence can be tested for.
+ */
+export function ledgerCoverageInputViolations(ledgerSource, specificationCount) {
+  const fail = (file, message) => [{ file, line: 1, rule: 'unregistered-requirement', message }];
+
+  if (coveredFeatures(ledgerSource).size === 0) {
+    return fail(
+      SCOPE.ledger,
+      'The coverage ledger declares no covered features, so no requirement can be verified as registered.',
+    );
+  }
+  if (specificationCount === 0) {
+    return fail(
+      SCOPE.specs,
+      'No capability specification was found, so no requirement was checked for evidence.',
+    );
+  }
+  return [];
+}
+
 /** IO wrapper. */
 async function checkLedgerCoverage() {
   const ledgerFile = SCOPE.ledger;
   const ledgerPath = resolve(ROOT, ledgerFile);
   const ledger = existsSync(ledgerPath) ? await readFile(ledgerPath, 'utf8') : '';
+  const specifications = await specificationFiles();
 
-  const covered = coveredFeatures(ledger);
-  if (covered.size === 0) {
-    violations.push({
-      file: ledgerFile,
-      line: 1,
-      rule: 'unregistered-requirement',
-      message:
-        'The coverage ledger declares no covered features, so no requirement can be verified as registered.',
-    });
+  const missing = ledgerCoverageInputViolations(ledger, specifications.length);
+  if (missing.length > 0) {
+    violations.push(...missing);
     return;
   }
 
   // The ledger names feature directories; a trace names the feature number.
-  const coveredNumbers = new Set([...covered].map((directory) => directory.split('-')[0]));
+  const coveredNumbers = new Set(
+    [...coveredFeatures(ledger)].map((directory) => directory.split('-')[0]),
+  );
 
   const declared = [];
-  for (const file of await specificationFiles()) {
+  for (const file of specifications) {
     const source = await readFile(file, 'utf8');
     for (const id of declaredRequirementIds(source)) {
       if (!coveredNumbers.has(id.split('/')[0])) {
@@ -295,22 +321,41 @@ async function checkGoverningReferences() {
 // ---------------------------------------------------------------------------
 
 /**
- * The whole record, deliberately.
+ * Every document of the record, as `{ [file]: contents }`.
  *
- * A specification that claims the target for its own surfaces is a statement
- * about those surfaces, and an unqualified one there is as strong a claim as an
- * unqualified one in the README. A per-feature list is a rule that does not
- * point at the files most likely to break it: an amendment to the excluded set
- * is carried through the guarded directories and silently missed everywhere
- * else, which leaves the constitution asserting one number and three dozen
- * documents enumerating another.
+ * The whole tree, deliberately. A specification that claims the target for its
+ * own surfaces is a statement about those surfaces, and an unqualified one there
+ * is as strong a claim as an unqualified one in the README. A per-feature list
+ * is a rule that does not point at the files most likely to break it: an
+ * amendment to the excluded set is carried through the guarded directories and
+ * silently missed everywhere else, which leaves the constitution asserting one
+ * number and three dozen documents enumerating another.
+ *
+ * Separated from the rule so a test can prove the sweep reaches both roots. A
+ * rule applied to an empty map reports nothing and looks the same as a rule
+ * that passed.
  */
-async function checkConformanceClaims() {
+export async function recordDocuments() {
   const contents = {};
   for (const directory of SCOPE.record) {
     for (const file of await walk(directory, ['.md'])) {
       contents[repoPath(file)] = await readFile(file, 'utf8');
     }
+  }
+  return contents;
+}
+
+/** IO wrapper. */
+async function checkConformanceClaims() {
+  const contents = await recordDocuments();
+  if (Object.keys(contents).length === 0) {
+    violations.push({
+      file: SCOPE.record[0],
+      line: 1,
+      rule: 'unqualified-conformance-claim',
+      message: 'The specification record holds no document, so no claim in it was read.',
+    });
+    return;
   }
 
   violations.push(...conformanceClaimViolations(contents));
@@ -337,6 +382,12 @@ function literalValue(node) {
  * Parsed rather than matched, because a row carries comments between its
  * properties and a regular expression that survived those would be a parser
  * written badly.
+ *
+ * `null` when the declaration is not there at all, which is a different fault
+ * from a declaration holding no rows. An export renamed or wrapped in a form
+ * this does not read would otherwise be reported as a document claiming
+ * two dozen surfaces the code has none of, which sends the reader to the
+ * innocent file.
  */
 export function transcribedHelpRoutes(ledgerSource) {
   const file = ts.createSourceFile(
@@ -375,7 +426,7 @@ export function transcribedHelpRoutes(ledgerSource) {
   };
   visit(file);
 
-  return rows ?? [];
+  return rows;
 }
 
 /**
@@ -391,32 +442,44 @@ export function documentedHelpRoutes(inventorySource) {
   if (heading < 0) {
     return [];
   }
-  const section = inventorySource.slice(heading);
+
+  // Bounded at the next heading. The ledger is one section of a document that
+  // carries several, and a walk to the end of the file would fold a later
+  // four-column table's rows into this one's.
+  const rest = inventorySource.slice(heading + 1);
+  const next = rest.indexOf('\n## ');
+  const section = next < 0 ? rest : rest.slice(0, next);
+
   const start = section.indexOf('| Capability / surface');
   if (start < 0) {
     return [];
   }
 
-  return section
-    .slice(start)
-    .split('\n')
-    .filter((line) => line.startsWith('|'))
-    .map((line) =>
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim()),
-    )
-    .filter((cells) => cells.length === 4 && !/^-+$/.test(cells[0] ?? ''))
-    .slice(1)
-    .map(([surface, owner, frameEntry, applies]) => ({
-      // Backticks are the document's code formatting around a route, not part
-      // of the surface's name.
-      surface: (surface ?? '').replace(/`/g, ''),
-      owner: owner ?? '',
-      frameEntry: frameEntry ?? '',
-      applies: [...(applies ?? '').matchAll(/FR-\d{3}/g)].map((match) => match[0]).sort(),
-    }));
+  return (
+    section
+      .slice(start)
+      .split('\n')
+      .filter((line) => line.startsWith('|'))
+      .map((line) =>
+        line
+          .split('|')
+          .slice(1, -1)
+          .map((cell) => cell.trim()),
+      )
+      .filter((cells) => cells.length === 4 && !/^-+$/.test(cells[0] ?? ''))
+      // The header by what it says, not by where it sits. Dropping the first row
+      // that survived the filter would drop a data row instead the day the
+      // header stops having four columns.
+      .filter((cells) => cells[0] !== 'Capability / surface')
+      .map(([surface, owner, frameEntry, applies]) => ({
+        // Backticks are the document's code formatting around a route, not part
+        // of the surface's name.
+        surface: (surface ?? '').replace(/`/g, ''),
+        owner: owner ?? '',
+        frameEntry: frameEntry ?? '',
+        applies: [...(applies ?? '').matchAll(/FR-\d{3}/g)].map((match) => match[0]).sort(),
+      }))
+  );
 }
 
 /**
@@ -426,51 +489,69 @@ export function documentedHelpRoutes(inventorySource) {
  * equality rather than containment: a row in the document and not in the code is
  * an untested claim, and a row in the code and not in the document is a claim
  * nobody wrote down. Both are the drift the ledger exists to prevent.
+ *
+ * Counted rather than set against set. Two rows that read alike are two claims,
+ * and a table that carries one of them twice against the export's once is a
+ * table that has been copied into rather than transcribed from. Containment
+ * cannot see that; a count can.
  */
 export function screenInventoryViolations(transcribed, documented, { file, document }) {
   const fail = (message) => [{ file, line: 1, rule: 'screen-inventory', message }];
 
+  if (transcribed === null) {
+    return fail(`The \`helpRouteCoverage\` declaration was not found in ${file}.`);
+  }
   if (documented.length === 0) {
     return fail(`The Release coverage ledger table was not found in ${document}.`);
   }
 
-  const normalise = (rows) =>
-    rows
-      .map((row) => JSON.stringify(row))
-      .sort()
-      .map((entry) => JSON.parse(entry));
+  const fromCode = transcribed.map((row) => ({
+    surface: row.surface,
+    owner: row.owner,
+    // The document writes the dismissible half of the state in prose; the
+    // export carries the state alone, because the dismissal is a property of
+    // every layer rather than of this ledger.
+    frameEntry: row.frameEntry === 'obscured' ? 'obscured, dismissible' : row.frameEntry,
+    applies: [...(row.requirements ?? [])].map((id) => id.replace('012/', '')).sort(),
+  }));
 
-  const fromCode = normalise(
-    transcribed.map((row) => ({
-      surface: row.surface,
-      owner: row.owner,
-      // The document writes the dismissible half of the state in prose; the
-      // export carries the state alone, because the dismissal is a property of
-      // every layer rather than of this ledger.
-      frameEntry: row.frameEntry === 'obscured' ? 'obscured, dismissible' : row.frameEntry,
-      applies: [...(row.requirements ?? [])].map((id) => id.replace('012/', '')).sort(),
-    })),
-  );
-  const fromDocument = normalise(documented);
+  // Spelled out rather than serialised. `JSON.stringify` keys a row by the order
+  // its literal happens to declare its properties, so reordering either literal
+  // would make every row mismatch for no change in what either says.
+  const name = (row) =>
+    `${row.surface} (${row.owner ?? ''}, ${row.frameEntry ?? ''}, ${(row.applies ?? []).join(' ')})`;
 
-  const key = (row) => JSON.stringify(row);
-  const documentedKeys = new Set(fromDocument.map(key));
-  const codeKeys = new Set(fromCode.map(key));
+  /** How many times each row appears, keyed by everything it claims. */
+  const counted = (rows) => {
+    const counts = new Map();
+    for (const row of rows) {
+      const entry = name(row);
+      counts.set(entry, (counts.get(entry) ?? 0) + 1);
+    }
+    return counts;
+  };
 
-  const untested = fromDocument.filter((row) => !codeKeys.has(key(row)));
-  const unwritten = fromCode.filter((row) => !documentedKeys.has(key(row)));
+  const codeCounts = counted(fromCode);
+  const documentCounts = counted(documented);
+
+  /** Rows `left` claims more often than `right` does, each named once per surplus. */
+  const surplus = (left, right) =>
+    [...left.entries()]
+      .flatMap(([entry, count]) => Array(Math.max(0, count - (right.get(entry) ?? 0))).fill(entry))
+      .sort();
+
+  const untested = surplus(documentCounts, codeCounts);
+  const unwritten = surplus(codeCounts, documentCounts);
   if (untested.length === 0 && unwritten.length === 0) {
     return [];
   }
 
-  const name = (row) =>
-    `${row.surface} (${row.owner}, ${row.frameEntry}, ${row.applies.join(' ')})`;
   const parts = [];
   if (untested.length > 0) {
-    parts.push(`only in ${document}: ${untested.map(name).join('; ')}`);
+    parts.push(`only in ${document}: ${untested.join('; ')}`);
   }
   if (unwritten.length > 0) {
-    parts.push(`only in helpRouteCoverage: ${unwritten.map(name).join('; ')}`);
+    parts.push(`only in helpRouteCoverage: ${unwritten.join('; ')}`);
   }
   return fail(`The two disagree — ${parts.join(', and ')}.`);
 }
@@ -515,6 +596,9 @@ export async function runChecks() {
 /** The rules as pure functions, so fixtures can drive them without a filesystem. */
 export const rules = {
   ledgerCoverageViolations,
+  ledgerCoverageInputViolations,
+  conformanceClaimViolations,
+  recordDocuments,
   declaredRequirementIds,
   registeredRequirementIds,
   coveredFeatures,

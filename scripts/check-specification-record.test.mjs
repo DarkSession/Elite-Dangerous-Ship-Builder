@@ -14,7 +14,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rules, runChecks, SCOPE } from './check-specification-record.mjs';
+import { recordDocuments, rules, runChecks, SCOPE } from './check-specification-record.mjs';
 
 const ruleIds = (found) => found.map((violation) => violation.rule);
 
@@ -112,6 +112,26 @@ describe('coverage ledger reconciliation', () => {
     );
 
     assert.deepEqual([...covered], ['011-interface-foundations', '001-ship-selection-and-loading']);
+  });
+
+  it('refuses a ledger that covers nothing', () => {
+    const found = rules.ledgerCoverageInputViolations('export const LEDGER = [];', 4);
+
+    assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
+    assert.match(found[0].message, /declares no covered features/);
+  });
+
+  it('refuses an empty specification tree rather than passing over it', () => {
+    // The rule would otherwise find nothing to declare, report nothing, and look
+    // exactly like a rule that passed.
+    const found = rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 0);
+
+    assert.deepEqual(ruleIds(found), ['unregistered-requirement']);
+    assert.equal(found[0].file, SCOPE.specs);
+  });
+
+  it('accepts both inputs when each carries something', () => {
+    assert.deepEqual(rules.ledgerCoverageInputViolations(ledgerWith('011/FR-001'), 4), []);
   });
 
   it('reads registered ids only from requirements arrays', () => {
@@ -372,6 +392,107 @@ describe('the screen inventory reconciliation', () => {
 
   it('finds nothing to read in a document with no ledger heading', () => {
     assert.deepEqual(rules.documentedHelpRoutes('# A document\n\nNo ledger here.\n'), []);
+  });
+
+  // Containment cannot see this: every row on each side appears on the other,
+  // and only the count differs.
+  it('rejects a row the document carries twice and the code carries once', () => {
+    const found = rules.screenInventoryViolations(
+      rules.transcribedHelpRoutes(LEDGER),
+      [...rules.documentedHelpRoutes(DOCUMENT), rules.documentedHelpRoutes(DOCUMENT)[1]],
+      where,
+    );
+
+    assert.deepEqual(ruleIds(found), ['screen-inventory']);
+    assert.match(found[0].message, /only in screen-inventory\.md: Build library layer/);
+  });
+
+  it('rejects a row the code carries twice and the document carries once', () => {
+    const rows = rules.transcribedHelpRoutes(LEDGER);
+    const found = rules.screenInventoryViolations(
+      [...rows, rows[1]],
+      rules.documentedHelpRoutes(DOCUMENT),
+      where,
+    );
+
+    assert.deepEqual(ruleIds(found), ['screen-inventory']);
+    assert.match(found[0].message, /only in helpRouteCoverage: Build library layer/);
+  });
+
+  it('blames the ledger, not the document, when the declaration is not found', () => {
+    assert.equal(rules.transcribedHelpRoutes('export const somethingElse = [];'), null);
+
+    const found = rules.screenInventoryViolations(
+      null,
+      rules.documentedHelpRoutes(DOCUMENT),
+      where,
+    );
+
+    assert.deepEqual(ruleIds(found), ['screen-inventory']);
+    assert.match(
+      found[0].message,
+      /helpRouteCoverage` declaration was not found in e2e\/coverage-ledger\.ts/,
+    );
+  });
+
+  it('reads only the ledger table, not a four-column table in a later section', () => {
+    const withLater = [
+      DOCUMENT,
+      '',
+      '## Verification inventory',
+      '',
+      '| Surface | Owner | Entry | Applies |',
+      '| --- | --- | --- | --- |',
+      '| Something else | 099 | visible | FR-999 |',
+    ].join('\n');
+
+    assert.deepEqual(rules.documentedHelpRoutes(withLater), rules.documentedHelpRoutes(DOCUMENT));
+  });
+
+  it('drops the header by what it says, not by where it sits', () => {
+    // A header row the four-column filter rejects. Dropping the first surviving
+    // row by position would take a data row with it.
+    const widened = DOCUMENT.replace(
+      '| Capability / surface | Owner | Frame entry | Applies |',
+      '| Capability / surface | Owner | Frame entry | Applies | Note |',
+    );
+
+    assert.deepEqual(rules.documentedHelpRoutes(widened), rules.documentedHelpRoutes(DOCUMENT));
+  });
+});
+
+describe('the conformance sweep over the record', () => {
+  it('reads both roots of the record, and only Markdown', async () => {
+    const documents = Object.keys(await recordDocuments());
+
+    assert.ok(documents.length > 0, 'the record sweep found no document');
+    assert.ok(
+      documents.every((file) => file.endsWith('.md')),
+      'the sweep read something that is not Markdown',
+    );
+    for (const root of SCOPE.record) {
+      assert.ok(
+        documents.some((file) => file.startsWith(`${root}/`)),
+        `the sweep reached no document under ${root}`,
+      );
+    }
+  });
+
+  it('applies the shared rule to what the sweep returns', () => {
+    const found = rules.conformanceClaimViolations({
+      'openspec/specs/platform/design-system/spec.md': 'The surface is accessible to WCAG 2.2 AA.',
+    });
+
+    assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
+  });
+
+  it('accepts a claim in the record that names every excluded criterion', () => {
+    const found = rules.conformanceClaimViolations({
+      'openspec/specs/platform/design-system/spec.md':
+        'WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(found, []);
   });
 });
 
