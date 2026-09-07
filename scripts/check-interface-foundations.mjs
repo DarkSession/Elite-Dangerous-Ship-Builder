@@ -2629,6 +2629,9 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'slef.diagnostic.code': '"Code" is the ordinary German word.',
     'slef.export.mode.label': '"Format" is the ordinary German word.',
     'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',
+    'equipment.region.loadout':
+      'Loadout is the in-game term for an on-foot kit, and the word the journal event carries. The German catalogue keeps it untranslated, because Ausrüstung already stands for outfitting and for equipment.',
+    'equipment.tab.loadout': 'The same term, on the tab that reaches that region.',
     'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
       'Merc Coins is the in-game currency name and is not translated.',
