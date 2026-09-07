@@ -13,8 +13,10 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 
 ## What Changes
 
-- The mark on the leading edge of the bar opens the entry point, from every screen. It is
-  a link everywhere, including the entry point itself, where activating it does nothing.
+- The mark on the leading edge of the bar opens the entry point, from every screen but one.
+  It is a link everywhere it is drawn, including the entry point itself, where activating it
+  does nothing. The exception is a screen the shell draws as a sheet over another one, whose
+  own compact bar carries the way back to the screen behind it instead.
 - The tool bar offers the tool a Commander is in as well as naming it. The tab keeps
   `aria-current`, so which tool is open is still stated rather than drawn.
 - Activating the ship tool's tab opens the ship list. From a hull and from the outfitting
@@ -54,9 +56,11 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 - `src/app/application/build-library/working-record.autosave.ts` and
   `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone, over the
   port each tool's store implements, `working-record.port.ts`; `autosave.service.ts` is left
-  holding only which store the ship tool keeps. Five ship behaviours change as a result. A
+  holding only which store the ship tool keeps. Six ship behaviours change as a result. A
   record autosave was handed keeps the instant it says it was created, instead of being
-  stamped with the moment of the write that followed a reload (001/FR-013). Resuming after
+  stamped with the moment of the write that followed a reload (001/FR-013). A page that forks
+  because another page claimed its record writes the work into the fresh one whether or not
+  it has changed, where a clean page left it empty (001/FR-012). Resuming after
   another page discarded the record writes the build even where it has not changed, rather
   than writing nothing at all. The pause is about the discarded record alone, so opening
   another build — or saving the one that is open under a name — stores it unasked instead of

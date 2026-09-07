@@ -13,8 +13,8 @@ there is nothing to lose and nothing to ask about. Starting an empty bench while
 is already empty MUST change nothing.
 
 Where the loadout on the bench is not in a record — the store refuses writes, the store is
-full, or autosave is paused because the record was discarded elsewhere — the bench MUST stay
-as it is. Nothing keeps the loadout in those states, so clearing the bench would lose work
+full, a write failed, or autosave is paused because the record was discarded elsewhere — the
+bench MUST stay as it is. Nothing keeps the loadout in those states, so clearing the bench would lose work
 rather than cost nothing, and what the bench already states about storing is the reason.
 
 Source: 017/FR-006.
@@ -33,8 +33,8 @@ Source: 017/FR-006.
 
 #### Scenario: The store cannot hold the loadout
 
-- **WHEN** a Commander starts an empty bench while the store refuses writes or autosave is
-  paused
+- **WHEN** a Commander starts an empty bench while the store refuses writes, a write failed
+  or autosave is paused
 - **THEN** the loadout stays on the bench
 - **AND** the bench still states what it says about storing
 
