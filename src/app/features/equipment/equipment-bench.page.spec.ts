@@ -487,6 +487,39 @@ describe('EquipmentBenchPage', () => {
     fixture.destroy();
   });
 
+  it('resumes saving when the Commander asks it to', () => {
+    // The component says which control was pressed; reaching the autosave is
+    // the screen's own work, and a resume that reached nothing would leave a
+    // Commander pressing a control that reads as broken (017/FR-008).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    const autosave = TestBed.inject(LoadoutAutosaveService);
+    autosave.flush();
+    const mine = store.autosaveRecordId()!;
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+    expect(autosave.paused()).toBe(true);
+
+    fixture.componentInstance.actOnPersistence('resume');
+
+    expect(autosave.paused()).toBe(false);
+    expect(records.open(mine).ok).toBe(true);
+    fixture.destroy();
+  });
+
+  it('writes again when the Commander asks to retry', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    fixture.componentInstance.actOnPersistence('retry');
+
+    expect(store.autosaveRecordId()).not.toBeNull();
+    expect(records.open(store.autosaveRecordId()!).ok).toBe(true);
+    fixture.destroy();
+  });
+
   it('raises the saved records layer when asked to choose what to discard', () => {
     // The action the full-store notice offers. Choosing what to discard is the
     // layer's own work, so the bench raises it rather than drawing a list of

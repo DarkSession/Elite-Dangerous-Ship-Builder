@@ -56,7 +56,7 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 - `src/app/application/build-library/working-record.autosave.ts` and
   `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone, over the
   port each tool's store implements, `working-record.port.ts`; `autosave.service.ts` is left
-  holding only which store the ship tool keeps. Six ship behaviours change as a result. A
+  holding only which store the ship tool keeps. Seven ship behaviours change as a result. A
   record autosave was handed keeps the instant it says it was created, instead of being
   stamped with the moment of the write that followed a reload (001/FR-013). A page that forks
   because another page claimed its record writes the work into the fresh one whether or not

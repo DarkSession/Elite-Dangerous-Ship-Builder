@@ -25,20 +25,23 @@ No index key exists on purpose. An index is a second source of truth that can di
 records it lists, and a Commander whose index was lost would have builds that are present in the
 browser and invisible in the application.
 
-## A record for every build, and the seven days an unnamed one has
+## A record for every build and every loadout, and the seven days an unnamed one has
 
-**Revised 2026-08-25 (Commander request).** There is no per-tab working record that the next build
-writes over, and no count limit. Every build a Commander works on has a record of its own from the
-moment it exists, and the bound on the ones they never named is time rather than number.
+**Revised 2026-08-25 (Commander request).** There is no per-tab working record that the next one
+writes over, and no count limit. Every build and every loadout a Commander works on has a record of
+its own from the moment it exists, and the bound on the ones they never named is time rather than
+number. Both tools follow the rules below, over one engine: the work is a build or a loadout and is
+stored differently, and everything around that difference is the same.
 
-- A build with no record yet — a stock creation, a decoded link, a SLEF import — is written to a
-  freshly minted unnamed record before anything else happens to it.
-- Opening a stored record writes nothing at all. The build is already recoverable from what was
+- Work with no record yet — a stock creation, a suit chosen on the bench, a decoded link, a SLEF or
+  journal import — is written to a freshly minted unnamed record before anything else happens to
+  it.
+- Opening a stored record writes nothing at all. The work is already recoverable from what was
   opened; the **first modelled edit** forks an unnamed record, carrying which named save it came
   from, and every autosave from then on goes there.
-- Both of those moments first look for an unnamed record already holding exactly this modelled
-  state and take that record over rather than writing a second copy of it. Taking a record over
-  does not touch `modifiedAt`.
+- Both of those moments first look for an unnamed record of the same tool already holding exactly
+  this modelled state, and take that record over rather than writing a second copy of it. Taking a
+  record over does not touch `modifiedAt`.
 - Autosave never writes to a named record. The check reads the stored record's own `kind` rather
   than the page's belief about it, so a record named in another tab is covered too.
 - `ednb:tab` carries the unnamed record each of this page's tools is autosaving into, across a
@@ -73,7 +76,7 @@ expiry is never offered as a way out of a full quota.
 
 Editing continues in every persistence failure state: blocked storage, a full store, a failed write
 and a record discarded in another tab all change what the status says and change nothing about
-whether the build can be edited, calculated, shared or exported.
+whether the work can be edited, calculated, shared or exported.
 
 ## Supported record versions
 
