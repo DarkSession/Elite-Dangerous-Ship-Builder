@@ -60,8 +60,9 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
   than writing nothing at all. The pause is about the discarded record alone, so opening
   another build saves it unasked instead of leaving a stopped autosave behind a notice about
   a build that is no longer open (001/FR-012). And a record this page holds that turns out
-  to be stored as named is stated as a failed write rather than refused in silence, so the
-  workspace stops saying the build is saved when it is in nothing (001/FR-014).
+  to be stored as named is stated as a failed write rather than refused in silence, so a
+  write the ship tool used to drop with no notice and no retry is now one a Commander is
+  told about and can answer (001/FR-014).
   `src/app/platform/storage/tab-descriptor.repository.ts` holds one working record per tool.
   `src/app/platform/storage/local-record.repository.ts` matches an unnamed record by tool.
 - `src/app/application/equipment/loadout.store.ts` implements that port, gaining what

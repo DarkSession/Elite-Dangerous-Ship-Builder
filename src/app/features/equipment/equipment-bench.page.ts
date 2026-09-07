@@ -597,6 +597,11 @@ export class EquipmentBenchPage {
   #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
     this.store.markSaved({ recordId, baseRevisionId: revisionId });
     this.store.setAutosaveRecordId(null);
+    // The work is in a record again, said in the words the screen draws. A page
+    // paused on a record another tab discarded moves off it by saving as much
+    // as by opening another, and the notice about the discarded one would
+    // otherwise stand with nothing left to resume (001/FR-012).
+    this.store.setPersistence('saved');
     this.#invalidation.announceWrite(recordId, revisionId);
 
     if (held !== null && held !== recordId) {

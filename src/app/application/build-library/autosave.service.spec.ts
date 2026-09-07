@@ -441,8 +441,8 @@ describe('AutosaveService', () => {
     expect(storage.entries.get(recordKey(HELD))).toBe(named);
     expect(active.loadout()).not.toBeNull();
     // And said, rather than refused in silence: the build is in nothing, and a
-    // workspace that went on saying it was saved would be reporting a write
-    // that never happened (001/FR-014).
+    // refusal that drew no notice left the Commander with nothing to answer it
+    // with (001/FR-014).
     expect(active.persistence()).toBe('write-failed');
   });
 

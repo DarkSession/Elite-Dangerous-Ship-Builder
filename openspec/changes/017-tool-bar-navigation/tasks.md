@@ -82,6 +82,11 @@
 - [x] 4.6 Confirm `pnpm run policy` still passes `equipment-ownership.mjs` with the new
       files under `src/app/application/equipment/`, which may import no package
       subpath the capability does not already own.
+- [x] 4.7 Have a manual save on the bench consume the record the loadout was autosaved
+      into, as the workspace's does — name that record in place, or delete it once the
+      loadout is written into the record it replaced — and end a pause about it. Verify
+      with bench page tests over one record left after a save and over the notice about
+      a discarded record ending at the save.
 
 ## 5. Starting an empty bench
 

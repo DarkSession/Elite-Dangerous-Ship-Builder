@@ -395,6 +395,51 @@ describe('EquipmentBenchPage', () => {
     fixture.destroy();
   });
 
+  it('leaves no unnamed record behind the loadout it saved under a name', async () => {
+    // The save consumes the record the changes were autosaved into: a Commander
+    // who saved once has one loadout to find again, not a save and the working
+    // copy it was made from (013/FR-016, 017/FR-007).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    expect(store.autosaveRecordId()).not.toBeNull();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+
+    const listed = records.list();
+    const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(saved.length).toBe(1);
+    expect(saved[0]?.available === true && saved[0].record.kind).toBe('named');
+    fixture.destroy();
+  });
+
+  it('stops stating a record another page discarded once the loadout is saved', async () => {
+    // Saving is the other way off the discarded record. The notice about it
+    // would otherwise stand over a loadout that is in a record again, with
+    // nothing left to resume (001/FR-012).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const mine = store.autosaveRecordId()!;
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+
+    expect(store.persistence()).toBe('saved');
+    fixture.destroy();
+  });
+
   it('draws what persistence is doing where the workspace draws it', () => {
     const fixture = TestBed.createComponent(EquipmentBenchPage);
     fixture.detectChanges();

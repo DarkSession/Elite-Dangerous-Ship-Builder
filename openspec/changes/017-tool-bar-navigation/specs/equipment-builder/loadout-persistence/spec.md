@@ -1,3 +1,42 @@
+## MODIFIED Requirements
+
+### Requirement: Naming, saving, reopening and deleting a loadout
+
+Users MUST be able to name the open loadout, save it, reopen a saved loadout and
+delete one.
+
+A manual save MUST consume the unnamed record the loadout was autosaved into and MUST leave
+no copy of it behind: naming that loadout MUST name the same local identity, and writing it
+into a saved record MUST delete the unnamed one afterwards. Saving a copy under another name
+MUST create a further record and leave the original where it is. The saved list MUST NOT
+hold both a save and the unnamed record it was made from, because the two are one loadout
+and a Commander who saved once has one loadout to find again.
+
+Source: 013/FR-016, 017/FR-007.
+
+#### Scenario: A named loadout is saved
+
+- **WHEN** a Commander saves an edited loadout under a name
+- **THEN** it appears in the saved list, identified by that name, its suit and its
+  modification count
+
+#### Scenario: A saved loadout is reopened
+
+- **WHEN** a Commander opens a saved loadout
+- **THEN** every choice is restored exactly as saved
+
+#### Scenario: An autosaved loadout is named
+
+- **WHEN** a Commander names a loadout the bench has autosaved into an unnamed record
+- **THEN** the saved list holds one record for that loadout, under the name
+- **AND** no unnamed record of it is left behind
+
+#### Scenario: An autosaved loadout replaces a saved one
+
+- **WHEN** a Commander saves such a loadout over a loadout already in the list
+- **THEN** the loadout is written into the record it replaced
+- **AND** the unnamed record it was autosaved into is gone
+
 ## ADDED Requirements
 
 ### Requirement: Autosave of the open loadout
