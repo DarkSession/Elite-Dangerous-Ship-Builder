@@ -195,6 +195,90 @@ test.describe('the bench keeps the loadout on it', () => {
   });
 });
 
+test.describe('the bench and the address', () => {
+  test('a loadout in the address outranks the record restored (017/FR-008)', async ({ page }) => {
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await autosaved(page);
+    const shared = new URL(page.url()).hash;
+
+    // A second loadout on the bench, so what this page restores is not what the
+    // link describes.
+    await tools(page).nth(1).click();
+    await expect(page.locator('.gate')).toBeVisible();
+    await wearSuit(page, 'Maverick Suit');
+    await autosaved(page);
+
+    await page.goto(`/equipment${shared}`);
+
+    // The address is a Commander's deliberate arrival and the record is only
+    // what this page was doing before it. Read from the suit's own row rather
+    // than from the page, which also carries the list of suits to choose from.
+    const suit = page.locator('.ledger__row[data-target="suit"]');
+    await expect(suit).toContainText('Dominator Suit');
+    await expect(suit).not.toContainText('Maverick Suit');
+  });
+
+  test('a store that refuses a write is stated in the bench’s own words (017/FR-009)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    // Every storage access throws, which is what a browser with site data
+    // blocked actually does.
+    await page.addInitScript(() => {
+      const denied = () => {
+        throw new DOMException('denied', 'SecurityError');
+      };
+      const blocked = {
+        get length(): number {
+          return denied();
+        },
+        key: denied,
+        getItem: denied,
+        setItem: denied,
+        removeItem: denied,
+        clear: denied,
+      };
+      Object.defineProperty(window, 'localStorage', { get: () => blocked });
+    });
+
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+
+    // Named for the loadout rather than for storage, and the bench is still a
+    // bench: nothing is taken away because nothing can be written.
+    await expect(page.getByText(/loadouts will not survive a reload/i)).toBeVisible();
+    await expect(page.locator('ednb-equipment-bench-page')).toContainText('Dominator Suit');
+    await expect(page.locator('.gate')).toHaveCount(0);
+
+    await context.close();
+  });
+
+  test('one unnamed record per tool, so a page holds a build and a loadout (017/FR-010)', async ({
+    page,
+  }) => {
+    await page.goto('/ships/Anaconda');
+    await buildStockHull(page, 'Build');
+    await expect(page).toHaveURL(/\/outfitting#b\./);
+
+    await page.goto('/equipment');
+    await wearSuit(page, 'Dominator Suit');
+    await autosaved(page);
+
+    // Two records, one per tool. A loadout written into the build's record
+    // would be the build gone, and the two hold different content.
+    const written = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('ednb:record:'))
+        .map((key) => JSON.parse(localStorage.getItem(key) ?? '{}') as { tool?: string }),
+    );
+
+    expect(written.map((record) => record.tool).sort()).toEqual(['equipment', 'ship']);
+  });
+});
+
 test.describe('the bar with the open tool drawn as a control', () => {
   test('scans clean at every layout profile, in both engines', async ({ page }, testInfo) => {
     // The states this change adds: a tab that is a link and current at once,

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
-import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
@@ -149,11 +150,11 @@ describe('LoadoutAutosaveService', () => {
     expect(store.dirty()).toBe(false);
   });
 
-  it('never takes over a record of the other tool', () => {
-    // A build's record is never a loadout's, whatever either of them holds
-    // (017/FR-010).
+  it('never takes over a record of the other tool (017/FR-010)', () => {
+    // The one record this browser holds is a build's. A loadout minting its own
+    // rather than writing into it is the whole rule: the two hold different
+    // content and are never the same state.
     const { autosave, store, records, storage } = setup();
-    const loadout = newLoadout('tacticalsuit')!;
     records.write({
       id: 'a-build',
       kind: 'working',
@@ -163,17 +164,55 @@ describe('LoadoutAutosaveService', () => {
       name: null,
       note: null,
       sourceNamed: null,
-      payload: { tool: 'equipment', loadout },
+      payload: {
+        tool: 'ship',
+        build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+        validation: { valid: true, complete: true },
+      },
     });
-    // The stored record is the equipment tool's, so it is a match; a build's
-    // would not be, and the fingerprint is the only thing the two share.
-    expect(records.findUnnamedMatching(loadoutFingerprint(loadout), 'ship')).toBeNull();
 
     benchLoadout(store, 'tacticalsuit', null);
     autosave.flush();
 
-    expect(store.autosaveRecordId()).toBe('a-build');
-    expect(storage.entries.size).toBe(1);
+    expect(store.autosaveRecordId()).not.toBe('a-build');
+    expect(storage.entries.size).toBe(2);
+    expect(storage.entries.get(recordKey('a-build'))).toContain('"tool":"ship"');
+  });
+
+  it('keeps the instant a record it takes over was created (001/FR-013)', () => {
+    // Taking over is not creating. Stamping the entry with now would restart
+    // the seven days it has been counting down, which is the one thing the
+    // take-over rule exists to avoid.
+    const { autosave, store, records, storage } = setup();
+    const loadout = newLoadout('utilitysuit')!;
+    records.write({
+      id: 'older',
+      kind: 'working',
+      revisionId: 'r',
+      createdAt: '2025-12-01T00:00:00.000Z',
+      modifiedAt: '2025-12-01T00:00:00.000Z',
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout },
+    });
+
+    // A page that has already written a record of its own, so its own instant
+    // is the one it would otherwise carry over.
+    benchLoadout(store);
+    autosave.flush();
+    // Then the same loadout the stored record holds, arriving in no record.
+    store.open(loadout, null, {});
+    autosave.flush();
+    expect(store.autosaveRecordId()).toBe('older');
+
+    store.dispatch({ kind: 'setSuitGrade', grade: 2 });
+    autosave.flush();
+
+    expect(JSON.parse(storage.entries.get(recordKey('older'))!)).toMatchObject({
+      createdAt: '2025-12-01T00:00:00.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+    });
   });
 
   it('writes nothing while the loadout matches what its record already holds', () => {

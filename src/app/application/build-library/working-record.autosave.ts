@@ -163,7 +163,12 @@ export class WorkingRecordAutosave {
 
     this.#subject.setPersistence('saving');
     const now = this.#clock.timestamp();
-    this.#createdAt ??= now;
+    // A record that already exists keeps the instant it was created. Stamping
+    // it with now would restart the seven days it is counting down, which is
+    // exactly what taking a record over must not do — and a restored record and
+    // a taken-over one both reach this holding an id they did not mint
+    // (001/FR-013).
+    this.#createdAt ??= this.#createdAtOf(recordId) ?? now;
 
     const written = this.#records.write({
       id: recordId,
@@ -221,6 +226,9 @@ export class WorkingRecordAutosave {
     const identical =
       fingerprint === null ? null : this.#records.findUnnamedMatching(fingerprint, this.tool);
     if (identical !== null) {
+      // Its own instant, not the one this page last wrote under: the entry a
+      // Commander is taking over has been counting down since it was written.
+      this.#createdAt = null;
       this.#subject.setAutosaveRecordId(identical);
       this.#subject.markSaved(null);
       this.#subject.setPersistence('saved');
@@ -231,6 +239,12 @@ export class WorkingRecordAutosave {
     this.#createdAt = null;
     this.#subject.setAutosaveRecordId(minted);
     return minted;
+  }
+
+  /** The instant a stored record says it was created, where one is stored. */
+  #createdAtOf(recordId: string): string | null {
+    const opened = this.#records.open(recordId);
+    return opened.ok && opened.value !== null ? opened.value.record.createdAt : null;
   }
 
   #schedule(): void {

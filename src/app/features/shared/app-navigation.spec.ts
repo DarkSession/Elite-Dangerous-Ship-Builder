@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { routes } from '../../app.routes';
-import { AppNavigation, NAVIGATION_ROUTES } from './app-navigation';
+import { AppNavigation, EQUIPMENT_REENTRY_ACTION, NAVIGATION_ROUTES } from './app-navigation';
 
 describe('AppNavigation tools', () => {
   beforeEach(() => {
@@ -123,6 +123,18 @@ describe('AppNavigation tools', () => {
       false,
     );
     expect(registry.alreadyOpen(NAVIGATION_ROUTES.start, NAVIGATION_ROUTES.equipment)).toBe(false);
+  });
+
+  it('names what a tool does when its own tab is pressed on its own screen', () => {
+    // The ship tool's tab leads to the ship list, which is an address and needs
+    // nothing else said about it. The equipment tool's leads to the bench it is
+    // already on, so what it does there is an action, and the registry is where
+    // the shell reads it — the bar imports no bench component to find out
+    // (017/FR-004, FR-005).
+    const tools = navigation().tools(NAVIGATION_ROUTES.equipment);
+
+    expect(tools[0].reentry).toBeUndefined();
+    expect(tools[1].reentry).toBe(EQUIPMENT_REENTRY_ACTION);
   });
 });
 

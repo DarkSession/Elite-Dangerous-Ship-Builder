@@ -5,6 +5,7 @@ import { provideLocalization } from '../../i18n/i18n.providers';
 import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
 import { LoadoutAutosaveService } from '../../application/equipment/loadout-autosave.service';
 import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
+import { EmptyBenchService } from '../../application/equipment/empty-bench.service';
 import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
 import { encodeEquipmentLinkFragment } from '../../domain/equipment/loadout-link/equipment-link-codec';
 import { isEquipmentRecord } from '../../domain/records/local-record';
@@ -308,6 +309,31 @@ describe('EquipmentBenchPage', () => {
     expect(store.autosaveRecordId()).toBe(id);
     expect(store.dirty()).toBe(false);
     fixture.destroy();
+  });
+
+  it('stays empty when the page is built again after the bench was cleared (017/FR-006)', () => {
+    const id = heldRecord('tacticalsuit');
+    const first = TestBed.createComponent(EquipmentBenchPage);
+    first.detectChanges();
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+
+    TestBed.inject(EmptyBenchService).start();
+    first.destroy();
+
+    const second = TestBed.createComponent(EquipmentBenchPage);
+    second.detectChanges();
+
+    // A claim left behind would restore the loadout a Commander deliberately
+    // cleared, which is the one thing emptying the bench has to be trusted not
+    // to do. The record it named is still there, which is what makes the action
+    // free to offer.
+    expect(store.hasLoadout()).toBe(false);
+    expect(
+      TestBed.inject(TabDescriptorRepository).read()?.workingRecords.equipment,
+    ).toBeUndefined();
+    const kept = records.open(id);
+    expect(kept.ok && kept.value !== null).toBe(true);
+    second.destroy();
   });
 
   it('opens the loadout in the address over the one it restored (017/FR-009)', () => {

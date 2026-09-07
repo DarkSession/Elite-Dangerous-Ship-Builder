@@ -7,6 +7,7 @@ import {
 } from '../../platform/browser/broadcast-channel.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 import type { WorkingRecordSubject } from './working-record.port';
@@ -92,6 +93,33 @@ function otherTool(recordId: string | null): WorkingRecordSubject {
 }
 
 describe('TabOwnershipCoordinator', () => {
+  it('mints no page identity until one is needed', () => {
+    // The shell reaches this coordinator to offer the bar's re-entry action,
+    // and the prerender pass builds that shell in a runtime with no
+    // cryptographic random source at all. Constructing it there has to cost
+    // nothing, or every prerendered address fails to render.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ...provideMemoryStorage(new MemoryStorage(), new MemoryStorage()),
+        { provide: BroadcastChannelAdapter, useValue: new FakeChannel() },
+        {
+          provide: UuidAdapter,
+          useValue: {
+            create: () => {
+              throw new Error('no cryptographic random source');
+            },
+          },
+        },
+      ],
+    });
+
+    const coordinator = TestBed.inject(TabOwnershipCoordinator);
+
+    // Reading what this tab was working from asks for no identity of its own.
+    expect(coordinator.claim('equipment')).toBeNull();
+  });
+
   it('claims nothing for a tab that has never held a record', () => {
     // A fresh tab has no build and nothing to restore. That is the ordinary
     // state of one, not a failure, and it mints no record for a build that does
@@ -108,6 +136,32 @@ describe('TabOwnershipCoordinator', () => {
     stop();
 
     expect(setup(session).coordinator.claim('ship')).toBe('id-held');
+  });
+
+  it('lets go of one tool’s claim without touching the other tool’s', () => {
+    // Starting an empty bench is where a tool stops writing to a record and
+    // takes up no other. A claim left behind would restore the loadout a
+    // Commander deliberately cleared, and a page holds a build and a loadout at
+    // once, so only the one tool lets go (017/FR-006, FR-010).
+    const session = new MemoryStorage();
+    const { coordinator, active } = setup(session);
+    hold(active, 'id-held');
+    const stop = coordinator.track(active);
+    TestBed.tick();
+    TestBed.inject(TabDescriptorRepository).write('equipment', 'a-loadout');
+
+    coordinator.release('ship');
+
+    expect(coordinator.claim('ship')).toBeNull();
+    expect(coordinator.claim('equipment')).toBe('a-loadout');
+
+    // And the tool is not finished: the next record it takes up is claimed the
+    // way any other is.
+    hold(active, 'id-next');
+    TestBed.tick();
+
+    expect(coordinator.claim('ship')).toBe('id-next');
+    stop();
   });
 
   it('gives two ordinary tabs distinct records', () => {

@@ -129,9 +129,9 @@ test.describe('the reference visual language', () => {
 
   test('leads the tool deck with the insignia', async ({ page }) => {
     // Canvas 4c puts the mark in flow at the head of the upper deck with the
-    // tabs following it, and both decks then sit on the plate's own inset. The
-    // every screen wraps it in the way to the entry point, and it is the tool
-    // deck's first child (`application-shell.md`, "The tool bar").
+    // tabs following it, and both decks then sit on the plate's own inset.
+    // Every screen wraps the mark in the way back to the entry point, and it
+    // is the tool deck's first child (`application-shell.md`, "The tool bar").
     const placed = await page.evaluate(() => {
       const deck = document.querySelector('.frame__deck') as HTMLElement;
       const mark = deck.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');

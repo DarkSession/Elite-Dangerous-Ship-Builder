@@ -93,6 +93,38 @@ describe('TabDescriptorRepository', () => {
     }
   });
 
+  it('lets go of one tool’s record and leaves the other tool’s alone', () => {
+    const { tab, session } = setup();
+    tab.write('ship', 'working-1');
+    tab.write('equipment', 'working-2');
+
+    tab.release('equipment');
+
+    expect(tab.read()).toEqual({ version: 2, workingRecords: { ship: 'working-1' } });
+    expect(session.entries.has(EDNB_TAB_KEY)).toBe(true);
+  });
+
+  it('holds nothing at all once the last tool has let go', () => {
+    // Rather than an empty descriptor, which the next tab would read and write
+    // around for no reason.
+    const { tab, session } = setup();
+    tab.write('equipment', 'working-2');
+
+    tab.release('equipment');
+
+    expect(session.entries.has(EDNB_TAB_KEY)).toBe(false);
+  });
+
+  it('changes nothing when the tool it is asked about holds no record', () => {
+    const { tab, session } = setup();
+    tab.write('ship', 'working-1');
+    const written = session.entries.get(EDNB_TAB_KEY);
+
+    tab.release('equipment');
+
+    expect(session.entries.get(EDNB_TAB_KEY)).toBe(written);
+  });
+
   it('forgets the tab’s claim on request', () => {
     const { tab, session } = setup();
     tab.write('ship', 'working-1');

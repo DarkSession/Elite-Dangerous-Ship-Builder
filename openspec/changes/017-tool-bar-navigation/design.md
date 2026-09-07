@@ -164,12 +164,24 @@ supply their own.
 Alternative: a second component with the same six states, the same three actions and the same
 strings.
 
+### The page identity is minted where it is first needed
+
+`TabOwnershipCoordinator.pageNonce` is read on demand rather than set at construction. The
+shell reaches the coordinator to offer the bar's re-entry action, so every screen now builds
+it — including the prerender pass, which runs in a runtime with no cryptographic random
+source. Nothing there claims a record or hears a claim, so nothing there needs an identity.
+
+Alternative: keep the identity eager and have the shell reach the bench action lazily. That
+puts the constraint in the caller, where the next caller would meet it again.
+
 ### The bench restores in the workspace's order
 
-Claim ownership, restore the record this page holds, ingest the address fragment, then start
-publishing and autosaving. A loadout in the address outranks the restored one, and a refused
-link leaves the restored loadout on the bench. Publishing starts last, so the restored loadout
-cannot overwrite the fragment the page arrived with.
+Claim ownership, restore the record this page holds, start autosaving, ingest the address
+fragment, then start publishing. A loadout in the address outranks the restored one, and a
+refused link leaves the restored loadout on the bench. Autosave starts before the fragment is
+read, so a loadout opened from a link is written to this page's record like any other.
+Publishing starts last, so the restored loadout cannot overwrite the fragment the page
+arrived with.
 
 ### The sheet's own bar keeps the way back, not the mark
 

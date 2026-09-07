@@ -1,7 +1,8 @@
 # Manual protocol: screen-reader journeys
 
 **Protocol id**: `screen-reader`
-**Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
+**Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026,
+SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002
 **Version**: 11
 
 ## What is automated, and what is left

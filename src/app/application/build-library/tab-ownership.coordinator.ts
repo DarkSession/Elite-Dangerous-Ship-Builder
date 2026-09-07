@@ -46,8 +46,21 @@ export class TabOwnershipCoordinator {
   readonly #uuid = inject(UuidAdapter);
   readonly #injector = inject(Injector);
 
-  /** This page's own identity for the run. Ephemeral, by design. */
-  readonly pageNonce = this.#uuid.create();
+  #nonce: string | null = null;
+
+  /**
+   * This page's own identity for the run. Ephemeral, by design.
+   *
+   * Minted where it is first needed rather than at construction. The shell
+   * reaches this coordinator to offer the bar's re-entry action, and the
+   * prerender pass builds that shell in a runtime with no cryptographic random
+   * source — where an identity is neither available nor wanted, because nothing
+   * there claims a record or hears a claim.
+   */
+  get pageNonce(): string {
+    this.#nonce ??= this.#uuid.create();
+    return this.#nonce;
+  }
 
   /**
    * The tools whose records this page holds, by tool.
@@ -127,6 +140,20 @@ export class TabOwnershipCoordinator {
     );
 
     return () => watcher.destroy();
+  }
+
+  /**
+   * Lets go of one tool's record, without touching the other tool's.
+   *
+   * Called where a tool stops writing to a record and takes up no other:
+   * starting an empty bench. The claim is what a reload reads, so a claim left
+   * behind would restore the loadout a Commander cleared (017/FR-006). What is
+   * released is the claim, never the record — the work it holds is exactly what
+   * makes clearing the bench safe to offer without asking.
+   */
+  release(tool: RecordTool): void {
+    this.#announced.delete(tool);
+    this.#tab.release(tool);
   }
 
   /** Says which record a tool is autosaving into, if it is holding one. */

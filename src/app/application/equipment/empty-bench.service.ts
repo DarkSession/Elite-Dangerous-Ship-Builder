@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TabOwnershipCoordinator } from '../build-library/tab-ownership.coordinator';
 import { LoadoutAutosaveService } from './loadout-autosave.service';
 import { LoadoutLinkCoordinator } from './loadout-link.coordinator';
 import { LoadoutStore } from './loadout.store';
@@ -30,6 +31,7 @@ export class EmptyBenchService {
   readonly #store = inject(LoadoutStore);
   readonly #autosave = inject(LoadoutAutosaveService);
   readonly #links = inject(LoadoutLinkCoordinator);
+  readonly #ownership = inject(TabOwnershipCoordinator);
 
   /** Empties the bench, or does nothing at all when it is already empty. */
   start(): void {
@@ -41,6 +43,10 @@ export class EmptyBenchService {
     // a write owed on it, and this is the last moment anything holds it.
     this.#autosave.flush();
     this.#store.open(null);
+    // And out of this tab's claim, or the next page built here would restore
+    // the loadout that was just cleared. The record stays where it is: it is
+    // what makes clearing the bench cost nothing (017/FR-006).
+    this.#ownership.release('equipment');
     // And out of the address, by replacement rather than by a new entry: a
     // Commander pressing BACK meant to leave the bench, not to walk back
     // through the loadouts it has held (FR-020).

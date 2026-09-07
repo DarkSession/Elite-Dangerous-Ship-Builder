@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
+import { recordKey } from '../../platform/storage/storage-keys';
+import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { TabOwnershipCoordinator } from '../build-library/tab-ownership.coordinator';
 import { EmptyBenchService } from './empty-bench.service';
 import { LoadoutLinkCoordinator } from './loadout-link.coordinator';
 import { LoadoutStore } from './loadout.store';
@@ -67,6 +71,8 @@ function setup() {
     store: TestBed.inject(LoadoutStore),
     links: TestBed.inject(LoadoutLinkCoordinator),
     records: TestBed.inject(LocalRecordRepository),
+    tab: TestBed.inject(TabDescriptorRepository),
+    ownership: TestBed.inject(TabOwnershipCoordinator),
   };
 }
 
@@ -111,8 +117,23 @@ describe('starting an empty bench', () => {
   });
 
   it('leaves a named record it was opened from exactly as it was', () => {
-    const { bench, store, records } = setup();
-    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    const { bench, store, records, storage } = setup();
+    // The save as this browser is holding it, byte for byte, before the bench
+    // is ever touched.
+    records.write({
+      id: 'their-save',
+      kind: 'named',
+      revisionId: 'revision-1',
+      createdAt: '2026-01-02T03:04:05.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+      name: 'Their save',
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout('tacticalsuit')! },
+    });
+    const named = storage.entries.get(recordKey('their-save'));
+
+    store.open(newLoadout('tacticalsuit')!, null, { autosaveRecordId: null });
     store.markSaved({ recordId: 'their-save', baseRevisionId: 'revision-1' });
     store.dispatch({ kind: 'setSuitGrade', grade: 5 });
 
@@ -120,10 +141,40 @@ describe('starting an empty bench', () => {
 
     // Autosave has no path to a named record, so what it wrote is an unnamed
     // one of its own and the save is untouched.
+    expect(storage.entries.get(recordKey('their-save'))).toBe(named);
     expect(
-      stored(records).every((entry) => entry.available && entry.record.kind === 'working'),
+      stored(records).some((entry) => entry.available && entry.record.kind === 'working'),
     ).toBe(true);
     expect(store.sourceNamed()).toBeNull();
+  });
+
+  it('lets go of this tab’s claim on the loadout, and keeps the record', () => {
+    const { bench, store, storage, tab, ownership } = setup();
+    tab.write('equipment', 'held-loadout');
+    store.open(newLoadout('tacticalsuit')!, null, { autosaveRecordId: 'held-loadout' });
+
+    bench.start();
+
+    // The claim is what a reload reads, so a claim left behind would restore
+    // the loadout that was just cleared (017/FR-006).
+    expect(ownership.claim('equipment')).toBeNull();
+    // The record it named is exactly what makes clearing the bench cost
+    // nothing, so it stays where it is.
+    expect(storage.entries.get(recordKey('held-loadout'))).toContain('"tool":"equipment"');
+  });
+
+  it('leaves the ship tool’s claim where it is', () => {
+    const { bench, store, tab, ownership } = setup();
+    tab.write('ship', 'a-build');
+    tab.write('equipment', 'held-loadout');
+    store.open(newLoadout('tacticalsuit')!, null, { autosaveRecordId: 'held-loadout' });
+
+    bench.start();
+
+    // A page holds a build and a loadout at once. Emptying the bench is the
+    // equipment tool's action and says nothing about the build (017/FR-010).
+    expect(ownership.claim('ship')).toBe('a-build');
+    expect(ownership.claim('equipment')).toBeNull();
   });
 
   it('takes the loadout out of the address without adding a history entry', () => {

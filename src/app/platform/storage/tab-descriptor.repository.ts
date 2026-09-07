@@ -98,6 +98,36 @@ export class TabDescriptorRepository {
     );
   }
 
+  /**
+   * Lets go of one tool's working record, leaving the other tool's alone.
+   *
+   * What a tool calls when it stops writing to a record and is not taking up
+   * another one: starting an empty bench is the case. Without it the claim
+   * outlives the work, and the next page built in this tab restores the record
+   * a Commander deliberately cleared (017/FR-006).
+   *
+   * The record itself is not touched. It is what the cleared loadout is still
+   * kept as, and the library is where it is found again.
+   */
+  release(tool: RecordTool): void {
+    const held = this.read()?.workingRecords;
+    if (held === undefined || held[tool] === undefined) {
+      return;
+    }
+
+    const remaining = { ...held };
+    delete remaining[tool];
+    if (Object.keys(remaining).length === 0) {
+      this.clear();
+      return;
+    }
+
+    this.#session.write(
+      EDNB_TAB_KEY,
+      JSON.stringify({ version: TAB_DESCRIPTOR_VERSION, workingRecords: remaining }),
+    );
+  }
+
   clear(): void {
     this.#session.remove(EDNB_TAB_KEY);
   }
