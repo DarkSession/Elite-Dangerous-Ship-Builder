@@ -115,9 +115,9 @@ export class App {
    * Seeded from `Location` rather than from `Router.url`, which is `/` until the
    * first navigation finishes. On a direct load of any address but the
    * shipyard's, that made the shell's first paint name no current tool at all —
-   * `/equipment` drew `Equipment Builder` as a link to the page a Commander was
-   * already on, and corrected itself a frame later (Commander request
-   * 2026-09-04). `Location.path()` answers before the router has run, in the
+   * `/equipment` drew `Equipment Builder` without `aria-current` and without the
+   * wash that marks the open tool, and corrected itself a frame later (Commander
+   * request 2026-09-04). `Location.path()` answers before the router has run, in the
    * browser and in the prerender alike.
    */
   readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.start);

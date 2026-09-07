@@ -133,10 +133,6 @@ const TOOLS: readonly ToolRecord[] = [
  * 2026-09-04, `build-library/library-presence.ts`). The frame's navigation row
  * went with them — an empty row that every screen drew and nothing filled.
  *
- * The screen a Commander is already on is never offered: the reference's
- * command bar names it once, on the leading edge, and never repeats it as a
- * control (canvas 1a/1b/1c).
- *
  * The build screen is not listed either. The reference reaches it by committing
  * to a hull or by opening a saved build, and draws no chip for it on any
  * artboard.

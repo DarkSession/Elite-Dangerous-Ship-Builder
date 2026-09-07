@@ -269,10 +269,9 @@
 // drawing keeps its size and the press is the size it should be (011/FR-012).
 //
 // The box around it, because a minimum on the mark's own box is not a box around
-// anything: `min-inline-size` beats the declared `inline-size`, and the mark
-// would be drawn 44 x 44 wherever it is a link and 26 x 26 wherever it is not —
-// the same mark at two sizes, changing as a Commander moves from the shipyard to
-// a build (Commander request 2026-08-28).
+// anything: `min-inline-size` beats the declared `inline-size`, and the insignia
+// would then be a different size where the mark is a control than where it is
+// decoration (Commander request 2026-08-28).
 .frame__flag-home {
   @include layout.target-baseline;
 

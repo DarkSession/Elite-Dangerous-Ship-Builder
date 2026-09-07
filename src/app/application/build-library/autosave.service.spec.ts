@@ -302,6 +302,23 @@ describe('AutosaveService', () => {
     expect(storage.entries.has(recordKey(id))).toBe(true);
   });
 
+  it('writes the work into the record a fork moved it onto', () => {
+    // A page forks the moment another one claims the record it restored or took
+    // over, and a page in that state is clean. Left to the "nothing is owed"
+    // rule, the fresh record would never be written and this tab's claim would
+    // name a record a reload could restore nothing from (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.flush();
+    active.markSaved(null);
+
+    // What the coordinator does to this store when it forks.
+    active.setAutosaveRecordId('forked-record');
+    autosave.adoptForkedRecord();
+
+    expect(storage.entries.has(recordKey('forked-record'))).toBe(true);
+  });
+
   it('resumes a build that has not changed since the record was discarded', () => {
     // The state on this page is exactly what the discarded record held, so the
     // ordinary "nothing is owed" rule would answer an explicit resume by

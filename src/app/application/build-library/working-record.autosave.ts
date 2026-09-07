@@ -245,9 +245,16 @@ export class WorkingRecordAutosave {
     return false;
   }
 
-  /** Copies the current state into a freshly forked record. */
+  /**
+   * Copies the current state into a freshly forked record.
+   *
+   * Forced for the same reason `resume` is. A page forks the moment another one
+   * claims the record it restored or took over, and a page in that state is
+   * clean — so the ordinary "nothing is owed" rule would leave the fresh record
+   * empty and this page's claim naming a record that was never written.
+   */
   adoptForkedRecord(): void {
-    this.flush();
+    this.#writeNow(true);
   }
 
   /**

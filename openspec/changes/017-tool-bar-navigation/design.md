@@ -137,8 +137,9 @@ drift apart at the first fix.
 
 ### The loadout's fingerprint is its stored form
 
-`baselineFingerprint` over `toStoredLoadout(loadout)`, which is what the ship tool does over
-its build snapshot: a fingerprint derived only from what a Commander decided. A figure the
+`loadoutFingerprint` over `toStoredLoadout(loadout)`, as the ship tool's
+`baselineFingerprint` reads its build snapshot: a fingerprint derived only from what a
+Commander decided. A figure the
 package recalculates after an upgrade is not a change, and a fingerprint over anything derived
 would mark every loadout dirty after one.
 
