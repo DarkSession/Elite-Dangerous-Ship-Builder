@@ -174,14 +174,32 @@ export class TabOwnershipCoordinator {
     });
   }
 
-  /** Says which records every tool on this page is autosaving into. */
-  #announceAll(): void {
+  /**
+   * Says which records this page is autosaving into.
+   *
+   * `except` leaves one tool out, for the tool that has just forked: the fork
+   * announced the new id itself, and announcing it twice would answer a
+   * collision with a second claim on the record the other page is being told to
+   * keep.
+   */
+  #announceAll(except: RecordTool | null = null): void {
     for (const tool of this.#subjects.keys()) {
-      this.#announce(tool);
+      if (tool !== except) {
+        this.#announce(tool);
+      }
     }
   }
 
-  /** Registers what to do when a tool forks: copy the work into the new id. */
+  /**
+   * Registers what to do when a tool forks: copy the work into the new id.
+   *
+   * Held for the run rather than while a screen is drawn, for the reason `fork`
+   * states: a tool is forked whether or not its screen is up, and a fork nobody
+   * answered would leave the work in the record the other page took and nothing
+   * at all in the new one. So a handler may hold only what outlives a screen —
+   * a component captured here would be kept alive by this map for as long as
+   * the page runs.
+   */
   onFork(tool: RecordTool, handler: (previousId: string, nextId: string) => void): void {
     this.#onFork.set(tool, handler);
   }
@@ -256,6 +274,13 @@ export class TabOwnershipCoordinator {
         // how the newcomer learns this page is here. Only that tool moves: the
         // other one's record is not in question.
         this.fork(tool);
+
+        // The other tool's record is still this page's, and a page heard from
+        // for the first time knows nothing about it. Left unsaid, its sweep
+        // would remove a record this page is autosaving into (001/FR-013).
+        if (!known) {
+          this.#announceAll(tool);
+        }
         return;
       }
 

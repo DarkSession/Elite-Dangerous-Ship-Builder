@@ -187,14 +187,19 @@ export class WorkingRecordAutosave {
       return true;
     }
 
+    // What the record itself says, read once for the two questions the write
+    // asks of it. Both are answered from the stored bytes rather than from this
+    // page's belief about them.
+    const opened = this.#records.open(recordId);
+    const stored = opened.ok ? opened.value : null;
+
     // A named record is never an autosave target, whatever this page is
-    // holding. The check reads the stored record rather than this page's belief
-    // about it, so a record named in another tab is covered too (001/FR-008).
+    // holding, so a record named in another tab is covered too (001/FR-008).
     //
     // Stated rather than refused in silence: the work is in nothing, and a
     // Commander who is not told reads a screen that says it is saved
     // (001/FR-014).
-    if (this.#records.isNamed(recordId)) {
+    if (stored?.record.kind === 'named') {
       this.#subject.setPersistence('write-failed');
       return false;
     }
@@ -211,7 +216,7 @@ export class WorkingRecordAutosave {
     // record this tool writes to changes under it: a loadout opened from the
     // saved list arrives holding an id of its own, and a remembered instant
     // would be stamped onto a record it does not belong to.
-    const createdAt = this.#createdAtOf(recordId) ?? now;
+    const createdAt = stored?.record.createdAt ?? now;
 
     const written = this.#records.write({
       id: recordId,
@@ -278,12 +283,6 @@ export class WorkingRecordAutosave {
     const minted = this.#uuid.create();
     this.#subject.setAutosaveRecordId(minted);
     return minted;
-  }
-
-  /** The instant a stored record says it was created, where one is stored. */
-  #createdAtOf(recordId: string): string | null {
-    const opened = this.#records.open(recordId);
-    return opened.ok && opened.value !== null ? opened.value.record.createdAt : null;
   }
 
   #schedule(): void {

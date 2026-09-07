@@ -119,11 +119,14 @@ is a visible answer to a control the Commander expected to do nothing.
 
 ### The bench joins the ship tool's autosave rather than copying it
 
-`AutosaveService` and `TabOwnershipCoordinator` are generalised over one port — the state a
-tool publishes for autosave: a revision to watch, a fingerprint, whether it is dirty, the
-record id it writes to, the named record it forked from, and a way to state the persistence
-result. `ActiveBuildStore` implements it for the ship; a new adapter in
-`src/app/application/equipment/` implements it over `LoadoutStore`.
+`WorkingRecordAutosave` and `TabOwnershipCoordinator` are generalised over one port,
+`WorkingRecordSubject` — the state a tool publishes for autosave: a revision to watch, a
+fingerprint, whether it is dirty, the record id it writes to, the named record it forked
+from, and a way to state the persistence result. Each tool implements it on the store that
+already holds the work — `ActiveBuildStore` for the ship, `LoadoutStore` for the bench —
+because every field the port asks for is something that store is already the authority on.
+`AutosaveService` and `LoadoutAutosaveService` are the two bindings of the engine, and hold
+nothing but which store they keep.
 
 The port carries the record draft's body, so each tool writes its own record shape — a
 `ShipRecord` or an `EquipmentRecord` — and the service writes the envelope both share.

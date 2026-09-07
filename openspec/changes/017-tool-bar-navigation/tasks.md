@@ -60,8 +60,8 @@
       `toStoredLoadout`, a baseline, dirty, the record id it writes to, the named
       source it forked from and a persistence state. Verify with unit tests asserting
       a fresh loadout is dirty, an opened record is not, and one change makes it so.
-- [x] 4.2 Add the equipment adapter for the autosave port in
-      `src/app/application/equipment/`, writing an `EquipmentRecord` whose
+- [x] 4.2 Have `LoadoutStore` implement the autosave port and bind the shared engine to
+      it from `src/app/application/equipment/`, writing an `EquipmentRecord` whose
       `suitFamily` is the loadout's. Verify with unit tests over a first write, a
       take-over of an identical unnamed record, a refused write to a named record and
       a full store.

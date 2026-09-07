@@ -303,7 +303,11 @@ export class BuildWorkspacePage {
     // before it can restore from it, and has to have restored before an
     // incoming link is treated as a replacement for something.
     const heldRecordId = this.#ownership.claim('ship');
-    this.#ownership.onFork('ship', () => this.#autosave.adoptForkedRecord());
+    // The autosave rather than this screen: the registration outlives the
+    // screen, and a handler closing over `this` would keep a destroyed one
+    // alive with it.
+    const autosave = this.#autosave;
+    this.#ownership.onFork('ship', () => autosave.adoptForkedRecord());
 
     // A page with no record behind it has nothing to restore, which is the
     // ordinary state of a fresh tab rather than a failure. Opening the record

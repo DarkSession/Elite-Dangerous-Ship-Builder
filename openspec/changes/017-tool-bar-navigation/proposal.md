@@ -50,16 +50,19 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 - `src/app/ui/components/app-frame/` draws the current tool as a link carrying
   `aria-current`, and the mark as a link on every screen.
 - `src/app/app.ts` dispatches a tool tab that re-enters its own tool instead of navigating.
-- `src/app/application/build-library/autosave.service.ts` and
-  `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone. The ship
-  tool's records change in one way as a result: a record autosave was handed keeps the
-  instant it says it was created, instead of being stamped with the moment of the write
-  that followed a reload (001/FR-013).
+- `src/app/application/build-library/working-record.autosave.ts` and
+  `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone, over the
+  port each tool's store implements, `working-record.port.ts`; `autosave.service.ts` is left
+  holding only which store the ship tool keeps. The ship tool's records change in one way as
+  a result: a record autosave was handed keeps the instant it says it was created, instead
+  of being stamped with the moment of the write that followed a reload (001/FR-013).
   `src/app/platform/storage/tab-descriptor.repository.ts` holds one working record per tool.
   `src/app/platform/storage/local-record.repository.ts` matches an unnamed record by tool.
-- `src/app/application/equipment/loadout.store.ts` gains the fields autosave reads: a
-  fingerprint, a baseline, the record it writes to and a persistence state.
-- `src/app/features/build-workspace/persistence-status.ts` reads whichever tool is open.
+- `src/app/application/equipment/loadout.store.ts` implements that port, gaining what
+  autosave reads: a fingerprint, a baseline, the record it writes to and a persistence
+  state.
+- `src/app/features/build-workspace/persistence-status.ts` is told the state, the paused
+  flag and which tool's work it is about, and reaches no store of either.
 - `e2e/coverage-ledger.ts` gains `017-tool-bar-navigation` in `COVERED_FEATURES` and an
   entry for every requirement id this change declares. `e2e/design-reference.spec.ts` reads
   the mark as a control on every screen.

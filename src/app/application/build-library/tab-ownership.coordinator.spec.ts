@@ -8,7 +8,9 @@ import {
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
 import { ActiveBuildStore } from '../active-build/active-build.store';
+import { LoadoutStore } from '../equipment/loadout.store';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 import type { WorkingRecordSubject } from './working-record.port';
 
@@ -309,6 +311,36 @@ describe('TabOwnershipCoordinator', () => {
     });
 
     expect(coordinator.heldLive('their-record')).toBe(true);
+  });
+
+  it('names the other tool’s record to a page it forks for', () => {
+    // The collision moves one tool. The other tool's record is still this
+    // page's, and a page heard from for the first time knows nothing about it —
+    // so its sweep would remove a record this page is autosaving into
+    // (001/FR-013, 017/FR-010).
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    const loadout = TestBed.inject(LoadoutStore);
+    loadout.open(newLoadout('tacticalsuit'), null, { autosaveRecordId: 'a-loadout' });
+    coordinator.track(loadout);
+    coordinator.listen();
+    TestBed.tick();
+
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'id-held',
+      pageNonce: 'newcomer',
+    });
+
+    const claimed = channel.sent
+      .filter((message) => message.kind === 'working-claim')
+      .map((message) => message.workingRecordId);
+    expect(claimed).toContain('a-loadout');
+    // And the record it forked off is not claimed again: the newcomer was told
+    // to keep it.
+    expect(claimed.filter((id) => id === 'id-held').length).toBe(1);
   });
 
   it('forgets a record another page said it had let go of', () => {

@@ -206,7 +206,11 @@ export class EquipmentBenchPage {
     // it, and has to have restored before a loadout in the address can outrank
     // what was restored (017/FR-009).
     const heldRecordId = this.#ownership.claim('equipment');
-    this.#ownership.onFork('equipment', () => this.#autosave.adoptForkedRecord());
+    // The autosave rather than this screen: the registration outlives the
+    // screen, and a handler closing over `this` would keep a destroyed one
+    // alive with it.
+    const autosave = this.#autosave;
+    this.#ownership.onFork('equipment', () => autosave.adoptForkedRecord());
 
     // A page with no record behind it has nothing to restore, which is the
     // ordinary state of a fresh tab rather than a failure. Opening the record
@@ -558,17 +562,18 @@ export class EquipmentBenchPage {
     }
 
     if (result.kind === 'saved') {
-      this.#adoptSavedRecord(result.record.id, result.record.revisionId);
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
     }
 
     this.#library.refresh();
   }
 
   async resolveConflict(choice: string): Promise<void> {
+    const held = this.store.autosaveRecordId();
     const result = await this.#conflicts.resolve(choice as ConflictChoice);
 
     if (result?.kind === 'saved') {
-      this.#adoptSavedRecord(result.record.id, result.record.revisionId);
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
     } else if (result !== null && result.kind !== 'conflict') {
       this.#saveFailure.set(this.#saveFailureMessage(result.kind));
       this.#saveName.set(this.saveInitialName());
@@ -594,10 +599,16 @@ export class EquipmentBenchPage {
    * autosaved into, and autosave forks a fresh one at the next change rather
    * than writing into the save a Commander just made (001/FR-008).
    */
-  #adoptSavedRecord(recordId: string, revisionId: string): void {
+  #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
     this.store.markSaved({ recordId, baseRevisionId: revisionId });
     this.store.setAutosaveRecordId(null);
     this.#invalidation.announceWrite(recordId, revisionId);
+
+    if (held !== null && held !== recordId) {
+      // Consumed, not deleted by anyone: other pages listing it need to stop
+      // showing it, and the page that had it open is this one.
+      this.#invalidation.announceDelete(held);
+    }
   }
 
   showTab(tab: string): void {
