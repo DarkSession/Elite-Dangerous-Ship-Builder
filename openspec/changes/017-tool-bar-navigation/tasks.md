@@ -139,4 +139,4 @@
       covering the mark's name, the current tool's state and a tab that answers with
       nothing, and open its rows in `e2e/manual/results/screen-reader.md`. Verify by the
       protocol version bump and one result row per configuration, each awaiting a pass.
-- [ ] 6.7 Run `pnpm run check` end to end and keep unit coverage at or above 80%.
+- [x] 6.7 Run `pnpm run check` end to end and keep unit coverage at or above 80%.
