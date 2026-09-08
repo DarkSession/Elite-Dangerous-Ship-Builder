@@ -8,8 +8,10 @@ import {
   provideMemoryStorage,
   quotaError,
 } from '../../platform/storage/storage.spec-helpers';
+import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { recordKey } from '../../platform/storage/storage-keys';
 import { ActiveBuildStore } from '../active-build/active-build.store';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { AutosaveService } from './autosave.service';
 
 /** A lifecycle adapter a test can fire on demand. */
@@ -252,6 +254,38 @@ describe('AutosaveService', () => {
     expect(active.loadout()).not.toBeNull();
   });
 
+  it('keeps the instant a record it was handed was created', () => {
+    // A build restored after a reload arrives holding an id it did not mint,
+    // and writing to that record is not creating it. Stamping it with now would
+    // have the record state a moment that did not happen (constitution IV).
+    const { autosave, active, storage } = setup();
+    TestBed.inject(LocalRecordRepository).write({
+      id: HELD,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: '2025-11-01T00:00:00.000Z',
+      modifiedAt: '2025-11-01T00:00:00.000Z',
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: {
+        tool: 'ship',
+        build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+        validation: { valid: true, complete: true },
+      },
+    });
+    const loadout = commitBuild(active);
+    loadout.setModulePriority('FrameShiftDrive', 2);
+    active.touch();
+
+    autosave.flush();
+
+    expect(JSON.parse(storage.entries.get(recordKey(HELD))!)).toMatchObject({
+      createdAt: '2025-11-01T00:00:00.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+    });
+  });
+
   it('pauses after the record is discarded elsewhere, until an explicit resume', () => {
     const { autosave, active, storage } = setup();
     const id = HELD;
@@ -266,6 +300,57 @@ describe('AutosaveService', () => {
 
     autosave.resume();
     expect(storage.entries.has(recordKey(id))).toBe(true);
+  });
+
+  it('writes the work into the record a fork moved it onto', () => {
+    // A page forks the moment another one claims the record it restored or took
+    // over, and a page in that state is clean. Left to the "nothing is owed"
+    // rule, the fresh record would never be written and this tab's claim would
+    // name a record a reload could restore nothing from (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.flush();
+    active.markSaved(null);
+
+    // What the coordinator does to this store when it forks.
+    active.setAutosaveRecordId('forked-record');
+    autosave.adoptForkedRecord();
+
+    expect(storage.entries.has(recordKey('forked-record'))).toBe(true);
+  });
+
+  it('resumes a build that has not changed since the record was discarded', () => {
+    // The state on this page is exactly what the discarded record held, so the
+    // ordinary "nothing is owed" rule would answer an explicit resume by
+    // writing nothing at all (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.flush();
+    active.markSaved(null);
+
+    autosave.pauseAfterExternalDelete();
+    storage.entries.delete(recordKey(HELD));
+
+    autosave.resume();
+
+    expect(storage.entries.has(recordKey(HELD))).toBe(true);
+  });
+
+  it('lifts the pause once the build is written somewhere else', () => {
+    // The pause is about one record. A Commander who opens another build has
+    // moved off the record somebody discarded, and saving that build recreates
+    // nothing anybody decided against (001/FR-012).
+    const { autosave, active, storage } = setup();
+    commitBuild(active);
+    autosave.pauseAfterExternalDelete();
+
+    const loadout = commitBuild(active, 'Anaconda', 'another-record');
+    loadout.setModulePriority('FrameShiftDrive', 2);
+    active.touch();
+    autosave.flush();
+
+    expect(autosave.paused()).toBe(false);
+    expect(storage.entries.has(recordKey('another-record'))).toBe(true);
   });
 
   it('writes nothing while the build matches what its record already holds', () => {
@@ -355,6 +440,29 @@ describe('AutosaveService', () => {
 
     expect(storage.entries.get(recordKey(HELD))).toBe(named);
     expect(active.loadout()).not.toBeNull();
+    // And said, rather than refused in silence: the build is in nothing, and a
+    // refusal that drew no notice left the Commander with nothing to answer it
+    // with (001/FR-014).
+    expect(active.persistence()).toBe('write-failed');
+    // And let go of, so the retry the notice offers has somewhere to land.
+    expect(active.autosaveRecordId()).toBeNull();
+  });
+
+  it('answers a retry after a named target with a record of its own', () => {
+    // The notice draws one control. Held on to, the named record would refuse
+    // every later write the same way and the control would do nothing however
+    // often it is pressed (001/FR-008, 001/FR-014).
+    const { autosave, active, storage } = setup((store) =>
+      store.setItem(recordKey(HELD), storedNamedRecord(HELD)),
+    );
+    commitBuild(active);
+    autosave.flush();
+
+    autosave.flush();
+
+    expect(active.persistence()).toBe('saved');
+    const written = [...storage.entries.keys()].filter((key) => key.startsWith('ednb:record:'));
+    expect(written).toHaveLength(2);
   });
 
   it('coalesces a burst of edits into one write', async () => {

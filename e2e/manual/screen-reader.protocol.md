@@ -1,8 +1,9 @@
 # Manual protocol: screen-reader journeys
 
 **Protocol id**: `screen-reader`
-**Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 10
+**Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026,
+SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002
+**Version**: 11
 
 ## What is automated, and what is left
 
@@ -376,6 +377,30 @@ disagrees or where the announcement is correct but unusable.
     screen's meaning is which of two dozen small controls is live right now,
     and whether that survives being spoken one control at a time is a question
     no snapshot of the accessibility tree can answer.
+
+20. **The tool bar's own controls.** From any screen inside a tool, find the
+    mark on the leading edge of the bar. Expect it to be announced as a link
+    named for where it goes — the entry point — rather than as an image, a
+    graphic or nothing at all. Follow it and expect to land on the entry point.
+    Find it again there and activate it: expect the screen not to be announced
+    as changed and expect the reader not to be moved.
+
+    Then the tools. Expect both to be announced as links, and the one whose
+    screen is open to be announced as the current item as well: current is a
+    state on a control here, not a substitute for one. Activate the current
+    tool from a screen its re-entry does not lead to — a hull, or a build —
+    and expect to land on that tool's own screen. Activate it again where its
+    re-entry already stands and expect nothing: no navigation, no announcement,
+    and no movement of the reader's place.
+
+    On the bench, activate the equipment tool and expect the bench to be
+    announced as empty with the suit gate standing, and expect **no** question
+    to be asked about the loadout that was on it.
+
+    The judgment this step exists for: whether a control that is deliberately
+    silent reads as working or as broken. Two of the five activations above do
+    nothing on purpose, and a Commander who hears nothing has to be able to
+    tell that from a Commander who hears nothing because the control failed.
 
 ## Recording the result
 

@@ -1,5 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
 import type { RecordSource } from '../../domain/records/local-record';
+import type { RecordPayload } from '../../domain/records/local-record.serializer';
+import { isDirty } from '../../domain/records/record-fingerprint';
+import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
+import type { PersistenceStatus, WorkingRecordSubject } from '../build-library/working-record.port';
 import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import {
@@ -48,7 +52,7 @@ export type LoadoutEdit =
  * undo never has a step that does nothing.
  */
 @Injectable({ providedIn: 'root' })
-export class LoadoutStore {
+export class LoadoutStore implements WorkingRecordSubject {
   readonly #loadout = signal<EquipmentLoadout | null>(null);
   // The bench opens pointing at the suit, whether one is worn or not: canvas 2a
   // draws the suit row marked while it is still a choice, because it is the row
@@ -57,6 +61,12 @@ export class LoadoutStore {
   readonly #source = signal<RecordSource | null>(null);
   readonly #history = signal<LoadoutHistory>(emptyLoadoutHistory());
   readonly #revision = signal(0);
+  readonly #autosaveRecordId = signal<string | null>(null);
+  readonly #baseline = signal<string | null>(null);
+  readonly #persistence = signal<PersistenceStatus>('ready');
+
+  /** Which tool's records this store's work is written into. */
+  readonly tool = 'equipment' as const;
 
   /** The open loadout, or none while the bench is empty. */
   readonly loadout = this.#loadout.asReadonly();
@@ -70,15 +80,61 @@ export class LoadoutStore {
    *
    * What makes "replace the loadout I opened" a question the save layer can
    * ask. A loadout started here has no source, so that choice is not offered
-   * for it (013 contracts/loadout-persistence.md).
+   * for it (013 contracts/loadout-persistence.md). It is also what a working
+   * record records it was forked from, which is why autosave reads it.
    */
-  readonly source = this.#source.asReadonly();
+  readonly sourceNamed = this.#source.asReadonly();
+
+  /** The unnamed record this page autosaves this loadout into, or none yet. */
+  readonly autosaveRecordId = this.#autosaveRecordId.asReadonly();
+
+  /** What persistence is doing for the bench, or cannot do. */
+  readonly persistence = this.#persistence.asReadonly();
 
   /** Changes once per committed choice, and never for a refused one. */
   readonly revision = this.#revision.asReadonly();
 
   readonly canUndo = computed(() => this.#history().past.length > 0);
   readonly canRedo = computed(() => this.#history().future.length > 0);
+
+  /** The fingerprint of the loadout's own choices, recomputed once per change. */
+  readonly fingerprint = computed<string | null>(() => {
+    this.#revision();
+    const loadout = this.#loadout();
+    return loadout === null ? null : loadoutFingerprint(loadout);
+  });
+
+  /** Whether the bench holds anything autosave has not written yet. */
+  readonly dirty = computed(() => isDirty(this.fingerprint(), this.#baseline()));
+
+  /**
+   * What autosave writes for this loadout, or `null` while the bench is empty.
+   *
+   * Held content travels with it. A weapon in a mount the worn suit does not
+   * carry, and a modification in a locked slot, are choices a Commander made
+   * and the serializer keeps them (013/FR-018a).
+   */
+  payload(): RecordPayload | null {
+    const loadout = this.#loadout();
+    return loadout === null ? null : { tool: 'equipment', loadout };
+  }
+
+  /** The record this page autosaves into. Minted or taken over by autosave. */
+  setAutosaveRecordId(recordId: string | null): void {
+    this.#autosaveRecordId.set(recordId);
+  }
+
+  /** Marks the loadout on the bench as the stored baseline. */
+  markSaved(sourceNamed: RecordSource | null): void {
+    this.#baseline.set(this.fingerprint());
+    if (sourceNamed !== null) {
+      this.#source.set(sourceNamed);
+    }
+  }
+
+  setPersistence(status: PersistenceStatus): void {
+    this.#persistence.set(status);
+  }
 
   /** What each catalogue mount is to the open loadout, in mount order. */
   readonly mounts = computed(() => {
@@ -92,18 +148,50 @@ export class LoadoutStore {
    * Not an edit: the tape starts empty, because the loadouts before it belonged
    * to a different bench and undoing onto one would restore something the
    * Commander never had here.
+   *
+   * `stored` says what record the loadout arrives in. An unnamed record is
+   * taken over, because it is already what autosave writes to, and its state is
+   * the baseline, so opening it writes nothing and does not restart the seven
+   * days it is counting down. A named record is only held: the bench writes
+   * nothing to it and forks an unnamed record at the first change. A loadout
+   * that arrives in no record — a link, or one read from a journal — has no
+   * baseline, which is what sends autosave to mint or take over a record for it
+   * (001/FR-008, 017/FR-007).
+   *
+   * The persistence state goes back to `ready` with it. What it said was about
+   * the loadout that was on the bench — a store that refused a write, or a
+   * record another page discarded — and a notice about that one standing over
+   * this one states something a Commander cannot act on (017/FR-008).
    */
-  open(loadout: EquipmentLoadout | null, source: RecordSource | null = null): void {
+  open(
+    loadout: EquipmentLoadout | null,
+    source: RecordSource | null = null,
+    stored: { readonly autosaveRecordId?: string | null; readonly baseline?: string | null } = {},
+  ): void {
     this.#loadout.set(loadout);
     this.#source.set(loadout === null ? null : source);
     this.#selected.set('suit');
     this.#history.set(emptyLoadoutHistory());
+    this.#autosaveRecordId.set(loadout === null ? null : (stored.autosaveRecordId ?? null));
+    this.#baseline.set(loadout === null ? null : (stored.baseline ?? null));
+    this.#persistence.set('ready');
     this.#revision.update((revision) => revision + 1);
   }
 
-  /** Records which save this loadout now belongs to, after one is written. */
-  named(source: RecordSource): void {
-    this.#source.set(source);
+  /**
+   * Clears the bench if the loadout on it lives in this record, and says
+   * whether it did.
+   *
+   * The rule the workspace follows for a build, and for its reasons:
+   * `ActiveBuildStore.clearIfHolding`. What differs is only what emptying
+   * means here — the bench opens on nothing rather than clearing a build.
+   */
+  clearIfHolding(recordId: string): boolean {
+    if (this.#autosaveRecordId() !== recordId) {
+      return false;
+    }
+    this.open(null);
+    return true;
   }
 
   /** Shows one item in the item view, or none. */
@@ -125,8 +213,11 @@ export class LoadoutStore {
       const started = newLoadout(edit.suitFamily);
       if (started === null) return false;
       this.#loadout.set(started);
-      // Started here, so it belongs to no save until one is written.
+      // Started here, so it belongs to no save and to no record until one is
+      // written. Autosave mints or takes one over on the next tick.
       this.#source.set(null);
+      this.#autosaveRecordId.set(null);
+      this.#baseline.set(null);
       this.#selected.set('suit');
       this.#revision.update((revision) => revision + 1);
       return true;

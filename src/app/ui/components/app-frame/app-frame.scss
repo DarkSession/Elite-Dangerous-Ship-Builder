@@ -130,8 +130,8 @@
 }
 
 // The tool a Commander is in: the accent wash, the accent ink, and the canvas's
-// underline. It is a word rather than a link, so none of this is a hover or a
-// press state.
+// underline. It is a link like the others and this is none of its states: it
+// says which tool the screen belongs to, whatever the pointer is doing.
 //
 // A wash rather than the ground the plate already carries: one plate means a
 // fill of that ground would be no fill at all.
@@ -168,7 +168,10 @@
 }
 
 @media (hover: hover) {
-  a.frame__tool:hover {
+  // The tool a Commander is in keeps its accent ink under the pointer. The
+  // hover ink is a step down from it, so a current tab that took it would
+  // announce being hovered by looking less current.
+  a.frame__tool:not(.frame__tool--current):hover {
     color: var(--ednb-text-accent);
   }
 }
@@ -258,7 +261,7 @@
   align-self: center;
 }
 
-// The way back to the shipyard: a link around the mark, never the mark itself.
+// The way to the entry point: a link around the mark, never the mark itself.
 //
 // The mark is 26 x 26 — the size the canvas draws it, and under this feature's
 // 44-pixel press baseline. A control that stands on its own is held to the
@@ -266,10 +269,9 @@
 // drawing keeps its size and the press is the size it should be (011/FR-012).
 //
 // The box around it, because a minimum on the mark's own box is not a box around
-// anything: `min-inline-size` beats the declared `inline-size`, and the mark
-// would be drawn 44 x 44 wherever it is a link and 26 x 26 wherever it is not —
-// the same mark at two sizes, changing as a Commander moves from the shipyard to
-// a build (Commander request 2026-08-28).
+// anything: `min-inline-size` beats the declared `inline-size`, and the insignia
+// would then be a different size where the mark is a control than where it is
+// decoration (Commander request 2026-08-28).
 .frame__flag-home {
   @include layout.target-baseline;
 

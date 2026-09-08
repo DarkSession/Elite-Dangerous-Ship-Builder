@@ -3,8 +3,19 @@ import type { NavigationEntry, ToolEntry } from '../../ui/components/app-frame/a
 import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 
+/**
+ * Starting an empty bench, as the equipment tool's tab asks for it.
+ *
+ * Named once, because two places match on it: the registry below declares it as
+ * the tool's re-entry, and the shell dispatches on it. Repeat the literal
+ * across the two and a rename reaches one, stops matching in the other, and the
+ * tab quietly does nothing.
+ */
+export const EQUIPMENT_REENTRY_ACTION = 'equipment.new';
+
 /** The routes the shell offers from every screen. */
 export const NAVIGATION_ROUTES = {
+  start: '/',
   catalogue: '/ships',
   outfitting: '/outfitting',
   equipment: '/equipment',
@@ -46,6 +57,15 @@ interface ToolRecord {
   readonly summaryKey: MessageKey;
   /** The same tool in the one line the compact artboard has room for. */
   readonly shortSummaryKey: MessageKey;
+  /**
+   * What re-entering this tool does, where the tool is already open.
+   *
+   * A shell action, or absent for the address the tool opens at. Declared with
+   * the tool because it is a fact about the tool: the ship tool re-enters at its
+   * own list of ships, and the bench has somewhere of its own to go — an empty
+   * bench — which no address names (017/FR-004).
+   */
+  readonly reentryAction?: string;
 }
 
 /**
@@ -100,6 +120,7 @@ const TOOLS: readonly ToolRecord[] = [
     subjectsKey: 'tools.equipment.subjects',
     summaryKey: 'tools.equipment.summary',
     shortSummaryKey: 'tools.equipment.short',
+    reentryAction: EQUIPMENT_REENTRY_ACTION,
   },
 ];
 
@@ -112,10 +133,6 @@ const TOOLS: readonly ToolRecord[] = [
  * 2026-09-04, `build-library/library-presence.ts`). The frame's navigation row
  * went with them — an empty row that every screen drew and nothing filled.
  *
- * The screen a Commander is already on is never offered: the reference's
- * command bar names it once, on the leading edge, and never repeats it as a
- * control (canvas 1a/1b/1c).
- *
  * The build screen is not listed either. The reference reaches it by committing
  * to a hull or by opening a saved build, and draws no chip for it on any
  * artboard.
@@ -127,7 +144,7 @@ export class AppNavigation {
   /**
    * The address alone, without what is written after it.
    *
-   * Both readings below are asked about a route, and what they are handed is a
+   * The readings below are asked about a route, and what they are handed is a
    * URL: `Router` reports `urlAfterRedirects`, which carries the query and the
    * fragment. Every shared build and every shared loadout arrives as one —
    * `/outfitting#b.…` and `/equipment#e.…` are how a link is opened — so a bar that
@@ -139,26 +156,40 @@ export class AppNavigation {
   }
 
   /**
-   * The way back to the shipyard, carried by the bar's own insignia.
+   * Whether an entry leads to the address already open.
+   *
+   * What the shell answers a plain click with nothing on. Asked here rather
+   * than in the shell because the answer is about an address, and the query and
+   * the fragment a shared link arrives with are not part of one: a Commander
+   * reading `/equipment#e.…` is on the bench, and the bench's own entry leads
+   * nowhere from there (017/FR-002, FR-005).
+   */
+  alreadyOpen(href: string, currentPath: string): boolean {
+    return this.#address(currentPath) === href;
+  }
+
+  /**
+   * The way to the entry point, carried by the bar's own insignia.
    *
    * No canvas draws a `SHIPYARD` chip on the outfitting bar. What every
    * artboard draws on the leading edge is the mark, and the 2026-08-26 revision
-   * put it exactly where the word used to be — so the mark is the control, and
-   * the word is not drawn twice. It keeps its `href`, so it can be opened in a
-   * new tab and its address copied like any other link, and it carries the
-   * screen name it goes to as its accessible name.
+   * put it exactly where the word used to be. The ship list is reached from the
+   * ship tool's own tab; the mark goes to the entry point. It keeps its `href`,
+   * so it can be opened in a new tab and its address copied like any other
+   * link, and it carries the screen name it goes to as its accessible name.
    *
-   * Absent on the shipyard itself: a link to the screen a Commander is already
-   * reading is not a way anywhere.
+   * The same answer on every screen, the entry point included. The mark is the
+   * one way to the screen that offers the tools, so a screen it went missing
+   * from would be a screen with no way there at all. On the entry point itself
+   * the link is drawn and activating it does nothing, which the shell decides
+   * rather than this: a way that disappeared where it leads would move every
+   * other item on the deck (017/FR-001, FR-002).
    */
-  home(currentPath: string): NavigationEntry | null {
-    if (this.#address(currentPath).startsWith(NAVIGATION_ROUTES.catalogue)) {
-      return null;
-    }
+  home(): NavigationEntry {
     return {
-      id: 'catalogue',
-      label: this.#messages.message('navigation.catalogue'),
-      href: NAVIGATION_ROUTES.catalogue,
+      id: 'start',
+      label: this.#messages.message('navigation.start'),
+      href: NAVIGATION_ROUTES.start,
       current: false,
     };
   }
@@ -166,11 +197,14 @@ export class AppNavigation {
   /**
    * The tools the application carries, with the open route's own marked.
    *
-   * The current tool is named rather than offered: `current` is what the frame
-   * draws as text instead of a link, for the reason `home` is `null` on the
-   * shipyard and `entries` drops the open screen. A link to the screen a
-   * Commander is reading is not a way anywhere, and here it would be the second
-   * control in one chrome opening the same address (011/FR-028).
+   * The current tool is offered as well as named. `current` is the state the
+   * frame exposes and the wash it draws; what activating the tab does is the
+   * tool's own re-entry, which is the ship tool's list of ships from a hull or
+   * a build, and an empty bench from the bench (017/FR-003, FR-004).
+   *
+   * Every entry carries its re-entry, whether or not the tool is open, because
+   * it is a property of the tool rather than of the moment. The shell reads it
+   * only on the tab a Commander is already in.
    */
   tools(currentPath: string): readonly ToolEntry[] {
     const address = this.#address(currentPath);
@@ -179,6 +213,7 @@ export class AppNavigation {
       label: this.#messages.message(tool.labelKey),
       href: tool.href,
       current: tool.routes.some((route) => address === route || address.startsWith(`${route}/`)),
+      reentry: tool.reentryAction,
     }));
   }
 

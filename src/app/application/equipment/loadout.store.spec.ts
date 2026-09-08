@@ -1,8 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import { LoadoutStore } from './loadout.store';
+import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 
 const RIFLE = 'wpn_m_assaultrifle_plasma_fauto';
+
+/** A loadout arriving from somewhere else, as `open` takes one. */
+function worn(suitFamily: string): EquipmentLoadout {
+  return {
+    suitFamily,
+    suitGrade: 1,
+    suitModifications: [null, null, null, null],
+    weapons: [null, null, null],
+  } as EquipmentLoadout;
+}
 
 describe('LoadoutStore', () => {
   const store = (): LoadoutStore => TestBed.inject(LoadoutStore);
@@ -133,5 +144,142 @@ describe('LoadoutStore', () => {
     expect(store().selected()).toBe('SecondaryWeapon');
     expect(store().loadout()).toBe(loadout);
     expect(store().revision()).toBe(1);
+  });
+});
+
+describe('what autosave reads from the bench', () => {
+  const store = (): LoadoutStore => TestBed.inject(LoadoutStore);
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
+  it('has nothing to lose while the bench is empty', () => {
+    expect(store().fingerprint()).toBeNull();
+    expect(store().dirty()).toBe(false);
+    expect(store().payload()).toBeNull();
+    expect(store().autosaveRecordId()).toBeNull();
+  });
+
+  it('holds a loadout started here as unsaved work', () => {
+    // Nothing has written it anywhere, so there is a version of it that would
+    // be lost (017/FR-007).
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+
+    expect(store().dirty()).toBe(true);
+    expect(store().fingerprint()).toBe(loadoutFingerprint(store().loadout()!));
+    expect(store().payload()).toEqual({ tool: 'equipment', loadout: store().loadout() });
+  });
+
+  it('holds a loadout opened from its own record as written already', () => {
+    const opened: EquipmentLoadout = {
+      suitFamily: 'utilitysuit',
+      suitGrade: 2,
+      suitModifications: [null, null, null, null],
+      weapons: [null, null, null],
+    };
+
+    store().open(opened, null, {
+      autosaveRecordId: 'working-1',
+      baseline: loadoutFingerprint(opened),
+    });
+
+    expect(store().dirty()).toBe(false);
+    expect(store().autosaveRecordId()).toBe('working-1');
+  });
+
+  it('has work to write again after one choice on an opened loadout', () => {
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().markSaved(null);
+    expect(store().dirty()).toBe(false);
+
+    store().dispatch({ kind: 'setSuitGrade', grade: 5 });
+
+    expect(store().dirty()).toBe(true);
+  });
+
+  it('leaves the fingerprint where it is when only the selection moves', () => {
+    // Which item the item view shows is workflow, and autosave writes nothing
+    // for it.
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().markSaved(null);
+
+    store().select('SecondaryWeapon');
+
+    expect(store().dirty()).toBe(false);
+  });
+
+  it('starts a loadout begun on an empty bench in no record and from no save', () => {
+    store().open(
+      {
+        suitFamily: 'utilitysuit',
+        suitGrade: 2,
+        suitModifications: [null, null, null, null],
+        weapons: [null, null, null],
+      },
+      { recordId: 'record-1', baseRevisionId: 'revision-1' },
+      { autosaveRecordId: 'working-1', baseline: 'whatever' },
+    );
+
+    store().open(null);
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+
+    expect(store().sourceNamed()).toBeNull();
+    expect(store().autosaveRecordId()).toBeNull();
+    expect(store().dirty()).toBe(true);
+  });
+
+  it('takes the record it writes to and the save it came from as it is told', () => {
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+
+    store().setAutosaveRecordId('working-2');
+    store().markSaved({ recordId: 'record-9', baseRevisionId: 'revision-3' });
+
+    expect(store().autosaveRecordId()).toBe('working-2');
+    expect(store().sourceNamed()).toEqual({
+      recordId: 'record-9',
+      baseRevisionId: 'revision-3',
+    });
+    expect(store().dirty()).toBe(false);
+  });
+
+  it('says what persistence is doing, so the bench can state it', () => {
+    store().setPersistence('quota-full');
+
+    expect(store().persistence()).toBe('quota-full');
+  });
+
+  it('does not state a discarded record over the loadout that opens next', () => {
+    // The notice was about the record another page discarded. A Commander who
+    // answers it by opening another loadout has left that record behind, and
+    // the notice would otherwise stand with nothing left to resume
+    // (017/FR-008).
+    const bench = store();
+    bench.open(worn('tacticalsuit'), null, { autosaveRecordId: 'working-1' });
+    bench.setPersistence('record-deleted-externally');
+
+    bench.open(worn('flightsuit'), null, { autosaveRecordId: 'working-2' });
+
+    expect(bench.persistence()).toBe('ready');
+  });
+
+  it('clears the bench when the record it writes to is deleted here', () => {
+    // A Commander who deletes the record this bench autosaves into decided that
+    // on this page. Writing it back on the next change would undo what they
+    // confirmed (017/FR-008).
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().setAutosaveRecordId('working-2');
+
+    expect(store().clearIfHolding('working-2')).toBe(true);
+    expect(store().hasLoadout()).toBe(false);
+    expect(store().autosaveRecordId()).toBeNull();
+  });
+
+  it('leaves the bench alone when the record deleted is somebody else’s', () => {
+    store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store().setAutosaveRecordId('working-2');
+
+    expect(store().clearIfHolding('someone-elses')).toBe(false);
+    expect(store().hasLoadout()).toBe(true);
   });
 });

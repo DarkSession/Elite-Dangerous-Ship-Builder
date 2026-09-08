@@ -60,10 +60,10 @@ test.describe('product semantics', () => {
     }
   });
 
-  test('names the tool the open screen belongs to, and does not offer it', async ({ page }) => {
-    // The shell says which tool a Commander is in, at every width, and the tool
-    // they are already in is a word rather than a link to the screen in front
-    // of them (011/FR-028, SC-009).
+  test('names the tool the open screen belongs to, and offers it too', async ({ page }) => {
+    // The shell says which tool a Commander is in, at every width, and offers
+    // that tool as well as naming it: the tab re-enters the tool a Commander is
+    // already in (011/FR-028, SC-009, 017/FR-003).
     //
     // Asked of a tool screen rather than of the entry point the `beforeEach`
     // opens: a Commander at `/` is in no tool, and the bar marks none there
@@ -78,13 +78,15 @@ test.describe('product semantics', () => {
     const current = tools.locator('[aria-current]');
     await expect(current).toHaveCount(1);
     await expect(current).toHaveText('Ship Builder');
-    await expect(current).not.toHaveRole('link');
+    // A link, so the browser states where it goes and a new tab opens it. What
+    // it is not is a second way to name the current tool: `aria-current` says
+    // that, and says it whether the tab is pressed or not.
+    await expect(current).toHaveRole('link');
 
     // Exactly the registry: the two tools the application serves an address
-    // for, and no tab for one it does not. The tool that is not open is the
-    // link; the one that is open is the word above (013/FR-023).
+    // for, and no tab for one it does not (013/FR-023).
     await expect(tools.getByRole('listitem')).toHaveCount(2);
-    await expect(tools.getByRole('link')).toHaveText(['Equipment Builder']);
+    await expect(tools.getByRole('link')).toHaveText(['Ship Builder', 'Equipment Builder']);
   });
 
   test('keeps naming the same tool on the screens that tool owns', async ({ page }) => {

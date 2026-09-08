@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
@@ -6,8 +7,13 @@ import {
 } from '../../platform/browser/broadcast-channel.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { recordKey } from '../../platform/storage/storage-keys';
+import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
 import { ActiveBuildStore } from '../active-build/active-build.store';
+import { LoadoutStore } from '../equipment/loadout.store';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
+import type { WorkingRecordSubject } from './working-record.port';
 
 /** A channel two coordinators in one test can talk over. */
 class FakeChannel {
@@ -44,10 +50,11 @@ class CountingUuid {
 }
 
 function setup(session = new MemoryStorage(), channel = new FakeChannel()) {
+  const storage = new MemoryStorage();
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
-      ...provideMemoryStorage(new MemoryStorage(), session),
+      ...provideMemoryStorage(storage, session),
       { provide: BroadcastChannelAdapter, useValue: channel },
       { provide: UuidAdapter, useValue: new CountingUuid() },
     ],
@@ -57,6 +64,7 @@ function setup(session = new MemoryStorage(), channel = new FakeChannel()) {
     active: TestBed.inject(ActiveBuildStore),
     channel,
     session,
+    storage,
   };
 }
 
@@ -72,23 +80,114 @@ function hold(active: ActiveBuildStore, autosaveRecordId: string | null): void {
   });
 }
 
+/** A second tool tracking here, as the port describes one. */
+function otherTool(recordId: string | null): WorkingRecordSubject {
+  const held = signal<string | null>(recordId);
+  return {
+    tool: 'equipment',
+    revision: signal(0),
+    fingerprint: signal<string | null>('a-loadout'),
+    dirty: signal(true),
+    autosaveRecordId: held.asReadonly(),
+    sourceNamed: signal(null),
+    payload: () => null,
+    setAutosaveRecordId: (id) => held.set(id),
+    markSaved: () => {},
+    setPersistence: () => {},
+  };
+}
+
 describe('TabOwnershipCoordinator', () => {
+  it('mints no page identity until one is needed', () => {
+    // The shell reaches this coordinator to offer the bar's re-entry action,
+    // and the prerender pass builds that shell in a runtime with no
+    // cryptographic random source at all. Constructing it there has to cost
+    // nothing, or every prerendered address fails to render.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ...provideMemoryStorage(new MemoryStorage(), new MemoryStorage()),
+        { provide: BroadcastChannelAdapter, useValue: new FakeChannel() },
+        {
+          provide: UuidAdapter,
+          useValue: {
+            create: () => {
+              throw new Error('no cryptographic random source');
+            },
+          },
+        },
+      ],
+    });
+
+    const coordinator = TestBed.inject(TabOwnershipCoordinator);
+
+    // Reading what this tab was working from asks for no identity of its own.
+    expect(coordinator.claim('equipment')).toBeNull();
+  });
+
   it('claims nothing for a tab that has never held a record', () => {
     // A fresh tab has no build and nothing to restore. That is the ordinary
     // state of one, not a failure, and it mints no record for a build that does
     // not exist yet (FR-008).
-    expect(setup().coordinator.claim()).toBeNull();
+    expect(setup().coordinator.claim('ship')).toBeNull();
   });
 
   it('restores the record the same tab was working from after a reload', () => {
     const session = new MemoryStorage();
     const first = setup(session);
     hold(first.active, 'id-held');
-    const stop = first.coordinator.track();
+    const stop = first.coordinator.track(first.active);
     TestBed.tick();
     stop();
 
-    expect(setup(session).coordinator.claim()).toBe('id-held');
+    expect(setup(session).coordinator.claim('ship')).toBe('id-held');
+  });
+
+  it('lets go of one tool’s claim without touching the other tool’s', () => {
+    // Starting an empty bench is where a tool stops writing to a record and
+    // takes up no other. A claim left behind would restore the loadout a
+    // Commander deliberately cleared, and a page holds a build and a loadout at
+    // once, so only the one tool lets go (017/FR-006, FR-010).
+    const session = new MemoryStorage();
+    const { coordinator, active } = setup(session);
+    hold(active, 'id-held');
+    const stop = coordinator.track(active);
+    TestBed.tick();
+    TestBed.inject(TabDescriptorRepository).write('equipment', 'a-loadout');
+
+    coordinator.release('ship');
+
+    expect(coordinator.claim('ship')).toBeNull();
+    expect(coordinator.claim('equipment')).toBe('a-loadout');
+
+    // And the tool is not finished: the next record it takes up is claimed the
+    // way any other is.
+    hold(active, 'id-next');
+    TestBed.tick();
+
+    expect(coordinator.claim('ship')).toBe('id-next');
+    stop();
+  });
+
+  it('writes down a fork made for a tool whose screen is not drawn', () => {
+    // Both tools are registered for the whole page, so either can be forked
+    // from any screen — and a tool whose screen is not drawn has no watcher
+    // running to write the new id down. A reload would then restore from the
+    // record the other page is writing to (017/FR-010).
+    const session = new MemoryStorage();
+    const { coordinator, active, channel } = setup(session);
+    hold(active, 'id-held');
+    coordinator.listen();
+
+    const next = coordinator.fork('ship');
+
+    expect(coordinator.claim('ship')).toBe(next);
+    expect(channel.sent.at(-1)).toEqual({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: next,
+      pageNonce: coordinator.pageNonce,
+    });
   });
 
   it('gives two ordinary tabs distinct records', () => {
@@ -98,18 +197,23 @@ describe('TabOwnershipCoordinator', () => {
 
     // Distinct sessions, so distinct autosave targets: neither can overwrite
     // the other's build.
-    expect(second.coordinator.claim()).toBeNull();
+    expect(second.coordinator.claim('ship')).toBeNull();
   });
 
   it('announces the record the store holds, so a duplicated tab can be detected', () => {
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
 
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
 
     expect(channel.sent).toEqual([
-      { kind: 'working-claim', workingRecordId: 'id-held', pageNonce: coordinator.pageNonce },
+      {
+        kind: 'working-claim',
+        tool: 'ship',
+        workingRecordId: 'id-held',
+        pageNonce: coordinator.pageNonce,
+      },
     ]);
     stop();
   });
@@ -117,7 +221,7 @@ describe('TabOwnershipCoordinator', () => {
   it('announces one record once, however often the store is read', () => {
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
 
     active.touch();
@@ -133,7 +237,7 @@ describe('TabOwnershipCoordinator', () => {
     const { coordinator, active, channel } = setup();
     hold(active, null);
 
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
 
     expect(channel.sent).toEqual([]);
@@ -141,11 +245,13 @@ describe('TabOwnershipCoordinator', () => {
   });
 
   it('forks when another live page claims the record it writes to', () => {
-    const { coordinator, active, channel } = setup();
+    // And the work follows the identity. A fork that moved the claim and left
+    // the fresh record empty would leave this page writing to nothing and a
+    // reload with nothing to restore (001/FR-012).
+    const { coordinator, active, channel, storage } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
     coordinator.listen();
-    const forks: [string, string][] = [];
-    coordinator.onFork((previous, next) => forks.push([previous, next]));
 
     channel.deliver({
       kind: 'working-claim',
@@ -153,13 +259,15 @@ describe('TabOwnershipCoordinator', () => {
       pageNonce: 'another-page',
     });
 
-    expect(coordinator.autosaveRecordId()).not.toBe('id-held');
-    expect(forks).toEqual([['id-held', coordinator.autosaveRecordId()!]]);
+    const forked = active.autosaveRecordId();
+    expect(forked).not.toBe('id-held');
+    expect(storage.entries.has(recordKey(forked!))).toBe(true);
   });
 
   it('ignores its own claim echoing back', () => {
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
     coordinator.listen();
 
     channel.deliver({
@@ -168,12 +276,13 @@ describe('TabOwnershipCoordinator', () => {
       pageNonce: coordinator.pageNonce,
     });
 
-    expect(coordinator.autosaveRecordId()).toBe('id-held');
+    expect(active.autosaveRecordId()).toBe('id-held');
   });
 
   it('ignores another page claiming a record it does not write to', () => {
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
     coordinator.listen();
 
     channel.deliver({
@@ -182,12 +291,13 @@ describe('TabOwnershipCoordinator', () => {
       pageNonce: 'another-page',
     });
 
-    expect(coordinator.autosaveRecordId()).toBe('id-held');
+    expect(active.autosaveRecordId()).toBe('id-held');
   });
 
   it('knows the record it is holding is live, so the sweep leaves it alone', () => {
     const { coordinator, active } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
 
     expect(coordinator.heldLive('id-held')).toBe(true);
     expect(coordinator.heldLive('someone-elses-record')).toBe(false);
@@ -196,6 +306,7 @@ describe('TabOwnershipCoordinator', () => {
   it('knows a record another live page announced', () => {
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
     coordinator.listen();
 
     channel.deliver({
@@ -207,15 +318,93 @@ describe('TabOwnershipCoordinator', () => {
     expect(coordinator.heldLive('their-record')).toBe(true);
   });
 
+  it('names the other tool’s record to a page it forks for', () => {
+    // The collision moves one tool. The other tool's record is still this
+    // page's, and a page heard from for the first time knows nothing about it —
+    // so its sweep would remove a record this page is autosaving into
+    // (001/FR-013, 017/FR-010).
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    const loadout = TestBed.inject(LoadoutStore);
+    loadout.open(newLoadout('tacticalsuit'), null, { autosaveRecordId: 'a-loadout' });
+    coordinator.track(loadout);
+    coordinator.listen();
+    TestBed.tick();
+
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'id-held',
+      pageNonce: 'newcomer',
+    });
+
+    const claimed = channel.sent
+      .filter((message) => message.kind === 'working-claim')
+      .map((message) => message.workingRecordId);
+    expect(claimed).toContain('a-loadout');
+    // And the fork's own claim is sent once: the fork announced it, so the
+    // sweep of the other tools leaves it out.
+    expect(claimed.filter((id) => id === active.autosaveRecordId()).length).toBe(1);
+  });
+
+  it('forgets a record another page said it had let go of', () => {
+    // A claim it never hears the end of would keep a record nobody is writing
+    // to alive for as long as that page runs (001/FR-013).
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    coordinator.listen();
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'equipment',
+      workingRecordId: 'their-loadout',
+      pageNonce: 'another-page',
+    });
+    expect(coordinator.heldLive('their-loadout')).toBe(true);
+
+    channel.deliver({ kind: 'working-release', tool: 'equipment', pageNonce: 'another-page' });
+
+    expect(coordinator.heldLive('their-loadout')).toBe(false);
+  });
+
+  it('says out loud that it has let a record go', () => {
+    const session = new MemoryStorage();
+    const { coordinator, active, channel } = setup(session);
+    hold(active, 'id-held');
+    const stop = coordinator.track(active);
+    TestBed.tick();
+
+    coordinator.release('ship');
+
+    expect(channel.sent.at(-1)).toEqual({
+      kind: 'working-release',
+      tool: 'ship',
+      pageNonce: coordinator.pageNonce,
+    });
+    stop();
+  });
+
   it('forgets a record another page has stepped off', () => {
     // Held by page, not as a growing set of ids: a page that forks stops
     // protecting the record it left behind, which is free to expire.
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
+    coordinator.track(active);
     coordinator.listen();
 
-    channel.deliver({ kind: 'working-claim', workingRecordId: 'first', pageNonce: 'them' });
-    channel.deliver({ kind: 'working-claim', workingRecordId: 'second', pageNonce: 'them' });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'first',
+      pageNonce: 'them',
+    });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'second',
+      pageNonce: 'them',
+    });
 
     expect(coordinator.heldLive('first')).toBe(false);
     expect(coordinator.heldLive('second')).toBe(true);
@@ -227,17 +416,32 @@ describe('TabOwnershipCoordinator', () => {
     // the later page's sweep would expire a record still being written.
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
     coordinator.listen();
     channel.sent.length = 0;
 
-    channel.deliver({ kind: 'working-claim', workingRecordId: 'theirs', pageNonce: 'newcomer' });
-    channel.deliver({ kind: 'working-claim', workingRecordId: 'theirs', pageNonce: 'newcomer' });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'theirs',
+      pageNonce: 'newcomer',
+    });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'theirs',
+      pageNonce: 'newcomer',
+    });
 
     // Once per newly seen page, and never in answer to itself.
     expect(channel.sent).toEqual([
-      { kind: 'working-claim', workingRecordId: 'id-held', pageNonce: coordinator.pageNonce },
+      {
+        kind: 'working-claim',
+        tool: 'ship',
+        workingRecordId: 'id-held',
+        pageNonce: coordinator.pageNonce,
+      },
     ]);
     stop();
   });
@@ -247,40 +451,164 @@ describe('TabOwnershipCoordinator', () => {
     // would step off the record, leaving it held by nobody.
     const { coordinator, active, channel } = setup();
     hold(active, 'id-held');
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
     coordinator.listen();
     channel.sent.length = 0;
 
-    channel.deliver({ kind: 'working-claim', workingRecordId: 'id-held', pageNonce: 'duplicate' });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'id-held',
+      pageNonce: 'duplicate',
+    });
     TestBed.tick();
 
-    expect(coordinator.autosaveRecordId()).not.toBe('id-held');
+    expect(active.autosaveRecordId()).not.toBe('id-held');
     expect(channel.sent).toEqual([
       {
         kind: 'working-claim',
-        workingRecordId: coordinator.autosaveRecordId(),
+        tool: 'ship',
+        workingRecordId: active.autosaveRecordId(),
         pageNonce: coordinator.pageNonce,
       },
     ]);
     stop();
   });
 
+  it('claims, announces and forks one record per tool', () => {
+    // A page holds a build and a loadout at once. A duplicated tab colliding on
+    // one of them moves that one and leaves the other exactly where it is
+    // (017/FR-010).
+    const { coordinator, active, channel, session } = setup();
+    hold(active, 'the-build');
+    const loadout = otherTool('the-loadout');
+    coordinator.track(active);
+    coordinator.track(loadout);
+    TestBed.tick();
+    coordinator.listen();
+
+    expect(JSON.parse(session.entries.get('ednb:tab')!).workingRecords).toEqual({
+      ship: 'the-build',
+      equipment: 'the-loadout',
+    });
+    expect(channel.sent.map((message) => message)).toEqual([
+      {
+        kind: 'working-claim',
+        tool: 'ship',
+        workingRecordId: 'the-build',
+        pageNonce: coordinator.pageNonce,
+      },
+      {
+        kind: 'working-claim',
+        tool: 'equipment',
+        workingRecordId: 'the-loadout',
+        pageNonce: coordinator.pageNonce,
+      },
+    ]);
+
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'equipment',
+      workingRecordId: 'the-loadout',
+      pageNonce: 'duplicate',
+    });
+
+    expect(loadout.autosaveRecordId()).not.toBe('the-loadout');
+    expect(active.autosaveRecordId()).toBe('the-build');
+  });
+
+  it('protects both of this page’s records from the sweep', () => {
+    const { coordinator, active } = setup();
+    hold(active, 'the-build');
+    coordinator.track(active);
+    coordinator.track(otherTool('the-loadout'));
+
+    expect(coordinator.heldLive('the-build')).toBe(true);
+    expect(coordinator.heldLive('the-loadout')).toBe(true);
+  });
+
+  it('protects both records another live page announced', () => {
+    // Held by page and tool: a page announcing its loadout must not take the
+    // protection off the build it announced a moment earlier.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    coordinator.listen();
+
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'their-build',
+      pageNonce: 'them',
+    });
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'equipment',
+      workingRecordId: 'their-loadout',
+      pageNonce: 'them',
+    });
+
+    expect(coordinator.heldLive('their-build')).toBe(true);
+    expect(coordinator.heldLive('their-loadout')).toBe(true);
+  });
+
+  it('reads a claim that names no tool as the ship tool’s', () => {
+    // What a page running a version that held one record per tab announces. It
+    // meant the build, and a claim read as being about nothing would leave two
+    // pages autosaving into one record.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    coordinator.listen();
+
+    channel.deliver({
+      kind: 'working-claim',
+      workingRecordId: 'id-held',
+      pageNonce: 'older-page',
+    });
+
+    expect(active.autosaveRecordId()).not.toBe('id-held');
+  });
+
+  it('opens one subscription however many screens listen', () => {
+    // Two screens listening would answer one claim twice: two forks for one
+    // collision, and the second onto a record nothing announced.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.track(active);
+    TestBed.tick();
+    const stopFirst = coordinator.listen();
+    const stopSecond = coordinator.listen();
+    channel.sent.length = 0;
+
+    channel.deliver({
+      kind: 'working-claim',
+      tool: 'ship',
+      workingRecordId: 'theirs',
+      pageNonce: 'newcomer',
+    });
+
+    expect(channel.sent).toHaveLength(1);
+    stopFirst();
+    stopSecond();
+  });
+
   it('leaves the collided record alone rather than deleting it', () => {
     const { coordinator, active, session } = setup();
     hold(active, 'id-held');
-    const stop = coordinator.track();
+    const stop = coordinator.track(active);
     TestBed.tick();
 
-    coordinator.fork();
+    coordinator.fork('ship');
     TestBed.tick();
 
     // The session now points at the new record; nothing removed the old one,
     // which belongs to the other page.
     expect(JSON.parse(session.entries.get('ednb:tab')!)).toMatchObject({
-      workingRecordId: coordinator.autosaveRecordId(),
+      workingRecords: { ship: active.autosaveRecordId() },
     });
-    expect(coordinator.autosaveRecordId()).not.toBe('id-held');
+    expect(active.autosaveRecordId()).not.toBe('id-held');
     stop();
   });
 });

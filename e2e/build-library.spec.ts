@@ -722,7 +722,10 @@ test.describe('the build library', () => {
       'quota-full',
     );
     await expect(page.getByText(/storage is full/i)).toBeVisible();
-    await openLibrary(page);
+
+    // From the notice's own control, which is what a Commander meeting a full
+    // store has in front of them (001/FR-013).
+    await page.getByRole('button', { name: 'Choose builds to discard' }).click();
     await expect(page.getByRole('heading', { name: 'Choose builds to discard' })).toBeVisible();
 
     // Nothing was removed to make room, and expiry is never offered as a way

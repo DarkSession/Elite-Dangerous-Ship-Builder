@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { isEquipmentRecord } from '../../domain/records/local-record';
 import { reconstructLoadout } from '../../domain/equipment/loadout/loadout-reconstructor';
+import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
 import { RecordMigrationService } from '../../platform/storage/record-migration.service';
 import { LoadoutStore } from './loadout.store';
 
@@ -44,9 +45,19 @@ export class LoadoutOpenService {
       return { ok: false, reason: rebuilt.reason };
     }
 
+    // Every opened record is the state it was stored at, so every one of them
+    // starts clean. An unnamed record is taken over, because it is already what
+    // autosave writes to; a named one is only held, and the first change forks
+    // an unnamed record of its own (001/FR-008, 017/FR-007).
     this.#store.open(
       rebuilt.loadout,
-      record.kind === 'named' ? { recordId: record.id, baseRevisionId: record.revisionId } : null,
+      record.kind === 'named'
+        ? { recordId: record.id, baseRevisionId: record.revisionId }
+        : record.sourceNamed,
+      {
+        autosaveRecordId: record.kind === 'working' ? record.id : null,
+        baseline: loadoutFingerprint(rebuilt.loadout),
+      },
     );
     return { ok: true };
   }

@@ -1224,6 +1224,7 @@ registerPreview({
       'default',
       {
         routeContext: 'Anaconda explorer',
+        home: { id: 'start', label: 'Nav Beacon', href: '/', current: false },
         tools: [
           { id: 'ship', label: 'Ship Builder', href: '/ships', current: true },
           { id: 'equipment', label: 'Equipment Builder', href: '/equipment' },
@@ -1245,8 +1246,8 @@ registerPreview({
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current tool exposes aria-current',
+        'the mark is a link carrying the name of the screen it opens',
         'the tool region is the shell\u2019s navigation landmark, with a name of its own',
-        'the tool a Commander is in is a word carrying aria-current, never a link to the open screen',
         'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],

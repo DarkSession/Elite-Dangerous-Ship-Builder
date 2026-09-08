@@ -2309,7 +2309,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'catalogue.title':
       'The ship tool’s own name. Ship Builder is the name of the tool in every language, ruled 2026-08-27, and a tool renamed in one language is a different tool.',
-    'navigation.catalogue': 'The same tool name, carried by the link that reaches that screen.',
+    'navigation.start':
+      'The product’s own name, carried by the mark that reaches the entry point. A product name, not a phrase to translate, for the reason app.name gives.',
     'tools.ship':
       'The same tool name again, carried by the tool’s own tab, for the reason catalogue.title gives.',
     'equipment.export.meta':

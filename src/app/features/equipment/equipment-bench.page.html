@@ -9,6 +9,17 @@
   <ednb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
 }
 
+@if (store.hasLoadout()) {
+  <!-- Where the workspace draws it, saying the same thing about the loadout the
+       bench is holding (017/FR-008). -->
+  <ednb-persistence-status
+    subject="loadout"
+    [status]="store.persistence()"
+    [paused]="autosavePaused()"
+    (actionSelected)="actOnPersistence($event)"
+  />
+}
+
 <section class="bench" [attr.data-composition]="composition()">
   @if (composition() !== 'wide') {
     <!--

@@ -59,12 +59,11 @@ export class LoadoutImportCoordinator {
   /**
    * The library, resolved when there is something to tell it about.
    *
-   * Not injected into a field. The store reaches `RetentionService`, which
-   * takes a page nonce from `UuidAdapter`, which throws where there is no
-   * `crypto` rather than fabricating an identity — and the import layer is
-   * mounted in the shell, so a field would construct that chain in the
-   * prerenderer and empty every built document (`app.config.ts`, the sweep's
-   * own initializer; 015/FR-001).
+   * Not injected into a field. Constructing the store refreshes the listing,
+   * which runs the expiry sweep — and the import layer is mounted in the shell,
+   * so a field would run that sweep in the prerenderer, where there is no
+   * Commander's library to sweep (`app.config.ts`, the sweep's own initializer;
+   * 015/FR-001).
    */
   get #library(): BuildLibraryStore {
     return this.#injector.get(BuildLibraryStore);

@@ -3,15 +3,17 @@ import type { PartialEngineeringFailure } from '../../domain/ships/build/build-i
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildSnapshotV1 } from '../../domain/ships/build/build-snapshot';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
-import { baselineFingerprint, isDirty } from '../../domain/ships/build/build-fingerprint';
+import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
+import { isDirty } from '../../domain/records/record-fingerprint';
 import type {
   ActiveBuildState,
   BuildCandidate,
   BuildProvenance,
   LinkPublicationState,
   NamedSource,
-  PersistenceStatus,
 } from './active-build.models';
+import type { PersistenceStatus, WorkingRecordSubject } from '../build-library/working-record.port';
+import type { RecordPayload } from '../../domain/records/local-record.serializer';
 
 /**
  * The one live build, and everything the application knows about it.
@@ -28,7 +30,7 @@ import type {
  * loadout object alone could not: the reference never changes.
  */
 @Injectable({ providedIn: 'root' })
-export class ActiveBuildStore {
+export class ActiveBuildStore implements WorkingRecordSubject {
   readonly #loadout = signal<ShipLoadout | null>(null);
   readonly #hullName = signal<string | null>(null);
   readonly #revision = signal(0);
@@ -39,6 +41,9 @@ export class ActiveBuildStore {
   readonly #persistence = signal<PersistenceStatus>('ready');
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
   readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
+
+  /** Which tool's records this store's work is written into. */
+  readonly tool = 'ship' as const;
 
   readonly loadout = this.#loadout.asReadonly();
   /** The active hull's name in the Commander's language, as committed. */
@@ -80,6 +85,25 @@ export class ActiveBuildStore {
   /** Whether replacing this build would lose work. */
   readonly dirty = computed(() => isDirty(this.fingerprint(), this.#baseline()));
 
+  /**
+   * What autosave writes for this build, or `null` while there is none.
+   *
+   * The package's own verdict travels with it rather than being recomputed on
+   * read, so a listing states what was true when the record was written
+   * (001/FR-010).
+   */
+  payload(): RecordPayload | null {
+    const build = this.snapshot();
+    if (build === null) {
+      return null;
+    }
+    return {
+      tool: 'ship',
+      build,
+      validation: this.validation() ?? { valid: false, complete: false },
+    };
+  }
+
   /** The package's own verdict on the active build. `null` when there is none. */
   readonly validation = computed(() => {
     this.#revision();
@@ -104,7 +128,9 @@ export class ActiveBuildStore {
    * Every field that describes where the build came from moves together: a
    * committed link build cannot be left carrying the previous build's named
    * source, and a transient notice about the previous build is not about this
-   * one.
+   * one. The persistence state is one of those notices: a build whose record
+   * another page discarded is answered by opening another, and the alert about
+   * the discarded one would otherwise stand over a build nobody discarded.
    */
   commit(candidate: BuildCandidate): void {
     this.#loadout.set(candidate.loadout);
@@ -115,6 +141,7 @@ export class ActiveBuildStore {
     this.#baseline.set(candidate.baseline);
     this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
+    this.#persistence.set('ready');
     this.#revision.update((revision) => revision + 1);
   }
 
@@ -160,13 +187,7 @@ export class ActiveBuildStore {
     this.#autosaveRecordId.set(recordId);
   }
 
-  /**
-   * Marks the current modelled state as the saved baseline.
-   *
-   * Called after a successful named save or open, and after nothing else: a
-   * working autosave is not a baseline, because a Commander cannot ask for the
-   * previous version of it back.
-   */
+  /** Marks the current modelled state as the saved baseline. */
   markSaved(sourceNamed: NamedSource | null): void {
     this.#baseline.set(this.fingerprint());
     if (sourceNamed !== null) {

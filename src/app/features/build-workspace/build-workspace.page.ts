@@ -14,8 +14,10 @@ import { ActiveBuildStore } from '../../application/active-build/active-build.st
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
+import { adoptSavedRecord } from '../../application/build-library/adopt-saved-record';
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
+import { LibraryPresence } from '../build-library/library-presence';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
@@ -34,7 +36,7 @@ import { ActionLink } from '../../ui/components/action/action-link';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
-import { PersistenceStatus } from './persistence-status';
+import { PersistenceStatus, type StatusActionId } from './persistence-status';
 import { SaveBuildDialog, type SaveRequest, type SaveSource } from './save-build.dialog';
 
 /**
@@ -84,6 +86,7 @@ export class BuildWorkspacePage {
   readonly #named = inject(NamedRecordService);
   readonly #conflicts = inject(SaveConflictService);
   readonly #library = inject(BuildLibraryStore);
+  readonly #libraryLayer = inject(LibraryPresence);
   readonly #formatters = inject(Formatters);
   readonly #clock = inject(ClockAdapter);
   readonly #invalidation = inject(RecordInvalidationService);
@@ -106,6 +109,27 @@ export class BuildWorkspacePage {
 
   /** What persistence is doing, as the shared state name. */
   readonly persistence = computed(() => this.#active.persistence());
+
+  /** Whether saving is stopped until the Commander asks for it again. */
+  readonly autosavePaused = this.#autosave.paused;
+
+  /**
+   * Acts on what the status offered.
+   *
+   * Choosing what to discard is the saved records layer's own work, so a full
+   * store raises that layer rather than drawing a list of its own.
+   */
+  actOnPersistence(action: StatusActionId): void {
+    if (action === 'resume') {
+      this.#autosave.resume();
+      return;
+    }
+    if (action === 'retry') {
+      this.#autosave.flush();
+      return;
+    }
+    this.#libraryLayer.raise();
+  }
 
   /** The package's verdict as a state name, drawn or not. */
   readonly validationState = computed(() => {
@@ -277,8 +301,7 @@ export class BuildWorkspacePage {
     // workspace contract states: this tab has to know which record is its own
     // before it can restore from it, and has to have restored before an
     // incoming link is treated as a replacement for something.
-    const heldRecordId = this.#ownership.claim();
-    this.#ownership.onFork(() => this.#autosave.adoptForkedRecord());
+    const heldRecordId = this.#ownership.claim('ship');
 
     // A page with no record behind it has nothing to restore, which is the
     // ordinary state of a fresh tab rather than a failure. Opening the record
@@ -289,7 +312,7 @@ export class BuildWorkspacePage {
         ? this.#open.open(heldRecordId)
         : Promise.resolve(null);
 
-    const stopTracking = this.#ownership.track();
+    const stopTracking = this.#ownership.track(this.#active);
     const stopOwnership = this.#ownership.listen();
     const stopAutosave = this.#autosave.start();
     const stopInvalidation = this.#invalidation.listen();
@@ -358,7 +381,7 @@ export class BuildWorkspacePage {
     // being silently recreated by the next autosave.
     effect(() => {
       const deleted = this.#invalidation.deleted();
-      const mine = this.#ownership.autosaveRecordId();
+      const mine = this.#active.autosaveRecordId();
       if (mine !== null && deleted.includes(mine)) {
         this.#autosave.pauseAfterExternalDelete();
         this.#invalidation.acknowledgeDeleted(mine);
@@ -562,25 +585,9 @@ export class BuildWorkspacePage {
     this.#conflicts.clear();
   }
 
-  /**
-   * Takes up the named record a save produced, and lets go of the unnamed one.
-   *
-   * Letting go is the part that matters. The page now holds a named record, and
-   * autosave has no path to one — so the id it was writing to is cleared and the
-   * next modelled edit forks a fresh unnamed record, rather than autosave
-   * silently going idle against a record it is no longer allowed to touch
-   * (FR-008, persistence contract, "Autosaved records").
-   */
+  /** The build now belongs to the save that was just written. */
   #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
-    this.#active.markSaved({ recordId, baseRevisionId: revisionId });
-    this.#active.setAutosaveRecordId(null);
-    this.#invalidation.announceWrite(recordId, revisionId);
-
-    if (held !== null && held !== recordId) {
-      // Consumed, not deleted by anyone: other pages listing it need to stop
-      // showing it, and the page that had it open is this one.
-      this.#invalidation.announceDelete(held);
-    }
+    adoptSavedRecord(this.#active, this.#invalidation, { recordId, revisionId, held });
   }
 }
 

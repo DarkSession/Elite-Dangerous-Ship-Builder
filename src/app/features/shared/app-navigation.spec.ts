@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { routes } from '../../app.routes';
-import { AppNavigation, NAVIGATION_ROUTES } from './app-navigation';
+import { AppNavigation, EQUIPMENT_REENTRY_ACTION, NAVIGATION_ROUTES } from './app-navigation';
 
 describe('AppNavigation tools', () => {
   beforeEach(() => {
@@ -75,16 +75,70 @@ describe('AppNavigation tools', () => {
     expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.outfitting}#b.abc`)[0].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
-
-    // And the insignia reads the same address, so it still knows it is home.
-    expect(navigation().home(`${NAVIGATION_ROUTES.catalogue}?q=viper`)).toBeNull();
-    expect(navigation().home(`${NAVIGATION_ROUTES.equipment}#e.abc`)).not.toBeNull();
   });
 
-  it('carries the same address the insignia does, so one registry answers both', () => {
-    expect(navigation().tools(NAVIGATION_ROUTES.outfitting)[0].href).toBe(
-      navigation().home(NAVIGATION_ROUTES.outfitting)?.href,
+  it('answers with the entry point, whatever screen asks', () => {
+    // One answer everywhere, and the reading takes no address, so no screen can
+    // be given a different one (017/FR-001).
+    const home = navigation().home();
+
+    expect(home.href).toBe(NAVIGATION_ROUTES.start);
+    expect(home.label).toBe('Nav Beacon');
+  });
+
+  it('gives no tool the address the mark already leads to', () => {
+    // Two controls to one place would make the mark mean the tool beside it.
+    for (const path of [
+      NAVIGATION_ROUTES.start,
+      NAVIGATION_ROUTES.catalogue,
+      `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
+      NAVIGATION_ROUTES.outfitting,
+      NAVIGATION_ROUTES.equipment,
+    ]) {
+      expect(
+        navigation()
+          .tools(path)
+          .some((tool) => tool.href === NAVIGATION_ROUTES.start),
+        path,
+      ).toBe(false);
+    }
+  });
+
+  it('reads an entry as leading nowhere only where its own address is open', () => {
+    // What the shell answers a plain click with nothing on. A shared build and
+    // a shared loadout arrive as a fragment on the tool's own address, and a
+    // Commander reading one of those is on that screen (017/FR-002, FR-005).
+    const registry = navigation();
+
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.start, NAVIGATION_ROUTES.start)).toBe(true);
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.equipment, `${NAVIGATION_ROUTES.equipment}#e.abc`),
+    ).toBe(true);
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, `${NAVIGATION_ROUTES.catalogue}?q=viper`),
+    ).toBe(true);
+
+    // And everywhere else it leads somewhere: a hull is not the ship list, the
+    // workspace is not the ship list, and no tool's address is the entry point.
+    expect(
+      registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, `${NAVIGATION_ROUTES.catalogue}/Anaconda`),
+    ).toBe(false);
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.outfitting)).toBe(
+      false,
     );
+    expect(registry.alreadyOpen(NAVIGATION_ROUTES.start, NAVIGATION_ROUTES.equipment)).toBe(false);
+  });
+
+  it('names what a tool does when its own tab is pressed on its own screen', () => {
+    // The ship tool's tab leads to the ship list, which is an address and needs
+    // nothing else said about it. The equipment tool's leads to the bench it is
+    // already on, so what it does there is an action, and the registry is where
+    // the shell reads it — the bar imports no bench component to find out
+    // (017/FR-004, FR-005).
+    const tools = navigation().tools(NAVIGATION_ROUTES.equipment);
+
+    expect(tools[0].reentry).toBeUndefined();
+    expect(tools[1].reentry).toBe(EQUIPMENT_REENTRY_ACTION);
   });
 });
 

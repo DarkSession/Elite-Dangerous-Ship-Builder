@@ -89,7 +89,7 @@ describe('LoadoutLinkCoordinator', () => {
     expect(second.links.ingest(fragment)).toEqual({ kind: 'opened' });
     expect(second.store.loadout()).toEqual(held);
     // A link is nobody's saved record, so the loadout it opens belongs to none.
-    expect(second.store.source()).toBeNull();
+    expect(second.store.sourceNamed()).toBeNull();
   });
 
   it('leaves a fragment that belongs to something else alone', () => {
@@ -174,7 +174,7 @@ describe('the loadout link payload allowlist', () => {
     const published = location.fragmentValue;
 
     store.select('PrimaryWeapon1');
-    store.named({ recordId: 'record-42', baseRevisionId: 'revision-7' });
+    store.markSaved({ recordId: 'record-42', baseRevisionId: 'revision-7' });
     links.publish();
 
     expect(location.fragmentValue).toBe(published);

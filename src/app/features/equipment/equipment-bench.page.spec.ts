@@ -3,14 +3,21 @@ import { provideRouter } from '@angular/router';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
+import { LoadoutAutosaveService } from '../../application/equipment/loadout-autosave.service';
 import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
+import { EmptyBenchService } from '../../application/equipment/empty-bench.service';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
+import { encodeEquipmentLinkFragment } from '../../domain/equipment/loadout-link/equipment-link-codec';
 import { isEquipmentRecord } from '../../domain/records/local-record';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
+import { recordKey } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { TabDescriptorRepository } from '../../platform/storage/tab-descriptor.repository';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { declareMeasurement, declareResizeObserver } from '../../ui/measurement.spec-helpers';
 import { BENCH_WIDE_MINIMUM_REM } from '../../ui/equipment/bench-composition';
+import { LibraryPresence } from '../build-library/library-presence';
 import { ScreenChrome } from '../shared/screen-chrome';
 import { EquipmentBenchPage } from './equipment-bench.page';
 
@@ -33,6 +40,8 @@ function declareWideBench(): () => void {
 
 /** A lock that serializes without a browser: what is under test is the save. */
 class FakeLocks {
+  readonly available = true;
+
   async request<T>(_name: string, operation: () => Promise<T>): Promise<T> {
     return operation();
   }
@@ -41,6 +50,7 @@ class FakeLocks {
 describe('EquipmentBenchPage', () => {
   let store: LoadoutStore;
   let records: LocalRecordRepository;
+  let storage: MemoryStorage;
 
   beforeEach(async () => {
     // The bench publishes the loadout it holds into the address, and the
@@ -56,7 +66,7 @@ describe('EquipmentBenchPage', () => {
         provideRouter([]),
         // The bench saves into the one record library, so it reaches storage
         // the moment it is created.
-        ...provideMemoryStorage(new MemoryStorage()),
+        ...provideMemoryStorage((storage = new MemoryStorage())),
         { provide: WebLocksAdapter, useValue: new FakeLocks() },
       ],
     }).compileComponents();
@@ -223,7 +233,7 @@ describe('EquipmentBenchPage', () => {
     expect(record !== null && isEquipmentRecord(record) && record.loadout.suitFamily).toBe(
       'tacticalsuit',
     );
-    expect(store.source()?.recordId).toBe(record?.id);
+    expect(store.sourceNamed()?.recordId).toBe(record?.id);
   });
 
   it('opens a saved loadout back onto the bench, exactly as it was saved', async () => {
@@ -236,7 +246,7 @@ describe('EquipmentBenchPage', () => {
       note: null,
       overwrite: false,
     });
-    const recordId = store.source()!.recordId;
+    const recordId = store.sourceNamed()!.recordId;
 
     store.open(null);
     expect(store.hasLoadout()).toBe(false);
@@ -244,6 +254,34 @@ describe('EquipmentBenchPage', () => {
     expect(TestBed.inject(LoadoutOpenService).open(recordId).ok).toBe(true);
     expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
     expect(store.loadout()?.suitGrade).toBe(3);
+  });
+
+  it('holds a saved loadout without autosaving into it (017/FR-007)', async () => {
+    // A Commander who named a loadout said which version they want kept, so the
+    // bench holds that record rather than writing to it, and holds it clean:
+    // opening is not an edit, so there is nothing to write and the save stays
+    // exactly where they put it. The first change forks a record of its own.
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+    const recordId = store.sourceNamed()!.recordId;
+    store.open(null);
+
+    expect(TestBed.inject(LoadoutOpenService).open(recordId).ok).toBe(true);
+
+    expect(store.autosaveRecordId()).toBeNull();
+    expect(store.dirty()).toBe(false);
+    // And nothing lands even when autosave is given its chance: a second record
+    // here would be a copy of the Commander's save that they never asked for.
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const listed = records.list();
+    expect(listed.ok && listed.value.length).toBe(1);
+    expect(storage.entries.has(recordKey(recordId))).toBe(true);
   });
 
   it('says why a loadout link was refused, in the library’s words (FR-021)', () => {
@@ -261,6 +299,308 @@ describe('EquipmentBenchPage', () => {
     // Never Frontier's journal key, and never the bench's own loadout.
     expect(notice?.textContent).not.toContain('PrimaryWeapon');
     expect(store.loadout()).toBe(before);
+  });
+
+  /**
+   * A page that was autosaving a loadout before a reload: the record, and this
+   * tab's claim on it.
+   */
+  const heldRecord = (suitFamily: string, id = 'working-loadout'): string => {
+    // Written now, because an unnamed record is swept once its seven days have
+    // run out and the library sweeps as the page is built.
+    const now = new Date().toISOString();
+    records.write({
+      id,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: now,
+      modifiedAt: now,
+      name: null,
+      note: null,
+      sourceNamed: null,
+      payload: { tool: 'equipment', loadout: newLoadout(suitFamily)! },
+    });
+    TestBed.inject(TabDescriptorRepository).write('equipment', id);
+    return id;
+  };
+
+  /** The same, holding the named save the loadout was forked from. */
+  const heldForkOf = (suitFamily: string, named: string): string => {
+    const now = new Date().toISOString();
+    const id = 'forked-loadout';
+    records.write({
+      id,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: now,
+      modifiedAt: now,
+      name: null,
+      note: null,
+      sourceNamed: { recordId: named, baseRevisionId: 'revision-0' },
+      payload: { tool: 'equipment', loadout: newLoadout(suitFamily)! },
+    });
+    TestBed.inject(TabDescriptorRepository).write('equipment', id);
+    return id;
+  };
+
+  /** An address carrying this fragment, as a Commander would have arrived on. */
+  const arriveOn = (fragment: string): void => {
+    history.replaceState(null, '', `${location.pathname}#${fragment}`);
+  };
+
+  it('restores the loadout it was autosaving before a reload (017/FR-007)', () => {
+    const id = heldRecord('tacticalsuit');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+    // Taken over rather than copied, and nothing is owed on it: opening a
+    // record does not restart the seven days it is counting down.
+    expect(store.autosaveRecordId()).toBe(id);
+    expect(store.dirty()).toBe(false);
+    fixture.destroy();
+  });
+
+  it('restores the named save the loadout was forked from (017/FR-007)', () => {
+    // A loadout forked from a save is still that save's, so the bench offers to
+    // replace it after a reload as it did before one. The record carries where
+    // the work came from; restoring the loadout without it would turn a replace
+    // into a second save under the same name.
+    const id = heldForkOf('tacticalsuit', 'their-save');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.autosaveRecordId()).toBe(id);
+    expect(store.sourceNamed()?.recordId).toBe('their-save');
+    fixture.destroy();
+  });
+
+  it('stays empty when the page is built again after the bench was cleared (017/FR-006)', () => {
+    const id = heldRecord('tacticalsuit');
+    const first = TestBed.createComponent(EquipmentBenchPage);
+    first.detectChanges();
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+
+    TestBed.inject(EmptyBenchService).start();
+    first.destroy();
+
+    const second = TestBed.createComponent(EquipmentBenchPage);
+    second.detectChanges();
+
+    // A claim left behind would restore the loadout a Commander deliberately
+    // cleared, which is the one thing emptying the bench has to be trusted not
+    // to do. The record it named is still there, which is what makes the action
+    // free to offer.
+    expect(store.hasLoadout()).toBe(false);
+    expect(
+      TestBed.inject(TabDescriptorRepository).read()?.workingRecords.equipment,
+    ).toBeUndefined();
+    const kept = records.open(id);
+    expect(kept.ok && kept.value !== null).toBe(true);
+    second.destroy();
+  });
+
+  it('opens the loadout in the address over the one it restored (017/FR-009)', () => {
+    heldRecord('tacticalsuit');
+    arriveOn(encodeEquipmentLinkFragment(newLoadout('utilitysuit')!));
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('utilitysuit');
+    // A link is nobody's record: the restored one is left where it is rather
+    // than written over with what the address carried.
+    expect(store.autosaveRecordId()).toBeNull();
+    fixture.destroy();
+  });
+
+  it('keeps the restored loadout when the address carries a link it cannot read', () => {
+    heldRecord('tacticalsuit');
+    arriveOn('e.notaloadoutatall');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+    const notice = (fixture.nativeElement as HTMLElement).querySelector('ednb-status-notice');
+    expect(notice?.textContent).toContain('could not be read');
+    fixture.destroy();
+  });
+
+  it('writes the loadout on the way out, so leaving the bench costs no choice', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    // Before the coalescing window closes: leaving is what makes the write due.
+    fixture.destroy();
+
+    const listed = records.list();
+    const stored = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(stored.length).toBe(1);
+    expect(stored[0]?.available === true && stored[0].record.kind).toBe('working');
+  });
+
+  it('pauses saving and keeps the loadout when another page deletes its record', () => {
+    // Nobody at this page decided anything, so the bench is not cleared and
+    // nothing is recreated behind the Commander's back (017/FR-008).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const mine = store.autosaveRecordId()!;
+
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+
+    expect(store.persistence()).toBe('record-deleted-externally');
+    expect(store.hasLoadout()).toBe(true);
+    fixture.destroy();
+  });
+
+  it('leaves no unnamed record behind the loadout it saved under a name', async () => {
+    // The save consumes the record the changes were autosaved into: a Commander
+    // who saved once has one loadout to find again, not a save and the working
+    // copy it was made from (013/FR-016, 017/FR-007).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    expect(store.autosaveRecordId()).not.toBeNull();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+
+    const listed = records.list();
+    const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(saved.length).toBe(1);
+    expect(saved[0]?.available === true && saved[0].record.kind).toBe('named');
+    fixture.destroy();
+  });
+
+  it('removes the record it was autosaved into when it replaces a saved loadout', async () => {
+    // The other half of the same rule: written into the record it replaced, the
+    // unnamed one it came from goes (013/FR-016, 017/FR-007).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+    store.dispatch({ kind: 'setSuitGrade', grade: 3 });
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const held = store.autosaveRecordId();
+    expect(held).not.toBeNull();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: true,
+    });
+
+    const listed = records.list();
+    const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(saved.map((entry) => (entry.available === true ? entry.record.id : ''))).not.toContain(
+      held,
+    );
+    expect(saved.length).toBe(1);
+    fixture.destroy();
+  });
+
+  it('stops stating a record another page discarded once the loadout is saved', async () => {
+    // Saving is the other way off the discarded record. The notice about it
+    // would otherwise stand over a loadout that is in a record again, with
+    // nothing left to resume (017/FR-008).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const mine = store.autosaveRecordId()!;
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+
+    expect(store.persistence()).toBe('saved');
+    fixture.destroy();
+  });
+
+  it('draws what persistence is doing where the workspace draws it', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    store.setPersistence('quota-full');
+    fixture.detectChanges();
+
+    const status = (fixture.nativeElement as HTMLElement).querySelector('ednb-persistence-status');
+    // The bench's own words, not the ship tool's: what a Commander is asked to
+    // discard is a loadout (017/FR-008).
+    expect(status?.textContent).toContain('discard a loadout');
+    fixture.destroy();
+  });
+
+  it('resumes saving when the Commander asks it to', () => {
+    // The component says which control was pressed; reaching the autosave is
+    // the screen's own work, and a resume that reached nothing would leave a
+    // Commander pressing a control that reads as broken (017/FR-008).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    const autosave = TestBed.inject(LoadoutAutosaveService);
+    autosave.flush();
+    const mine = store.autosaveRecordId()!;
+    // Gone from the store as well as announced, so that the record standing
+    // afterwards is one the resume wrote rather than the one it was told about.
+    storage.entries.delete(recordKey(mine));
+    window.dispatchEvent(new StorageEvent('storage', { key: recordKey(mine), newValue: null }));
+    fixture.detectChanges();
+    expect(autosave.paused()).toBe(true);
+    expect(storage.entries.has(recordKey(mine))).toBe(false);
+
+    fixture.componentInstance.actOnPersistence('resume');
+
+    expect(autosave.paused()).toBe(false);
+    // Asked of the stored bytes. `open` answers whether the store could be
+    // reached, and says `ok` for a record that is not there at all.
+    expect(storage.entries.has(recordKey(mine))).toBe(true);
+    fixture.destroy();
+  });
+
+  it('writes again when the Commander asks to retry', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    fixture.componentInstance.actOnPersistence('retry');
+
+    expect(store.autosaveRecordId()).not.toBeNull();
+    expect(storage.entries.has(recordKey(store.autosaveRecordId()!))).toBe(true);
+    fixture.destroy();
+  });
+
+  it('raises the saved records layer when asked to choose what to discard', () => {
+    // The action the full-store notice offers. Choosing what to discard is the
+    // layer's own work, so the bench raises it rather than drawing a list of
+    // its own — and a control that did nothing would read as a broken one.
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    fixture.componentInstance.actOnPersistence('manage');
+
+    expect(TestBed.inject(LibraryPresence).open()).toBe(true);
+    fixture.destroy();
   });
 
   it('synthesizes no heading of its own', () => {

@@ -95,10 +95,11 @@ async function identityText(page: Page): Promise<string> {
  * question this journey is about would then never be asked.
  */
 async function openHullInApp(page: Page, name: string): Promise<void> {
-  // The command bar names the screen it is on and offers only the others, so
-  // this link is the way back from anywhere but the shipyard. Waiting for it is
-  // what keeps the journey behind the navigation that brought us here: without
-  // it the search below can be typed into a manifest that is already leaving.
+  // The command bar offers the tool a Commander is in as well as naming it, so
+  // this tab is the way to the list of ships from every screen the ship tool
+  // owns (017/FR-003). Waiting for it is what keeps the journey behind the
+  // navigation that brought us here: without it the search below can be typed
+  // into a manifest that is already leaving.
   await reachShellLink(page, 'Ship Builder');
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);

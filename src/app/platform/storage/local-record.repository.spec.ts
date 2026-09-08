@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { newLoadout } from '../../domain/equipment/loadout/loadout-edit';
+import { loadoutFingerprint } from '../../domain/equipment/loadout/loadout-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import {
   FIXTURE_IDS,
@@ -161,5 +163,51 @@ describe('LocalRecordRepository', () => {
     expect(repository.remove('r1').ok).toBe(true);
 
     expect([...storage.entries.keys()]).toEqual([recordKey('r2')]);
+  });
+});
+
+describe('finding an unnamed record already holding this work', () => {
+  const build = toBuildSnapshotV1(ShipLoadout.default('Anaconda'));
+  const loadout = newLoadout('tacticalsuit')!;
+  const unnamed = { kind: 'working', name: null } as const;
+
+  /** A store holding one unnamed record of each tool. */
+  function bothTools(): LocalRecordRepository {
+    const { repository } = setup();
+    repository.write(
+      draft('a-build', {
+        ...unnamed,
+        payload: { tool: 'ship', build, validation: { valid: true, complete: true } },
+      }),
+    );
+    repository.write(draft('a-loadout', { ...unnamed, payload: { tool: 'equipment', loadout } }));
+    return repository;
+  }
+
+  it('answers with the record of the tool that asked, never the other one', () => {
+    // The two tools hold different work under one key space, so a fingerprint
+    // is only ever a match for a record of the tool it was taken from
+    // (017/FR-010).
+    const repository = bothTools();
+
+    expect(repository.findUnnamedMatching(loadoutFingerprint(loadout), 'equipment')).toBe(
+      'a-loadout',
+    );
+    expect(repository.findUnnamedMatching(loadoutFingerprint(loadout), 'ship')).toBeNull();
+    expect(repository.findUnnamedMatching(JSON.stringify(build), 'ship')).toBe('a-build');
+    expect(repository.findUnnamedMatching(JSON.stringify(build), 'equipment')).toBeNull();
+  });
+
+  it('leaves a named record alone, however well it matches', () => {
+    const { repository } = setup();
+    repository.write(draft('kept', { payload: { tool: 'equipment', loadout } }));
+
+    expect(repository.findUnnamedMatching(loadoutFingerprint(loadout), 'equipment')).toBeNull();
+  });
+
+  it('has nothing to take over when no record holds this work', () => {
+    expect(
+      bothTools().findUnnamedMatching(loadoutFingerprint(newLoadout('utilitysuit')!), 'equipment'),
+    ).toBeNull();
   });
 });

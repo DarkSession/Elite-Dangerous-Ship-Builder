@@ -1,9 +1,11 @@
 import { Location } from '@angular/common';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { App, HELP_ACTION } from './app';
 import { routes } from './app.routes';
 import { EquipmentBenchPage } from './features/equipment/equipment-bench.page';
+import { LoadoutStore } from './application/equipment/loadout.store';
 import { NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
@@ -102,28 +104,176 @@ describe('App', () => {
     expect(links).not.toContain('/builds');
   });
 
-  it('carries the way back to the shipyard on the bar\u2019s own insignia', () => {
-    // Away from the shipyard, which is the one screen where the way home is no
-    // way anywhere. The shell reads the address it was loaded at rather than
-    // waiting for the router's first navigation, so the address has to be set
-    // before the component reads it (Commander request 2026-09-04).
+  it('carries the way to the entry point on the bar\u2019s own insignia', () => {
+    // The shell reads the address it was loaded at rather than waiting for the
+    // router's first navigation, so the address has to be set before the
+    // component reads it (Commander request 2026-09-04).
     TestBed.inject(Location).go(NAVIGATION_ROUTES.outfitting);
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
     const insignia = element.querySelector('.frame__flag-home');
+    const named = insignia?.textContent?.trim();
 
     // The 2026-08-26 revision puts the mark where the `SHIPYARD` word used to
     // be, so the mark is the control and the word is not drawn twice. It is a
     // link, so it opens in a new tab and copies like any other address, and it
     // says where it goes for a reader who cannot see the mark.
-    expect(insignia?.getAttribute('href')).toBe('/ships');
-    expect(insignia?.textContent?.trim()).toBe(BUNDLED_ENGLISH['navigation.catalogue']);
+    expect(insignia?.getAttribute('href')).toBe(NAVIGATION_ROUTES.start);
+    expect(insignia?.textContent?.trim()).toBe(BUNDLED_ENGLISH['navigation.start']);
 
     // The mark is inside the link rather than being it, so the press keeps the
     // target baseline while the insignia keeps the size the canvas draws it.
     expect(insignia?.querySelector('.frame__flag')).not.toBeNull();
+
+    // The same answer from every screen, however deep in a tool it is asked
+    // from: one way back, in one place (017/FR-001).
+    for (const path of [
+      NAVIGATION_ROUTES.catalogue,
+      `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
+      NAVIGATION_ROUTES.equipment,
+    ]) {
+      TestBed.inject(Location).go(path);
+      const opened = TestBed.createComponent(App);
+      opened.detectChanges();
+      const mark = (opened.nativeElement as HTMLElement).querySelector('.frame__flag-home');
+
+      expect(mark?.getAttribute('href'), path).toBe(NAVIGATION_ROUTES.start);
+      expect(mark?.textContent?.trim(), path).toBe(named);
+      opened.destroy();
+    }
+  });
+
+  it('draws the insignia as a control on the entry point too, and answers with nothing', () => {
+    // A control that went missing where it leads would move every other item on
+    // the deck, so it is drawn and a plain click is answered with nothing. The
+    // address is still an address: a new tab opens it and it copies
+    // (017/FR-001, FR-002).
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.start);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const insignia = (fixture.nativeElement as HTMLElement).querySelector('.frame__flag-home');
+    expect(insignia?.getAttribute('href')).toBe(NAVIGATION_ROUTES.start);
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl');
+    const click = new MouseEvent('click', { button: 0, cancelable: true });
+    insignia?.dispatchEvent(click);
+
+    expect(travelled).not.toHaveBeenCalled();
+    expect(click.defaultPrevented).toBe(true);
+  });
+
+  it('leaves a modified click on the insignia to the browser', () => {
+    // A new tab is what the reader asked for, on the entry point as anywhere
+    // else. The shell takes no part in it, so the event reaches the browser
+    // unanswered.
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.start);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const insignia = (fixture.nativeElement as HTMLElement).querySelector('.frame__flag-home');
+    const click = new MouseEvent('click', { button: 0, cancelable: true, metaKey: true });
+    insignia?.dispatchEvent(click);
+
+    expect(click.defaultPrevented).toBe(false);
+  });
+
+  it('opens the list of ships from the tool a Commander is already in', () => {
+    // A build is in the ship tool, and its tab is how a Commander gets back to
+    // the ships. Nothing about the build changes: the workspace keeps it, and
+    // the record it autosaves into keeps it after that (017/FR-004).
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.outfitting);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    tabs[0].dispatchEvent(new MouseEvent('click', { button: 0, bubbles: true, cancelable: true }));
+
+    expect(travelled).toHaveBeenCalledWith(NAVIGATION_ROUTES.catalogue);
+  });
+
+  it('opens the list of ships from a hull, which is inside the ship tool too', () => {
+    // A hull's own address is the ship tool's, so its tab is current there and
+    // leads back to the list. It is not the address the tab names, so the click
+    // is followed rather than answered with nothing (017/FR-004).
+    TestBed.inject(Location).go(`${NAVIGATION_ROUTES.catalogue}/Anaconda`);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    tabs[0].dispatchEvent(new MouseEvent('click', { button: 0, bubbles: true, cancelable: true }));
+
+    expect(travelled).toHaveBeenCalledWith(NAVIGATION_ROUTES.catalogue);
+  });
+
+  it('answers the ship tool\u2019s tab with nothing where the list of ships is open', () => {
+    // The tab is drawn and reads as a link — the browser states where it goes
+    // and a new tab opens it — and a plain click on the screen it leads to is
+    // answered with nothing rather than with a history entry (017/FR-005).
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.catalogue);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    const click = new MouseEvent('click', { button: 0, bubbles: true, cancelable: true });
+    tabs[0].dispatchEvent(click);
+
+    expect(travelled).not.toHaveBeenCalled();
+    expect(click.defaultPrevented).toBe(true);
+  });
+
+  it('opens a tool a Commander is not in at its own address', () => {
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.catalogue);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    tabs[1].dispatchEvent(new MouseEvent('click', { button: 0, bubbles: true, cancelable: true }));
+
+    expect(travelled).toHaveBeenCalledWith(NAVIGATION_ROUTES.equipment);
+  });
+
+  it('starts an empty bench when the equipment tool’s tab is pressed on the bench', () => {
+    // The tab a Commander is already in re-enters the tool by the action the
+    // registry declares beside it, and the bench's is an empty bench for the
+    // next loadout (017/FR-003, 017/FR-006).
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.equipment);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const store = TestBed.inject(LoadoutStore);
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    const click = new MouseEvent('click', { button: 0, bubbles: true, cancelable: true });
+    tabs[1].dispatchEvent(click);
+
+    expect(store.hasLoadout()).toBe(false);
+    // Nowhere to go: the bench is where the Commander already is.
+    expect(travelled).not.toHaveBeenCalled();
+    expect(click.defaultPrevented).toBe(true);
   });
 
   it('resolves its text through the message facade', () => {
