@@ -519,7 +519,7 @@ export class BuildLibraryPage {
   }
 
   /**
-   * Lets whichever tool was autosaving into a deleted record go of it.
+   * Has whichever tool was autosaving into a deleted record let go of it.
    *
    * The library stands over either screen, so the record a Commander deletes
    * here can be the build's or the loadout's. A tool told nothing would write

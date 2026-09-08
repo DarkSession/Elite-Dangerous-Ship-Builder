@@ -66,7 +66,7 @@ export class EmptyBenchService {
   }
 
   /**
-   * Lets the bench go of a record deleted on this page, and says whether it did.
+   * Has the bench let go of a record deleted on this page, and says whether it did.
    *
    * Whether the bench lets go at all is `LoadoutStore.clearIfHolding`, and the
    * reason is there. What is added here is the rest of letting go: the claim on

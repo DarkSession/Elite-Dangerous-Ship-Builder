@@ -319,7 +319,7 @@ test.describe('the bench and the address', () => {
 });
 
 test.describe('deleting the record the bench is autosaving into', () => {
-  test('lets the bench go of it, and it stays deleted (017/FR-008)', async ({ page }) => {
+  test('has the bench let go of it, and it stays deleted (017/FR-008)', async ({ page }) => {
     await page.goto('/equipment');
     await wearSuit(page, 'Dominator Suit');
     await autosaved(page);
