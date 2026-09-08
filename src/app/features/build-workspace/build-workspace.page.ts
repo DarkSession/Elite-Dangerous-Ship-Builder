@@ -116,10 +116,8 @@ export class BuildWorkspacePage {
   /**
    * Acts on what the status offered.
    *
-   * The status says which action was pressed and nothing more: it draws for
-   * both tools, and each of them holds its own autosave. Choosing what to
-   * discard is the saved records layer's own work, so the status raises that
-   * layer rather than drawing a list of its own.
+   * Choosing what to discard is the saved records layer's own work, so a full
+   * store raises that layer rather than drawing a list of its own.
    */
   actOnPersistence(action: StatusActionId): void {
     if (action === 'resume') {

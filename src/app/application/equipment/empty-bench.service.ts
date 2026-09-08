@@ -69,11 +69,9 @@ export class EmptyBenchService {
   /**
    * Lets the bench go of a record deleted on this page, and says whether it did.
    *
-   * The opposite event to a record discarded in another tab, and it takes the
-   * opposite answer: a Commander who deletes the record the bench autosaves
-   * into decided that here, so keeping the loadout would leave it with nowhere
-   * to be saved and writing it back would undo what they confirmed
-   * (001/FR-009).
+   * Whether the bench lets go at all is `LoadoutStore.clearIfHolding`, and the
+   * reason is there. What is added here is the rest of letting go: the claim on
+   * a record that is gone, and the loadout in the address.
    *
    * Nothing is flushed on the way out. There is nowhere to flush it to, which
    * is the whole of the event.

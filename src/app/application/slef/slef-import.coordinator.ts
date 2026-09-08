@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import {
@@ -77,7 +77,19 @@ export class SlefImportCoordinator {
   readonly #router = inject(Router);
   readonly #named = inject(NamedRecordService);
   readonly #clock = inject(ClockAdapter);
-  readonly #library = inject(BuildLibraryStore);
+  readonly #injector = inject(Injector);
+  /**
+   * The library, resolved when there is something to tell it about.
+   *
+   * Not injected into a field. Constructing the store refreshes the listing,
+   * which runs the expiry sweep — and the import layer is mounted in the shell,
+   * so a field would run that sweep in the prerenderer, where there is no
+   * Commander's library to sweep (`app.config.ts`, the sweep's own initializer;
+   * 015/FR-001).
+   */
+  get #library(): BuildLibraryStore {
+    return this.#injector.get(BuildLibraryStore);
+  }
 
   /**
    * Reads the files a Commander chose, and offers what they hold.

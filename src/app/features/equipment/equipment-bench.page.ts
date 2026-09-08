@@ -352,8 +352,7 @@ export class EquipmentBenchPage {
   /**
    * Acts on what the status offered.
    *
-   * Choosing what to discard is the saved records layer's own work, so the
-   * status raises that layer rather than drawing a list of its own.
+   * The workspace's, action for action, and for its reasons.
    */
   actOnPersistence(action: StatusActionId): void {
     if (action === 'resume') {

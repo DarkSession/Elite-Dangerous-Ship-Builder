@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { getSuitByFamily } from '@elite-dangerous-almanac/core/equipment/suits';
 import type { SuitLoadoutImportOutcome } from '@elite-dangerous-almanac/core/equipment/suit-loadout';
 import {
@@ -55,7 +55,19 @@ export class LoadoutImportCoordinator {
   readonly #clock = inject(ClockAdapter);
   readonly #gameText = inject(GameTextPresenter);
   readonly #messages = inject(MessageService);
-  readonly #library = inject(BuildLibraryStore);
+  readonly #injector = inject(Injector);
+  /**
+   * The library, resolved when there is something to tell it about.
+   *
+   * Not injected into a field. Constructing the store refreshes the listing,
+   * which runs the expiry sweep — and the import layer is mounted in the shell,
+   * so a field would run that sweep in the prerenderer, where there is no
+   * Commander's library to sweep (`app.config.ts`, the sweep's own initializer;
+   * 015/FR-001).
+   */
+  get #library(): BuildLibraryStore {
+    return this.#injector.get(BuildLibraryStore);
+  }
 
   /**
    * Reads the journal files a Commander chose. Imports nothing.

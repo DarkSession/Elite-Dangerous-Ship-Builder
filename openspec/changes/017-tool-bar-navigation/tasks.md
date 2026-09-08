@@ -53,7 +53,8 @@
       journey pressing the notice's own control for the seventh.
 - [x] 3.2 Give `LocalRecordRepository.findUnnamedMatching` the tool it is matching, so
       a loadout never takes over a build's record. Verify with unit tests over a store
-      holding an unnamed record of each tool with the same fingerprint.
+      holding an unnamed record of each tool, asking with each tool's own fingerprint
+      and reading the answer for both tools.
 - [x] 3.3 Move `TabDescriptorRepository` to version 2 — one working record id per tool
       — reading a version 1 descriptor as the ship's. Verify with unit tests over a
       version 1 value, a version 2 value, an unknown version and a malformed one.

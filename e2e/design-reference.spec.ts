@@ -146,8 +146,8 @@ test.describe('the reference visual language', () => {
         // Centred on the deck it leads, and inside it.
         offset: (box.top + box.bottom) / 2 - (deckBox.top + deckBox.bottom) / 2,
         // The drawing lands on the plate's own inset, which is the line the
-        // page under it follows. Where it is the way home the press box around
-        // it overhangs into the gutter, so the box starts before that.
+        // page under it follows. The press box around it overhangs into the
+        // gutter, so the box starts before that.
         markInset: drawn.left - deckBox.left,
         inset: parseFloat(getComputedStyle(deck).paddingInlineStart),
         // And the tabs follow the drawing, at the gap the canvas leaves, rather

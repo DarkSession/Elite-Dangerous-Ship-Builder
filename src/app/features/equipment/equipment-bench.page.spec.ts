@@ -296,6 +296,25 @@ describe('EquipmentBenchPage', () => {
     return id;
   };
 
+  /** The same, holding the named save the loadout was forked from. */
+  const heldForkOf = (suitFamily: string, named: string): string => {
+    const now = new Date().toISOString();
+    const id = 'forked-loadout';
+    records.write({
+      id,
+      kind: 'working',
+      revisionId: 'revision-1',
+      createdAt: now,
+      modifiedAt: now,
+      name: null,
+      note: null,
+      sourceNamed: { recordId: named, baseRevisionId: 'revision-0' },
+      payload: { tool: 'equipment', loadout: newLoadout(suitFamily)! },
+    });
+    TestBed.inject(TabDescriptorRepository).write('equipment', id);
+    return id;
+  };
+
   /** An address carrying this fragment, as a Commander would have arrived on. */
   const arriveOn = (fragment: string): void => {
     history.replaceState(null, '', `${location.pathname}#${fragment}`);
@@ -312,6 +331,21 @@ describe('EquipmentBenchPage', () => {
     // record does not restart the seven days it is counting down.
     expect(store.autosaveRecordId()).toBe(id);
     expect(store.dirty()).toBe(false);
+    fixture.destroy();
+  });
+
+  it('restores the named save the loadout was forked from (017/FR-007)', () => {
+    // A loadout forked from a save is still that save's, so the bench offers to
+    // replace it after a reload as it did before one. The record carries where
+    // the work came from; restoring the loadout without it would turn a replace
+    // into a second save under the same name.
+    const id = heldForkOf('tacticalsuit', 'their-save');
+
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    expect(store.autosaveRecordId()).toBe(id);
+    expect(store.sourceNamed()?.recordId).toBe('their-save');
     fixture.destroy();
   });
 
