@@ -487,7 +487,8 @@ export class BuildLibraryPage {
 
     // If that was the record this page is autosaving into, the tool it belongs
     // to goes back to holding nothing. The library stays open on the rest of
-    // the list: the current-record marker simply has nowhere to sit (FR-009).
+    // the list: the current-record marker simply has nowhere to sit (001/FR-009,
+    // 017/FR-008).
     this.#letGoOf(pending.recordId);
 
     this.#invalidation.announceDelete(pending.recordId);
@@ -522,8 +523,9 @@ export class BuildLibraryPage {
    *
    * The library stands over either screen, so the record a Commander deletes
    * here can be the build's or the loadout's. A tool told nothing would write
-   * the record back on its next edit, which undoes a deletion they confirmed —
-   * and this tab's claim on it would outlive the record itself (017/FR-010).
+   * the record back on its next edit, which undoes a deletion they confirmed
+   * (001/FR-009, 017/FR-008) — and this tab's claim on it would outlive the
+   * record itself (017/FR-010).
    */
   #letGoOf(recordId: string): void {
     if (this.#active.clearIfHolding(recordId)) {

@@ -203,7 +203,7 @@ describe('LoadoutAutosaveService', () => {
   it('says the work is nowhere when the record it holds is named elsewhere', () => {
     // Named in another tab while this page was on another screen, so no fork
     // was heard. Autosave refuses a named target, which leaves the change on
-    // this page in nothing (001/FR-008).
+    // this page in nothing (001/FR-008, 017/FR-007).
     const { autosave, store, records } = setup();
     records.write({
       id: HELD,
@@ -273,7 +273,7 @@ describe('LoadoutAutosaveService', () => {
     });
   });
 
-  it('never takes over a record of the other tool (017/FR-010)', () => {
+  it('never takes over a record of the other tool (017/FR-007, 017/FR-010)', () => {
     // The one record this browser holds is a build's. A loadout minting its own
     // rather than writing into it is the whole rule: the two hold different
     // content and are never the same state.
@@ -354,7 +354,7 @@ describe('LoadoutAutosaveService', () => {
 
   it('refuses a named record as a target, whatever the page believes it holds', () => {
     // The check reads the stored record rather than this page's belief about
-    // it, so a record named in another tab is covered too (001/FR-008).
+    // it, so a record named in another tab is covered too (001/FR-008, 017/FR-007).
     const { autosave, store, records, storage } = setup();
     records.write({
       id: HELD,

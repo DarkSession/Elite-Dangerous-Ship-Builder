@@ -48,7 +48,7 @@ export class LoadoutOpenService {
     // Every opened record is the state it was stored at, so every one of them
     // starts clean. An unnamed record is taken over, because it is already what
     // autosave writes to; a named one is only held, and the first change forks
-    // an unnamed record of its own (001/FR-008).
+    // an unnamed record of its own (001/FR-008, 017/FR-007).
     this.#store.open(
       rebuilt.loadout,
       record.kind === 'named'

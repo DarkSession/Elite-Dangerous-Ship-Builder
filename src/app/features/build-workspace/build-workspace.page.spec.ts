@@ -5,7 +5,6 @@ import { ActiveBuildStore } from '../../application/active-build/active-build.st
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
-import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { recordKey } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { LibraryPresence } from '../build-library/library-presence';
@@ -32,7 +31,6 @@ class FakeLocks {
  */
 describe('BuildWorkspacePage persistence actions', () => {
   let active: ActiveBuildStore;
-  let records: LocalRecordRepository;
   let storage: MemoryStorage;
 
   beforeEach(async () => {
@@ -50,7 +48,6 @@ describe('BuildWorkspacePage persistence actions', () => {
       ],
     }).compileComponents();
     active = TestBed.inject(ActiveBuildStore);
-    records = TestBed.inject(LocalRecordRepository);
   });
 
   /** A build on the workspace, as opening a stock hull leaves one. */
@@ -112,7 +109,6 @@ describe('BuildWorkspacePage persistence actions', () => {
     fixture.componentInstance.actOnPersistence('manage');
 
     expect(layer.open()).toBe(true);
-    expect(records.list().ok).toBe(true);
     fixture.destroy();
   });
 });

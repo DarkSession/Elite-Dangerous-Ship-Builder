@@ -22,7 +22,7 @@ const COALESCE_MS = 400;
  * autosaving over something a Commander deliberately saved would take that
  * decision away from them, silently, which is the loss the withdrawn
  * replacement question existed to prevent (persistence contract, "Autosaved
- * records"; 001/FR-008, ruled 2026-08-25).
+ * records"; 001/FR-008, 017/FR-007, ruled 2026-08-25).
  *
  * Two rules follow from that and are enforced here rather than assumed. Nothing
  * is written while the subject is clean, so taking a record over does not
@@ -39,7 +39,7 @@ const COALESCE_MS = 400;
  * Every failure state here is a persistence state, never a state of the work: a
  * blocked store, a full one or a failed write changes what the status says and
  * changes nothing about whether the build or the loadout can be edited
- * (001/FR-014).
+ * (001/FR-014, 017/FR-008).
  *
  * One class, one subject. Each tool provides its own instance, because a page
  * holds a build and a loadout at once and neither may be written into the

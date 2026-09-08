@@ -8,7 +8,7 @@ import type { RecordPayload } from '../../domain/records/local-record.serializer
  * None of these states makes what a Commander has open unusable. That is the
  * point of naming them apart from the work itself: editing, calculating,
  * sharing and exporting all continue while persistence is unavailable, full or
- * failing (001/FR-014).
+ * failing (001/FR-014, 017/FR-008).
  */
 export type PersistenceStatus =
   | 'ready'

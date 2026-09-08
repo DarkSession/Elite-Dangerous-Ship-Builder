@@ -256,6 +256,34 @@ describe('EquipmentBenchPage', () => {
     expect(store.loadout()?.suitGrade).toBe(3);
   });
 
+  it('holds a saved loadout without autosaving into it (017/FR-007)', async () => {
+    // A Commander who named a loadout said which version they want kept, so the
+    // bench holds that record rather than writing to it, and holds it clean:
+    // opening is not an edit, so there is nothing to write and the save stays
+    // exactly where they put it. The first change forks a record of its own.
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+    const recordId = store.sourceNamed()!.recordId;
+    store.open(null);
+
+    expect(TestBed.inject(LoadoutOpenService).open(recordId).ok).toBe(true);
+
+    expect(store.autosaveRecordId()).toBeNull();
+    expect(store.dirty()).toBe(false);
+    // And nothing lands even when autosave is given its chance: a second record
+    // here would be a copy of the Commander's save that they never asked for.
+    TestBed.inject(LoadoutAutosaveService).flush();
+    const listed = records.list();
+    expect(listed.ok && listed.value.length).toBe(1);
+    expect(storage.entries.has(recordKey(recordId))).toBe(true);
+  });
+
   it('says why a loadout link was refused, in the library’s words (FR-021)', () => {
     const links = TestBed.inject(LoadoutLinkCoordinator);
     const fixture = TestBed.createComponent(EquipmentBenchPage);
@@ -489,7 +517,7 @@ describe('EquipmentBenchPage', () => {
   it('stops stating a record another page discarded once the loadout is saved', async () => {
     // Saving is the other way off the discarded record. The notice about it
     // would otherwise stand over a loadout that is in a record again, with
-    // nothing left to resume (001/FR-012).
+    // nothing left to resume (017/FR-008).
     const fixture = TestBed.createComponent(EquipmentBenchPage);
     fixture.detectChanges();
     wear();
