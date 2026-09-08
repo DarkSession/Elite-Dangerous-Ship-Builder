@@ -359,7 +359,7 @@ test.describe('deleting the record the bench is autosaving into', () => {
 test.describe('deleting the record the workspace is autosaving into', () => {
   test('leaves this tab claiming nothing for the ship tool (017/FR-010)', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await buildStockHull(page, 'Build this ship');
+    await buildStockHull(page, 'Build');
     await savedToBrowser(page);
 
     // The claim as this tab is holding it, which is what a reload reads.
