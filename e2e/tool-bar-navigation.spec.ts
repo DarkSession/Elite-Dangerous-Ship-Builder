@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { buildStockHull, openLibrary } from './shell';
+import { buildStockHull, openLibrary, savedToBrowser } from './shell';
 
 /**
  * Getting back, and starting again, from the bar.
@@ -353,6 +353,44 @@ test.describe('deleting the record the bench is autosaving into', () => {
     // written back is the record the Commander deleted (017/FR-008).
     await autosaved(page);
     expect(await page.evaluate((key) => localStorage.getItem(key), deleted)).toBeNull();
+  });
+});
+
+test.describe('deleting the record the workspace is autosaving into', () => {
+  test('leaves this tab claiming nothing for the ship tool (017/FR-010)', async ({ page }) => {
+    await page.goto('/ships/Anaconda');
+    await buildStockHull(page, 'Build this ship');
+    await savedToBrowser(page);
+
+    // The claim as this tab is holding it, which is what a reload reads.
+    const claimed = await page.evaluate(
+      () => JSON.parse(sessionStorage.getItem('ednb:tab') ?? '{}').workingRecords?.ship ?? null,
+    );
+    expect(claimed).not.toBeNull();
+
+    await openLibrary(page);
+    const library = page.getByRole('dialog', { name: 'Saved builds' });
+    const row = library.getByRole('button', { name: /Anaconda/i }).first();
+    await expect(async () => {
+      await row.click({ timeout: 2_000 });
+      await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
+
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Delete', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'Delete this build' }).click();
+
+    // A claim outliving the record it names would have a page built in this tab
+    // restore the build from an entry that is gone (017/FR-010).
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => JSON.parse(sessionStorage.getItem('ednb:tab') ?? '{}').workingRecords?.ship ?? null,
+        ),
+      )
+      .toBeNull();
   });
 });
 

@@ -19,6 +19,10 @@ record it left, so that the identity its claim names is one a reload can restore
 same named record open, because neither autosaves into it; concurrent manual writes to one record
 MUST offer overwrite, keep both and cancel.
 
+A record deleted on this page MUST leave this tab claiming nothing for the tool that was
+autosaving into it. The claim is what a reload reads, so one left behind would have the tool
+restore from a record that is gone.
+
 Source: 001/FR-012, 017/FR-010.
 
 #### Scenario: Another page deletes this page's record
@@ -50,6 +54,12 @@ Source: 001/FR-012, 017/FR-010.
 - **WHEN** a page autosaves a build and a loadout at the same time
 - **THEN** each is written to an unnamed record of its own
 - **AND** a fork of one leaves the other where it is
+
+#### Scenario: This page deletes the record a tool autosaves into
+
+- **WHEN** a Commander deletes the record this page's build or loadout autosaves into
+- **THEN** this tab claims nothing for that tool
+- **AND** a page built in this tab afterwards restores no build or loadout from it
 
 #### Scenario: A conflicting manual save from another tab
 

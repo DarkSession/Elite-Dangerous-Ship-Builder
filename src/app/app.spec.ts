@@ -199,6 +199,24 @@ describe('App', () => {
     expect(travelled).toHaveBeenCalledWith(NAVIGATION_ROUTES.catalogue);
   });
 
+  it('opens the list of ships from a hull, which is inside the ship tool too', () => {
+    // A hull's own address is the ship tool's, so its tab is current there and
+    // leads back to the list. It is not the address the tab names, so the click
+    // is followed rather than answered with nothing (017/FR-004).
+    TestBed.inject(Location).go(`${NAVIGATION_ROUTES.catalogue}/Anaconda`);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const router = TestBed.inject(Router);
+    const travelled = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const tabs = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('a.frame__tool'),
+    ];
+    tabs[0].dispatchEvent(new MouseEvent('click', { button: 0, bubbles: true, cancelable: true }));
+
+    expect(travelled).toHaveBeenCalledWith(NAVIGATION_ROUTES.catalogue);
+  });
+
   it('answers the ship tool\u2019s tab with nothing where the list of ships is open', () => {
     // The tab is drawn and reads as a link — the browser states where it goes
     // and a new tab opens it — and a plain click on the screen it leads to is

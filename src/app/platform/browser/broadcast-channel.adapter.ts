@@ -27,7 +27,7 @@ export type PersistenceBroadcast =
        * (001/FR-013).
        */
       readonly kind: 'working-release';
-      readonly tool?: RecordTool;
+      readonly tool: RecordTool;
       readonly pageNonce: string;
     }
   | { readonly kind: 'record-written'; readonly recordId: string; readonly revisionId: string }

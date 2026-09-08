@@ -6,10 +6,10 @@ import { MessageService } from '../../i18n/message.service';
 /**
  * Starting an empty bench, as the equipment tool's tab asks for it.
  *
- * Named here rather than in either file that uses it, because two files use it:
- * the registry declares it as the tool's re-entry and the shell dispatches on
- * it. Repeat the literal across the two and a rename reaches one file, stops
- * matching in the other, and the tab quietly does nothing.
+ * Named once, because two places match on it: the registry below declares it as
+ * the tool's re-entry, and the shell dispatches on it. Repeat the literal
+ * across the two and a rename reaches one, stops matching in the other, and the
+ * tab quietly does nothing.
  */
 export const EQUIPMENT_REENTRY_ACTION = 'equipment.new';
 

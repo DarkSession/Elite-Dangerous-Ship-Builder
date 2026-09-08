@@ -13,11 +13,9 @@
  * has just created, or a suit they have just chosen, is in no record yet, and
  * it is this answer that sends autosave to mint one for it (001/FR-008).
  *
- * **Revised 2026-08-25.** This decided whether replacing a build had to be
- * confirmed until that question was withdrawn. It decides whether there is
- * anything to write, which is why taking over a record identical to what is
- * open writes nothing at all and does not restart the record's seven days
- * (001/FR-013).
+ * What this decides is whether there is anything to write, which is why taking
+ * over a record identical to what is open writes nothing at all and does not
+ * restart the record's seven days (001/FR-013).
  */
 export function isDirty(current: string | null, baseline: string | null): boolean {
   if (current === null) {

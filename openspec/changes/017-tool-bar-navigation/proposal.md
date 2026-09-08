@@ -56,7 +56,7 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
 - `src/app/application/build-library/working-record.autosave.ts` and
   `tab-ownership.coordinator.ts` serve both tools rather than the ship tool alone, over the
   port each tool's store implements, `working-record.port.ts`; `autosave.service.ts` is left
-  holding only which store the ship tool keeps. Seven ship behaviours change as a result. A
+  holding only which store the ship tool keeps. Eight ship behaviours change as a result. A
   record autosave was handed keeps the instant it says it was created, instead of being
   stamped with the moment of the write that followed a reload (001/FR-013). A page that forks
   because another page claimed its record writes the work into the fresh one whether or not
@@ -71,7 +71,9 @@ without asking. The bench gets the same record, so a new loadout costs nothing e
   (001/FR-014). A save says the build is stored, where the workspace used to leave whatever
   the last write had said standing over it. And the full-store notice's own control opens the
   saved records, where it was drawn and did nothing — which is what a Commander meeting a
-  full store has in front of them (001/FR-013).
+  full store has in front of them (001/FR-013). Deleting the build's own record from the
+  saved list lets go of this tab's claim on it, where the claim outlived the record it named
+  and a reload tried to restore the build from an entry that is gone (001/FR-012).
   `src/app/platform/storage/tab-descriptor.repository.ts` holds one working record per tool.
   `src/app/platform/storage/local-record.repository.ts` matches an unnamed record by tool.
 - `src/app/application/equipment/loadout.store.ts` implements that port, gaining what

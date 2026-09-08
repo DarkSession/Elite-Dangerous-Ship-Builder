@@ -132,8 +132,10 @@ export class TabOwnershipCoordinator {
    * ingress, so a record taken over at commit, one minted by autosave and one
    * arrived at by forking are all announced by the same line of code.
    *
-   * The subject is registered at construction and stays registered; passing it
-   * here says which one this watcher follows.
+   * The subject passed here becomes the one registered for its tool, replacing
+   * the store registered at construction. In the application they are the same
+   * singleton; what this allows is a test standing a double in for one tool
+   * while the other keeps its own.
    */
   track(subject: WorkingRecordSubject): () => void {
     this.#subjects.set(subject.tool, subject);
@@ -258,7 +260,7 @@ export class TabOwnershipCoordinator {
       }
 
       if (message.kind === 'working-release') {
-        this.#claimsElsewhere.delete(`${message.pageNonce}:${message.tool ?? 'ship'}`);
+        this.#claimsElsewhere.delete(`${message.pageNonce}:${message.tool}`);
         return;
       }
 

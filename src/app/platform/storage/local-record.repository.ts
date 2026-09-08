@@ -121,9 +121,9 @@ export class LocalRecordRepository {
   /**
    * Whether the record under this id is one the Commander has named.
    *
-   * Asked of storage rather than of the page's own belief about what it holds:
-   * a record named in another tab is named here too, and autosave has to find
-   * that out from the bytes rather than from a signal it set earlier (FR-008).
+   * Answered from the stored bytes, not from what any page believes it holds,
+   * so a record named in another tab is named here too. What that is asked for
+   * is `NamedRecordService`'s consuming of the record a save replaced.
    *
    * An unreadable or absent record answers `false`. It is not a named record,
    * and refusing to write on the strength of bytes that cannot be decoded would

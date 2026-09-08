@@ -61,6 +61,10 @@
       and keep every live page's claims in the retention sweep's protected set. Verify
       with unit tests over a duplicated tab claiming one tool's identity and leaving
       the other's alone.
+- [x] 3.5 Let go of this tab's claim on a record deleted on this page, for whichever tool
+      was autosaving into it, so that a page built in this tab afterwards restores from
+      nothing that is gone. Verify with unit tests over the coordinator's release and with
+      an end-to-end journey deleting the workspace's own record and reading the claim.
 
 ## 4. The bench keeps its loadout
 
@@ -105,8 +109,8 @@
       was autosaved to where it is. Verify with unit tests over a loadout with unsaved
       changes, a loadout opened from a named record and an already-empty bench.
 - [x] 5.2 Clear the loadout from the address when the bench empties, replacing the
-      fragment rather than adding a history entry. Verify with a unit test over the
-      publisher with no loadout on the bench.
+      fragment rather than adding a history entry. Verify with a unit test asserting the
+      emptied bench leaves the fragment cleared and the replacement count grown by one.
 - [x] 5.3 Wire the equipment tool's re-entry action to it in `App.selectAction`, so the
       shell reaches the bench through the application layer and imports no bench
       component. Verify with a unit test and by `pnpm run typecheck`.

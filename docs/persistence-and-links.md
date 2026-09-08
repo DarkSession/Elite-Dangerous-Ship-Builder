@@ -56,7 +56,7 @@ stored differently, and everything around that difference is the same.
 
 1. a deletion the Commander confirmed;
 2. the manual save that consumes the unnamed record it saved from — naming it writes the name onto
-   that same key, and writing the build into an existing record removes the unnamed one only after
+   that same key, and writing the work into an existing record removes the unnamed one only after
    that write has succeeded;
 3. the **seven-day expiry** of an unnamed record.
 
