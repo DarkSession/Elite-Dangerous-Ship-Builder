@@ -58,7 +58,7 @@ function benchHolding(autosaveRecordId: string | null): LoadoutStore {
 describe('adoptSavedRecord', () => {
   it('lets go of the record autosave was writing to', () => {
     // Autosave has no path to a named record, so a page that kept the id would
-    // go idle against a record it may not touch (001/FR-008).
+    // go idle against a record it may not touch (001/FR-008, 017/FR-007).
     for (const subject of [shipSubject(), benchSubject()]) {
       const { invalidation } = subject.context;
 
@@ -76,7 +76,7 @@ describe('adoptSavedRecord', () => {
   it('says the work is in a record again', () => {
     // Saving is one of the two ways off a record another page discarded. The
     // notice about that record would otherwise stand over work that is stored,
-    // with nothing left to resume (001/FR-012).
+    // with nothing left to resume (001/FR-012, 017/FR-008).
     for (const subject of [shipSubject(), benchSubject()]) {
       subject.store.setPersistence('record-deleted-externally');
 

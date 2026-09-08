@@ -176,7 +176,8 @@ export class WorkingRecordAutosave {
 
     // Nothing is owed while the work matches what a record already holds. This
     // is what makes opening a record free: taking one over writes nothing, so it
-    // does not restart the expiry the entry is counting down (001/FR-013).
+    // does not restart the expiry the entry is counting down (001/FR-013,
+    // 017/SC-003).
     if (!force && !this.#subject.dirty()) {
       return true;
     }
@@ -194,14 +195,15 @@ export class WorkingRecordAutosave {
     const stored = opened.ok ? opened.value : null;
 
     // A named record is never an autosave target, whatever this page is
-    // holding, so a record named in another tab is covered too (001/FR-008).
+    // holding, so a record named in another tab is covered too (001/FR-008,
+    // 017/FR-007).
     //
     // Stated rather than refused in silence: the work is in nothing, and a
     // Commander who is not told reads a screen that says it is saved
-    // (001/FR-014). And let go of, so that the retry the notice offers has
-    // somewhere to land: held on to, every later write would read the same
-    // named record and fail the same way, and the one control on the notice
-    // would do nothing however often it is pressed.
+    // (001/FR-014, 017/FR-008). And let go of, so that the retry the notice
+    // offers has somewhere to land: held on to, every later write would read
+    // the same named record and fail the same way, and the one control on the
+    // notice would do nothing however often it is pressed.
     if (stored?.record.kind === 'named') {
       this.#subject.setAutosaveRecordId(null);
       this.#subject.setPersistence('write-failed');

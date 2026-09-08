@@ -11,11 +11,12 @@
  *
  * Work with no baseline is dirty by definition — a stock build the Commander
  * has just created, or a suit they have just chosen, is in no record yet, and
- * it is this answer that sends autosave to mint one for it (001/FR-008).
+ * it is this answer that sends autosave to mint one for it (001/FR-008,
+ * 017/FR-007).
  *
  * What this decides is whether there is anything to write, which is why taking
  * over a record identical to what is open writes nothing at all and does not
- * restart the record's seven days (001/FR-013).
+ * restart the record's seven days (001/FR-013, 017/SC-003).
  */
 export function isDirty(current: string | null, baseline: string | null): boolean {
   if (current === null) {

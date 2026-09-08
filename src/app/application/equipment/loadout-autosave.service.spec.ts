@@ -245,7 +245,7 @@ describe('LoadoutAutosaveService', () => {
   it('stamps a record it is handed with that record’s own creation instant', () => {
     // The bench writes to whatever record it is handed, and a Commander opening
     // a second unnamed loadout hands it another. An instant remembered from the
-    // first would be stamped onto the second (001/FR-013).
+    // first would be stamped onto the second (001/FR-013, 017/SC-003).
     const { autosave, store, records, storage } = setup();
     records.write({
       id: 'second',
@@ -340,7 +340,7 @@ describe('LoadoutAutosaveService', () => {
   it('writes nothing while the loadout matches what its record already holds', () => {
     // A flush with nothing owed is not a write. If it were, `modifiedAt` would
     // move and the seven days the entry is counting down would restart
-    // (001/FR-013).
+    // (001/FR-013, 017/SC-003).
     const { autosave, store, storage } = setup();
     benchLoadout(store);
     autosave.flush();
@@ -354,7 +354,8 @@ describe('LoadoutAutosaveService', () => {
 
   it('refuses a named record as a target, whatever the page believes it holds', () => {
     // The check reads the stored record rather than this page's belief about
-    // it, so a record named in another tab is covered too (001/FR-008, 017/FR-007).
+    // it, so a record named in another tab is covered too (001/FR-008,
+    // 017/FR-007).
     const { autosave, store, records, storage } = setup();
     records.write({
       id: HELD,
