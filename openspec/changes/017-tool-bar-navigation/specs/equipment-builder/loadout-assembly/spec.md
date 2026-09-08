@@ -7,7 +7,10 @@ one MUST leave the bench in the state it holds before a suit is chosen, with the
 standing and every region drawn and inert.
 
 Starting an empty bench MUST clear the loadout's name, the saved record the loadout belongs
-to, the undo and redo history, and the loadout the address carries. It MUST NOT be
+to, the undo and redo history, the loadout the address carries, and this tab's claim on the
+record the loadout was autosaved into. The record itself MUST stay where it is: a page built
+in this tab afterwards MUST open on an empty bench, and MUST NOT restore the loadout that
+was cleared. It MUST NOT be
 confirmed: the loadout that was on the bench stays as the record it is autosaved to, so
 there is nothing to lose and nothing to ask about. Starting an empty bench while the bench
 is already empty MUST change nothing.
@@ -48,6 +51,12 @@ Source: 017/FR-006.
 - **WHEN** a Commander starts an empty bench and then asks to undo
 - **THEN** there is nothing to undo, because the choices before it belong to a loadout that
   is no longer on the bench
+
+#### Scenario: The page is built again after an empty bench is started
+
+- **WHEN** a Commander starts an empty bench and a page is built again in the same tab
+- **THEN** the bench opens empty rather than restoring the loadout that was cleared
+- **AND** the record that loadout was autosaved into is still listed
 
 #### Scenario: The bench is already empty
 

@@ -42,12 +42,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
   readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
 
-  /**
-   * Which tool's records this store's work is written into.
-   *
-   * The one thing autosave asks that is not a fact about this build: a loadout
-   * record is never a target for one, and never a match for one either.
-   */
+  /** Which tool's records this store's work is written into. */
   readonly tool = 'ship' as const;
 
   readonly loadout = this.#loadout.asReadonly();
@@ -192,13 +187,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
     this.#autosaveRecordId.set(recordId);
   }
 
-  /**
-   * Marks the current modelled state as the saved baseline.
-   *
-   * Called after a successful named save or open, and after nothing else: a
-   * working autosave is not a baseline, because a Commander cannot ask for the
-   * previous version of it back.
-   */
+  /** Marks the current modelled state as the saved baseline. */
   markSaved(sourceNamed: NamedSource | null): void {
     this.#baseline.set(this.fingerprint());
     if (sourceNamed !== null) {

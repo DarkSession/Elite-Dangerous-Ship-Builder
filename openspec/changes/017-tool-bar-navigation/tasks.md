@@ -106,8 +106,8 @@
 ## 5. Starting an empty bench
 
 - [x] 5.1 Add the application-layer action that empties the bench: clear the loadout,
-      the name, the record it belongs to and the undo tape, and leave the record it
-      was autosaved to where it is. Verify with unit tests over a loadout with unsaved
+      the name, the record it belongs to, the undo tape and this tab's claim on the
+      record it was autosaved into, and leave that record where it is. Verify with unit tests over a loadout with unsaved
       changes, a loadout opened from a named record and an already-empty bench.
 - [x] 5.2 Clear the loadout from the address when the bench empties, replacing the
       fragment rather than adding a history entry. Verify with a unit test asserting the

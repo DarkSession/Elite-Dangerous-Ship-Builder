@@ -163,7 +163,7 @@ export class TabOwnershipCoordinator {
    * bench was emptied, in which case the record keeps the work, or the record
    * was deleted on this page, in which case there is nothing left to keep. The
    * claim is what a reload reads, so one left behind would restore what a
-   * Commander cleared, or name a record that is gone (017/FR-006, FR-008).
+   * Commander cleared (017/FR-006), or name a record that is gone (017/FR-010).
    * What is released is the claim, never the record.
    */
   release(tool: RecordTool): void {

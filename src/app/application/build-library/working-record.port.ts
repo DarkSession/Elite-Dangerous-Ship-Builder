@@ -34,7 +34,13 @@ export type PersistenceStatus =
  * field here is something that store is already the authority on.
  */
 export interface WorkingRecordSubject {
-  /** Which tool's records this writes. A record of the other is never touched. */
+  /**
+   * Which tool's records this writes.
+   *
+   * The one thing autosave asks that is not a fact about the work itself. A
+   * record of the other tool is never a target for one, and never a match for
+   * one either.
+   */
   readonly tool: RecordTool;
 
   /**
@@ -68,7 +74,13 @@ export interface WorkingRecordSubject {
 
   setAutosaveRecordId(recordId: string | null): void;
 
-  /** Marks the current state as the stored baseline. */
+  /**
+   * Marks the current state as the stored baseline.
+   *
+   * Called after a successful named save or open, and after nothing else: a
+   * working autosave is not a baseline, because a Commander cannot ask for the
+   * previous version of it back.
+   */
   markSaved(sourceNamed: RecordSource | null): void;
 
   setPersistence(status: PersistenceStatus): void;

@@ -65,12 +65,7 @@ export class LoadoutStore implements WorkingRecordSubject {
   readonly #baseline = signal<string | null>(null);
   readonly #persistence = signal<PersistenceStatus>('ready');
 
-  /**
-   * Which tool's records this store's work is written into.
-   *
-   * The one thing autosave asks that is not a fact about this loadout: a build
-   * record is never a target for one, and never a match for one either.
-   */
+  /** Which tool's records this store's work is written into. */
   readonly tool = 'equipment' as const;
 
   /** The open loadout, or none while the bench is empty. */
@@ -129,13 +124,7 @@ export class LoadoutStore implements WorkingRecordSubject {
     this.#autosaveRecordId.set(recordId);
   }
 
-  /**
-   * Marks the loadout on the bench as the stored baseline.
-   *
-   * Called after a successful named save or open, and after nothing else: a
-   * working autosave is not a baseline, because a Commander cannot ask for the
-   * previous version of it back.
-   */
+  /** Marks the loadout on the bench as the stored baseline. */
   markSaved(sourceNamed: RecordSource | null): void {
     this.#baseline.set(this.fingerprint());
     if (sourceNamed !== null) {
@@ -193,14 +182,9 @@ export class LoadoutStore implements WorkingRecordSubject {
    * Clears the bench if the loadout on it lives in this record, and says
    * whether it did.
    *
-   * The answer to a Commander deleting the record this page is autosaving into.
-   * Keeping the loadout on the bench would leave it with nowhere to be saved,
-   * and writing it back would undo the deletion they just confirmed. The same
-   * rule the workspace follows for a build (001/FR-009, ruled 2026-08-25).
-   *
-   * Only ever this page's own autosave record. The same deletion made in
-   * another page is a different event with a different answer: the loadout
-   * stays on the bench and autosave pauses (001/FR-012).
+   * The rule the workspace follows for a build, and for its reasons:
+   * `ActiveBuildStore.clearIfHolding`. What differs is only what emptying
+   * means here — the bench opens on nothing rather than clearing a build.
    */
   clearIfHolding(recordId: string): boolean {
     if (this.#autosaveRecordId() !== recordId) {
