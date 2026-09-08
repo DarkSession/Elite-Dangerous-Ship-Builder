@@ -24,9 +24,11 @@ class FakeLocks {
  * What the workspace does with the action the status reports.
  *
  * The status component says which control was pressed and nothing more, because
- * it draws for both tools and each tool holds its own autosave. Reaching the
- * ship tool's autosave is this screen's own work, so it is asserted here rather
- * than through the component (017/FR-007).
+ * it draws for both tools and each tool holds its own autosave (017/FR-008).
+ * Reaching the ship tool's autosave is this screen's own work, so it is
+ * asserted here rather than through the component: resuming is an explicit
+ * Commander action (001/FR-012), and a full store is answered by choosing what
+ * to discard (001/FR-013).
  */
 describe('BuildWorkspacePage persistence actions', () => {
   let active: ActiveBuildStore;

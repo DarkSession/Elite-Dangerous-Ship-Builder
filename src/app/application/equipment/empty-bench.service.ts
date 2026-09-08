@@ -60,9 +60,8 @@ export class EmptyBenchService {
     // the loadout that was just cleared. The record stays where it is: it is
     // what makes clearing the bench cost nothing (017/FR-006).
     this.#ownership.release('equipment');
-    // And out of the address, by replacement rather than by a new entry: a
-    // Commander pressing BACK meant to leave the bench, not to walk back
-    // through the loadouts it has held (FR-020).
+    // And out of the address. Replaced rather than added to, which is what
+    // publishing does and why is on `LoadoutLinkCoordinator`.
     this.#links.publish();
   }
 

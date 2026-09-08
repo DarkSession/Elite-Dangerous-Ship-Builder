@@ -8,17 +8,17 @@ standing and every region drawn and inert.
 
 Starting an empty bench MUST clear the loadout's name, the saved record the loadout belongs
 to, the undo and redo history, the loadout the address carries, and this tab's claim on the
-record the loadout was autosaved into. The record itself MUST stay where it is: a page built
-in this tab afterwards MUST open on an empty bench, and MUST NOT restore the loadout that
-was cleared. It MUST NOT be
-confirmed: the loadout that was on the bench stays as the record it is autosaved to, so
-there is nothing to lose and nothing to ask about. Starting an empty bench while the bench
-is already empty MUST change nothing.
+record the loadout was autosaved into. It MUST NOT be confirmed: the loadout that was on the
+bench stays as the record it is autosaved to, so there is nothing to lose and nothing to ask
+about. The record itself MUST stay where it is, so a page built in this tab afterwards MUST
+open on an empty bench and MUST NOT restore the loadout that was cleared. Starting an empty
+bench while the bench is already empty MUST change nothing.
 
 Where the loadout on the bench is not in a record — the store refuses writes, the store is
 full, a write failed, or autosave is paused because the record was discarded elsewhere — the
-bench MUST stay as it is. Nothing keeps the loadout in those states, so clearing the bench would lose work
-rather than cost nothing, and what the bench already states about storing is the reason.
+bench MUST stay as it is. Nothing keeps the loadout in those states, so clearing the bench
+would lose work rather than cost nothing, and what the bench already states about storing is
+the reason.
 
 Source: 017/FR-006.
 

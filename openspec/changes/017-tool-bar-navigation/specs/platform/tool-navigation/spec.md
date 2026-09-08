@@ -8,9 +8,9 @@ that only works when pressed. It MUST carry an accessible name that says where i
 it is never announced as a picture of nothing.
 
 It MUST be present on the entry point as well, where activating it MUST change nothing: the
-screen stays as it is, the address stays as it is, and nothing enters history. It MUST NOT
-be the only way to any other screen, because every tool the application serves stays
-reachable from the tool bar.
+screen stays as it is, the address stays as it is, and nothing enters history. Reaching a
+tool MUST NOT require the entry point: every tool the application serves stays reachable
+from the tool bar on the screen a Commander is already on.
 
 A screen the shell draws as a sheet over another one is the one exception. Where the shell
 draws the sheet's own bar — the way back to the screen the sheet was opened over — the way to
