@@ -13,11 +13,11 @@ Two live pages MUST NOT autosave to one record. Each page's autosave target is a
 minted or took over for itself, one for each tool it carries, because a page holds a build and a
 loadout at the same time and neither may be written into the other's record. A page that finds
 another live page claiming one of those identities MUST fork that one under a fresh identity before
-either page next writes, and MUST leave its other tool's record where it is. A page that
-forks MUST write its work into the fresh record, whether or not it has changed since the
-record it left, so that the identity its claim names is one a reload can restore from. Two pages MAY hold the
-same named record open, because neither autosaves into it; concurrent manual writes to one record
-MUST offer overwrite, keep both and cancel.
+either page next writes, and MUST leave its other tool's record where it is. A page that forks MUST
+write its work into the fresh record, whether or not it has changed since the record it left, so
+that the identity its claim names is one a reload can restore from. Two pages MAY hold the same
+named record open, because neither autosaves into it; concurrent manual writes to one record MUST
+offer overwrite, keep both and cancel.
 
 A record deleted on this page MUST leave this tab claiming nothing for the tool that was
 autosaving into it. The claim is what a reload reads, so one left behind would have the tool

@@ -266,7 +266,7 @@ describe('what autosave reads from the bench', () => {
   it('clears the bench when the record it writes to is deleted here', () => {
     // A Commander who deletes the record this bench autosaves into decided that
     // on this page. Writing it back on the next change would undo what they
-    // confirmed (001/FR-009).
+    // confirmed (017/FR-008).
     store().dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
     store().setAutosaveRecordId('working-2');
 

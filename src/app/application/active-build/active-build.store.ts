@@ -90,7 +90,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
    *
    * The package's own verdict travels with it rather than being recomputed on
    * read, so a listing states what was true when the record was written
-   * (001/FR-011).
+   * (001/FR-010).
    */
   payload(): RecordPayload | null {
     const build = this.snapshot();
