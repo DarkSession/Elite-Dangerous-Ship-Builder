@@ -26,7 +26,7 @@ wait that has no answer.
   the navigation that raised it, and at most one stands at a time.
 - A navigation that ends without presenting its screen is stated rather than abandoned. The
   Commander is left on a screen they can use and told that the screen could not be opened,
-  in words that stay on the page and are announced as a blocking error.
+  in words that stay on the page and are announced once without interrupting a reader.
 - A screen reader is told, in the reading language, that the application is waiting. The
   mark itself is decoration and is not announced as a picture.
 - The design system gains the overlay as a component with its own state previews. No screen
@@ -47,7 +47,7 @@ The change declares requirements `018/FR-001` to `018/FR-008`:
 - **FR-008** The statement belongs to a running session, and never covers its first
   presentation.
 
-Two things this change does are not requirements of its own, because a standing requirement
+Three things this change does are not requirements of its own, because a standing requirement
 already carries them:
 
 - **The waiting mark stops moving under `prefers-reduced-motion`.** It does not today. The
@@ -59,6 +59,9 @@ already carries them:
   meets the contrast the conformance target requires.** That is the same capability's "Every
   supported size, text size and zoom" (011/FR-011) and "Contrast and target size"
   (011/FR-012), which already cover every surface the application draws.
+- **Both new strings resolve through the localisation layer and are shipped in every
+  language.** That is `platform/localisation` (011/FR-016, 011/FR-017, 011/FR-019), which
+  already covers every string the application owns.
 
 ## Capabilities
 
@@ -73,7 +76,7 @@ already carries them:
 
 None. No accepted requirement changes. The design system's standing requirements already
 govern the new component — it enters the shared library before a capability uses it, previews
-each state it supports, and takes every visual value from a token — and the two obligations
+each state it supports, and takes every visual value from a token — and the three obligations
 named above are standing requirements this change conforms to rather than amends.
 
 ## Impact
@@ -86,7 +89,11 @@ named above are standing requirements this change conforms to rather than amends
   whether the last one failed. It renders nothing and is tested without rendering.
 - `src/app/app.html` and `src/app/app.ts` mount the overlay beside the frame, where the help
   modal and the update overlay are already mounted, and route the failure into the shell's
-  existing status slot and announcement outlet.
+  status slot and announcement outlet.
+- `src/app/ui/components/app-frame/` — the frame every screen is drawn inside — takes a list
+  of status notices where it took one, so a version notice and a failed navigation stand
+  together rather than replacing each other. Nothing else about the frame changes, and its
+  preview declarations gain the two-notice state.
 - `public/assets/loader.svg` gains a reduced-motion rule inside its own stylesheet. The hull
   illustration and the hull schematic draw the same file and gain the same behaviour.
 - `src/styles/tokens/` gains one softer scrim step, because the existing scrim takes the

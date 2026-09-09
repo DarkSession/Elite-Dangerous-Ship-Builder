@@ -29,8 +29,8 @@ Source: 018/FR-001.
 
 #### Scenario: Every address answers the same way
 
-- **WHEN** a Commander asks for any address the application answers
-- **THEN** the waiting statement is the same one
+- **WHEN** a navigation to any address the application answers has to wait
+- **THEN** the waiting statement is the same one, whichever address it was
 
 #### Scenario: Nothing is claimed about how long it will take
 
@@ -42,8 +42,9 @@ Source: 018/FR-001.
 The statement MUST stand over the whole viewport and in front of everything else the
 application has open, including a surface the application had already opened over a screen.
 What lies behind it MUST be subdued, so what a Commander is looking at is the wait rather
-than the screen under it, and MUST stay recognisable, so a Commander can still see which
-screen they are waiting on top of.
+than the screen under it. The ground it is drawn on MUST be translucent rather than opaque,
+so the screen behind stays visible through it and a Commander can still see which screen
+they are waiting on top of.
 
 Source: 018/FR-002.
 
@@ -51,7 +52,8 @@ Source: 018/FR-002.
 
 - **WHEN** the application states that it is waiting
 - **THEN** the statement covers the viewport
-- **AND** what lies behind it is subdued and still recognisable
+- **AND** the ground it is drawn on is translucent rather than opaque, so what lies behind it
+  is subdued and still visible through it
 
 #### Scenario: Something is already open over a screen
 
@@ -159,11 +161,6 @@ Source: 018/FR-006.
 - **THEN** they are told the application is waiting
 - **AND** no mark is announced as a picture
 
-#### Scenario: The reading language is not English
-
-- **WHEN** the application is read in another shipped language
-- **THEN** the waiting text is in that language
-
 ### Requirement: A screen that never arrives is stated, not silently abandoned
 
 Where a navigation ends without presenting its screen — the code could not be fetched, or the
@@ -172,9 +169,17 @@ be opened, and MUST leave the Commander on a screen they can use. It MUST NOT re
 the screen they pressed from with no answer, which is the unpressed-looking control the
 waiting statement exists to remove.
 
-The statement of the failure MUST stay on the page to be re-read, and MUST be announced as a
-blocking error is announced (`openspec/specs/platform/accessible-responsive-operation/`,
-"Announcement of errors and changes"). It MUST NOT fabricate a reason it does not have.
+The statement of the failure MUST stay on the page to be re-read, and MUST be announced
+once, without interrupting current speech — the treatment
+`openspec/specs/platform/accessible-responsive-operation/`, "Announcement of errors and
+changes", gives a change that is not a blocking error. Nothing is blocked: the Commander
+keeps a screen they can use, and the failure is about the one press. It MUST NOT fabricate a
+reason it does not have.
+
+This MUST hold for every navigation, the first of a session included. Where the first
+navigation of a session is the one that fails, what the Commander is left on is the readable
+document that address served (`openspec/specs/platform/published-addresses/`, "A takeover
+that does not complete").
 
 Source: 018/FR-007.
 
@@ -187,8 +192,14 @@ Source: 018/FR-007.
 #### Scenario: The Commander reads the failure with a screen reader
 
 - **WHEN** the failure is stated
-- **THEN** it is announced promptly
+- **THEN** it is announced once, without interrupting current speech
 - **AND** the same words stay on the page to be re-read
+
+#### Scenario: The session's first navigation is the one that fails
+
+- **WHEN** the first navigation of a session ends without presenting its screen
+- **THEN** the failure is stated
+- **AND** the Commander is left on the readable document that address served
 
 #### Scenario: The application does not know why
 
@@ -197,21 +208,18 @@ Source: 018/FR-007.
 
 ### Requirement: The statement belongs to a running session
 
-The waiting statement MUST belong to a session that is already running. An address read by
-something that runs no script MUST carry none of it.
+The waiting statement MUST belong to a session that is already running, and the first
+presentation of a session MUST NOT be covered by it. A Commander opening an address arrives
+at what that address serves, and a statement drawn over that first presentation would hide
+content the address is required to show in its first frame and would blank content across
+the takeover — which `openspec/specs/platform/published-addresses/`, "Content in the first
+frame" and "An invisible takeover", forbid, the second of them naming the only three
+exceptions there are.
 
-The first presentation of a session MUST NOT be covered by it either: a Commander opening an
-address arrives at what that address serves, and a statement drawn over that first
-presentation would hide readable content behind a mark
-(`openspec/specs/platform/published-addresses/`, "The generated document or the cached
-shell").
+This exempts the waiting statement and nothing else. A first navigation that fails is stated
+as any other failed navigation is.
 
 Source: 018/FR-008.
-
-#### Scenario: An address read by something that runs no script
-
-- **WHEN** an address is read by something that runs no script
-- **THEN** what is served carries no waiting statement
 
 #### Scenario: A Commander opens an address
 
@@ -222,3 +230,9 @@ Source: 018/FR-008.
 
 - **WHEN** that Commander asks for another screen in the same session
 - **THEN** the waiting statement answers that navigation as it answers any other
+
+#### Scenario: The session's first navigation waits, and then fails
+
+- **WHEN** the first navigation of a session waits and then ends without presenting its screen
+- **THEN** no waiting statement was drawn over that first presentation
+- **AND** the failure is stated

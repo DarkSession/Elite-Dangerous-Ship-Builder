@@ -8,15 +8,17 @@
       stopped inside an SVG drawn through `<img>`: what verifies the edit is the policy rule
       in task 1.2, and what verifies the behaviour is the manual reading in task 7.2.
 - [ ] 1.2 Add a rule to `scripts/check-interface-foundations.mjs` asserting the shared
-      waiting mark carries that block and that the block names both animated classes, so the
-      one motion value the token layer cannot reach cannot be dropped unnoticed. Verify with a
+      waiting mark carries that block and that the block names both animated classes, so a
+      block no stylesheet checker can see cannot be dropped unnoticed. Verify with a
       case in `scripts/check-interface-foundations.test.mjs` over an asset with the block and
       one without, and by running `pnpm run policy`.
 - [ ] 1.3 Add the softened scrim to the token layer: `rgb(6 6 7 / 0.55)` as a primitive
       beside `--ednb-palette-scrim` in `src/styles/tokens/_primitives.scss`, and the semantic
       name for it in `_semantic.scss`. Verify with `pnpm run policy`, which rejects a colour
-      literal outside the token sources, and by reading the screen behind the overlay in the
-      end-to-end journey of task 6.1 (018/FR-002).
+      literal outside the token sources; with the assertion in task 6.1 that the drawn
+      ground's computed opacity is above zero and below one, which is what FR-002 states; and
+      with the reading in task 7.2, which is where whether the step is right for a Commander
+      is judged (018/FR-002).
 
 ## 2. The store that decides when the application is waiting
 
@@ -37,9 +39,12 @@
       lower it on the next navigation that succeeds. It carries no reason, because the router
       reports none. Verify with unit tests over a failed navigation raising it, a successful
       one lowering it, and no reason being carried (018/FR-007).
-- [ ] 2.4 Ignore the navigation that starts the session: the store answers from the first
-      navigation that ends onward. Verify with a unit test asserting the first navigation
-      raises nothing however long it takes, and the next one raises the signal (018/FR-008).
+- [ ] 2.4 Suppress the waiting signal, and only the waiting signal, for the navigation that
+      starts the session: it answers from the first navigation that ends onward. The failure
+      signal answers from the first navigation, because a first navigation that fails is
+      stated like any other. Verify with unit tests asserting the first navigation raises no
+      waiting signal however long it takes, that the next one does, and that a first
+      navigation which fails raises the failure signal (018/FR-007, FR-008).
 
 ## 3. The overlay in the design system
 
@@ -51,7 +56,8 @@
       `aria-labelledby` target. It carries no control, and it refuses the native cancel, as
       the update overlay does. Verify with component tests asserting the dialog is modal when
       open, renders nothing focusable when closed, exposes the text as its accessible name,
-      exposes the mark to no reader, and draws no control (018/FR-001, FR-003, FR-006).
+      exposes the mark to no reader, draws no control, and states no proportion, percentage,
+      remaining time or step count (018/FR-001, FR-003, FR-006).
 - [ ] 3.2 Style it from tokens only: the dialog fills the viewport and carries the softened
       scrim from task 1.3, the mark is centred and sized from a spacing token rather than from
       the SVG's own height attribute, and there is no transition on opening or closing. Verify
@@ -80,12 +86,12 @@
       browser-only condition the help modal and the update overlay are mounted under, driven
       by the store's waiting signal and the resolved sentence from `src/app/app.ts`. Verify
       with unit tests over the shell asserting the overlay is drawn when the signal is raised
-      and absent when it is not, and with `pnpm run build`, whose prerender must emit no
-      overlay into any generated document (018/FR-002, FR-008).
+      and absent when it is not, and with task 6.7, which reads the generated documents
+      themselves (018/FR-002, FR-008).
 - [ ] 4.4 Publish the failed navigation from `src/app/app.ts`: the notice into the frame's
-      status list at error tone, and one announcement through `AnnouncementService` at
-      assertive urgency, once per failure. Verify with unit tests asserting the notice carries
-      the localised words, that the announcement is published once for one failure, and that a
+      status list at error tone, and one announcement through `AnnouncementService` at polite
+      urgency — nothing is blocked — once per failure. Verify with unit tests asserting the
+      notice carries the localised words, that the announcement is published once for one failure, and that a
       version notice standing at the same time keeps its place first in the list
       (018/FR-007).
 
@@ -104,16 +110,20 @@
 
 - [ ] 6.1 Add `e2e/navigation-waiting.spec.ts`, running in all ten projects. Hold the ship
       builder's chunk with `page.route`, press its entry on the start page, and read: the
-      overlay stands, the mark is centred in the viewport, the screen behind it is subdued,
-      still recognisable and not clickable, the page does not scroll horizontally, and the
-      overlay is gone once the chunk is released and the screen is presented (018/FR-001,
-      FR-002, FR-003, FR-005, 011/FR-011).
+      overlay stands, the mark is centred in the viewport, the ground's computed opacity is
+      above zero and below one so the screen behind stays visible through it, that screen is
+      not clickable, the page does not scroll horizontally, and the overlay is gone once the
+      chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
+      011/FR-011).
 - [ ] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
       redirected to another address takes the overlay down, and a navigation whose code is
       already held draws nothing at all (018/FR-004, FR-005).
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
-      could not be opened, and the words stay on the page (018/FR-005, FR-007).
+      could not be opened, and the words stay on the page. Cover it twice — on a navigation
+      inside a running session, and on the navigation that starts one, where what the
+      Commander is left on is the readable document that address served (018/FR-005, FR-007,
+      FR-008).
 - [ ] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
@@ -137,6 +147,9 @@
       names any declared id the ledger does not register.
 - [ ] 7.2 Add a step to `e2e/manual/screen-reader.protocol.md` covering what a reader is told
       when a navigation waits and when one fails, and a step covering the mark standing still
-      under the platform's reduced-motion preference in both engines. Record the results
-      beside the protocol in `e2e/manual/results/` (018/FR-006, FR-007, 011/FR-013).
+      under the platform's reduced-motion preference in both engines, and whether a still
+      mark on the subdued screen still reads as a wait. Add the softened ground to the same
+      reading, where whether the step is right for a Commander is judged. Record the results
+      beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
+      011/FR-013).
 - [ ] 7.3 Run `pnpm run check` and report what passed.

@@ -163,25 +163,33 @@ accepted the brief mark over the quarter-second silence.
 ### A softened scrim, added to the token layer
 
 The existing scrim at 78% takes the screen behind it out of the reading, and FR-002 asks for
-the screen to stay recognisable. The tokens gain one softer step at `rgb(6 6 7 / 0.55)` — the
-same near-black the existing scrim is mixed from, at the opacity that leaves a screen's
-shapes readable while clearly putting it behind something. Colour literals live only in the
-token layer, so the primitive goes beside `--ednb-palette-scrim` and the semantic name beside
-`--ednb-surface-scrim`.
+a ground the screen stays visible through. The tokens gain one softer step at
+`rgb(6 6 7 / 0.55)` — the same near-black the existing scrim is mixed from, at an opacity a
+little over the midpoint between it and clear glass, which is the step the owner asked for as
+"a light black layer". Colour literals live only in the token layer, so the primitive goes
+beside `--ednb-palette-scrim` and the semantic name beside `--ednb-surface-scrim`.
 
-### Reduced motion is fixed inside the mark itself, which is a value outside the token layer
+Two different things judge it. What a journey can measure is that the ground is translucent
+rather than opaque, which is what FR-002 states and what the scan-level assertion reads off
+the computed value. Whether 55% is the right step for a Commander is a visual judgment, and
+it is settled the way the reference readings in `e2e/manual/` settle the others.
+
+### Reduced motion is fixed inside the mark itself
 
 `public/assets/loader.svg` gains a `@media (prefers-reduced-motion: reduce)` block in its own
 `<style>`, stopping its animation. The SVG is a separate document, so this is the only place
 a rule can reach it, and fixing it there fixes all three drawings of the mark rather than
 this one.
 
-This is a deliberate exception to constitution VII, which makes the token layer the only
-source of motion values: the mark's animation, and now its removal, live inside an asset the
-token layer cannot reach and the literal checker cannot see. The exception is recorded here
-and held by a rule of its own in `scripts/check-interface-foundations.mjs`, so the block
-cannot be dropped unnoticed. Nothing else about the mark's motion is duplicated in the
-stylesheets.
+This sets no visual value and so claims no exception to constitution VII: the block declares
+no duration, no colour and no easing — it removes an animation. The mark's own animation is
+artwork inside an asset, as its shapes and its amber are, and the token layer governs the
+application's styles rather than the contents of a drawing. Nothing about the mark's motion
+is duplicated in the stylesheets.
+
+What the block does have is no checker that can see it, because the literal rule reads the
+stylesheets. A rule of its own in `scripts/check-interface-foundations.mjs` holds it, so it
+cannot be dropped unnoticed.
 
 Considered and rejected: inlining the mark into the component as markup. It would put a third
 copy of the artwork in the repository and leave the hull illustration and the hull schematic
@@ -202,9 +210,13 @@ ending FR-007 states to the Commander. See the risk below.
 
 FR-007 asks for both, and the shell already has both: the status slot the update state uses,
 and the announcement outlet beside it. Reusing them keeps one shape for "something the
-session needs to tell you", and keeps the blocking-error announcement rule
-(011/FR-009) answered by the same mechanism that answers it elsewhere. The slot is widened
-from one notice to a list so the two cannot displace each other.
+session needs to tell you", and answers 011/FR-009 with the same mechanism that answers it
+elsewhere. The slot is widened from one notice to a list so the two cannot displace each
+other.
+
+The announcement is the polite one, not the interrupting one. 011/FR-009 reserves prompt
+interruption for a blocking error, and nothing here is blocked: the overlay is already gone,
+the Commander has a screen they can use, and what failed was one press.
 
 The words say the screen could not be opened and say nothing about why. The router reports a
 failed navigation, not a diagnosis, and constitution IV refuses a reason the application does
@@ -225,8 +237,20 @@ update announcement's own exposure is, and a reader disagreeing there sends this
 back.
 
 The sentence is not drawn as visible words. The overlay is the mark on its ground, which is
-what the owner asked for, and no requirement asks for visible words: FR-006 is about what a
-reader is told.
+what the owner asked for.
+
+The requirement that bears on this is `platform/accessible-responsive-operation`, "Text
+equivalents for visual information" (011/FR-010): meaning may not depend on colour, shape,
+position or motion, and every visual information carrier must have a text equivalent. The
+mark is a visual carrier of one meaning — the application is working — and the sentence is
+its text equivalent, carried for every Commander whether or not it is drawn. A text
+equivalent is not the same as visible words; the hull illustration answers the same
+requirement the same way, with `alt=""` on the mark and the sentence beside it.
+
+What does not depend on the mark is that something is happening at all: the screen is covered
+and subdued, and that is true with the animation stopped. Whether a still mark on a subdued
+screen reads as a wait is a judgment no scan can make, and it is one of the things the manual
+reading in the task list settles.
 
 Closing the dialog restores focus by itself, and this component adds nothing to that. The
 layer component remembers its invoking control because a dismissed dialog returns a Commander
