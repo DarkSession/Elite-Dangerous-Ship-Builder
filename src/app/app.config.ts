@@ -17,7 +17,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
-import { NavigationWaiting } from './application/navigation/navigation-waiting.store';
+import { NavigationWaitingStore } from './application/navigation/navigation-waiting.store';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
 import { RenderingTarget } from './platform/browser/rendering-target';
@@ -78,7 +78,7 @@ export const appConfig: ApplicationConfig = {
     // not the store.
     provideAppInitializer(() => {
       if (inject(RenderingTarget).isBrowser) {
-        inject(NavigationWaiting);
+        inject(NavigationWaitingStore);
       }
     }),
     // Route parameters are bound to component inputs, so a screen takes its

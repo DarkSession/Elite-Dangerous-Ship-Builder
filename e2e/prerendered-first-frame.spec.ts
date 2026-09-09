@@ -524,6 +524,22 @@ test.describe('the waiting statement and a generated document', () => {
       await route.continue().catch(() => {});
     });
 
+    // Watched from before the document exists, rather than read once at the
+    // end. A reading taken after the failure is stated cannot tell a statement
+    // that was never drawn from one that was drawn and removed, and "never
+    // drawn over the first presentation" is the whole of what FR-008 asks.
+    await fresh.addInitScript(() => {
+      const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+      window_.__waitingWasDrawn = false;
+      const look = (): void => {
+        if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+          window_.__waitingWasDrawn = true;
+        }
+        requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    });
+
     await fresh.goto('/ships');
 
     // Stated, and stated in words that stay on the page.
@@ -531,6 +547,12 @@ test.describe('the waiting statement and a generated document', () => {
       fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
     ).toBeVisible({ timeout: 30_000 });
     await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
+    expect(
+      await fresh.evaluate(
+        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+      ),
+      'the first presentation was covered by the waiting statement',
+    ).toBe(false);
 
     // No statement was drawn over the first presentation, and the shell the
     // Commander is left on is one they can use (018/FR-008).

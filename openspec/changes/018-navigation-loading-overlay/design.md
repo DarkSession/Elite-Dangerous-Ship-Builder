@@ -75,7 +75,7 @@ existing status slot gains a second thing it can carry.
 Composes: the new `ednb-waiting-overlay` component from `src/app/ui/components/`, mounted in
 `src/app/app.html` beside the frame — where the help modal and the update overlay already
 are, because it belongs to the session rather than to any screen — and driven by one signal
-from `NavigationWaiting`.
+from `NavigationWaitingStore`.
 
 Draws: the waiting mark from `public/assets/loader.svg`, centred in the viewport, on a ground
 carrying the softened scrim token. It carries one visually hidden sentence, resolved through
@@ -137,7 +137,7 @@ panel.
 
 ### The router is read in a store, not in the component
 
-`NavigationWaiting` in `src/app/application/navigation/` subscribes to the router's
+`NavigationWaitingStore` in `src/app/application/navigation/` subscribes to the router's
 navigation events, holds the threshold, and exposes two signals: whether a navigation is
 waiting, and whether the last one failed.
 

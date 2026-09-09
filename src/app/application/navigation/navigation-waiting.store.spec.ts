@@ -5,12 +5,14 @@ import {
   NavigationCancel,
   NavigationEnd,
   NavigationError,
-  NavigationSkipped,
   NavigationStart,
   Router,
   type Event as RouterEvent,
 } from '@angular/router';
-import { NAVIGATION_WAITING_THRESHOLD_MS, NavigationWaiting } from './navigation-waiting.store';
+import {
+  NAVIGATION_WAITING_THRESHOLD_MS,
+  NavigationWaitingStore,
+} from './navigation-waiting.store';
 
 /**
  * What the application says between asking for a screen and getting it.
@@ -19,7 +21,7 @@ import { NAVIGATION_WAITING_THRESHOLD_MS, NavigationWaiting } from './navigation
  * test is which ending means what and when the threshold has passed, and both
  * are exact where a real chunk fetch is not.
  */
-describe('NavigationWaiting', () => {
+describe('NavigationWaitingStore', () => {
   const events = new Subject<RouterEvent>();
 
   /** Every event the store reads, in the order the router publishes them. */
@@ -27,8 +29,6 @@ describe('NavigationWaiting', () => {
   const end = (id: number, url = '/outfitting') => events.next(new NavigationEnd(id, url, url));
   const cancel = (id: number, url = '/outfitting') =>
     events.next(new NavigationCancel(id, url, 'cancelled'));
-  const skip = (id: number, url = '/outfitting') =>
-    events.next(new NavigationSkipped(id, url, 'skipped'));
   const fail = (id: number, url = '/outfitting') =>
     events.next(new NavigationError(id, url, new Error('chunk')));
 
@@ -38,8 +38,8 @@ describe('NavigationWaiting', () => {
    * Nothing is drawn over a session's first presentation, so most of what this
    * store does only happens from the second navigation onward.
    */
-  function running(): NavigationWaiting {
-    const store = TestBed.inject(NavigationWaiting);
+  function running(): NavigationWaitingStore {
+    const store = TestBed.inject(NavigationWaitingStore);
     start(1, '/');
     end(1, '/');
     return store;
@@ -105,16 +105,6 @@ describe('NavigationWaiting', () => {
     start(2);
     vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
     cancel(2);
-
-    expect(store.waiting()).toBe(false);
-  });
-
-  it('takes the statement down when the navigation is skipped', () => {
-    const store = running();
-
-    start(2);
-    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
-    skip(2);
 
     expect(store.waiting()).toBe(false);
   });
@@ -213,6 +203,28 @@ describe('NavigationWaiting', () => {
     expect(store.failed()).toBe(false);
   });
 
+  it('counts each failure, so a second one is a second event', () => {
+    const store = running();
+
+    // The count is what the shell announces by. Announcing is deduped on
+    // `(kind, revision, urgency)`, and a boolean carries no revision — two
+    // separate failures would be one event, and the second would be the
+    // silence this requirement exists to remove (018/FR-007).
+    start(2);
+    fail(2);
+    expect(store.failures()).toBe(1);
+
+    start(3, '/equipment');
+    end(3, '/equipment');
+    expect(store.failed()).toBe(false);
+    expect(store.failures()).toBe(1);
+
+    start(4);
+    fail(4);
+    expect(store.failed()).toBe(true);
+    expect(store.failures()).toBe(2);
+  });
+
   it('carries no reason for the failure', () => {
     const store = running();
 
@@ -227,7 +239,7 @@ describe('NavigationWaiting', () => {
   });
 
   it('draws nothing over the arrival that starts the session', () => {
-    const store = TestBed.inject(NavigationWaiting);
+    const store = TestBed.inject(NavigationWaitingStore);
 
     start(1, '/');
     vi.advanceTimersByTime(10_000);
@@ -236,7 +248,7 @@ describe('NavigationWaiting', () => {
   });
 
   it('answers the navigation after that one', () => {
-    const store = TestBed.inject(NavigationWaiting);
+    const store = TestBed.inject(NavigationWaitingStore);
 
     start(1, '/');
     end(1, '/');
@@ -247,7 +259,7 @@ describe('NavigationWaiting', () => {
   });
 
   it('states a first navigation that fails, like any other', () => {
-    const store = TestBed.inject(NavigationWaiting);
+    const store = TestBed.inject(NavigationWaitingStore);
 
     start(1, '/outfitting');
     fail(1, '/outfitting');

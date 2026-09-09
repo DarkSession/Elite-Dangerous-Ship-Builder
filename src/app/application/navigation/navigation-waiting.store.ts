@@ -3,7 +3,6 @@ import {
   NavigationCancel,
   NavigationEnd,
   NavigationError,
-  NavigationSkipped,
   NavigationStart,
   Router,
 } from '@angular/router';
@@ -47,6 +46,10 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * nothing lands at the entry point rather than reporting a fault
  * (`openspec/specs/platform/tool-navigation/`). Only an error is a failure.
  *
+ * A press on the address a Commander is already at is not an ending, because it
+ * is not a navigation: the router answers it without starting one, so there is
+ * nothing here to raise a statement over and nothing to take down.
+ *
  * **The session's first presentation is not covered.** A Commander opening an
  * address arrives at what that address serves, and a mark drawn over it would
  * hide content the first frame is required to show
@@ -55,7 +58,7 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * a first navigation that fails is stated like any other.
  */
 @Injectable({ providedIn: 'root' })
-export class NavigationWaiting {
+export class NavigationWaitingStore {
   readonly #router = inject(Router);
 
   readonly #waiting = signal(false);
@@ -112,15 +115,9 @@ export class NavigationWaiting {
         this.#started(event.id);
         return;
       }
-      // `NavigationSkipped` is here for completeness rather than for a case
-      // that arrives: the router raises it instead of starting a navigation at
-      // all, so it never matches a running one and never takes a statement
-      // down. Listing it says what the partition is, and a router that one day
-      // raised it after a start would already be handled.
       if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
-        event instanceof NavigationSkipped ||
         event instanceof NavigationError
       ) {
         this.#ended(event.id, event instanceof NavigationError, event instanceof NavigationEnd);

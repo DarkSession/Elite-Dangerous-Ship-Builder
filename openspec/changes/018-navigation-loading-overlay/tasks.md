@@ -23,7 +23,7 @@
 
 ## 2. The store that decides when the application is waiting
 
-- [x] 2.1 Add `NavigationWaiting` in `src/app/application/navigation/`: it subscribes to the
+- [x] 2.1 Add `NavigationWaitingStore` in `src/app/application/navigation/`: it subscribes to the
       router's navigation events, starts the threshold when a navigation starts, raises its
       waiting signal when the threshold passes with the navigation still going, and lowers it
       on every terminal event — completed, cancelled, redirected and failed. It renders

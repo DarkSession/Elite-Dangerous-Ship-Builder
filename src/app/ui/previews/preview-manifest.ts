@@ -1328,11 +1328,22 @@ registerPreview({
         // fixture claiming to be a state the product renders, and a fixture
         // whose wording could drift from the product's would go on being
         // scanned while evidencing a composition that no longer exists.
+        //
+        // Two of them, which is the composition the slot was widened for: a
+        // session that cannot be repaired and a screen that would not open are
+        // independent facts, and a slot carrying one of them would drop the
+        // other in silence (018/FR-007). The version notice leads, because it
+        // is about the whole session where the failure is about one press.
         status: [
           {
             tone: 'error',
             message: BUNDLED_ENGLISH['update.unusable.notice'],
             detail: BUNDLED_ENGLISH['update.unusable.detail'],
+          },
+          {
+            tone: 'warning',
+            message: BUNDLED_ENGLISH['navigation.failed.notice'],
+            detail: BUNDLED_ENGLISH['navigation.failed.detail'],
           },
         ],
         actions: [

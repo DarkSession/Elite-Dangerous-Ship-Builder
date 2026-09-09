@@ -315,19 +315,46 @@ describe('App and a screen that never arrives', () => {
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
   });
 
-  it('draws the notice as a status, so the outlet is the only thing that speaks', async () => {
+  it('draws the notice as a status, so nothing interrupts what a reader was saying', async () => {
     const fixture = await failed();
 
-    // The outlets are not the only live region on the page. A notice drawn at
-    // error tone is an `alert`, which a reader speaks over whatever it was
-    // saying — so an assertive outlet that is empty proves nothing on its own.
-    // Both channels are read here, because one event announced twice is what
-    // the requirement forbids, whichever region carried the second of them.
+    // The outlets are not the only live region on the page: the notice is one
+    // too, so an assertive outlet that is empty proves nothing on its own. A
+    // `status` is the polite one — it waits its turn — where the `alert` an
+    // error tone would draw speaks over whatever was being said. Whether a
+    // reader then says the sentence twice, once from each polite region, is a
+    // judgment no scan can make: step 21 of
+    // `e2e/manual/screen-reader.protocol.md` is where that is settled.
     const notice = (fixture.nativeElement as HTMLElement).querySelector(
       '.frame__status ednb-status-notice [role]',
     );
 
     expect(notice?.getAttribute('role')).toBe('status');
+  });
+
+  it('states a second failure as a second event', async () => {
+    const announcements = TestBed.inject(AnnouncementService);
+    const announce = vi.spyOn(announcements, 'announce');
+
+    const fixture = await failed();
+    expect(announce.mock.results.map((result) => result.value)).toEqual([true]);
+
+    // A screen that opens is the answer to the failure before it, and the
+    // press after that is a new event rather than the one already spoken.
+    // Announcing is deduped on the revision the count carries; a boolean would
+    // make the second failure the same event and leave it in silence.
+    await TestBed.inject(Router).navigateByUrl('/');
+    fixture.detectChanges();
+
+    const second = TestBed.inject(Router)
+      .navigateByUrl('/held')
+      .catch(() => false);
+    await second;
+    fixture.detectChanges();
+
+    expect(announce.mock.results.map((result) => result.value)).toEqual([true, true]);
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
+    expect(announcements.assertive()).toBe('');
   });
 
   it('keeps the version notice first when both are standing', async () => {

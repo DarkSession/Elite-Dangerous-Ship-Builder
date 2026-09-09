@@ -267,7 +267,12 @@ test.describe('a screen that never arrives', () => {
     // requirement forbids, whichever region carried the second of them.
     await expect(politeOutlet(page)).toHaveText(englishMessages['navigation.failed.notice']);
     await expect(assertiveOutlet(page)).toHaveText('');
-    await expect(page.locator('.frame__status [role]')).toHaveAttribute('role', 'status');
+    await expect(
+      page
+        .locator('.frame__status ednb-status-notice')
+        .filter({ hasText: englishMessages['navigation.failed.notice'] })
+        .locator('[role]'),
+    ).toHaveAttribute('role', 'status');
 
     // And the Commander is on a screen they can use, rather than back where
     // they pressed with no answer.
@@ -315,12 +320,34 @@ test.describe('a screen that never arrives', () => {
       await route.continue().catch(() => {});
     });
 
+    // Watched from before the document exists, rather than read once at the
+    // end. A reading taken after the failure is stated cannot tell a statement
+    // that was never drawn from one that was drawn and removed, and "never
+    // drawn over the first presentation" is the whole of what FR-008 asks.
+    await fresh.addInitScript(() => {
+      const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+      window_.__waitingWasDrawn = false;
+      const look = (): void => {
+        if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+          window_.__waitingWasDrawn = true;
+        }
+        requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    });
+
     await fresh.goto('/ships');
 
     await expect(
       fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
     ).toBeVisible({ timeout: 30_000 });
     await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
+    expect(
+      await fresh.evaluate(
+        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+      ),
+      'the first presentation was covered by the waiting statement',
+    ).toBe(false);
     // Something readable, rather than a blank page.
     await expect(fresh.getByRole('banner')).toBeVisible();
     await fresh.close();

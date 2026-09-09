@@ -33,7 +33,7 @@ import {
   type ShellStatus,
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
-import { NavigationWaiting } from './application/navigation/navigation-waiting.store';
+import { NavigationWaitingStore } from './application/navigation/navigation-waiting.store';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { RenderingTarget } from './platform/browser/rendering-target';
 import { EmptyBenchService } from './application/equipment/empty-bench.service';
@@ -109,7 +109,7 @@ export class App {
    */
   readonly interactive = inject(RenderingTarget).isBrowser;
   readonly #updates = inject(ApplicationUpdateStore);
-  readonly #navigationWaiting = inject(NavigationWaiting);
+  readonly #navigationWaiting = inject(NavigationWaitingStore);
   readonly #announcements = inject(AnnouncementService);
   readonly library = inject(LibraryPresence);
 
