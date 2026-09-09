@@ -590,16 +590,24 @@ test.describe('a document with no rendered body', () => {
  * links rather than from a list written down here.
  */
 test.describe('the faces a generated document is drawn in', () => {
-  /** Every `<link>` a document carries with the given relationship. */
-  function links(document: string, rel: string): readonly string[] {
-    return (
-      document.match(new RegExp(`<link\\b(?=[^>]*\\brel\\s*=\\s*["']${rel}["'])[^>]*>`, 'gi')) ?? []
-    );
-  }
-
   /** One attribute of a tag, or null where the tag does not carry it. */
   function attribute(tag: string, name: string): string | null {
     return new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
+  }
+
+  /**
+   * Every `<link>` a document carries with the given relationship.
+   *
+   * Read as whole tags and sorted by each tag's own `rel`, not matched by a
+   * pattern per relationship. The deferral this journey exists to catch spells
+   * the word it would look for inside `onload="this.rel='stylesheet'"`, so a
+   * pattern would read a preloaded sheet as an applied one and pass the
+   * document it is meant to fail.
+   */
+  function links(document: string, rel: string): readonly string[] {
+    return (document.match(/<link\b[^>]*>/gi) ?? []).filter(
+      (tag) => attribute(tag, 'rel')?.trim().toLowerCase() === rel,
+    );
   }
 
   /** A face file's family and weight, as the stylesheet that declares it states them. */
@@ -619,10 +627,17 @@ test.describe('the faces a generated document is drawn in', () => {
     for (const { path } of SCREENS) {
       const document = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
 
-      // Applied, not deferred. A stylesheet behind `media="print"` lands after
-      // the paint, and the faces it declares land with it.
+      // Applied, not deferred. `all` and `screen` are the two values that leave
+      // a stylesheet applied to the screen a Commander reads; behind anything
+      // else — `print`, and a width query as much as a type — it lands after
+      // the paint on some viewport or all of them, and the faces it declares
+      // land with it.
       for (const sheet of links(document, 'stylesheet')) {
-        expect(attribute(sheet, 'media'), `${path} defers a stylesheet`).toBeNull();
+        const media = attribute(sheet, 'media');
+        expect(
+          media === null || /^(all|screen)$/i.test(media.trim()),
+          `${path} defers a stylesheet`,
+        ).toBe(true);
       }
 
       // Every family that stylesheet declares, read from the sheet the document
@@ -702,6 +717,7 @@ test.describe('the faces a generated document is drawn in', () => {
       const sheet = links(document_, 'stylesheet')
         .map((link) => attribute(link, 'href'))
         .find((href): href is string => href !== null);
+      expect(sheet, `${path} links no stylesheet`).toBeDefined();
       const styles = await (await page.request.get(`${PRODUCT_URL}/${sheet}`)).text();
       const asked = new Set(
         links(document_, 'preload')

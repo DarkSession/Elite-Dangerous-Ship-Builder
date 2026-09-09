@@ -46,7 +46,7 @@ export interface Frame {
   /**
    * Whether the typeface the page asked for has arrived.
    *
-   * The faces are same-origin subsets declared `font-display: swap`. The six a
+   * The faces are same-origin subsets declared `font-display: swap`. The ones a
    * served document draws with are preloaded and arrive with the stylesheet, so
    * a document normally paints in them; a face that arrives late still paints in
    * a system fallback first and re-paints in Barlow a moment later. Where the

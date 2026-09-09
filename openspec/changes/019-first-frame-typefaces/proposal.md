@@ -31,8 +31,9 @@ saw the defect either.
 - `src/index.html` preloads the faces a served document draws with — Barlow 400 and 700,
   Barlow Condensed 600 and 700, and JetBrains Mono 400, 500 and 700, each the `latin` subset,
   which covers both languages the application ships. The set is measured on the built output
-  with the bundle held, across the start page, the catalogue, a hull, the two benches and the
-  fallback.
+  with the bundle held, across all three shapes the fifty rendered documents take: the start
+  page, the catalogue and a hull. The two benches and the fallback arrive as an empty shell
+  and paint no face until the application takes them over.
 - A policy rule holds both halves in the emitted output, because neither is visible in a
   source file and both are one configuration key away from being undone.
 
