@@ -23,7 +23,7 @@ const LICENCE = {
       before: 'App · ',
       link: {
         label: 'MIT licence, full detail on GitHub',
-        href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        href: 'https://github.com/DarkSession/Nav-Beacon/blob/main/LICENSE',
       },
       after: '',
     },
@@ -60,7 +60,7 @@ const ABOUT = {
     before: 'Source code available on ',
     link: {
       label: 'GitHub',
-      href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder',
+      href: 'https://github.com/DarkSession/Nav-Beacon',
     },
     after: '.',
   },

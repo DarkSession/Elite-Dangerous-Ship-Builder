@@ -50,8 +50,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
  * destination, which is the shape `validateDestination` enforces one URL at a
  * time.
  */
-export const REPOSITORY_LICENSE_URL =
-  'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE';
+export const REPOSITORY_LICENSE_URL = 'https://github.com/DarkSession/Nav-Beacon/blob/main/LICENSE';
 
 /**
  * The bundled library's own licence, at its repository root.
@@ -72,7 +71,7 @@ export const ALMANAC_LICENSE_URL =
  * sentence in `ABOUT` offers: a Commander who wants to read the code, not one
  * more copy of the terms the licence summary already points at (012/FR-008).
  */
-export const REPOSITORY_SOURCE_URL = 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder';
+export const REPOSITORY_SOURCE_URL = 'https://github.com/DarkSession/Nav-Beacon';
 
 /**
  * Each audited destination, with the exact path it is allowed to point at and
@@ -82,7 +81,7 @@ const AUDITED_DESTINATIONS = [
   {
     id: 'repositoryLicense',
     url: REPOSITORY_LICENSE_URL,
-    pathname: '/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+    pathname: '/DarkSession/Nav-Beacon/blob/main/LICENSE',
     describedAs: "this repository's LICENSE on main",
     purpose: 'completeLegalTerms',
   },
@@ -96,7 +95,7 @@ const AUDITED_DESTINATIONS = [
   {
     id: 'repositorySource',
     url: REPOSITORY_SOURCE_URL,
-    pathname: '/DarkSession/Elite-Dangerous-Ship-Builder',
+    pathname: '/DarkSession/Nav-Beacon',
     describedAs: "this repository's own page",
     purpose: 'sourceCode',
   },

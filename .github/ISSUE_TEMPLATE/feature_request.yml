@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        The [constitution](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/CONSTITUTION.md)
+        The [constitution](https://github.com/DarkSession/Nav-Beacon/blob/main/CONSTITUTION.md)
         bounds what this application can be. It is client-side only: no server, no accounts, no
         uploads and no telemetry. Game data and build calculations belong to
         `@elite-dangerous-almanac/core`, so a request for a new figure or a new module is usually a

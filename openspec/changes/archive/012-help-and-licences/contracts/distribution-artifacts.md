@@ -247,3 +247,18 @@ There is no runtime missing/loading/error fallback for these failures.
   tracked.
 - Do not use Angular's generic `3rdpartylicenses.txt` as a replacement for required source mirrors or
   as modal content.
+
+---
+
+# The repository is Nav-Beacon
+
+> **Renamed on 2026-09-09.** `docs/navbeacon-migration.md` names the product Nav Beacon and records
+> the repository name. This contract states two of the three audited constants literally, so what
+> they read is recorded here.
+
+The licence destination this contract states as
+`https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE` is
+`https://github.com/DarkSession/Nav-Beacon/blob/main/LICENSE`, and the source destination under it
+is `https://github.com/DarkSession/Nav-Beacon`. Everything the audit decides — HTTPS, the host, the
+exact path, no credentials, port, query or fragment, and the purpose each destination is tagged
+with — is unchanged; only the repository's name is. The Almanac's destination does not move.

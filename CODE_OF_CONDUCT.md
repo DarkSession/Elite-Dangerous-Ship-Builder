@@ -13,7 +13,7 @@ is in [Reporting a concern](#reporting-a-concern).
 Report privately. Do not open a public issue about a person's behaviour.
 
 1. Open a private report on this repository:
-   [Security → Advisories → Report a vulnerability](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/security/advisories/new).
+   [Security → Advisories → Report a vulnerability](https://github.com/DarkSession/Nav-Beacon/security/advisories/new).
    The form is private between you and the maintainers. Start the title with `Code of conduct` so it
    is not read as a security report.
 2. If that form is not available to you, or your concern is about a maintainer, use GitHub's

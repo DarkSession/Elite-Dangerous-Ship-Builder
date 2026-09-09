@@ -47,8 +47,8 @@ jobs:
     env:
       # Must match the `preview` job in `ci.yml`, or a closed pull request
       # leaves its preview published for good.
-      PREVIEW_REPOSITORY: DarkSession/Elite-Dangerous-Ship-Builder-Preview
-      PREVIEW_PAGES_BASE_URL: darksession.github.io/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_REPOSITORY: DarkSession/Nav-Beacon-Preview
+      PREVIEW_PAGES_BASE_URL: darksession.github.io/Nav-Beacon-Preview
       PREVIEW_UMBRELLA_DIR: pr-preview
 
     steps:

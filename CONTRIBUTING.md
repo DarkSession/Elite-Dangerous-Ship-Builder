@@ -13,13 +13,13 @@ Taking part means following the [code of conduct](./CODE_OF_CONDUCT.md).
 
 ## Raise it in the right place
 
-| What you have                                         | Where it goes                                                                                                      |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| A defect in the application                           | [New issue → Bug report](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/new/choose)            |
-| A capability you want                                 | [New issue → Feature request](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/new/choose)       |
-| Something you cannot use, or an accessibility barrier | [New issue → Accessibility barrier](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/new/choose) |
-| Wrong game data, or a wrong calculated value          | [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues) — the library owns both   |
-| A security vulnerability                              | [Report it privately](./SECURITY.md). Do not open an issue.                                                        |
+| What you have                                         | Where it goes                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| A defect in the application                           | [New issue → Bug report](https://github.com/DarkSession/Nav-Beacon/issues/new/choose)                            |
+| A capability you want                                 | [New issue → Feature request](https://github.com/DarkSession/Nav-Beacon/issues/new/choose)                       |
+| Something you cannot use, or an accessibility barrier | [New issue → Accessibility barrier](https://github.com/DarkSession/Nav-Beacon/issues/new/choose)                 |
+| Wrong game data, or a wrong calculated value          | [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues) — the library owns both |
+| A security vulnerability                              | [Report it privately](./SECURITY.md). Do not open an issue.                                                      |
 
 Ship hulls, modules, blueprints, effects, materials and every build calculation come from
 [`@elite-dangerous-almanac/core`](https://github.com/DarkSession/Elite-Dangerous-Almanac). A wrong
