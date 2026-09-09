@@ -100,18 +100,23 @@ async function fillStorageNow(page: Page): Promise<void> {
   await page.evaluate(FILL_STORAGE);
 }
 
+/**
+ * Creates a build and waits for the workspace to have finished settling.
+ *
+ * The address is part of that. The workspace publishes the build to the
+ * fragment a moment after the screen is drawn, and a journey that opens the
+ * library before it lands pushes the layer's history entry over an address with
+ * no build on it — so back returns to `/outfitting`, and the layer's own
+ * assertion that it took no address of its own has nothing to compare against.
+ * Waiting here rather than in each journey keeps the two ways out of the layer
+ * reading as the one thing they are.
+ */
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
   await savedToBrowser(page);
+  await expect(page).toHaveURL(/\/outfitting#b\./);
 }
 
-/**
- * Creates a build and waits only for the workspace.
- *
- * Used where persistence is expected *not* to succeed — at the retention limit
- * the honest status is that nothing was written, so waiting for "saved" would
- * be waiting for the bug.
- */
 /**
  * Chooses a row, which is what the footer's actions act on.
  *
