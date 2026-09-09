@@ -115,6 +115,18 @@ Stated as a container query, the same one the column already uses to decide whet
 is a row (`container-medium-up(item)`), so one condition decides both. The two cannot disagree
 about which arrangement is being drawn.
 
+**The bench's composition is not the oracle.**
+The held track is scoped to the item column's own container query, so what verifies the
+scoping reads the item column. The bench's `data-composition` is a second threshold and a
+different one: it answers `wide` only where the whole bench clears its three declared minimums
+(`src/app/ui/equipment/bench-composition.ts`), while the column's query answers at
+`$container-medium-min`. A compact bench draws the item view as a full-width drill-in, which
+clears the column's seam while the bench's answer is `compact`, so the two cross. Keying the
+check to the bench would fail a correct build there and pass a stylesheet scoped to the wrong
+condition. The record rules on exactly this: behaviour keyed to a composition is stated at the
+same step the stylesheets use, never at a second threshold of its own
+(`openspec/changes/archive/011-interface-foundations/design/responsive-composition.md`).
+
 **Every journey runs at all five layout profiles.**
 No journey pins a viewport. `platform/accessible-responsive-operation`, "Journeys across the
 five layout profiles in both engines" (011/FR-021), requires it, and the requirement these

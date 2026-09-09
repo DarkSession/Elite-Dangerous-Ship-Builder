@@ -59,12 +59,14 @@
       open an empty weapon mount, read the bounding box of `.item__alternatives`, choose a
       weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
       journey that the mount's grade ladder is absent before the choice and present after it,
-      so a passing test cannot mean the ladder never appeared (019/FR-001). Then read the
-      empty track's own bounding box against the arrangement the bench publishes on
-      `.bench[data-composition]`, as `e2e/hull-anatomy.spec.ts` reads the outfitting screen's:
-      where the composition is `wide` the track's block size is the ladder's, and where it is
-      not the track has none. This is what fails if the container query in task 2.2 is scoped
-      wrongly and a block is held on every narrow profile. Verify with `pnpm run e2e`.
+      so a passing test cannot mean the ladder never appeared (019/FR-001). Then read the empty
+      track's own bounding box against the arrangement the item column draws, which the journey
+      takes from the boxes themselves: where the track's top is above `.item__alternatives` the
+      header is a row and the track's block size is the ladder's, and where the track stands
+      below that list it has none. Read the column rather than the bench, because the bench's
+      composition is a second threshold and the two cross (design, "The bench's composition is
+      not the oracle"). This is what fails if the container query in task 2.2 is scoped wrongly
+      and a block is held where the ladder stands below the list. Verify with `pnpm run e2e`.
 - [ ] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
       bench on the gate, read the bounding box of `.gate__choose`, choose a suit, and assert
       the `y` of `.item__alternatives` matches it. Guard the assertion on the list still being
