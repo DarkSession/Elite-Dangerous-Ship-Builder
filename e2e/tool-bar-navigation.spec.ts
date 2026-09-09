@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { buildStockHull, openLibrary, savedToBrowser } from './shell';
+import { buildStockHull, openLibrary, recordCount, savedToBrowser } from './shell';
 
 /**
  * Getting back, and starting again, from the bar.
@@ -123,11 +123,9 @@ test.describe('a tool’s tab re-enters the tool', () => {
     // The build is not discarded by leaving it: the record it autosaves into
     // keeps it (017/FR-004).
     await expect(page).toHaveURL(/\/ships$/);
-    expect(
-      await page.evaluate(
-        () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-      ),
-    ).toBeGreaterThan(0);
+    // Polled: the autosave is written as the workspace is left, which the
+    // address changing does not wait for.
+    await expect.poll(() => recordCount(page)).toBeGreaterThan(0);
   });
 
   test('changes nothing where the list of ships is already open (017/FR-005)', async ({ page }) => {

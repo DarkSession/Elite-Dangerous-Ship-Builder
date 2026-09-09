@@ -526,13 +526,16 @@ test.describe('the build library', () => {
 
     await saveActiveBuild(page, 'Anaconda explorer copy');
 
-    const names = await page.evaluate(() =>
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith('ednb:record:'))
-        .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
-    );
-    expect(names).toContain('Anaconda explorer');
-    expect(names).toContain('Anaconda explorer copy');
+    // Polled: the copy is what the press wrote, and the press is answered a
+    // moment after it returns.
+    const names = () =>
+      page.evaluate(() =>
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('ednb:record:'))
+          .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
+      );
+    await expect.poll(names).toContain('Anaconda explorer copy');
+    expect(await names()).toContain('Anaconda explorer');
     expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).not.toBeNull();
   });
 

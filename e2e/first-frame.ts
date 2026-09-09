@@ -176,12 +176,17 @@ export function frames(page: Page): Promise<readonly Frame[]> {
  * Recorded rather than read afterwards, because by the time a test can ask, the
  * application has answered — and the question is what was there before it did.
  *
- * Only frames that showed a word are kept. The callback is asked for before the
- * body has been parsed as well as after, and under load it is answered there
- * first: the document has a body, the body has no text in it yet, and reading
- * it records a frame that showed nothing. A reader asking what the first frame
- * said would be told the document said nothing, which is a statement about when
- * the recorder was asked and not about what a Commander saw.
+ * A frame is skipped only while the document is still being parsed and has
+ * nothing in it yet. The callback is asked for before the body has been parsed
+ * as well as after, and under load it is answered there first: the document has
+ * a body, the body has no text in it, and recording that would say the first
+ * frame showed nothing when what it describes is when the recorder was asked.
+ *
+ * An empty frame after the parse is kept, and has to be. That is what a hull's
+ * address answered by the body-less shell looks like — the failure both of the
+ * journeys reading these frames exist to catch — and a recorder that dropped
+ * every empty frame would report the application's own later render as the
+ * first thing a Commander saw. `recordList` gates on the same two facts.
  *
  * Lower-cased for the same reason `recordFrames` matches without case: what is
  * being asked is whether a word was on the screen, not how it was set.
@@ -193,7 +198,7 @@ export async function recordFirstFrameText(page: Page): Promise<void> {
     const record = () => {
       if (document.body) {
         const text = (document.body.innerText || '').replace(/\s+/g, ' ').trim().toLowerCase();
-        if (text !== '') {
+        if (text !== '' || document.readyState !== 'loading') {
           seen.push(text);
         }
       }
