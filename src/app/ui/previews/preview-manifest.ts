@@ -1357,6 +1357,7 @@ registerPreview({
       },
       [
         'visible feedback stays on the page to be re-read, in ordinary reading order',
+        'two independent notices stand together, the one about the session first',
         'the shell landmarks and actions remain usable',
         'the recovery is a named control in the interface, never an instruction to clear a cache',
         'the action carries its own description without losing its visible name',

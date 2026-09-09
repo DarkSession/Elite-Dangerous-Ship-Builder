@@ -90,9 +90,11 @@ Requirements: 018/FR-001, FR-002, FR-003, FR-004, FR-005, FR-006.
 Composes: the status the application frame already draws, and the announcement outlet beside
 it.
 
-Draws: after a navigation that ended without presenting its screen, an error-toned notice
+Draws: after a navigation that ended without presenting its screen, a warning-toned notice
 saying the screen could not be opened, on the screen the Commander is on. It is taken down by
-the next navigation that succeeds.
+the next navigation that succeeds. A warning rather than an error, because the status
+component draws an error as an `alert`, which a reader speaks over whatever it was saying —
+and nothing here is blocked. The failure is announced once, politely, beside the notice.
 
 The slot takes a list rather than one notice, so a version notice and a failed navigation
 stand together rather than replacing each other. Both have to stay readable: the version

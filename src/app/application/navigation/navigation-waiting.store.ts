@@ -1,6 +1,7 @@
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import {
   NavigationCancel,
+  NavigationCancellationCode,
   NavigationEnd,
   NavigationError,
   NavigationStart,
@@ -50,6 +51,11 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * is not a navigation: the router answers it without starting one, so there is
  * nothing here to raise a statement over and nothing to take down.
  *
+ * A cancellation that names its replacement — one press superseding another, or
+ * a guard sending the Commander elsewhere — is not an ending either. It is the
+ * handover itself, raised before the replacement starts, so the statement it
+ * carries stays standing and comes down with the navigation still going.
+ *
  * **The session's first presentation is not covered.** A Commander opening an
  * address arrives at what that address serves, and a mark drawn over it would
  * hide content the first frame is required to show
@@ -57,6 +63,20 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * the first navigation that ends onward. It suppresses that signal only:
  * a first navigation that fails is stated like any other.
  */
+/**
+ * Whether a cancellation is a handover to a navigation the router will start.
+ *
+ * Both codes name a replacement that is already on its way: one press
+ * superseding another, and a guard sending the Commander somewhere else. Every
+ * other cancellation is an ending with nothing behind it.
+ */
+function handsOver(event: NavigationCancel): boolean {
+  return (
+    event.code === NavigationCancellationCode.SupersededByNewNavigation ||
+    event.code === NavigationCancellationCode.Redirect
+  );
+}
+
 @Injectable({ providedIn: 'root' })
 export class NavigationWaitingStore {
   readonly #router = inject(Router);
@@ -90,10 +110,7 @@ export class NavigationWaitingStore {
   /**
    * The navigation the threshold is running for, or `null` between navigations.
    *
-   * Held so an ending can be matched to the navigation it belongs to. Starting a
-   * second navigation cancels the first, and the cancellation arrives *after*
-   * the start it was caused by — so an ending taken at face value would take
-   * down the statement the navigation that is still going had just raised.
+   * Held so an ending can be matched to the navigation it belongs to.
    */
   #running: number | null = null;
 
@@ -113,6 +130,10 @@ export class NavigationWaitingStore {
     const events = this.#router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.#started(event.id);
+        return;
+      }
+      if (event instanceof NavigationCancel && handsOver(event)) {
+        this.#handedOver(event.id);
         return;
       }
       if (
@@ -138,16 +159,43 @@ export class NavigationWaitingStore {
       // long it takes.
       return;
     }
+    if (this.#waiting()) {
+      // A navigation taking over from one that was replaced mid-flight. The
+      // statement standing is already this Commander's answer, so it is adopted
+      // rather than taken down and drawn again — a threshold started here would
+      // blink it off and on (FR-005).
+      return;
+    }
     this.#threshold = setTimeout(() => {
       this.#threshold = null;
       this.#waiting.set(true);
     }, NAVIGATION_WAITING_THRESHOLD_MS);
   }
 
+  /**
+   * A navigation replaced by one the router is about to start.
+   *
+   * Not an ending. The router raises this cancellation on its way to the
+   * navigation that takes over — before that navigation's start, because the
+   * cancellation is what the handover consists of — so the statement it raised
+   * belongs to the one still going and stays standing (FR-005).
+   *
+   * The session is not started by it either: a first navigation handed over is
+   * a first presentation that has still not arrived, and the navigation that
+   * takes over must draw nothing over it (FR-008).
+   */
+  #handedOver(id: number): void {
+    if (this.#running !== id) {
+      return;
+    }
+    this.#running = null;
+    this.#clearThreshold();
+  }
+
   #ended(id: number, failed: boolean, presented: boolean): void {
     if (this.#running !== id) {
-      // The ending of a navigation another one has already replaced. The
-      // statement belongs to the navigation that is still going.
+      // An ending for a navigation this store is no longer following. The
+      // statement belongs to whichever navigation is running now.
       return;
     }
     this.#running = null;

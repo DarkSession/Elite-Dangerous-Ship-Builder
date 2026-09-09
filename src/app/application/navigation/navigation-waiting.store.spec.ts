@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import {
   NavigationCancel,
+  NavigationCancellationCode,
   NavigationEnd,
   NavigationError,
   NavigationStart,
@@ -29,6 +30,23 @@ describe('NavigationWaitingStore', () => {
   const end = (id: number, url = '/outfitting') => events.next(new NavigationEnd(id, url, url));
   const cancel = (id: number, url = '/outfitting') =>
     events.next(new NavigationCancel(id, url, 'cancelled'));
+  /**
+   * The cancellation the router raises on its way to a replacement.
+   *
+   * It carries a code naming what takes over, and it comes *before* that
+   * navigation's start: the router cancels the transition it is switching away
+   * from as it switches. A test that drove the two the other way round would be
+   * testing an order the router never publishes.
+   */
+  const supersede = (id: number, url = '/outfitting') =>
+    events.next(
+      new NavigationCancel(
+        id,
+        url,
+        'superseded',
+        NavigationCancellationCode.SupersededByNewNavigation,
+      ),
+    );
   const fail = (id: number, url = '/outfitting') =>
     events.next(new NavigationError(id, url, new Error('chunk')));
 
@@ -122,17 +140,47 @@ describe('NavigationWaitingStore', () => {
   it('leaves one statement standing when a second navigation replaces the first', () => {
     const store = running();
 
-    // The order the router publishes: the second navigation starts, and the
-    // first is cancelled by it afterwards.
     start(2);
     vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
-    start(3, '/equipment');
-    cancel(2);
-    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
 
+    // The handover, in the order the router publishes it. The statement never
+    // goes down between the two: it is removed by the navigation that is still
+    // going, not by the one it replaced (FR-005).
+    supersede(2);
+    expect(store.waiting()).toBe(true);
+
+    start(3, '/equipment');
     expect(store.waiting()).toBe(true);
 
     end(3, '/equipment');
+    expect(store.waiting()).toBe(false);
+  });
+
+  it('states a navigation that took over before the first was worth stating', () => {
+    const store = running();
+
+    // Handed over inside the threshold, so nothing was standing to carry. The
+    // navigation that took over is measured like any other.
+    start(2);
+    supersede(2);
+    start(3, '/equipment');
+    expect(store.waiting()).toBe(false);
+
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
+  });
+
+  it('draws nothing over a first presentation that was handed over', () => {
+    const store = TestBed.inject(NavigationWaitingStore);
+
+    // A first navigation replaced before it arrived is a first presentation
+    // that has still not arrived. What takes over draws nothing over it
+    // (FR-008).
+    start(1);
+    supersede(1);
+    start(2, '/equipment');
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS * 10);
 
     expect(store.waiting()).toBe(false);
   });
@@ -235,7 +283,7 @@ describe('NavigationWaitingStore', () => {
     // diagnosis, and a reason the application does not have is one it may not
     // state (constitution IV).
     expect(store.failed()).toBe(true);
-    expect(typeof store.failed()).toBe('boolean');
+    expect(Object.keys(store)).toEqual(['waiting', 'failed', 'failures']);
   });
 
   it('draws nothing over the arrival that starts the session', () => {

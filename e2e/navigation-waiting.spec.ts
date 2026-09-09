@@ -10,6 +10,7 @@ import {
   waitForTakeover,
   waitingStatement,
   watchForTheStatement,
+  watchForTheStatementFromStart,
 } from './shell';
 
 /**
@@ -203,17 +204,24 @@ test.describe('a screen that has to be fetched', () => {
     await expect(hull).toBeVisible();
     await hull.scrollIntoViewIfNeeded();
 
+    const watch = await watchForTheStatement(page);
     const held = await holdEveryChunk(page);
     await hull.click({ noWaitAfter: true });
     await stands(page);
-    await expect(overlay(page)).toHaveCount(1);
 
-    // Back to the entry point, whose code the browser already holds. One
-    // statement stood, not two, and it is removed by the navigation that is
-    // still going rather than by the one it replaced.
+    // Back to the entry point, whose code the browser already holds, so the
+    // navigation that takes over is one that finishes.
+    //
+    // The count is what makes this a reading. The application mounts one
+    // overlay, so asking how many stand can only ever answer one; what the
+    // requirement is about is whether the statement went down and came back
+    // between the two navigations. It is drawn once, by the press, and removed
+    // once, by the navigation that is still going — never by the one it
+    // replaced (FR-005).
     await page.goBack();
     await expect(page).toHaveURL(/\/(\?.*)?$/);
     await expect(overlay(page)).toHaveCount(0);
+    expect(await watch.timesDrawn(), 'the statement was drawn more than once').toBe(1);
     // A cancelled navigation is an ordinary ending, stated as nothing.
     await expect(failureNotice(page)).toHaveCount(0);
 
@@ -324,17 +332,7 @@ test.describe('a screen that never arrives', () => {
     // end. A reading taken after the failure is stated cannot tell a statement
     // that was never drawn from one that was drawn and removed, and "never
     // drawn over the first presentation" is the whole of what FR-008 asks.
-    await fresh.addInitScript(() => {
-      const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-      window_.__waitingWasDrawn = false;
-      const look = (): void => {
-        if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-          window_.__waitingWasDrawn = true;
-        }
-        requestAnimationFrame(look);
-      };
-      requestAnimationFrame(look);
-    });
+    const watch = await watchForTheStatementFromStart(fresh);
 
     await fresh.goto('/ships');
 
@@ -343,9 +341,7 @@ test.describe('a screen that never arrives', () => {
     ).toBeVisible({ timeout: 30_000 });
     await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
     expect(
-      await fresh.evaluate(
-        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-      ),
+      await watch.wasDrawn(),
       'the first presentation was covered by the waiting statement',
     ).toBe(false);
     // Something readable, rather than a blank page.
@@ -406,10 +402,20 @@ test.describe('accessibility', () => {
     await tools(page).filter({ hasText: 'Ship Builder' }).click({ noWaitAfter: true });
     await stands(page);
 
-    // The screen behind is inert because the statement is a *modal* dialog:
-    // that is what takes the rest of the document out of the accessibility
-    // tree, and it is a platform guarantee rather than something a query can
-    // read off the markup.
+    // What a reader is left with, read off the tree rather than inferred from
+    // the markup: the statement, and nothing else. The screen behind it is
+    // gone — no banner, no main, none of the tools that were on it — which is
+    // what FR-003 asks and what no assertion about one element can show.
+    //
+    // Roles only, as `screen-reader.spec.ts` takes them. The dialog's name is
+    // catalogue text and is asserted against the catalogue above.
+    await expect(page.locator('body')).toMatchAriaSnapshot(`
+      - dialog
+    `);
+
+    // The mechanism behind it, so a failure says which half broke: the
+    // statement is a *modal* dialog, which is what takes the rest of the
+    // document out of the tree.
     expect(
       await overlay(page).evaluate((dialog) => (dialog as HTMLDialogElement).matches(':modal')),
       'the statement is a modal dialog',

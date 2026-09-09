@@ -422,37 +422,69 @@ export function waitingStatement(page: Page): Locator {
 }
 
 /**
- * A watch on the waiting statement, kept across a navigation on the page as it
- * stands.
+ * A watch on the waiting statement, counting every time it is drawn.
  *
- * A reading taken once the screen has arrived cannot tell a statement that was
- * never drawn from one that was drawn and removed, and the second is what a
- * threshold exists to prevent. This looks every frame instead, and answers for
- * the whole of the navigation.
+ * A reading taken once a navigation is over cannot tell a statement that was
+ * never drawn from one that was drawn and removed, and it cannot see a
+ * statement taken down and put back inside one frame either. Both are what the
+ * threshold and the handover between two navigations exist to prevent, so this
+ * watches the `open` attribute itself rather than sampling: a mutation observer
+ * sees every change, where a frame callback sees one every sixteen
+ * milliseconds and the threshold is ten.
  */
 export interface StatementWatch {
-  /** Whether the statement stood at any frame since the watch was set. */
+  /** Whether the statement stood at any point since the watch was set. */
   wasDrawn(): Promise<boolean>;
+  /** How many separate times it was drawn. One handover is still one. */
+  timesDrawn(): Promise<number>;
+}
+
+/** The watcher itself, as a string, because it is installed in two ways. */
+const WATCH_THE_STATEMENT = () => {
+  const window_ = window as unknown as { __waitingDrawn?: number };
+  window_.__waitingDrawn = 0;
+  let standing = false;
+  const look = (): void => {
+    const now = document.querySelector('ednb-waiting-overlay dialog[open]') !== null;
+    if (now && !standing) {
+      window_.__waitingDrawn = (window_.__waitingDrawn ?? 0) + 1;
+    }
+    standing = now;
+  };
+  look();
+  new MutationObserver(look).observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['open'],
+  });
+};
+
+function readTheWatch(page: Page): StatementWatch {
+  const drawn = async (): Promise<number> =>
+    (await page.evaluate(
+      () => (window as unknown as { __waitingDrawn?: number }).__waitingDrawn,
+    )) ?? 0;
+  return {
+    wasDrawn: async () => (await drawn()) > 0,
+    timesDrawn: drawn,
+  };
 }
 
 /** Starts watching the page as it stands, without reloading it. */
 export async function watchForTheStatement(page: Page): Promise<StatementWatch> {
-  await page.evaluate(() => {
-    const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-    window_.__waitingWasDrawn = false;
-    const look = (): void => {
-      if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-        window_.__waitingWasDrawn = true;
-      }
-      requestAnimationFrame(look);
-    };
-    requestAnimationFrame(look);
-  });
+  await page.evaluate(WATCH_THE_STATEMENT);
+  return readTheWatch(page);
+}
 
-  return {
-    wasDrawn: async () =>
-      (await page.evaluate(
-        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-      )) === true,
-  };
+/**
+ * The same, from before the document exists.
+ *
+ * What a session's first presentation is covered by can only be watched from
+ * before there is a page to watch, so this one is installed for the next
+ * navigation rather than run on this one.
+ */
+export async function watchForTheStatementFromStart(page: Page): Promise<StatementWatch> {
+  await page.addInitScript(WATCH_THE_STATEMENT);
+  return readTheWatch(page);
 }

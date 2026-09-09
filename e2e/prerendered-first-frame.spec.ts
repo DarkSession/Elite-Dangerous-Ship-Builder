@@ -14,7 +14,7 @@ import {
 } from './first-frame';
 import { PRODUCT_URL } from './servers';
 import { shapeOf } from './served-document';
-import { waitForTakeover } from './shell';
+import { waitForTakeover, watchForTheStatementFromStart } from './shell';
 
 /**
  * The frame a Commander is given before the application exists, and what the
@@ -451,27 +451,12 @@ test.describe('the waiting statement and a generated document', () => {
       // Watched from before the document exists to after the takeover, rather
       // than read once at the end: what is claimed is that the statement was
       // never up, not that it is down now.
-      await page.addInitScript(() => {
-        const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-        window_.__waitingWasDrawn = false;
-        const look = () => {
-          if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-            window_.__waitingWasDrawn = true;
-          }
-          requestAnimationFrame(look);
-        };
-        requestAnimationFrame(look);
-      });
+      const watch = await watchForTheStatementFromStart(page);
 
       await page.goto(path);
       await waitForTakeover(page);
 
-      expect(
-        await page.evaluate(
-          () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-        ),
-        `${path} was covered by the waiting statement`,
-      ).toBe(false);
+      expect(await watch.wasDrawn(), `${path} was covered by the waiting statement`).toBe(false);
     });
   }
 
@@ -528,17 +513,7 @@ test.describe('the waiting statement and a generated document', () => {
     // end. A reading taken after the failure is stated cannot tell a statement
     // that was never drawn from one that was drawn and removed, and "never
     // drawn over the first presentation" is the whole of what FR-008 asks.
-    await fresh.addInitScript(() => {
-      const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-      window_.__waitingWasDrawn = false;
-      const look = (): void => {
-        if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-          window_.__waitingWasDrawn = true;
-        }
-        requestAnimationFrame(look);
-      };
-      requestAnimationFrame(look);
-    });
+    const watch = await watchForTheStatementFromStart(fresh);
 
     await fresh.goto('/ships');
 
@@ -548,9 +523,7 @@ test.describe('the waiting statement and a generated document', () => {
     ).toBeVisible({ timeout: 30_000 });
     await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
     expect(
-      await fresh.evaluate(
-        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-      ),
+      await watch.wasDrawn(),
       'the first presentation was covered by the waiting statement',
     ).toBe(false);
 
