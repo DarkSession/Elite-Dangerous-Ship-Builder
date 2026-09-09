@@ -242,6 +242,22 @@ describe('NavigationWaitingStore', () => {
     expect(store.waiting()).toBe(false);
   });
 
+  it('draws nothing over a first presentation whose handover was skipped', () => {
+    const store = TestBed.inject(NavigationWaitingStore);
+
+    // The same first presentation, where what took the handover over was the
+    // address the router is already at. It presented nothing either, so the
+    // session has still not started and the navigation after it is still the
+    // one that will present first (FR-008).
+    start(1);
+    supersede(1);
+    skip(2);
+    start(3, '/equipment');
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS * 10);
+
+    expect(store.waiting()).toBe(false);
+  });
+
   it('measures a later navigation by the same threshold', () => {
     const store = running();
 

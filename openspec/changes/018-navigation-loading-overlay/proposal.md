@@ -21,16 +21,18 @@ wait that has no answer.
   The mark carries no control: the navigation is already running and ends by itself.
 - The mark waits out a 10-millisecond threshold before it appears, so a navigation the
   browser resolves without a request changes the screen with nothing drawn.
-- The mark comes down when the navigation ends, whatever the outcome — the screen opened,
-  the navigation was cancelled or redirected, or the code never arrived. It never outlives
-  the navigation that raised it, and at most one stands at a time.
+- The mark comes down when the navigation is over — the screen opened, the code never
+  arrived, or the navigation was cancelled with nothing taking over. Where the cancellation
+  is a handover, to a navigation replacing it or to an address the router answers without
+  navigating, the mark passes to what takes over rather than coming down and being drawn
+  again. It never outlives what raised it, and at most one stands at a time.
 - The mark is not drawn at all while the application is telling a Commander that the page is
   about to be replaced by a newer version. That text has to stay visible, and a navigation
   running under a restart is not going to finish.
 - A navigation that fails is stated rather than abandoned. The Commander is left on a screen
   they can use and told that the screen could not be opened, in words that stay on the page
-  and are announced once without interrupting a reader. A cancelled or redirected navigation
-  is an ordinary ending and is stated as nothing.
+  and are announced once without interrupting a reader. A navigation that is cancelled, or
+  sent to another address, states nothing: only an error is a failure.
 - A screen reader is told, in the reading language, that the application is waiting. The
   mark itself is decoration and is not announced as a picture.
 - The design system gains the overlay as a component with its own state previews. No screen
@@ -44,8 +46,8 @@ The change declares requirements `018/FR-001` to `018/FR-008`:
 - **FR-003** The screen behind it cannot be operated or reached, and the statement offers no
   way to answer it.
 - **FR-004** A navigation shorter than the 10-millisecond threshold draws nothing.
-- **FR-005** The statement ends with the navigation, whatever the outcome, and at most one
-  stands at a time.
+- **FR-005** The statement ends with the navigation it followed, passing to whatever takes
+  that navigation over, and at most one stands at a time.
 - **FR-006** A screen reader is told the application is waiting; the mark is decoration.
 - **FR-007** A navigation that fails is stated, not silently abandoned; a cancelled or
   redirected one is not a failure.
@@ -90,8 +92,10 @@ named above are standing requirements this change conforms to rather than amends
   draws the mark on its ground. It is a native modal `<dialog>`, as the layer component is,
   which is what makes the screen behind it genuinely inert rather than merely covered.
 - `src/app/application/navigation/navigation-waiting.store.ts` is new: it reads the router's
-  navigation events, holds the threshold, and exposes whether a navigation is waiting and
-  whether the last one failed. It renders nothing and is tested without rendering.
+  navigation events, holds the threshold, and exposes whether a navigation is waiting,
+  whether the last one failed, and how many have failed, which is what makes a second
+  failure a second event rather than a repeat of the first. It renders nothing and is tested
+  without rendering.
 - `src/app/app.html` and `src/app/app.ts` mount the overlay beside the frame, where the help
   modal and the update overlay are already mounted, and route the failure into the shell's
   status slot and announcement outlet.

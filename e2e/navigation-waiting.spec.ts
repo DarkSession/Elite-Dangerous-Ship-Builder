@@ -394,9 +394,14 @@ test.describe('a screen that never arrives', () => {
     //
     // The outlets are not the only live region on the page. A notice drawn at
     // error tone carries `role="alert"`, which a reader speaks over whatever it
-    // was saying — so an empty assertive outlet proves nothing by itself. Both
-    // channels are read here, because one event announced twice is what the
-    // requirement forbids, whichever region carried the second of them.
+    // was saying — so an empty assertive outlet proves nothing by itself, and
+    // the notice's own role is read too.
+    //
+    // What is read is that nothing here interrupts. Whether a reader then says
+    // the sentence twice, once from each polite region, is not read: `status`
+    // is a polite live region itself, and what makes the arrangement acceptable
+    // is that a region inserted together with its text is usually not spoken —
+    // a judgment step 21 of `e2e/manual/screen-reader.protocol.md` settles.
     await expect(politeOutlet(page)).toHaveText(englishMessages['navigation.failed.notice']);
     await expect(assertiveOutlet(page)).toHaveText('');
     await expect(

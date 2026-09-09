@@ -474,8 +474,6 @@ export interface StatementWatch {
 /** The watcher itself, held apart because it is installed in two ways. */
 const WATCH_THE_STATEMENT = () => {
   const window_ = window as unknown as { __waitingDrawn?: number; __waitingRemoved?: number };
-  window_.__waitingDrawn = 0;
-  window_.__waitingRemoved = 0;
   let standing = false;
   const look = (): void => {
     const now = document.querySelector('ednb-waiting-overlay dialog[open]') !== null;
@@ -487,29 +485,46 @@ const WATCH_THE_STATEMENT = () => {
     }
     standing = now;
   };
-  look();
+
   // The document itself, not its root element. This watcher is also installed
   // before the document exists, where the root element has not been parsed yet
   // and `observe` would be handed nothing — an exception a browser raises into
   // a page nobody is reading, leaving a watch that answers zero for ever. A
   // `Document` is always there, and `subtree` reaches everything under it.
+  //
+  // Watched first, counted second. The counters are what a reading is taken
+  // from, and an install that threw here leaves them unwritten, which is how a
+  // watch that was never installed tells itself apart from one that saw
+  // nothing. A callback cannot arrive before they are written: it is a
+  // microtask, and the next two lines are this one's own turn.
   new MutationObserver(look).observe(document, {
     subtree: true,
     childList: true,
     attributes: true,
     attributeFilter: ['open'],
   });
+  window_.__waitingDrawn = 0;
+  window_.__waitingRemoved = 0;
+  look();
 };
 
 function readTheWatch(page: Page): StatementWatch {
-  const drawn = async (): Promise<number> =>
-    (await page.evaluate(
-      () => (window as unknown as { __waitingDrawn?: number }).__waitingDrawn,
-    )) ?? 0;
-  const removed = async (): Promise<number> =>
-    (await page.evaluate(
-      () => (window as unknown as { __waitingRemoved?: number }).__waitingRemoved,
-    )) ?? 0;
+  // A count the watcher never wrote is not a count of none. Almost every
+  // reading taken through this watch is that the statement was never drawn, and
+  // a watcher that failed to install answers that too — quietly, and for ever.
+  // So the absent counter is an error rather than a zero.
+  const count = async (name: '__waitingDrawn' | '__waitingRemoved'): Promise<number> => {
+    const read = await page.evaluate(
+      (key) => (window as unknown as Record<string, number | undefined>)[key],
+      name,
+    );
+    if (read === undefined) {
+      throw new Error(`The statement watch never installed: the page holds no ${name}.`);
+    }
+    return read;
+  };
+  const drawn = (): Promise<number> => count('__waitingDrawn');
+  const removed = (): Promise<number> => count('__waitingRemoved');
   return {
     wasDrawn: async () => (await drawn()) > 0,
     timesDrawn: drawn,
