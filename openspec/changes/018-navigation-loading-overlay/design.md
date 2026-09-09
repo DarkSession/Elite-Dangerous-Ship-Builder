@@ -399,7 +399,7 @@ reason, which is what those three get.
   so both screens that announce a count have it. It is a breach of the requirement as it
   already stands, not one the amendment creates, and it belongs to those screens rather than
   to this capability. It is recorded rather than fixed here, and raised as its own report.
-- **And a second capability the same reading catches.** → The outfitting workspace announces
+- **And more of them, in a second shape.** → The outfitting workspace announces
   a refused edit at the build revision, which a refusal does not spend, so two refusals with
   no committed edit between them carry one identity and the second says nothing. The lines on
   the page change while a reader is told nothing, which is the case the amended requirement
@@ -410,6 +410,20 @@ reason, which is what those three get.
   outlet closes that last accidental way through. The common case behaved this way already;
   what this change removes is the exception to it. The catalogue's is caught by the staleness
   guard, which this change does not touch.
+
+  The hull detail screen has the same shape and is worse: it states an address that resolves
+  to no hull at a revision of `1`, which can never rise, so a second unresolvable address is
+  silent for the rest of the session and the words are identical because the message takes no
+  parameters. A SLEF delivery reads the same way and is not traced. Both are raised on the
+  same report.
+
+- **The two shapes are one rule.** → An event is `(kind, revision, urgency)`, so a caller
+  passing a constant, or a measurement of state rather than a counter, mutes itself with no
+  sign that it has. Three callers get it right, each carrying a comment on why the obvious
+  number would not do. What would catch the shape rather than the instances is a policy rule
+  over the `revision` a caller passes. That is the reports' to weigh rather than this change's,
+  and it is named here because enumerating the instances has already been wrong once: a sweep
+  recorded as complete found three of them, and a later reading found more.
 
 ## Migration Plan
 
