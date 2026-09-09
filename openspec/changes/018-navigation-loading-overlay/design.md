@@ -148,12 +148,13 @@ what the shell announces the second by: announcements are deduped by kind and re
 boolean carries no revision, so two separate failures would be one announcement and the
 second would be the silence FR-007 exists to remove.
 
-The count gets the second failure past the policy; it does not get it to a reader. Both
-failures say the same sentence, and the outlet held that sentence as text, so the second one
-wrote it over itself and the region did not change — and a live region announces a change to
-what it holds, not a decision to publish. So the identity of the event travels to the outlet
-with its words, and the outlet renders what it holds keyed by that identity: a genuinely new
-event replaces the node in the region, a republished one leaves it where it is. That is the
+The count gets the second failure past the policy; it does not on its own get it to a
+reader. Both failures say the same sentence, and an outlet that holds its sentence as text
+has the second one written over itself, leaving the region unchanged — and a live region
+announces a change to what it holds, not a decision to publish. So the identity of the event
+travels to the outlet with its words, and the outlet renders what it holds keyed by that
+identity: a genuinely new event replaces the node in the region, a republished one leaves it
+where it is. That is the
 announcement policy rather than this feature, so it is recorded as a modified requirement of
 `platform/accessible-responsive-operation` (011/FR-009). What a reader actually hears from
 the replacement is a judgment no scan makes; the screen-reader protocol settles it.

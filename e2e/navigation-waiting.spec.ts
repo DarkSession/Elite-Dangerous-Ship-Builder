@@ -319,6 +319,14 @@ test.describe('a screen that has to be fetched', () => {
     // screen it cannot get — the router's own event log shows another starting
     // within the second — so a statement standing later is that navigation's
     // answer rather than this one's.
+    //
+    // The taking down is all this reads. A navigation that ran here rather than
+    // being skipped would take the statement down too, and the two are not
+    // separable from outside: the address is one whose code the browser already
+    // holds, so neither asks for anything, and both leave the same address in
+    // the bar. What pins the arm itself is the store's own test over the events
+    // the router publishes; this holds that a Commander is not left under a
+    // statement nothing can dismiss.
     await page.evaluate(() => history.back());
     await expect
       .poll(() => watch.timesRemoved(), {
@@ -427,46 +435,57 @@ test.describe('a screen that never arrives', () => {
     const held = await holdEveryChunk(page);
     held.refuse();
 
-    // What a reader is told is what the region carrying it does, not what the
+    // What a reader is told is what the region carrying it holds, not what the
     // application decided to publish. Both failures say the same sentence, so
-    // the text is the same before and after and says nothing about whether the
-    // second one ever reached anyone: a live region announces a change to what
-    // it holds, and a sentence written over itself is not a change. So the
-    // region is watched, and the reading is that it changed twice.
-    await page.evaluate(() => {
-      const outlet = document.querySelector('[data-announcement-outlet="polite"]');
-      if (outlet === null) {
-        throw new Error('There is no polite outlet on the page to watch.');
-      }
-      const window_ = window as unknown as { __politeChanges?: number };
-      new MutationObserver(() => {
-        window_.__politeChanges = (window_.__politeChanges ?? 0) + 1;
-      }).observe(outlet, { childList: true, characterData: true, subtree: true });
-      window_.__politeChanges = 0;
-    });
-    const changes = (): Promise<number> =>
+    // the text is identical before and after and says nothing about whether the
+    // second one reached anyone: a live region announces a change to what it
+    // holds, and a sentence written over itself is not a change. The node is
+    // what changes, so the node is what is read — the same reading the outlet's
+    // own tests take, taken here against a real engine.
+    //
+    // Text nodes only: the framework's own anchors are comments, and they stay
+    // put across a change.
+    const readTheOutlet = (): Promise<{ found: boolean; replaced: boolean }> =>
       page.evaluate(() => {
-        const read = (window as unknown as { __politeChanges?: number }).__politeChanges;
-        if (read === undefined) {
-          throw new Error('The watch on the polite outlet never installed.');
+        const outlet = document.querySelector('[data-announcement-outlet="polite"]');
+        if (outlet === null) {
+          throw new Error('There is no polite outlet on the page to read.');
         }
-        return read;
+        const spoken =
+          [...outlet.childNodes].find(
+            (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+          ) ?? null;
+        const window_ = window as unknown as { __spoken?: ChildNode | null };
+        return { found: spoken !== null, replaced: spoken !== window_.__spoken };
+      });
+    const remember = (): Promise<void> =>
+      page.evaluate(() => {
+        const outlet = document.querySelector('[data-announcement-outlet="polite"]');
+        (window as unknown as { __spoken?: ChildNode | null }).__spoken =
+          [...(outlet?.childNodes ?? [])].find(
+            (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+          ) ?? null;
       });
 
+    await remember();
     await tools(page).filter({ hasText: 'Ship Builder' }).click({ noWaitAfter: true });
     await expect(failureNotice(page)).toBeVisible();
     await expect
-      .poll(changes, { message: 'the first failure never reached the polite outlet' })
-      .toBeGreaterThan(0);
-    const said = await changes();
+      .poll(async () => (await readTheOutlet()).found, {
+        message: 'the first failure never reached the polite outlet',
+      })
+      .toBe(true);
+    await remember();
 
     // A second screen, so a second navigation with its own code to fetch: the
     // first one's code is refused rather than held, and asking for it again
     // would not be a second failure of anything.
     await tools(page).filter({ hasText: 'Equipment Builder' }).click({ noWaitAfter: true });
     await expect
-      .poll(changes, { message: 'the second failure was written over the first in silence' })
-      .toBeGreaterThan(said);
+      .poll(readTheOutlet, {
+        message: 'the second failure was written over the first in silence',
+      })
+      .toEqual({ found: true, replaced: true });
 
     // And still politely, and still once each: two events, not one interrupting.
     await expect(assertiveOutlet(page)).toHaveText('');

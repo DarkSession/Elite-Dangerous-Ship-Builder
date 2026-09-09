@@ -193,13 +193,15 @@ covers is not.
 
 The automated coverage that does exist for the same requirements is
 `e2e/navigation-waiting.spec.ts` — the statement asserted to be a modal dialog
-named by its sentence, with the mark exposed as decoration, the screen behind
-unreachable by pointer and by focus, the ground asserted translucent, and the
-failure asserted both as words that stay on the page and as one polite
-announcement, and a second failure asserted to replace the node the polite region
-holds rather than to write the same sentence over itself — together with an axe
-pass over both states in all ten projects and the readings at 200% text and 400%
-zoom in `e2e/reflow.spec.ts`.
+named by its sentence, the screen behind unreachable by pointer and by focus,
+the ground asserted translucent, the failure asserted both as words that stay on
+the page and as one polite announcement, and a second failure asserted to
+replace the node the polite region holds rather than to write the same sentence
+over itself — together with an axe pass over both states in all ten projects,
+the readings at 200% text and 400% zoom in `e2e/reflow.spec.ts`, and the mark
+asserted to be exposed as decoration in
+`src/app/ui/components/waiting-overlay/waiting-overlay.spec.ts`, which is where a
+reading of one element's own markup belongs.
 
 | Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
 | ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |

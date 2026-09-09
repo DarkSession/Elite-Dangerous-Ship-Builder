@@ -420,12 +420,11 @@ disagrees or where the announcement is correct but unusable.
     afterwards and re-readable. Expect no reason to be stated, and expect the
     screen the Commander is on to be usable.
 
-    Then the same failure again. Press for a screen that opens, then pull the
-    connection and ask for one that cannot be fetched a second time. Expect a
-    second polite announcement, in the same words as the first. This is the
-    reading nothing automated can take: the words do not move between the two,
-    so what is being confirmed is that the reader is told again at all rather
-    than left in the silence a repeated sentence used to be.
+    Then the same failure again, with the connection still down: ask for a
+    second screen, one whose code has not been fetched either. Expect a second
+    polite announcement, in the same words as the first. This is the reading
+    nothing automated can take. The words do not move between the two, so what
+    is being confirmed is that the reader is told a second time at all.
 
     And the mark itself, in both engines with the platform's reduced-motion
     preference on: expect it to stand still. It carries its own animation
@@ -440,7 +439,7 @@ disagrees or where the announcement is correct but unusable.
     is right. And whether a Commander who has only heard this can tell a
     navigation that is still running from one that has failed — including two
     failures in a row, where the second says nothing new and the only thing
-    separating them is that it was said.
+    separating them is that it is said.
 
 ## Recording the result
 
