@@ -111,6 +111,25 @@
           fill: #ff7100;
         }
 
+        /*
+          The mark, still, for a Commander who asked for less motion.
+
+          This block has to be here rather than in the application's own
+          stylesheets. The file is drawn through <img>, which makes it a
+          separate document, and the host page's rules do not reach inside it.
+
+          Every shape is drawn at full opacity, so the mark is whole rather
+          than a ring of faded pieces frozen mid-cycle. It declares no
+          duration, no colour and no easing: it removes an animation.
+        */
+        @media (prefers-reduced-motion: reduce) {
+          .l1,
+          .l2 {
+            animation: none;
+            opacity: 1;
+          }
+        }
+
       ]]>
     </style>
 

@@ -4,7 +4,7 @@
   [tools]="tools()"
   [home]="home()"
   [actions]="actions()"
-  [status]="updateStatus()"
+  [status]="statusNotices()"
   [back]="back()"
   [identity]="identity()"
   (actionSelected)="selectAction($event)"
@@ -46,11 +46,11 @@
 }
 
 <!--
-  The three layers that talk to a Commander about the session they are in
-  rather than about a screen: Help · About, and the two halves of the update
-  announcement.
+  The four layers that talk to a Commander about the session they are in
+  rather than about a screen: Help · About, the two halves of the update
+  announcement, and the statement that the application is waiting for a screen.
 
-  All three are mounted in a browser only, and this is the one place in this
+  All four are mounted in a browser only, and this is the one place in this
   template that asks which. Each of them is a closed `<dialog>` until something
   opens it, so rendering them into a generated document draws nothing, moves
   nothing and costs a Commander no frame — but two of them state the version
@@ -62,8 +62,9 @@
   Mounting them a moment later rather than blanking what they say keeps each
   one's own contract whole. Help still opens on the first offline visit,
   because the browser mounts it before anything can ask for it, and it still
-  names the running version, because by then something is running. And there is
-  no session to announce an update to until there is a session.
+  names the running version, because by then something is running. There is no
+  session to announce an update to until there is a session, and no navigation
+  to wait on either.
 -->
 @if (interactive) {
   <!--
@@ -112,4 +113,16 @@
   >
     <p class="app__update-detail">{{ updateAppliedDetail() }}</p>
   </ednb-layer>
+
+  <!--
+    The statement that the application is waiting for a screen a Commander
+    asked for. Beside the frame with the other three, because it belongs to the
+    session rather than to any screen, and under the same browser-only
+    condition, because a document the build generates has no navigation to wait
+    on and must carry nothing over its first frame (018/FR-008).
+
+    It is held down while the restart overlay stands. That text has to stay
+    visible, and a navigation running under a restart is not going to finish.
+  -->
+  <ednb-waiting-overlay [open]="waitingOverlay()" [text]="waitingText()" />
 }

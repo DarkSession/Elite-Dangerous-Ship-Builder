@@ -33,11 +33,13 @@ import {
   type ShellStatus,
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
+import { NavigationWaiting } from './application/navigation/navigation-waiting.store';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { RenderingTarget } from './platform/browser/rendering-target';
 import { EmptyBenchService } from './application/equipment/empty-bench.service';
 import { LoadoutImportPresenter } from './application/equipment/loadout-import.presenter';
 import { Layer } from './ui/components/layer/layer';
+import { WaitingOverlay } from './ui/components/waiting-overlay/waiting-overlay';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
@@ -81,6 +83,7 @@ export const UPDATE_ACTION = 'app.update';
     ImportDialog,
     Layer,
     RouterOutlet,
+    WaitingOverlay,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -106,6 +109,7 @@ export class App {
    */
   readonly interactive = inject(RenderingTarget).isBrowser;
   readonly #updates = inject(ApplicationUpdateStore);
+  readonly #navigationWaiting = inject(NavigationWaiting);
   readonly #announcements = inject(AnnouncementService);
   readonly library = inject(LibraryPresence);
 
@@ -288,6 +292,48 @@ export class App {
   });
 
   /**
+   * Everything the session has to say on the page, in reading order.
+   *
+   * The version outcome first, then a navigation that could not open its
+   * screen. Both have to stay readable and neither may displace the other: the
+   * version notice sits beside the control that acts on it, and the failure is
+   * the only answer a Commander has to a press that produced nothing. The
+   * version notice leads because it is about the whole session, where the
+   * failure is about one press (018/FR-007).
+   */
+  readonly statusNotices = computed<readonly ShellStatus[]>(() => {
+    const standing: ShellStatus[] = [];
+    const version = this.updateStatus();
+    if (version !== null) {
+      standing.push(version);
+    }
+    if (this.#navigationWaiting.failed()) {
+      standing.push({
+        tone: 'error',
+        message: this.#messages.message('navigation.failed.notice'),
+        detail: this.#messages.message('navigation.failed.detail'),
+      });
+    }
+    return standing;
+  });
+
+  /**
+   * Whether the application is waiting for a screen it has been asked for.
+   *
+   * Held down while the restart announcement stands. That text has to be
+   * visible while it is up (011/FR-025), and the page under it is inert — a
+   * mark drawn on top of it would hide required words, and one drawn under it
+   * would be a mark nobody can see. It costs nothing: the restart replaces the
+   * page, so a navigation running underneath it is not going to finish
+   * (018/FR-002).
+   */
+  readonly waitingOverlay = computed(
+    () => this.#navigationWaiting.waiting() && !this.#updates.overlay(),
+  );
+
+  readonly waitingText = this.#messages.messageSignal('navigation.waiting.notice');
+
+  /**
    * The overlay that stands over the page while the restart is coming.
    *
    * Everything about it is here rather than in a component of its own: it is
@@ -401,6 +447,33 @@ export class App {
           // reader once the restart has already failed, where "this session is
           // restarting on it" would be a statement nothing corrects.
           messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
+        }),
+      );
+    });
+
+    // One polite announcement per failed navigation.
+    //
+    // Nothing is blocked: the overlay is already gone, the Commander has a
+    // screen they can use, and what failed was one press — which is the
+    // treatment 011/FR-009 gives a change that is not a blocking error. The
+    // words also stay on the page, in the status list above, because a
+    // spoken sentence cannot be re-read (018/FR-007).
+    //
+    // The count is the revision, so two separate failures are two events and
+    // the second is not deduped into silence. Resolving the message reads the
+    // catalogue, so it is announced in `untracked`: tracked, a committed locale
+    // would republish an event that already happened.
+    effect(() => {
+      const revision = this.#navigationWaiting.failures();
+      if (revision === 0) {
+        return;
+      }
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'navigation.failed',
+          revision,
+          urgency: 'polite',
+          messageKey: 'navigation.failed.notice',
         }),
       );
     });

@@ -1,0 +1,8 @@
+<!--
+  No control of any kind. The navigation is already running, there is nothing
+  here to answer, and the native cancel is refused for the same reason.
+-->
+<dialog class="waiting" [attr.aria-labelledby]="textId" (cancel)="blockCancel($event)">
+  <img class="waiting__mark" [src]="markSource" alt="" aria-hidden="true" />
+  <p class="waiting__spoken" [id]="textId">{{ text() }}</p>
+</dialog>

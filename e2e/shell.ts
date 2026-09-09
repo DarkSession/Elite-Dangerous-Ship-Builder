@@ -364,3 +364,95 @@ async function reachHull(page: Page, row: Locator): Promise<void> {
     await row.click();
   }
 }
+
+/**
+ * Holds every chunk the browser asks for from here on.
+ *
+ * Every screen is its own code, fetched on the navigation that first asks for
+ * it, so a journey about what a Commander is told while they wait has to be
+ * able to make them wait. Held by resource type rather than by file name: a
+ * development server and a production build name their chunks differently, and
+ * a journey that knew which would be a journey that runs in one lane.
+ *
+ * Arm it after the takeover, so the only script left to ask for is the one the
+ * next navigation needs. The gate is read when each request is answered rather
+ * than awaited once, so a request already waiting is answered by whatever the
+ * journey decides afterwards.
+ */
+export interface HeldChunks {
+  /** Lets every held chunk through, and every one asked for after it. */
+  release(): void;
+  /** Refuses them, the way a connection that drops does. */
+  refuse(): void;
+}
+
+export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
+  let gate: 'hold' | 'release' | 'refuse' = 'hold';
+
+  await page.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'script') {
+      // A page that navigates away disposes the routes it left waiting, and a
+      // disposed route is not an outcome worth failing a journey over.
+      await route.continue().catch(() => {});
+      return;
+    }
+    while (gate === 'hold') {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    if (gate === 'refuse') {
+      await route.abort('failed').catch(() => {});
+      return;
+    }
+    await route.continue().catch(() => {});
+  });
+
+  return {
+    release: () => {
+      gate = 'release';
+    },
+    refuse: () => {
+      gate = 'refuse';
+    },
+  };
+}
+
+/** The waiting statement, while it stands. */
+export function waitingStatement(page: Page): Locator {
+  return page.locator('ednb-waiting-overlay dialog[open]');
+}
+
+/**
+ * A watch on the waiting statement, kept across a navigation on the page as it
+ * stands.
+ *
+ * A reading taken once the screen has arrived cannot tell a statement that was
+ * never drawn from one that was drawn and removed, and the second is what a
+ * threshold exists to prevent. This looks every frame instead, and answers for
+ * the whole of the navigation.
+ */
+export interface StatementWatch {
+  /** Whether the statement stood at any frame since the watch was set. */
+  wasDrawn(): Promise<boolean>;
+}
+
+/** Starts watching the page as it stands, without reloading it. */
+export async function watchForTheStatement(page: Page): Promise<StatementWatch> {
+  await page.evaluate(() => {
+    const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+    window_.__waitingWasDrawn = false;
+    const look = (): void => {
+      if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+        window_.__waitingWasDrawn = true;
+      }
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  });
+
+  return {
+    wasDrawn: async () =>
+      (await page.evaluate(
+        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+      )) === true,
+  };
+}

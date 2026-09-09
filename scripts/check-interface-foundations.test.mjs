@@ -964,6 +964,69 @@ describe('production output', () => {
   });
 });
 
+describe('the waiting mark under reduced motion', () => {
+  const still = `<svg><style><![CDATA[
+    .l1 { animation: outer 1000ms linear infinite; }
+    .l2 { animation: inner 1000ms linear infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .l1,
+      .l2 {
+        animation: none;
+        opacity: 1;
+      }
+    }
+  ]]></style></svg>`;
+
+  it('accepts a mark that stops both of its animations', () => {
+    assert.deepEqual(rules.waitingMarkViolations(still), []);
+  });
+
+  it('accepts the mark the application actually ships', () => {
+    assert.deepEqual(rules.waitingMarkViolations(readFileSync(SCOPE.waitingMark, 'utf8')), []);
+  });
+
+  it('rejects a mark with no reduced-motion block at all', () => {
+    const found = rules.waitingMarkViolations(
+      '<svg><style>.l1 { animation: outer 1s linear infinite; }</style></svg>',
+    );
+
+    assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
+  });
+
+  it('rejects a block that stops one animated class and leaves the other', () => {
+    const found = rules.waitingMarkViolations(
+      still.replace('      .l1,\n      .l2 {', '      .l1 {'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
+    assert.match(found[0].message, /\.l2/);
+  });
+
+  it('rejects a block that names both classes and stops nothing', () => {
+    const found = rules.waitingMarkViolations(still.replace('animation: none;', 'opacity: 0.5;'));
+
+    assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
+  });
+
+  it('reads the whole block however the file is laid out', () => {
+    // One line, so a reading that stopped at the first closing brace would see
+    // an empty block and reject a mark that is correct.
+    const oneLine = `<svg><style><![CDATA[
+    @media (prefers-reduced-motion: reduce) { .l1, .l2 { animation: none; opacity: 1; } }
+  ]]></style></svg>`;
+
+    assert.deepEqual(rules.waitingMarkViolations(oneLine), []);
+  });
+
+  it('rejects a reduced-motion block that is never closed', () => {
+    const found = rules.waitingMarkViolations(
+      '<svg><style>@media (prefers-reduced-motion: reduce) { .l1, .l2 { animation: none;</style></svg>',
+    );
+
+    assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
+  });
+});
+
 describe('extracted schematics', () => {
   const installed = {
     'Anaconda/schematic-top.svg': 'aaa',

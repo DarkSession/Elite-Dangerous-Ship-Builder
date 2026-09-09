@@ -69,6 +69,11 @@ export const SCOPE = {
   /** Where the build is configured to place the copied hull schematics. */
   extractedSchematics: 'public/assets/ships',
   previewManifest: 'src/app/ui/previews/preview-manifest.ts',
+  /**
+   * The shared waiting mark, whose own stylesheet is the only place a
+   * reduced-motion rule can reach it.
+   */
+  waitingMark: 'public/assets/loader.svg',
   uiComponents: 'src/app/ui/components',
   /** Interface suites that may never be skipped, focused or quarantined. */
   testGlobs: ['e2e', 'src/app/ui', 'src/app/i18n', 'src/app/platform'],
@@ -924,6 +929,7 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkSearchMetadata();
   await checkProductionOutput();
   await checkCopiedSchematics();
+  await checkWaitingMark();
 
   return [...violations];
 }
@@ -2733,6 +2739,88 @@ export function serviceWorkerOwnershipViolations(sources, config = null) {
   return found;
 }
 
+// ---------------------------------------------------------------------------
+// Rule: the shared waiting mark stops moving under reduced motion
+// ---------------------------------------------------------------------------
+
+/** The classes the mark animates, which the rule holds the block to naming. */
+const ANIMATED_MARK_CLASSES = ['l1', 'l2'];
+
+/**
+ * Rejects a waiting mark that would go on animating under reduced motion.
+ *
+ * The mark is drawn through `<img>`, so it is a separate document and
+ * `src/styles/_base.scss` cannot reach inside it. Its own stylesheet is the
+ * only place the preference can be honoured, and no stylesheet checker looks
+ * there — the governed-literal rule reads `src/`, and a linter reading SCSS
+ * does not read an SVG. So the block is held here instead, by name.
+ *
+ * Both animated classes are named, because a block that stops one of them
+ * leaves the mark half moving, which is the preference honoured for half the
+ * drawing (011/FR-013).
+ */
+export function waitingMarkViolations(source, file = SCOPE.waitingMark) {
+  const found = [];
+  const report = (message) => found.push({ file, line: 0, rule: 'waiting-mark-motion', message });
+
+  const opening = source.match(/@media[^{]*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)[^{]*\{/);
+  if (opening === null || opening.index === undefined) {
+    report(
+      'The waiting mark carries no reduced-motion block. It is drawn through <img>, so the page\u2019s own rule cannot reach it and the mark goes on animating for a Commander who asked it not to.',
+    );
+    return found;
+  }
+
+  // Counted to the brace that closes the block rather than read to the first
+  // one. The block holds a rule of its own, so a lazy match stops inside it and
+  // what the rule then reads depends on how the file is laid out.
+  const start = opening.index + opening[0].length;
+  let depth = 1;
+  let end = start;
+  while (end < source.length && depth > 0) {
+    if (source[end] === '{') {
+      depth += 1;
+    } else if (source[end] === '}') {
+      depth -= 1;
+    }
+    end += 1;
+  }
+  if (depth !== 0) {
+    report('The waiting mark\u2019s reduced-motion block is never closed.');
+    return found;
+  }
+
+  const body = source.slice(start, end - 1);
+  for (const name of ANIMATED_MARK_CLASSES) {
+    if (!new RegExp(`\\.${name}\\b`).test(body)) {
+      report(
+        `The reduced-motion block does not name ".${name}", so that part of the mark goes on animating.`,
+      );
+    }
+  }
+
+  if (!/animation\s*:\s*none/.test(body)) {
+    report('The reduced-motion block stops no animation.');
+  }
+
+  return found;
+}
+
+/** IO wrapper: reads the shared waiting mark and inspects its own stylesheet. */
+async function checkWaitingMark() {
+  const path = resolve(ROOT, SCOPE.waitingMark);
+  if (!existsSync(path)) {
+    violations.push({
+      file: SCOPE.waitingMark,
+      line: 0,
+      rule: 'waiting-mark-motion',
+      message: 'The shared waiting mark is missing.',
+    });
+    return;
+  }
+  violations.push(...waitingMarkViolations(await readFile(path, 'utf8')));
+}
+
 /**
  * The rules as pure functions, so every one of them can be driven by positive
  * and negative fixtures without touching the repository (T029).
@@ -2748,6 +2836,7 @@ export const rules = {
   searchMetadataSources,
   routeTableTriples,
   copiedSchematicViolations,
+  waitingMarkViolations,
   componentMetadataViolations,
   stylesheetViolations,
   governedStylesheetViolations,

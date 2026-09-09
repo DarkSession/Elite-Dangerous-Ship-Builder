@@ -429,6 +429,126 @@ test.describe('a document read by a Commander whose browser asks for German', ()
 });
 
 /**
+ * The waiting statement and the documents the build writes.
+ *
+ * A generated document has no navigation to wait on, and a statement drawn over
+ * a session's first presentation would hide content the first frame is required
+ * to show and blank content across the takeover — which FR-008 and FR-009
+ * forbid, the second naming the only three exceptions there are (018/FR-008).
+ */
+test.describe('the waiting statement and a generated document', () => {
+  for (const { path } of SCREENS) {
+    test(`is absent from the document ${path} answers with (018/FR-008)`, async ({ page }) => {
+      const served = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+      expect(served, `${path} carried the waiting overlay`).not.toContain('ednb-waiting-overlay');
+      expect(served, `${path} carried the waiting sentence`).not.toContain(
+        englishMessages['navigation.waiting.notice'],
+      );
+    });
+
+    test(`draws nothing over the first presentation of ${path} (018/FR-008)`, async ({ page }) => {
+      // Watched from before the document exists to after the takeover, rather
+      // than read once at the end: what is claimed is that the statement was
+      // never up, not that it is down now.
+      await page.addInitScript(() => {
+        const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+        window_.__waitingWasDrawn = false;
+        const look = () => {
+          if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+            window_.__waitingWasDrawn = true;
+          }
+          requestAnimationFrame(look);
+        };
+        requestAnimationFrame(look);
+      });
+
+      await page.goto(path);
+      await waitForTakeover(page);
+
+      expect(
+        await page.evaluate(
+          () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+        ),
+        `${path} was covered by the waiting statement`,
+      ).toBe(false);
+    });
+  }
+
+  test('states a first navigation that failed, over the document it was served (018/FR-007, FR-008)', async ({
+    browser,
+    page,
+  }) => {
+    // The lane that has a document. `navigation-waiting.spec.ts` reads the same
+    // failure on a development server, where what the Commander is left on is
+    // the application's own shell; here the address answers with a written
+    // document first, and the promise is that the failure is stated over it and
+    // the document stays readable.
+    //
+    // It is also the only reading of the arrangement the built application
+    // actually runs: there the first navigation blocks bootstrap, so the events
+    // it raises come before any component exists. Nothing in the development
+    // lane can see that.
+    //
+    // The screen's own code is refused and the application's is not. They are
+    // told apart by asking for the screen once and remembering what that
+    // fetched, because both are chunks and only the address distinguishes them.
+    const screenChunks = new Set<string>();
+    await page.goto('/');
+    await waitForTakeover(page);
+    page.on('request', (request) => {
+      if (request.resourceType() === 'script') {
+        screenChunks.add(request.url());
+      }
+    });
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: /Ship Builder/ })
+      .click();
+    await expect(page).toHaveURL(/\/ships$/);
+    await expect(page.getByRole('main')).toBeVisible();
+
+    // A context of its own, not a second page in this one. The worker
+    // registered by the pass above answers a request from its cache without
+    // ever reaching the network, and a request that is never made is one no
+    // route can refuse. A context with no worker in it makes the fetch a real
+    // one. `browser.newContext` inherits none of the project's options, so the
+    // address is given again here.
+    const context = await browser.newContext({ baseURL: PRODUCT_URL });
+    const fresh = await context.newPage();
+    await fresh.route('**/*', async (route) => {
+      if (screenChunks.has(route.request().url())) {
+        await route.abort('failed').catch(() => {});
+        return;
+      }
+      await route.continue().catch(() => {});
+    });
+
+    await fresh.goto('/ships');
+
+    // Stated, and stated in words that stay on the page.
+    await expect(
+      fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
+
+    // No statement was drawn over the first presentation, and the shell the
+    // Commander is left on is one they can use (018/FR-008).
+    //
+    // FR-007's other half — "the Commander is left on the readable document
+    // that address served" — is NOT read here, because the application does not
+    // do it: the takeover empties `main` when the first navigation fails, and
+    // what the Commander keeps is the shell. Closing that is a change to how
+    // the takeover behaves when its navigation fails, which belongs to
+    // `platform/published-addresses` rather than to this feature, and it is
+    // open rather than settled.
+    await expect(fresh.getByRole('banner')).toBeVisible();
+    await expect(fresh.getByRole('link', { name: 'Ship Builder' })).toBeVisible();
+    await context.close();
+  });
+});
+
+/**
  * The other document the production output serves: the one with no rendered
  * body, which every journey reaches `waitForTakeover` on.
  *

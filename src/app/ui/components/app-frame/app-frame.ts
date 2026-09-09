@@ -246,8 +246,16 @@ export class AppFrame {
   readonly identity = input<ScreenIdentity | null>(null);
   readonly actions = input<readonly ShellAction[]>([]);
 
-  /** Visible route or global feedback. Ordinary content, not a live region. */
-  readonly status = input<ShellStatus | null>(null);
+  /**
+   * Visible route or global feedback. Ordinary content, not a live region.
+   *
+   * A list rather than one notice, because two independent things the session
+   * has to say can be true at once — a newer version waiting to be applied and
+   * a navigation that could not open its screen — and a slot that carried the
+   * first of them would drop the other in silence. They are drawn in the order
+   * they are given.
+   */
+  readonly status = input<readonly ShellStatus[]>([]);
 
   readonly actionSelected = output<string>();
 
@@ -403,11 +411,7 @@ export class AppFrame {
    * showed only the first of them would drop the other silently.
    */
   readonly notices = computed<readonly ShellStatus[]>(() => {
-    const standing: ShellStatus[] = [];
-    const supplied = this.status();
-    if (supplied !== null) {
-      standing.push(supplied);
-    }
+    const standing: ShellStatus[] = [...this.status()];
     const locale = this.localeNotice();
     if (locale !== null) {
       standing.push(locale);

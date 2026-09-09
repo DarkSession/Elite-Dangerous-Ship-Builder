@@ -248,7 +248,7 @@ describe('AppFrame', () => {
 
   it('renders visible feedback in ordinary reading order, before main', () => {
     const fixture = renderComponent(AppFrame, {
-      status: { tone: 'error', message: 'This build could not be saved.' },
+      status: [{ tone: 'error', message: 'This build could not be saved.' }],
     });
     const status = query(fixture, '.frame__status');
     const main = query(fixture, 'main');
@@ -259,7 +259,7 @@ describe('AppFrame', () => {
 
   it('keeps every standing notice, so one does not hide another', () => {
     const fixture = renderComponent(AppFrame, {
-      status: { tone: 'info', message: 'A newer version is available.' },
+      status: [{ tone: 'info', message: 'A newer version is available.' }],
     });
     // A language that could not be loaded and a version waiting to be applied
     // are independent facts, and a region that showed only the first would drop
@@ -274,9 +274,33 @@ describe('AppFrame', () => {
     expect(textOf(notices[1])).toContain('de-DE');
   });
 
+  it('draws no status region at all when it is given nothing', () => {
+    const fixture = renderComponent(AppFrame, { status: [] });
+
+    // A region with nothing in it is a landmark a reader meets and learns
+    // nothing from.
+    expect(element(fixture).querySelector('.frame__status')).toBeNull();
+  });
+
+  it('keeps two supplied notices apart, in the order it was given them', () => {
+    const fixture = renderComponent(AppFrame, {
+      status: [
+        { tone: 'info', message: 'A newer version is available.' },
+        { tone: 'error', message: 'The screen could not be opened.' },
+      ],
+    });
+    const notices = query(fixture, '.frame__status').querySelectorAll('ednb-status-notice');
+
+    // The version notice is about the whole session; the failure is about one
+    // press. Neither replaces the other.
+    expect(notices.length).toBe(2);
+    expect(textOf(notices[0])).toContain('A newer version is available.');
+    expect(textOf(notices[1])).toContain('The screen could not be opened.');
+  });
+
   it('mounts exactly two live regions and no more', () => {
     const fixture = renderComponent(AppFrame, {
-      status: { tone: 'info', message: 'A message.' },
+      status: [{ tone: 'info', message: 'A message.' }],
     });
 
     expect(element(fixture).querySelectorAll('[aria-live]').length).toBe(2);

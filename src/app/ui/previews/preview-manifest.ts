@@ -224,6 +224,7 @@ import { TabGroup } from '../components/tab-group/tab-group';
 import { TextField } from '../components/text-field/text-field';
 import { TextareaField } from '../components/textarea-field/textarea-field';
 import { UnavailableValue } from '../components/unavailable-value/unavailable-value';
+import { WaitingOverlay } from '../components/waiting-overlay/waiting-overlay';
 import { candidateMembership } from '../../application/outfitting/candidate-membership';
 import {
   applyQuery,
@@ -1205,6 +1206,55 @@ registerPreview({
 });
 
 registerPreview({
+  componentId: 'waiting-overlay',
+  group: 'Layers',
+  component: WaitingOverlay,
+  contract: contract(
+    'waiting-overlay',
+    {
+      role: 'dialog',
+      // Nothing here is a control, so there is no visible name to match. What
+      // names the statement is the sentence it carries for a reader, which is
+      // also the text equivalent of the mark.
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['the application is waiting'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { open: true, text: BUNDLED_ENGLISH['navigation.waiting.notice'] },
+      [
+        'the mark stands over the whole viewport on a translucent ground',
+        'the screen behind is inert and absent from the accessibility tree',
+        'the sentence names the statement; the mark is exposed as decoration',
+        'it carries no control, and states no proportion, percentage or remaining time',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+      // Isolated, for the reason the layer's open state is: a modal makes
+      // everything beside it inert, which is the behaviour under test and is
+      // incompatible with sharing a catalogue page.
+      true,
+    ),
+    state('empty', { open: false, text: BUNDLED_ENGLISH['navigation.waiting.notice'] }, [
+      'a closed overlay renders nothing, holds no focus and covers nothing',
+    ]),
+    notApplicable(
+      'loading',
+      'The overlay is the loading state. It holds no content of its own that could be waited for.',
+    ),
+    notApplicable(
+      'error',
+      'The overlay reports nothing. A navigation that failed is stated by the shell, on the screen the Commander is left on.',
+    ),
+    notApplicable('disabled', 'The overlay carries no control, so it has nothing to disable.'),
+  ],
+});
+
+registerPreview({
   componentId: 'app-frame',
   group: 'Shell',
   component: AppFrame,
@@ -1278,11 +1328,13 @@ registerPreview({
         // fixture claiming to be a state the product renders, and a fixture
         // whose wording could drift from the product's would go on being
         // scanned while evidencing a composition that no longer exists.
-        status: {
-          tone: 'error',
-          message: BUNDLED_ENGLISH['update.unusable.notice'],
-          detail: BUNDLED_ENGLISH['update.unusable.detail'],
-        },
+        status: [
+          {
+            tone: 'error',
+            message: BUNDLED_ENGLISH['update.unusable.notice'],
+            detail: BUNDLED_ENGLISH['update.unusable.detail'],
+          },
+        ],
         actions: [
           {
             id: 'app.update',

@@ -57,6 +57,8 @@
   --ednb-surface-menu: var(--ednb-palette-panel-menu);
   --ednb-surface-layer: var(--ednb-palette-panel);
   --ednb-surface-scrim: var(--ednb-palette-scrim);
+  // The ground a wait is stated on, rather than one a Commander acts in.
+  --ednb-surface-scrim-soft: var(--ednb-palette-scrim-soft);
 
   // The bar that carries a screen title or a dialog title.
   --ednb-surface-bar: var(--ednb-palette-panel-4);

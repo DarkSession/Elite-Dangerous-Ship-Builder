@@ -1,9 +1,10 @@
 # Manual protocol: screen-reader journeys
 
 **Protocol id**: `screen-reader`
-**Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026,
-SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002
-**Version**: 11
+**Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-013, FR-020, FR-023, FR-025,
+FR-026, SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002; 018 FR-002,
+FR-006, FR-007
+**Version**: 12
 
 ## What is automated, and what is left
 
@@ -401,6 +402,36 @@ disagrees or where the announcement is correct but unusable.
     silent reads as working or as broken. Two of the five activations above do
     nothing on purpose, and a Commander who hears nothing has to be able to
     tell that from a Commander who hears nothing because the control failed.
+
+21. **A screen that is on its way.** With the connection throttled hard enough
+    that a screen takes a second or two to arrive, ask for one from the entry
+    point. Expect the reader to be moved into the statement that the
+    application is waiting, expect that statement to be the sentence rather
+    than a description of a graphic, and expect the mark beside it to be
+    announced as nothing at all. Try to reach the screen behind it: expect
+    nothing there to be reachable, and expect no control on the statement
+    itself. When the screen arrives, expect the statement to be gone and the
+    reader to be on the screen that opened.
+
+    Then the failure. Ask for a screen whose code cannot be fetched — pull the
+    connection at the moment of the press. Expect one polite announcement
+    saying the screen could not be opened, arriving without cutting off what
+    was being said, and expect the same words to be findable on the page
+    afterwards and re-readable. Expect no reason to be stated, and expect the
+    screen the Commander is on to be usable.
+
+    And the mark itself, in both engines with the platform's reduced-motion
+    preference on: expect it to stand still. It carries its own animation
+    inside its own drawing, which the page's rule cannot reach, so this is
+    where the fix in that drawing is confirmed rather than assumed.
+
+    The judgment this step exists for, and it is three. Whether a still mark on
+    a subdued screen still reads as "the application is working" rather than as
+    "the application has stopped". Whether the softened ground leaves enough of
+    the screen behind visible to say which screen is being waited on — the
+    automated reading can only say the ground is translucent, not that the step
+    is right. And whether a Commander who has only heard this can tell a
+    navigation that is still running from one that has failed.
 
 ## Recording the result
 
