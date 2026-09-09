@@ -15,6 +15,12 @@ waiting, and MUST state it until the navigation ends. The statement MUST be the 
 every address the application answers, so a Commander learns one answer rather than one per
 screen.
 
+Two requirements below suppress the statement, and this one gives way to both: it is not
+drawn while the application is telling a Commander the page is about to be replaced ("The
+statement is what the Commander is looking at"), and it is not drawn over the first
+presentation of a session ("The statement belongs to a running session"). Everywhere else,
+this requirement holds.
+
 The statement MUST say only that the application is working. It MUST NOT state a
 proportion, a percentage, a remaining time or a step count, because the application knows
 none of them.
@@ -23,7 +29,8 @@ Source: 018/FR-001.
 
 #### Scenario: A screen whose code has not been fetched before
 
-- **WHEN** a Commander asks for a screen whose code the browser has not fetched
+- **WHEN** a Commander in a running session asks for a screen whose code the browser has not
+  fetched, and nothing is suppressing the statement
 - **THEN** the application states that it is waiting
 - **AND** the statement stands until the navigation ends
 
@@ -108,7 +115,9 @@ The statement MUST NOT appear until the navigation has been running for the thre
 navigation the browser resolves without a request changes the screen with nothing drawn.
 
 The threshold MUST be 10 milliseconds, and the same threshold MUST apply to every
-navigation. It is stated here so a scenario can be driven against it.
+navigation. It is stated here so a scenario can be driven against it. It decides when a
+statement appears, never whether one is suppressed: a navigation the two requirements above
+suppress the statement for draws nothing however long it runs.
 
 Source: 018/FR-004.
 
@@ -119,7 +128,8 @@ Source: 018/FR-004.
 
 #### Scenario: The navigation is still going at the threshold
 
-- **WHEN** a navigation has been running for 10 milliseconds and has not ended
+- **WHEN** a navigation that nothing suppresses the statement for has been running for
+  10 milliseconds and has not ended
 - **THEN** the waiting statement is drawn
 
 #### Scenario: A second navigation is measured the same way
@@ -198,9 +208,12 @@ keeps a screen they can use, and the failure is about the one press. It MUST NOT
 reason it does not have.
 
 This MUST hold for every navigation, the first of a session included. Where the first
-navigation of a session is the one that fails, what the Commander is left on is the readable
-document that address served (`openspec/specs/platform/published-addresses/`, "A takeover
-that does not complete").
+navigation of a session is the one that fails, what the Commander is left on is whatever that
+address served them: the readable document where the build generates one, and the
+application's own shell at an address it does not — which is the outfitting bench and the
+equipment bench (`openspec/specs/platform/published-addresses/`, "Which addresses get a
+document" and "A takeover that does not complete"). Either way they are left with something
+readable and the failure is stated on it.
 
 Source: 018/FR-007.
 
@@ -218,9 +231,17 @@ Source: 018/FR-007.
 
 #### Scenario: The session's first navigation is the one that fails
 
-- **WHEN** the first navigation of a session ends without presenting its screen
+- **WHEN** the first navigation of a session fails at an address the build generates a
+  document for
 - **THEN** the failure is stated
 - **AND** the Commander is left on the readable document that address served
+
+#### Scenario: The first navigation fails at an address with no generated document
+
+- **WHEN** the first navigation of a session fails at an address the build generates no
+  document for
+- **THEN** the failure is stated
+- **AND** the Commander is left on the application's own shell rather than on nothing
 
 #### Scenario: The application does not know why
 

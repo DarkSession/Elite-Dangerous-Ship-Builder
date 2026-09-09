@@ -75,8 +75,10 @@
       nothing, and carries no control. The standing state is isolated, as the layer's open
       state is, because a modal makes everything beside it inert. Verify with `pnpm run
       policy`, which fails on an exported UI component that declares no preview, and with
-      `e2e/ui-preview.spec.ts`, which renders and scans every declared state (018/FR-002,
-      011/FR-011, 011/FR-013).
+      `e2e/ui-preview.spec.ts`, which renders and scans every declared state. The
+      reduced-motion variant renders the mark under the preference; what judges that the
+      animation stopped is task 1.2's rule and task 7.2's reading, not this (018/FR-002,
+      011/FR-011).
 
 ## 4. The shell mounts it, and states a navigation that failed
 
@@ -131,9 +133,9 @@
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
-      inside a running session, and on the navigation that starts one, where what the
-      Commander is left on is the readable document that address served (018/FR-005, FR-007,
-      FR-008).
+      inside a running session, and on the navigation that starts one at an address the build
+      generates a document for, where what the Commander is left on is that document
+      (018/FR-005, FR-007, FR-008).
 - [ ] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
