@@ -471,7 +471,7 @@ export interface StatementWatch {
   timesRemoved(): Promise<number>;
 }
 
-/** The watcher itself, as a string, because it is installed in two ways. */
+/** The watcher itself, held apart because it is installed in two ways. */
 const WATCH_THE_STATEMENT = () => {
   const window_ = window as unknown as { __waitingDrawn?: number; __waitingRemoved?: number };
   window_.__waitingDrawn = 0;

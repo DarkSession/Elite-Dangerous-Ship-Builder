@@ -338,7 +338,7 @@ decision is where that question is on the record.
 
 ### Which of the five component states the overlay supports
 
-`populated` — the standing overlay. `empty` — the closed overlay, which draws nothing and
+`default` — the standing overlay. `empty` — the closed overlay, which draws nothing and
 holds no focus. The other three cannot exist and say so in the manifest: the overlay holds no
 content of its own, so it has no `loading` state distinct from standing, nothing it reports
 that could be an `error`, and no control that could be `disabled`. The design system asks for

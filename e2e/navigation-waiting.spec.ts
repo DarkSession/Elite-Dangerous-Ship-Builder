@@ -101,8 +101,10 @@ test.describe('a screen that has to be fetched', () => {
 
     // Nothing to sit through, either way. A statement that arrives late is
     // late, and one that lingers is a statement that is no longer true. Read
-    // from a real engine, where a duration a stylesheet never set and one it
-    // set to zero are told apart (011/FR-011).
+    // from a real engine, where a stylesheet the element actually got is the
+    // one being asked — a duration never set and one set to zero both compute
+    // to `0s`, so what this catches is a transition or an animation being given
+    // to it later (011/FR-011).
     expect(
       await overlay(page).evaluate((element) => {
         const style = getComputedStyle(element);
@@ -112,14 +114,19 @@ test.describe('a screen that has to be fetched', () => {
 
     // The screen behind it is still on the page, and is not reachable.
     await expect(page.locator('main')).toBeAttached();
-    const covered = await tools(page)
+    // What answers at the card's own middle. Asked for separately from what it
+    // means: a point outside the viewport answers nothing at all, and nothing
+    // is not the statement — a reading that folded the two together would pass
+    // on a profile where the card sits below the fold.
+    const atTheCard = await tools(page)
       .first()
       .evaluate((card) => {
         const box = card.getBoundingClientRect();
         const at = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-        return at === null || !card.contains(at);
+        return { answered: at !== null, isTheCard: at !== null && card.contains(at) };
       });
-    expect(covered, 'the screen behind the statement is covered').toBe(true);
+    expect(atTheCard.answered, 'nothing at all was drawn where the card is').toBe(true);
+    expect(atTheCard.isTheCard, 'the screen behind the statement is covered').toBe(false);
 
     await expectNoDocumentOverflow(page);
 
@@ -130,7 +137,9 @@ test.describe('a screen that has to be fetched', () => {
 
   test('draws the same statement whichever screen was asked for (018/FR-001)', async ({ page }) => {
     // One answer a Commander learns, rather than one per screen. The ship list
-    // is already on screen; what is held here is a hull's own code.
+    // is already on screen; what is held here is the code behind the hull the
+    // press opens — and, where a rest reads a hull, the workspace's as well,
+    // because there the press builds the hull and opens the bench on it.
     await page.goto('/ships');
     await waitForTakeover(page);
 
@@ -236,10 +245,13 @@ test.describe('a screen that has to be fetched', () => {
     //
     // The counts are read once the navigation taking over has asked for its own
     // code, not at the traversal: a store that took the statement down at the
-    // handover would be read before it had done so, and pass. Everything this
-    // press asks for has been asked for by the time the statement stands — the
-    // gate holds it all — so the next thing asked for is the bench, which is a
-    // screen nothing here has opened.
+    // handover would be read before it had done so, and pass.
+    //
+    // What the press asks for differs by profile — where a rest reads a hull it
+    // opens the hull and then the bench on it, two navigations rather than one
+    // — so this counts rather than names. The equipment bench is a screen
+    // neither of those asks for, and its code is the next thing asked for after
+    // the traversal, which the handover has to have happened for.
     const askedBefore = held.timesAsked();
     await page.evaluate(() => history.back());
     await expect
@@ -534,6 +546,7 @@ test.describe('accessibility', () => {
     if (browserName === 'chromium') {
       const devtools = await page.context().newCDPSession(page);
       const tree = await devtools.send('Accessibility.getFullAXTree');
+      await devtools.detach();
       const exposed = (role: string): string[] =>
         tree.nodes.filter((node) => !node.ignored && node.role?.value === role).map(() => role);
 
@@ -546,7 +559,6 @@ test.describe('accessibility', () => {
       expect(exposed('dialog'), 'the statement is not in the accessibility tree').toEqual([
         'dialog',
       ]);
-      await devtools.detach();
     }
 
     // The mechanism behind it, so a failure says which half broke: the
@@ -558,12 +570,18 @@ test.describe('accessibility', () => {
     ).toBe(true);
 
     // Which shows in what a keyboard can reach: nothing behind it takes focus.
-    const reachable = await page.evaluate(() => {
-      const behind = document.querySelector<HTMLElement>('main a, main button');
-      behind?.focus();
-      return behind !== null && document.activeElement === behind;
+    // Whether there was a control to try is asked separately — a screen with
+    // none would refuse focus for the wrong reason and read the same.
+    const behind = await page.evaluate(() => {
+      const control = document.querySelector<HTMLElement>('main a, main button');
+      control?.focus();
+      return {
+        found: control !== null,
+        took: control !== null && document.activeElement === control,
+      };
     });
-    expect(reachable, 'a control behind the statement took focus').toBe(false);
+    expect(behind.found, 'the screen behind the statement carried no control to try').toBe(true);
+    expect(behind.took, 'a control behind the statement took focus').toBe(false);
 
     await expectNoAccessibilityViolations(page, testInfo, { label: 'navigation waiting' });
 

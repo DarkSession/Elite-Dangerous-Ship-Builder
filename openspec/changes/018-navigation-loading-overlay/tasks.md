@@ -74,8 +74,10 @@
       011/FR-011).
 - [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a standing state
       and an `empty` state (closed) — the standing one is named `default`, which is the word
-      the component contract uses — each with the `normal`,
-      `expanded-copy`, `rtl` and `reduced-motion` variants, and a stated reason for each of
+      the component contract uses. The standing state carries the `normal`, `expanded-copy`,
+      `rtl` and `reduced-motion` variants; the closed one carries `normal` alone, because an
+      overlay that renders nothing has nothing for a variant to change, which is what the
+      layer's own closed state does. A stated reason for each of
       `loading`, `error` and `disabled` — the overlay holds no content of its own, reports
       nothing, and carries no control. The standing state is isolated, as the layer's open
       state is, because a modal makes everything beside it inert. Verify with

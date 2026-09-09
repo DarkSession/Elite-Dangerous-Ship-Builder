@@ -2308,7 +2308,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'a navigation that has to fetch its screen states that it is waiting, over the screen it was pressed from',
-      'the mark is centred in the viewport on a translucent ground, at every profile and at 200% text and 400% zoom',
+      'the mark is centred in the viewport on a translucent ground, at every profile',
+      'it holds up at 200% text and 400% zoom, read in the reflow journey',
       'the statement is a modal dialog, so the screen behind takes no press and no focus and is absent from the accessibility tree',
       'it carries no control, states no proportion, percentage or remaining time, and refuses the native cancel',
       'the same statement answers every address, and one stands at a time',
