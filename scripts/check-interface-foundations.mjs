@@ -1077,6 +1077,7 @@ async function checkProductionOutput() {
   }
 
   violations.push(...productionOutputViolations(contents));
+  violations.push(...firstFrameTypefaceViolations(contents));
 }
 
 /**
@@ -1501,6 +1502,132 @@ export function productionOutputViolations(contents) {
           });
         }
         match = pattern.exec(requestable);
+      }
+    }
+  }
+
+  return found;
+}
+
+// ---------------------------------------------------------------------------
+// Rule: a served document is drawn in its own typefaces from its first frame
+// ---------------------------------------------------------------------------
+
+/** A stylesheet the document asks for, with the attributes it carries. */
+const STYLESHEET_LINK = /<link\b[^>]*?\brel\s*=\s*["']stylesheet["'][^>]*>/gi;
+
+/** A face the document asks for before the stylesheet that declares it. */
+const FONT_PRELOAD = /<link\b[^>]*?\bas\s*=\s*["']font["'][^>]*>/gi;
+
+/**
+ * The file one `@font-face` is served from, as the emitted stylesheet spells it.
+ *
+ * Whitespace-tolerant, because the same rule is read from a minified stylesheet
+ * and from an unminified one, and a pattern that only matches the minified
+ * spelling stops checking without failing anything.
+ */
+const FACE_SOURCE = /@font-face\s*\{[^}]*?url\(([^)]+)\)/g;
+
+/** One attribute of a tag, however it is quoted. */
+function attributeValue(tag, name) {
+  const match = new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag);
+  return match === null ? null : match[2];
+}
+
+/**
+ * Checks that every published document paints in the faces it was designed in.
+ *
+ * A document painted in a system fallback and re-painted in Barlow a moment
+ * later changes shape in front of the Commander, and the change is the whole
+ * page: the fallback stacks are metrically different, so the text moves as well
+ * as changing. Two things keep it from happening, and both are invisible in a
+ * source file:
+ *
+ *   * the stylesheet that declares the faces is applied before the first paint,
+ *     which is what `optimization.styles.inlineCritical: false` in
+ *     `angular.json` holds. The critical-CSS pass moves the stylesheet behind
+ *     the first paint, and it keeps a face only where a rule it judges critical
+ *     names the family in a `font-family` value — every rule here names one
+ *     through a design token, which that pass cannot resolve, so it drops all
+ *     twenty faces and the document paints in whatever the system offers;
+ *   * `src/index.html` preloads the faces a served document draws with, so they
+ *     arrive with that stylesheet rather than a round trip behind it.
+ *
+ * `contents` is `{ [emitted file]: text }`, the same map the production-output
+ * rule reads. Only the documents and the emitted stylesheets are inspected.
+ */
+export function firstFrameTypefaceViolations(contents) {
+  const found = [];
+  const fail = (file, message) =>
+    found.push({ file, line: 0, rule: 'first-frame-typeface', message });
+
+  const declared = new Set();
+  for (const [file, text] of Object.entries(contents)) {
+    if (!file.endsWith('.css')) {
+      continue;
+    }
+    FACE_SOURCE.lastIndex = 0;
+    let face = FACE_SOURCE.exec(text);
+    while (face !== null) {
+      declared.add(face[1].trim().replace(/^["']|["']$/g, ''));
+      face = FACE_SOURCE.exec(text);
+    }
+  }
+
+  for (const [file, text] of Object.entries(contents)) {
+    if (!file.endsWith('.html')) {
+      continue;
+    }
+
+    const stylesheets = text.match(STYLESHEET_LINK) ?? [];
+    const applied = stylesheets.filter((link) => {
+      const media = attributeValue(link, 'media');
+      return media === null || /\ball\b|\bscreen\b/i.test(media);
+    });
+
+    for (const link of stylesheets) {
+      const media = attributeValue(link, 'media');
+      if (media !== null && !/\ball\b|\bscreen\b/i.test(media)) {
+        fail(
+          file,
+          `A stylesheet is deferred behind media="${media}", so the document paints before the faces it declares are known.`,
+        );
+      }
+    }
+
+    if (stylesheets.length === 0) {
+      continue;
+    }
+
+    const preloads = text.match(FONT_PRELOAD) ?? [];
+    if (applied.length > 0 && preloads.length === 0) {
+      fail(
+        file,
+        'The document declares no font preload, so every face arrives a round trip behind the stylesheet.',
+      );
+      continue;
+    }
+
+    for (const preload of preloads) {
+      const href = attributeValue(preload, 'href');
+      if (href === null || href.startsWith('/') || /^[a-z]+:/i.test(href)) {
+        fail(
+          file,
+          `A font preload states ${href ?? 'no address'}. It has to be relative, so a deployment under a sub-path reaches its own fonts.`,
+        );
+        continue;
+      }
+      if (!/\bcrossorigin\b/i.test(preload)) {
+        fail(
+          file,
+          `The preload of ${href} carries no \`crossorigin\`. A face is fetched in anonymous mode whatever its origin, so the preload goes unused and the file is fetched twice.`,
+        );
+      }
+      if (declared.size > 0 && !declared.has(href)) {
+        fail(
+          file,
+          `The document preloads ${href}, which no emitted stylesheet declares a face for.`,
+        );
       }
     }
   }
@@ -2832,6 +2959,7 @@ export const rules = {
   conformanceClaimViolations,
   ledgerReconciliationViolations,
   productionOutputViolations,
+  firstFrameTypefaceViolations,
   searchMetadataViolations,
   searchMetadataSources,
   routeTableTriples,

@@ -843,6 +843,94 @@ describe('ledger reconciliation', () => {
   });
 });
 
+describe('the typefaces a served document paints in', () => {
+  /** The emitted stylesheet, cut down to the one face the fixtures preload. */
+  const stylesheet = {
+    'dist/app/browser/styles.css':
+      '@font-face{font-family:Barlow;font-display:swap;src:url("fonts/barlow/barlow-latin-400-normal.woff2") format("woff2")}',
+  };
+
+  const preload =
+    '<link rel="preload" as="font" type="font/woff2" ' +
+    'href="fonts/barlow/barlow-latin-400-normal.woff2" crossorigin>';
+
+  it('accepts a document that applies its stylesheet and preloads the face it declares', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html': `<link rel="stylesheet" href="styles.css">${preload}`,
+    });
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a stylesheet deferred behind a print media query', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html': `<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'">${preload}`,
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /paints before the faces/);
+  });
+
+  it('rejects a document that asks for no face before its stylesheet', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html': '<link rel="stylesheet" href="styles.css">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /no font preload/);
+  });
+
+  it('rejects a preload that reaches past the deployment base', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="preload" as="font" href="/fonts/barlow/barlow-latin-400-normal.woff2" crossorigin>',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /relative/);
+  });
+
+  it('rejects a preload no browser will use, and a face no stylesheet declares', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-500-normal.woff2">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface', 'first-frame-typeface']);
+    assert.match(found[0].message, /crossorigin/);
+    assert.match(found[1].message, /no emitted stylesheet declares/);
+  });
+
+  it('reads the faces from an unminified stylesheet as well', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      'dist/app/browser/styles.css':
+        '@font-face {\n  font-family: Barlow;\n  src: url("fonts/barlow/barlow-latin-400-normal.woff2") format("woff2");\n}',
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-700-normal.woff2" crossorigin>',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /no emitted stylesheet declares/);
+  });
+
+  it('accepts a document with no stylesheet of its own', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/fragment.html': '<p>A document that asks for no stylesheet.</p>',
+    });
+
+    assert.deepEqual(found, []);
+  });
+});
+
 describe('production output', () => {
   it('accepts output with no preview and no foreign request', () => {
     const found = rules.productionOutputViolations({

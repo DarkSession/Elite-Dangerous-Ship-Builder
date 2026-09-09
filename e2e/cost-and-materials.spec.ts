@@ -766,7 +766,8 @@ async function overflowingReadings(page: Page): Promise<string[]> {
  *
  * Every measurement below is a one-shot read of a box, and two things move
  * boxes after the DOM is ready: a running transition, and a webfont arriving.
- * The faces here are `font-display: swap` and not preloaded, so a swap landing
+ * The faces a served document draws with are preloaded and arrive with the
+ * stylesheet, but a face a screen asks for later is not, and a swap landing
  * mid-measurement would either invent an overflow or hide one.
  */
 async function laidOut(page: Page): Promise<void> {

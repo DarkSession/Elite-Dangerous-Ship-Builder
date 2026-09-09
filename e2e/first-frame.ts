@@ -46,11 +46,13 @@ export interface Frame {
   /**
    * Whether the typeface the page asked for has arrived.
    *
-   * The faces are same-origin subsets declared `font-display: swap`, so a cold
-   * load paints in a system fallback and re-paints in Barlow a moment later.
-   * Where the two disagree on metrics the page changes height under that swap —
-   * measured on Firefox at 1112px, ten pixels across the catalogue — and it does
-   * so whether or not this application ever loads, which is what makes it the
+   * The faces are same-origin subsets declared `font-display: swap`. The six a
+   * served document draws with are preloaded and arrive with the stylesheet, so
+   * a document normally paints in them; a face that arrives late still paints in
+   * a system fallback first and re-paints in Barlow a moment later. Where the
+   * two disagree on metrics the page changes height under that swap — measured
+   * on Firefox at 1112px, ten pixels across the catalogue — and it does so
+   * whether or not this application ever loads, which is what makes it the
    * network rather than the takeover. Recorded so a measurement of the takeover
    * can start from the frame the page is wearing what it asked for, the same way
    * `parsed` lets one start from the frame the page had all of itself.
@@ -256,10 +258,10 @@ export async function openBeforeTheBundleArrives(page: Page, path: string): Prom
  * typeface it asked for.
  *
  * A fixed delay is not enough for a movement measurement. The faces are
- * declared `font-display: swap`, so the page paints in a system fallback and
- * re-lays itself out as each subset lands — Firefox at 1112px is ten pixels
- * taller in the fallback than in Barlow — and those re-layouts are the document
- * settling into itself, not the application moving anything. They cannot be
+ * declared `font-display: swap`, so a subset that arrives after the paint it is
+ * wanted for lays the page out again — Firefox at 1112px is ten pixels taller in
+ * the fallback than in Barlow — and those re-layouts are the document settling
+ * into itself, not the application moving anything. They cannot be
  * subtracted after the fact either: `document.fonts.status` is one verdict over
  * every face at once, so it still reads `loading` long after the face that
  * changed the metrics has landed, and a frame is not told apart by it.

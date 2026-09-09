@@ -255,8 +255,9 @@ test.describe('the first frame of a generated document', () => {
       // asked for, which is what makes the measurement below about the
       // application at all. Two things settle a page before any of this
       // application exists: a quarter-megabyte document paints while it is
-      // still being read, and the faces swap in under `font-display: swap` —
-      // Firefox at 1112px is ten pixels taller in the fallback than in Barlow.
+      // still being read, and a face that arrives after the paint it is wanted
+      // for swaps in under `font-display: swap` — Firefox at 1112px is ten
+      // pixels taller in the fallback than in Barlow.
       // Neither is the takeover, both happen to a page whose bundle never
       // arrives, and holding the bundle until after them is simpler and more
       // honest than trying to tell their frames apart afterwards.
