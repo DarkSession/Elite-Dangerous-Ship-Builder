@@ -220,15 +220,12 @@ test.describe('a screen that has to be fetched', () => {
     });
 
     // The row is found and brought into view before the gate is armed, and
-    // pressed from the keyboard.
+    // pressed from the keyboard rather than with the pointer.
     //
-    // Not forced: a forced press lands wherever the element's centre is whether
-    // or not anything covers it — on a short viewport that is the bar rather
-    // than the row — and starts no navigation, leaving nothing to state. Not
-    // pressed with the pointer either: where a rest reads a hull, the move that
-    // carries the pointer onto the row opens it, and the statement that answers
-    // that navigation covers the row before the press lands on it. The keyboard
-    // reaches the control the Commander means without crossing anything.
+    // Where a rest reads a hull, the move that carries a pointer onto the row
+    // opens it, and the statement answering that navigation covers the row
+    // before the press lands on it. The keyboard reaches the control the
+    // Commander means without crossing anything on the way.
     const hull = page.locator('[data-hull-symbol] button:visible').first();
     await expect(hull).toBeVisible();
     await hull.scrollIntoViewIfNeeded();
