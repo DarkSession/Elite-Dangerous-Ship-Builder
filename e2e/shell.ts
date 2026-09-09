@@ -72,6 +72,13 @@ export async function waitForTakeover(page: Page): Promise<void> {
 const MENU = /^(menu|menü)$/i;
 
 /**
+ * The address the outfitting workspace answers to, with or without a build in
+ * its fragment. Named once here because three waits in this file are about
+ * having arrived at it.
+ */
+const WORKSPACE = /\/outfitting(#|$)/;
+
+/**
  * Waits until the bar has decided which composition it is.
  *
  * The bar chooses between offering its controls and folding them into the menu
@@ -187,15 +194,15 @@ export async function openRecordFromLibrary(page: Page, title: string): Promise<
     // no longer answers this: the library is a layer with no address of its own
     // (2026-09-04), so it can be open on top of `/outfitting` and the record has
     // still not been opened.
-    if (/\/outfitting(#|$)/.test(page.url()) && !(await surface.isVisible())) {
+    if (WORKSPACE.test(page.url()) && !(await surface.isVisible())) {
       return;
     }
     await row.click({ timeout: 5_000 });
     await open.click({ timeout: 5_000 });
-    await expect(page).toHaveURL(/\/outfitting(#|$)/, { timeout: 5_000 });
+    await expect(page).toHaveURL(WORKSPACE, { timeout: 5_000 });
   }).toPass({ timeout: 30_000 });
 
-  await expect(page).toHaveURL(/\/outfitting(#|$)/);
+  await expect(page).toHaveURL(WORKSPACE);
 }
 
 export async function savedToBrowser(page: Page | Locator): Promise<void> {
@@ -254,6 +261,9 @@ export async function openFirstHullFromManifest(page: Page): Promise<void> {
  * Which hull is asked for is taken from the screen rather than passed in, so no
  * journey has to spell a symbol twice and none of them has to spell it the
  * package's way.
+ *
+ * Returns once the address is the workspace's, which is where the press lands.
+ * What that screen goes on to draw is each journey's own wait.
  */
 export async function buildStockHull(page: Page, label: string): Promise<void> {
   // Before any of it, because the retry below would otherwise press a control
@@ -281,6 +291,27 @@ export async function buildStockHull(page: Page, label: string): Promise<void> {
     const target = (await action.first().isVisible()) ? action.first() : row;
     await target.click({ timeout: 2_000 });
   }).toPass({ timeout: 15_000 });
+
+  // The press is not finished until the address is the workspace's.
+  //
+  // The landing belongs to the press: no caller presses this control to stay
+  // where it is, and one statement here is a budget about the work the wait
+  // spans rather than one added to whichever assertion failed last.
+  //
+  // The first press in a document spans a fetch, which is the case the budget
+  // is written for. The commitment reaches the store first, and the router
+  // publishes `/outfitting` only once it has loaded that screen's own chunk —
+  // `/outfitting` is lazy like every other route here (`app.routes.ts`).
+  // Angular writes the address just before it activates the routes, so the wait
+  // ends at the chunk rather than at the screen, and what the screen then draws
+  // is the caller's own wait.
+  //
+  // A fetch is one of the reasons the verification contract's assertion ruling
+  // gives for stating a budget instead of taking the run's allowance, which is
+  // ten seconds on CI. Fifteen is the figure this file already states for a
+  // route arriving, above; it is a ceiling with margin rather than a
+  // measurement, since this wait spans no more than that one does.
+  await expect(page).toHaveURL(WORKSPACE, { timeout: 15_000 });
 }
 
 /**
