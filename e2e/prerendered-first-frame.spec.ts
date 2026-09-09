@@ -602,6 +602,17 @@ test.describe('the faces a generated document is drawn in', () => {
     return new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
   }
 
+  /** A face file's family and weight, as the stylesheet that declares it states them. */
+  function faceOf(styles: string, source: string): readonly string[] {
+    const rule = (styles.match(/@font-face\s*\{[^}]*\}/g) ?? []).find((block) =>
+      block.includes(source),
+    );
+    const bare = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+    const family = rule === undefined ? null : /font-family\s*:\s*([^;}]+)/.exec(rule);
+    const weight = rule === undefined ? null : /font-weight\s*:\s*([^;}]+)/.exec(rule);
+    return family === null || weight === null ? [] : [`${bare(family[1])} ${bare(weight[1])}`];
+  }
+
   test('asks for them beside the document, ahead of the stylesheet that declares them', async ({
     page,
   }) => {
@@ -665,16 +676,44 @@ test.describe('the faces a generated document is drawn in', () => {
     }
   });
 
-  test('is wearing them with no application running', async ({ page }) => {
-    // The bundle is held, so what is read here is the document alone: the faces
-    // it asked for are its own, and they are loaded without a line of this
-    // application having run.
-    await openBeforeTheBundleArrives(page, '/');
+  test('is drawn in no face it did not ask for', async ({ page }) => {
+    // The other half of the same promise, and the half a list in the head
+    // cannot be trusted for: what the document is actually drawn in. The bundle
+    // never arrives, so every face the browser loads is one the served markup
+    // asked the browser to draw, and each one has to be a face the document
+    // asked for beside itself.
+    //
+    // Compared by family and weight rather than by file. The two subsets of one
+    // face differ only in the characters they carry, and which of them a hull's
+    // name needs is a property of the name; what this holds is that the weight
+    // the document draws was asked for early.
+    for (const { path } of SCREENS) {
+      await openWithoutTheBundle(page, path);
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
 
-    await expect
-      .poll(() =>
-        page.evaluate(() => [...document.fonts].filter((face) => face.status === 'loaded').length),
-      )
-      .toBeGreaterThan(0);
+      const drawn = await page.evaluate(() =>
+        [...document.fonts]
+          .filter((face) => face.status === 'loaded')
+          .map((face) => `${face.family} ${face.weight}`),
+      );
+      expect(drawn.length, `${path} is drawn in no declared face at all`).toBeGreaterThan(0);
+
+      const document_ = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+      const sheet = links(document_, 'stylesheet')
+        .map((link) => attribute(link, 'href'))
+        .find((href): href is string => href !== null);
+      const styles = await (await page.request.get(`${PRODUCT_URL}/${sheet}`)).text();
+      const asked = new Set(
+        links(document_, 'preload')
+          .map((link) => attribute(link, 'href'))
+          .flatMap((href) => (href === null ? [] : faceOf(styles, href))),
+      );
+
+      for (const face of new Set(drawn)) {
+        expect([...asked], `${path} is drawn in ${face}, which it does not ask for`).toContain(
+          face,
+        );
+      }
+    }
   });
 });

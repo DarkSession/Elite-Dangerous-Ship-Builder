@@ -5,10 +5,11 @@
       faces is applied before the document paints rather than after it. Verify by reading
       the emitted `dist/navbeacon/browser/index.html`: one plain `<link rel="stylesheet">`
       and no `media="print"` deferral (019/FR-001).
-- [x] 1.2 Preload in `src/index.html` the six faces a served document draws with, each
-      relative to the deployment base and each carrying `crossorigin`. Verify by measuring
-      the built output in a browser: every one of the six is fetched with the document and
-      finishes before the first contentful paint (019/FR-001).
+- [x] 1.2 Preload in `src/index.html` the faces a served document draws with, each relative
+      to the deployment base and each carrying `crossorigin`. Verify by measuring the built
+      output in a browser with the bundle held, which says which faces each document is drawn
+      in, and by measuring that every preloaded face is fetched with the document and finishes
+      before the first contentful paint (019/FR-001).
 - [x] 1.3 Record in `src/styles/_fonts.scss` why the stylesheet must stay render-blocking
       and what the pass does to the faces, so the setting is not read as a preference and
       undone. Verify by reading the file; it names the setting, the pass and the rule that

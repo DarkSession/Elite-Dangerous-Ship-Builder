@@ -1513,18 +1513,15 @@ export function productionOutputViolations(contents) {
 // Rule: a served document is drawn in its own typefaces from its first frame
 // ---------------------------------------------------------------------------
 
-/** A stylesheet the document asks for, with the attributes it carries. */
-const STYLESHEET_LINK = /<link\b[^>]*?\brel\s*=\s*["']stylesheet["'][^>]*>/gi;
-
 /**
- * A face the document asks for before the stylesheet that declares it.
+ * Every `<link>` a document carries, whole.
  *
- * The relationship is required rather than assumed from `as="font"`. A
- * `prefetch`, a misspelt `rel` and a missing one all leave a tag that reads like
- * a preload and fetches nothing early, which is the regression this rule is for.
+ * Read as tags and sorted by their own attributes rather than matched by a
+ * pattern per relationship: `onload="this.rel='stylesheet'"` carries the word a
+ * `rel="stylesheet"` pattern looks for, and the deferral that spells it that way
+ * is exactly the one this rule exists to catch.
  */
-const FONT_PRELOAD =
-  /<link\b(?=[^>]*\brel\s*=\s*["']preload["'])[^>]*?\bas\s*=\s*["']font["'][^>]*>/gi;
+const LINK_TAG = /<link\b[^>]*>/gi;
 
 /**
  * One `@font-face`, as the emitted stylesheet spells it: its family and its file.
@@ -1538,6 +1535,11 @@ const FACE_RULE = /@font-face\s*\{[^}]*\}/g;
 /** A CSS value with its quotes and surrounding space taken off. */
 function unquoted(value) {
   return value.trim().replace(/^["']|["']$/g, '');
+}
+
+/** Whether a tag carries an attribute at all, with or without a value. */
+function hasAttribute(tag, name) {
+  return new RegExp(`(?:^|\\s)${name}(?=[\\s=>/])`, 'i').test(tag);
 }
 
 /** One attribute of a tag, however it is quoted. */
@@ -1602,27 +1604,36 @@ export function firstFrameTypefaceViolations(contents) {
       continue;
     }
 
-    const stylesheets = text.match(STYLESHEET_LINK) ?? [];
-    const applied = stylesheets.filter((link) => {
+    // `all` and `screen` are the two values that leave a stylesheet applied to
+    // the screen a Commander reads. Anything else — `print`, and a width query
+    // as much as a type — holds it back on some viewport or all of them, and a
+    // held-back stylesheet is one the document paints without.
+    const applies = (link) => {
       const media = attributeValue(link, 'media');
-      return media === null || /\ball\b|\bscreen\b/i.test(media);
-    });
+      return media === null || /^(all|screen)$/i.test(media.trim());
+    };
 
-    for (const link of stylesheets) {
-      const media = attributeValue(link, 'media');
-      if (media !== null && !/\ball\b|\bscreen\b/i.test(media)) {
-        fail(
-          file,
-          `A stylesheet is deferred behind media="${media}", so the document paints before the faces it declares are known.`,
-        );
-      }
+    const links = text.match(LINK_TAG) ?? [];
+    const relationship = (tag) => (attributeValue(tag, 'rel') ?? '').trim().toLowerCase();
+    const stylesheets = links.filter((tag) => relationship(tag) === 'stylesheet');
+    for (const link of stylesheets.filter((sheet) => !applies(sheet))) {
+      fail(
+        file,
+        `A stylesheet is deferred behind media="${attributeValue(link, 'media')}", so the document paints before the faces it declares are known.`,
+      );
     }
 
     if (stylesheets.length === 0) {
+      fail(
+        file,
+        'The document applies no stylesheet, so nothing it is drawn in reaches it before it paints.',
+      );
       continue;
     }
 
-    if (applied.length === 0) {
+    // Every stylesheet it has is held back, which the failures above have
+    // already said once each.
+    if (!stylesheets.some(applies)) {
       continue;
     }
 
@@ -1634,7 +1645,14 @@ export function firstFrameTypefaceViolations(contents) {
       continue;
     }
 
-    const preloads = text.match(FONT_PRELOAD) ?? [];
+    // The relationship is required rather than assumed from `as="font"`: a
+    // `prefetch`, a misspelt `rel` and a missing one all leave a tag that reads
+    // like a preload and fetches nothing early.
+    const preloads = links.filter(
+      (tag) =>
+        relationship(tag) === 'preload' &&
+        (attributeValue(tag, 'as') ?? '').trim().toLowerCase() === 'font',
+    );
     const asked = new Set();
     for (const preload of preloads) {
       const href = attributeValue(preload, 'href');
@@ -1645,10 +1663,16 @@ export function firstFrameTypefaceViolations(contents) {
         );
         continue;
       }
-      if (!/\bcrossorigin\b/i.test(preload)) {
+      // Stated, and stated as the anonymous mode: a face is fetched anonymously
+      // whatever its origin, so a preload that carries no `crossorigin`, or
+      // carries `use-credentials`, does not match the fetch it exists for. The
+      // attribute is asked for by presence, because the spelling this document
+      // uses states no value at all.
+      const mode = attributeValue(preload, 'crossorigin');
+      if (!hasAttribute(preload, 'crossorigin') || !/^(|anonymous)$/i.test(mode ?? '')) {
         fail(
           file,
-          `The preload of ${href} carries no \`crossorigin\`. A face is fetched in anonymous mode whatever its origin, so the preload goes unused and the file is fetched twice.`,
+          `The preload of ${href} does not ask for it in anonymous mode. A face is fetched anonymously whatever its origin, so the preload goes unused and the file is fetched twice.`,
         );
       }
       const family = declared.get(href);

@@ -26,7 +26,7 @@
 // rule it judges critical names the family in a `font-family` value; every rule
 // in this application names one through a design token, which the pass cannot
 // resolve, so it drops all twenty faces and the document paints in a system
-// fallback and re-paints when the sheet lands. `src/index.html` preloads the six
+// fallback and re-paints when the sheet lands. `src/index.html` preloads the
 // faces a served document draws with, so they arrive with the sheet rather than
 // a round trip behind it. `firstFrameTypefaceViolations` fails a build that
 // defers the sheet again, and one whose documents ask for no face of a family

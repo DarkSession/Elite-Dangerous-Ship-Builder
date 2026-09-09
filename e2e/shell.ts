@@ -212,15 +212,6 @@ export async function savedToBrowser(page: Page | Locator): Promise<void> {
   );
 }
 
-/**
- * Opens a hull's detail from the manifest, however this device does it.
- *
- * Where the manifest can be hovered, resting on a row is what shows the hull
- * and pressing it starts a stock build of it; where it cannot — a touch screen
- * has no resting — the press is still the way in. A journey wanting the detail
- * should not have to know which of the two it is looking at, so the question is
- * asked here, once, in the stylesheets' own words.
- */
 /** How many records this browser is holding, whatever tool wrote them. */
 export async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
@@ -242,6 +233,15 @@ export async function expectRecords(page: Page, count: number): Promise<void> {
   await expect.poll(() => recordCount(page)).toBe(count);
 }
 
+/**
+ * Opens a hull's detail from the manifest, however this device does it.
+ *
+ * Where the manifest can be hovered, resting on a row is what shows the hull
+ * and pressing it starts a stock build of it; where it cannot — a touch screen
+ * has no resting — the press is still the way in. A journey wanting the detail
+ * should not have to know which of the two it is looking at, so the question is
+ * asked here, once, in the stylesheets' own words.
+ */
 export async function openHullFromManifest(page: Page, name: string): Promise<void> {
   await reachHull(
     page,

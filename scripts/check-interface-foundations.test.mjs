@@ -915,7 +915,7 @@ describe('the typefaces a served document paints in', () => {
         '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-500-normal.woff2">',
     });
 
-    assert.match(found[0].message, /crossorigin/);
+    assert.match(found[0].message, /anonymous mode/);
     assert.match(found[1].message, /no emitted stylesheet declares/);
   });
 
@@ -951,13 +951,65 @@ describe('the typefaces a served document paints in', () => {
     assert.deepEqual(found, []);
   });
 
-  it('accepts a document with no stylesheet of its own', () => {
+  it('rejects a document that applies no stylesheet at all', () => {
+    // Including the other way of deferring one: a stylesheet fetched as a
+    // preload and turned into a stylesheet on load is not applied to the paint
+    // either, and it carries no `rel="stylesheet"` for the check above to find.
     const found = rules.firstFrameTypefaceViolations({
       ...stylesheet,
-      'dist/app/browser/fragment.html': '<p>A document that asks for no stylesheet.</p>',
+      'dist/app/browser/index.html':
+        '<link rel="preload" as="style" href="styles.css" onload="this.rel=\'stylesheet\'">' +
+        preload,
     });
 
-    assert.deepEqual(found, []);
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /applies no stylesheet/);
+  });
+
+  it('rejects a stylesheet held back by a width query, which is a deferral on the narrow profiles', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html': `<link rel="stylesheet" href="styles.css" media="screen and (min-width: 900px)">${preload}`,
+    });
+
+    assert.match(found[0].message, /paints before the faces/);
+  });
+
+  it('rejects a face asked for with credentials, which is not the mode it is fetched in', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-400-normal.woff2" crossorigin="use-credentials">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /anonymous mode/);
+  });
+
+  it('accepts the anonymous mode stated either way', () => {
+    for (const spelling of ['crossorigin', 'crossorigin=""', 'crossorigin="anonymous"']) {
+      const found = rules.firstFrameTypefaceViolations({
+        ...stylesheet,
+        'dist/app/browser/index.html':
+          '<link rel="stylesheet" href="styles.css">' +
+          `<link rel="preload" as="font" href="fonts/barlow/barlow-latin-400-normal.woff2" ${spelling}>`,
+      });
+
+      assert.deepEqual(found, [], spelling);
+    }
+  });
+
+  it('rejects a preload whose only crossorigin is inside another attribute’s name', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-400-normal.woff2" data-crossorigin="no">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /anonymous mode/);
   });
 });
 

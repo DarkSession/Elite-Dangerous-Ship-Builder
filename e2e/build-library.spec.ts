@@ -378,7 +378,7 @@ test.describe('the build library', () => {
 
     await openLibrary(page);
     await expect(library(page).getByText('Anaconda explorer').first()).toBeVisible();
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('warns about a duplicate name and still saves a separate build', async ({ page }) => {
@@ -531,7 +531,7 @@ test.describe('the build library', () => {
         }),
       )
       .toBe('Deep black');
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('confirms a deletion, names the record, and cancelling keeps it', async ({ page }) => {
@@ -660,7 +660,7 @@ test.describe('the build library', () => {
     // there, swept before the listing was drawn and announced by nothing.
     await expect(page.locator('[data-record-id="fresh"]')).toContainText(/Deleted in/);
     await expect(page.locator('[data-record-id="stale"]')).toHaveCount(0);
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('lists an unsupported or unreadable record without opening or removing it', async ({
