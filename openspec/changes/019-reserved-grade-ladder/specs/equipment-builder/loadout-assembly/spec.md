@@ -1,22 +1,18 @@
 ## ADDED Requirements
 
-### Requirement: Choosing an item does not move the statement it is chosen from
+### Requirement: The list an item is chosen from holds its place
 
 The bench states the selected item: what it is, the grade it is at, the items it can be
 swapped for, its attributes and its modification slots. An empty weapon mount is a selected
-item too, and it publishes no grade, so it offers no grade to choose.
+item too, and the library publishes no grade for one, so it offers no grade choice
+(013/FR-002a).
 
-Choosing an item MUST NOT move anything that already stood in that statement. The list a
-Commander chooses from is the statement they are reading when they choose, and it MUST hold
-its place across the choice. The space a grade choice takes MUST therefore be held while the
-selected item offers none, so that the choice appears in space the statement already has.
+Choosing an item MUST NOT move the list it was chosen from. The list MUST also stand in the
+same place whichever item is selected, so that a Commander who opens one item after another
+reads each list where the last one was.
 
 The same MUST hold at the empty bench. The suit gate stands in place of the selected item,
 and the list of suits it offers MUST hold its place when a suit is chosen from it.
-
-This requirement holds at every supported width, orientation, text size and zoom. Where the
-grade choice does not stand above the list, nothing above the list appears with it and there
-is nothing to hold.
 
 Source: 019/FR-001.
 
@@ -25,7 +21,7 @@ Source: 019/FR-001.
 - **WHEN** a Commander opens an empty weapon mount and chooses a weapon from the list it
   offers
 - **THEN** the list they chose from is where it was before the choice
-- **AND** the weapon's grade choice stands in space the statement already had
+- **AND** the weapon's grade choice is stated
 
 #### Scenario: The first suit is chosen at the empty bench
 
@@ -37,14 +33,13 @@ Source: 019/FR-001.
 - **WHEN** a Commander reads a fitted item and then opens an empty weapon mount
 - **THEN** the list of weapons the mount offers stands where the fitted item's own list stood
 
-### Requirement: Held space states nothing
+### Requirement: Space held for an absent grade choice states nothing
 
-Space held for a grade choice the selected item does not offer MUST state nothing. It MUST
-NOT be announced, and MUST offer nothing to press: no grade, and no other choice.
+Where the bench holds space for a grade choice the selected item does not offer, that space
+MUST be hidden from the accessibility tree and MUST NOT be a control.
 
 An item that publishes no grade has no grade to state, and a control that answers nothing is
-worse than no control. The space is held so that the statement does not move, and holding it
-is the whole of what it does.
+worse than no control. Holding the space is the whole of what it does.
 
 Source: 019/FR-002.
 
