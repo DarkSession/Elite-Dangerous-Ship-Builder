@@ -420,6 +420,13 @@ disagrees or where the announcement is correct but unusable.
     afterwards and re-readable. Expect no reason to be stated, and expect the
     screen the Commander is on to be usable.
 
+    Then the same failure again. Press for a screen that opens, then pull the
+    connection and ask for one that cannot be fetched a second time. Expect a
+    second polite announcement, in the same words as the first. This is the
+    reading nothing automated can take: the words do not move between the two,
+    so what is being confirmed is that the reader is told again at all rather
+    than left in the silence a repeated sentence used to be.
+
     And the mark itself, in both engines with the platform's reduced-motion
     preference on: expect it to stand still. It carries its own animation
     inside its own drawing, which the page's rule cannot reach, so this is
@@ -431,7 +438,9 @@ disagrees or where the announcement is correct but unusable.
     the screen behind visible to say which screen is being waited on — the
     automated reading can only say the ground is translucent, not that the step
     is right. And whether a Commander who has only heard this can tell a
-    navigation that is still running from one that has failed.
+    navigation that is still running from one that has failed — including two
+    failures in a row, where the second says nothing new and the only thing
+    separating them is that it was said.
 
 ## Recording the result
 

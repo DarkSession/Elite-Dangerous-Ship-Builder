@@ -24,6 +24,22 @@ export interface AnnouncementRequest {
   readonly params?: MessageParams;
 }
 
+/**
+ * What an outlet holds, and which event put it there.
+ *
+ * The identity travels with the text because two different events can be
+ * spoken in the same words — two navigations that both failed say "The screen
+ * could not be opened." A live region announces a change to its contents, and
+ * the same sentence written over itself is not a change: the second event would
+ * be the silence the policy exists to remove. The outlet uses the identity to
+ * rebuild what it holds, so a genuinely new event is a new node in the region
+ * whether or not the words moved.
+ */
+export interface SpokenEvent {
+  readonly identity: string;
+  readonly text: string;
+}
+
 /** What an outlet currently holds. */
 export interface AnnouncementState {
   readonly assertive: string;
@@ -53,8 +69,8 @@ export interface AnnouncementState {
 export class AnnouncementService {
   readonly #messages = inject(MessageService);
 
-  readonly #assertive = signal('');
-  readonly #polite = signal('');
+  readonly #assertive = signal<SpokenEvent | null>(null);
+  readonly #polite = signal<SpokenEvent | null>(null);
 
   /** The highest revision seen per (kind, urgency), for staleness. */
   readonly #latestRevision = new Map<string, number>();
@@ -62,12 +78,17 @@ export class AnnouncementService {
   /** The identity of the last event published to each outlet. */
   readonly #published = new Map<AnnouncementUrgency, string>();
 
-  readonly assertive = this.#assertive.asReadonly();
-  readonly polite = this.#polite.asReadonly();
+  /** What each outlet is saying, for a reader of text rather than of nodes. */
+  readonly assertive = computed(() => this.#assertive()?.text ?? '');
+  readonly polite = computed(() => this.#polite()?.text ?? '');
+
+  /** The same, with the event that put it there, which the outlet renders by. */
+  readonly assertiveEvent = this.#assertive.asReadonly();
+  readonly politeEvent = this.#polite.asReadonly();
 
   readonly state = computed<AnnouncementState>(() => ({
-    assertive: this.#assertive(),
-    polite: this.#polite(),
+    assertive: this.assertive(),
+    polite: this.polite(),
   }));
 
   /**
@@ -95,11 +116,14 @@ export class AnnouncementService {
     this.#latestRevision.set(staleKey, Math.max(latest ?? request.revision, request.revision));
     this.#published.set(request.urgency, identity);
 
-    const text = this.#messages.message(request.messageKey, request.params);
+    const spoken: SpokenEvent = {
+      identity,
+      text: this.#messages.message(request.messageKey, request.params),
+    };
     if (request.urgency === 'assertive') {
-      this.#assertive.set(text);
+      this.#assertive.set(spoken);
     } else {
-      this.#polite.set(text);
+      this.#polite.set(spoken);
     }
 
     return true;
@@ -113,8 +137,8 @@ export class AnnouncementService {
    * language.
    */
   clearOutlets(): void {
-    this.#assertive.set('');
-    this.#polite.set('');
+    this.#assertive.set(null);
+    this.#polite.set(null);
   }
 
   /** Forgets everything. Test support and full application reset only. */

@@ -288,6 +288,23 @@ describe('App and a screen that never arrives', () => {
   const textIn = (fixture: ComponentFixture<App>) =>
     ((fixture.nativeElement as HTMLElement).textContent ?? '').replace(/\s+/g, ' ');
 
+  /**
+   * The node the polite outlet is holding, which is what a reader is told about.
+   *
+   * Text nodes only: the framework's own anchors are comments, and they stay put
+   * across a change.
+   */
+  const spokenNode = (fixture: ComponentFixture<App>): ChildNode | null => {
+    const outlet = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-announcement-outlet="polite"]',
+    );
+    return (
+      [...(outlet?.childNodes ?? [])].find(
+        (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+      ) ?? null
+    );
+  };
+
   it('says the screen could not be opened, in words that stay on the page', async () => {
     const fixture = await failed();
 
@@ -342,6 +359,7 @@ describe('App and a screen that never arrives', () => {
 
     const fixture = await failed();
     expect(announce.mock.results.map((result) => result.value)).toEqual([true]);
+    const first = spokenNode(fixture);
 
     // A screen that opens is the answer to the failure before it, and the
     // press after that is a new event rather than the one already spoken.
@@ -364,6 +382,15 @@ describe('App and a screen that never arrives', () => {
     expect(announce.mock.results.map((result) => result.value)).toEqual([true, true]);
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
     expect(announcements.assertive()).toBe('');
+
+    // What the service decided is not what a reader hears. Both failures say
+    // the same sentence, so the outlet holding that sentence at the end says
+    // nothing about whether the second one was ever a change to announce. The
+    // node is what a live region announces, so the node is what is read.
+    const spoken = spokenNode(fixture);
+    expect(first, 'the first failure put nothing in the polite outlet').not.toBeNull();
+    expect(spoken, 'the second failure emptied the polite outlet').not.toBeNull();
+    expect(spoken, 'the polite outlet was left holding the first failure').not.toBe(first);
   });
 
   it('keeps the version notice first when both are standing', async () => {

@@ -115,6 +115,18 @@
       notice carries the localised words, that the announcement is published once for one failure, and that a
       version notice standing at the same time keeps its place first in the list
       (018/FR-007).
+- [x] 4.5 Make a second failure reach a reader. Two failures say the same sentence, and the
+      outlet held that sentence as text: writing it over itself changed nothing, a live region
+      announces a change to what it holds, and the second failure was the silence the count
+      exists to remove. Carry the event's identity into the outlet alongside its words, and have
+      the outlet render what it holds keyed by that identity, so a genuinely new event replaces
+      the node in the region and a republished one does not. This is the announcement policy
+      rather than this feature — every capability that announces is subject to it — so it is
+      recorded as a modified requirement of `platform/accessible-responsive-operation`. Verify
+      with a component test over the outlet reading the node rather than the words: a second
+      event spoken identically replaces it, the same event published again does not, and a
+      locale switch empties it. Verify at the shell too, over two failed navigations
+      (011/FR-009, 018/FR-007).
 
 ## 5. Unit and component verification
 

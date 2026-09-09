@@ -345,6 +345,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a new blocking error publishes one assertive summary',
       'a settled change coalesces to one polite summary for its source revision',
       'initial, unchanged, stale and unaffected content produces no announcement',
+      'two separate events spoken in identical words each change the region that carries them',
       'a locale switch clears outlet text without replaying prior events',
     ],
     manualRecord: 'screen-reader',

@@ -111,6 +111,12 @@ export class NavigationWaitingStore {
    * by `(kind, revision, urgency)`, and a boolean carries no revision — two
    * separate failures would be one event, and the second would be the silence
    * this requirement exists to remove.
+   *
+   * Getting past the dedupe is half of it. Both failures say the same sentence,
+   * and a live region announces a change to what it holds rather than a
+   * decision to publish, so the outlet is what carries the second of them to a
+   * reader: `src/app/ui/announcements/` renders what it holds by the event
+   * rather than by its words (011/FR-009).
    */
   readonly failures = this.#failures.asReadonly();
 

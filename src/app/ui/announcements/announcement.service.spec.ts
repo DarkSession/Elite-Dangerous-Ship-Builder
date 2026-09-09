@@ -115,6 +115,45 @@ describe('AnnouncementService', () => {
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['status.success']);
   });
 
+  it('hands the outlet a new event when the words do not change', () => {
+    const { announcements } = setup();
+    const failure = (revision: number) => ({
+      kind: 'navigation.failed',
+      revision,
+      urgency: 'polite' as const,
+      messageKey: 'navigation.failed.notice' as const,
+    });
+
+    announcements.announce(failure(1));
+    const first = announcements.politeEvent();
+    announcements.announce(failure(2));
+    const second = announcements.politeEvent();
+
+    // Two navigations that failed say the same sentence. The text alone cannot
+    // tell the outlet that anything happened, and a live region that did not
+    // change is one a reader is not told about again — so what the outlet is
+    // handed carries which event it is (011/FR-009).
+    expect(first?.text).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
+    expect(second?.text).toBe(first?.text);
+    expect(second?.identity).not.toBe(first?.identity);
+  });
+
+  it('hands the outlet the same event back when nothing happened', () => {
+    const { announcements } = setup();
+    const event = {
+      kind: 'navigation.failed',
+      revision: 1,
+      urgency: 'polite' as const,
+      messageKey: 'navigation.failed.notice' as const,
+    };
+
+    announcements.announce(event);
+    const first = announcements.politeEvent();
+    announcements.announce(event);
+
+    expect(announcements.politeEvent()).toBe(first);
+  });
+
   it('treats the two urgencies as separate outlets', () => {
     const { announcements } = setup();
 
