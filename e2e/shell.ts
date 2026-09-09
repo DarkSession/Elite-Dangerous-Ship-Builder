@@ -422,7 +422,8 @@ export function waitingStatement(page: Page): Locator {
 }
 
 /**
- * A watch on the waiting statement, counting every time it is drawn.
+ * A watch on the waiting statement, counting every time it is drawn and taken
+ * down.
  *
  * A reading taken once a navigation is over cannot tell a statement that was
  * never drawn from one that was drawn and removed, and it cannot see a
@@ -437,17 +438,31 @@ export interface StatementWatch {
   wasDrawn(): Promise<boolean>;
   /** How many separate times it was drawn. One handover is still one. */
   timesDrawn(): Promise<number>;
+  /**
+   * How many separate times it was taken down.
+   *
+   * Read where the end state cannot be: a screen whose code is held from
+   * arriving leaves the application asking for it again, so what stands a
+   * second later is a later navigation's answer rather than this one's. Whether
+   * a statement was taken down, and when, is the reading — not what happens to
+   * stand afterwards.
+   */
+  timesRemoved(): Promise<number>;
 }
 
 /** The watcher itself, as a string, because it is installed in two ways. */
 const WATCH_THE_STATEMENT = () => {
-  const window_ = window as unknown as { __waitingDrawn?: number };
+  const window_ = window as unknown as { __waitingDrawn?: number; __waitingRemoved?: number };
   window_.__waitingDrawn = 0;
+  window_.__waitingRemoved = 0;
   let standing = false;
   const look = (): void => {
     const now = document.querySelector('ednb-waiting-overlay dialog[open]') !== null;
     if (now && !standing) {
       window_.__waitingDrawn = (window_.__waitingDrawn ?? 0) + 1;
+    }
+    if (!now && standing) {
+      window_.__waitingRemoved = (window_.__waitingRemoved ?? 0) + 1;
     }
     standing = now;
   };
@@ -465,9 +480,14 @@ function readTheWatch(page: Page): StatementWatch {
     (await page.evaluate(
       () => (window as unknown as { __waitingDrawn?: number }).__waitingDrawn,
     )) ?? 0;
+  const removed = async (): Promise<number> =>
+    (await page.evaluate(
+      () => (window as unknown as { __waitingRemoved?: number }).__waitingRemoved,
+    )) ?? 0;
   return {
     wasDrawn: async () => (await drawn()) > 0,
     timesDrawn: drawn,
+    timesRemoved: removed,
   };
 }
 

@@ -191,13 +191,20 @@ test.describe('a screen that has to be fetched', () => {
     await expect(page).toHaveURL(/\/ships$/);
     await expect(page.getByRole('main')).toBeVisible();
 
-    // The reload is what makes the second navigation a slow one too. It empties
-    // the browser's registry of fetched code, so the entry point behind this
-    // screen has to be fetched again — and a takeover that finishes at once
-    // would read the same whether the statement was carried across the handover
-    // or taken down and never redrawn.
-    await page.reload();
-    await waitForTakeover(page);
+    // A history entry for a screen whose code has never been fetched, put there
+    // rather than visited: visiting it would fetch the code, and then the
+    // navigation that takes over would finish at once and the reading would be
+    // the same whether the statement was carried across the handover or taken
+    // down and never drawn again. The entry after it is the address the
+    // Commander is on, so this press is where they are pressing from.
+    //
+    // Put there rather than walked to for a second reason: walking to it means
+    // reloading, and a step back across a reload is a fresh document rather
+    // than a navigation the application ever sees.
+    await page.evaluate(() => {
+      history.pushState(null, '', '/outfitting');
+      history.pushState(null, '', '/ships');
+    });
 
     // The row is found and brought into view before the gate is armed, and
     // pressed without forcing it.
@@ -217,22 +224,34 @@ test.describe('a screen that has to be fetched', () => {
     await hull.click({ noWaitAfter: true });
     await stands(page);
 
-    // Back to the entry point, whose code is held from arriving as well, so the
-    // navigation that takes over is one that waits too. The statement stands
-    // through the handover.
+    // Back to the screen whose code is held from arriving as well, so the
+    // navigation that takes over waits too. The statement stands through the
+    // handover: the browser's own way back is the one way a second navigation
+    // can start while the screen behind the statement takes no press.
     await page.evaluate(() => history.back());
     await stands(page);
 
-    // The count is what makes this a reading. The application mounts one
+    // The counts are what make this a reading. The application mounts one
     // overlay, so asking how many stand can only ever answer one; what the
     // requirement is about is whether the statement went down and came back
-    // between the two navigations. Drawn once, by the press; removed once, by
-    // the navigation that is still going — never by the one it replaced, which
-    // would draw a second statement a threshold later (FR-005).
-    held.release();
-    await expect(page).toHaveURL(/\/(\?.*)?$/);
-    await expect(overlay(page)).toHaveCount(0);
+    // between the two navigations. Standing here, drawn once and never taken
+    // down, it is the statement the press raised — carried across the handover
+    // rather than removed by the navigation it replaced and drawn again a
+    // threshold later (FR-005).
+    expect(
+      await watch.timesRemoved(),
+      'the statement was taken down by the navigation it replaced',
+    ).toBe(0);
     expect(await watch.timesDrawn(), 'the statement was drawn more than once').toBe(1);
+
+    // It comes down with the navigation that is still going.
+    held.release();
+    await expect(page).toHaveURL(/\/outfitting$/);
+    await expect
+      .poll(() => watch.timesRemoved(), {
+        message: 'the statement outlived the navigation that was still going',
+      })
+      .toBeGreaterThan(0);
     // A cancelled navigation is an ordinary ending, stated as nothing.
     await expect(failureNotice(page)).toHaveCount(0);
   });
@@ -246,30 +265,39 @@ test.describe('a screen that has to be fetched', () => {
     await expect(page).toHaveURL(/\/ships$/);
     await expect(page.getByRole('main')).toBeVisible();
 
-    // The reload is what sets the pair up. It empties the browser's registry of
-    // fetched code, so from here the entry point has to be fetched again while
-    // the screen this document was served at is already held — one navigation
-    // that waits, and one the application can answer without navigating.
-    await page.reload();
-    await waitForTakeover(page);
+    // A second history entry for the screen the Commander is already on. Going
+    // back to it is a navigation to the address the application never left,
+    // which it answers without navigating — the one case where what takes over
+    // a handover is not a navigation at all. A Commander reaches it by pressing
+    // back to a screen still arriving and then forward again; this is that
+    // position without the reload, which would replace the document rather than
+    // navigate in it.
+    await page.evaluate(() => history.pushState(null, '', '/ships'));
+
+    const hull = page.locator('[data-hull-symbol] button:visible').first();
+    await expect(hull).toBeVisible();
+    await hull.scrollIntoViewIfNeeded();
 
     const watch = await watchForTheStatement(page);
     const held = await holdEveryChunk(page);
-
-    // The browser's own back and forward, not a press: the statement makes the
-    // screen behind it inert, and these are the controls it cannot reach.
-    await page.evaluate(() => history.back());
+    await hull.click({ noWaitAfter: true });
     await stands(page);
 
-    // Forward again, to the address the application never left — the navigation
-    // away from it has not arrived. It is answered without navigating, so
-    // nothing is going to end. The statement handed over to it has to come down
-    // here or it never comes down at all, and it is a statement a Commander
-    // cannot dismiss, over a screen it has made inert (FR-005).
-    await page.evaluate(() => history.forward());
-    await expect(overlay(page)).toHaveCount(0);
-    await expect(page).toHaveURL(/\/ships$/);
-    expect(await watch.timesDrawn(), 'the statement was drawn more than once').toBe(1);
+    // Nothing is going to end here. The statement handed over to an answer that
+    // starts no navigation has to come down on that answer, or it never comes
+    // down at all — and it is a statement a Commander cannot dismiss, over a
+    // screen it has made inert (FR-005).
+    //
+    // What is read is that it was taken down, not what stands afterwards: a
+    // screen whose code is held from arriving leaves the application asking for
+    // it again, and a later navigation's statement is that navigation's answer
+    // rather than this one's.
+    await page.evaluate(() => history.back());
+    await expect
+      .poll(() => watch.timesRemoved(), {
+        message: 'the statement was left standing over an answer that started no navigation',
+      })
+      .toBeGreaterThan(0);
     // Nothing failed: the application answered the address it was asked for.
     await expect(failureNotice(page)).toHaveCount(0);
 

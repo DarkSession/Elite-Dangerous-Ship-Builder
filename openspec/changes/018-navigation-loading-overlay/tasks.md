@@ -145,15 +145,18 @@
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
 - [x] 6.2b In the same file, cover a handover, which in a browser can only come from the
-      browser's own controls: the screen behind the statement takes no press. Reload first, so
-      the code behind the screen the Commander is on has to be fetched again, press into a held
-      screen, and then go back — the navigation that takes over waits too, so the count reads
-      whether the statement went down and came back rather than passing either way. Read that
-      it was drawn once across both. Then cover the handover that hands over to nothing: back
-      the same way, then forward, to the address the application never left and answers without
-      navigating. Nothing is going to end there, so read that the statement comes down on that
-      answer — the alternative is one standing until the page is reloaded, over a screen it has
-      made inert (018/FR-005).
+      browser's own history: the screen behind the statement takes no press. Put a history entry
+      there for a screen whose code has never been fetched, press into a held screen, and go
+      back to it, so the navigation that takes over waits too — a takeover that finishes at once
+      reads the same whether the statement was carried or taken down and never drawn again. Read
+      that it stands there drawn once and taken down not at all, and that it comes down once the
+      navigation still going ends. Then cover the handover that hands over to nothing: a history
+      entry for the address the application is already on, which it answers without navigating.
+      Nothing is going to end there, so read that the statement is taken down on that answer —
+      the alternative is one standing until the page is reloaded, over a screen it has made
+      inert. Read the taking down rather than what stands afterwards: with every script held the
+      application keeps asking for the screen it cannot get, and a later navigation's statement
+      is that navigation's answer rather than this one's (018/FR-005).
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
