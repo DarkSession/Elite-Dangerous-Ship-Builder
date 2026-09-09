@@ -421,6 +421,60 @@ test.describe('a screen that never arrives', () => {
     await expect(failureNotice(page)).toHaveCount(0);
   });
 
+  test('says a second failure as well as the first (018/FR-007, 011/FR-009)', async ({ page }) => {
+    await page.goto('/');
+    await waitForTakeover(page);
+    const held = await holdEveryChunk(page);
+    held.refuse();
+
+    // What a reader is told is what the region carrying it does, not what the
+    // application decided to publish. Both failures say the same sentence, so
+    // the text is the same before and after and says nothing about whether the
+    // second one ever reached anyone: a live region announces a change to what
+    // it holds, and a sentence written over itself is not a change. So the
+    // region is watched, and the reading is that it changed twice.
+    await page.evaluate(() => {
+      const outlet = document.querySelector('[data-announcement-outlet="polite"]');
+      if (outlet === null) {
+        throw new Error('There is no polite outlet on the page to watch.');
+      }
+      const window_ = window as unknown as { __politeChanges?: number };
+      new MutationObserver(() => {
+        window_.__politeChanges = (window_.__politeChanges ?? 0) + 1;
+      }).observe(outlet, { childList: true, characterData: true, subtree: true });
+      window_.__politeChanges = 0;
+    });
+    const changes = (): Promise<number> =>
+      page.evaluate(() => {
+        const read = (window as unknown as { __politeChanges?: number }).__politeChanges;
+        if (read === undefined) {
+          throw new Error('The watch on the polite outlet never installed.');
+        }
+        return read;
+      });
+
+    await tools(page).filter({ hasText: 'Ship Builder' }).click({ noWaitAfter: true });
+    await expect(failureNotice(page)).toBeVisible();
+    await expect
+      .poll(changes, { message: 'the first failure never reached the polite outlet' })
+      .toBeGreaterThan(0);
+    const said = await changes();
+
+    // A second screen, so a second navigation with its own code to fetch: the
+    // first one's code is refused rather than held, and asking for it again
+    // would not be a second failure of anything.
+    await tools(page).filter({ hasText: 'Equipment Builder' }).click({ noWaitAfter: true });
+    await expect
+      .poll(changes, { message: 'the second failure was written over the first in silence' })
+      .toBeGreaterThan(said);
+
+    // And still politely, and still once each: two events, not one interrupting.
+    await expect(assertiveOutlet(page)).toHaveText('');
+    await expect(politeOutlet(page)).toHaveText(englishMessages['navigation.failed.notice']);
+
+    held.release();
+  });
+
   test('is stated on the navigation that starts a session too (018/FR-007, FR-008)', async ({
     page,
   }) => {

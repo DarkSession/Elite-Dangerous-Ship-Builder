@@ -465,32 +465,42 @@ test.describe('the waiting statement and a generated document', () => {
     });
   }
 
-  test('is watched from before the generated document, so a reading of none is a reading (018/FR-008)', async ({
-    page,
-  }) => {
-    // Every reading above is that nothing was drawn, and a watch that never
-    // attached answers exactly that. This is the lane where it could: the
-    // watcher is installed before the document is parsed, and here the document
-    // it is waiting for is one the build generated rather than one a
-    // development server composed. So the same watch, installed the same way,
-    // is asked about a statement that has to be there.
-    const watch = await watchForTheStatementFromStart(page);
+  test.describe('the watch itself', () => {
+    // No worker in this context. The application registers one immediately and
+    // it claims the page it is on, and a worker answers a chunk from its cache
+    // without a request being made — a request that is never made is one no
+    // route can hold. The sibling journey below buys the same thing by building
+    // its own context; this one needs a first navigation to succeed before the
+    // navigation it holds, so it asks for the worker to be kept out instead.
+    test.use({ serviceWorkers: 'block' });
 
-    await page.goto('/');
-    await waitForTakeover(page);
+    test('is watched from before the generated document, so a reading of none is a reading (018/FR-008)', async ({
+      page,
+    }) => {
+      // Every reading above is that nothing was drawn, and a watch that never
+      // attached answers exactly that. This is the lane where it could: the
+      // watcher is installed before the document is parsed, and here the
+      // document it is waiting for is one the build generated rather than one a
+      // development server composed. So the same watch, installed the same way,
+      // is asked about a statement that has to be there.
+      const watch = await watchForTheStatementFromStart(page);
 
-    // Not the first presentation — a navigation the Commander asks for, with
-    // its screen's code held, which is the one case that draws the statement.
-    const held = await holdEveryChunk(page);
-    await page.getByRole('main').getByRole('link').first().click({ noWaitAfter: true });
+      await page.goto('/');
+      await waitForTakeover(page);
 
-    await expect(waitingStatement(page)).toBeVisible({ timeout: 15_000 });
-    expect(
-      await watch.timesDrawn(),
-      'the watch read nothing where the statement was standing',
-    ).toBeGreaterThan(0);
+      // Not the first presentation — a navigation the Commander asks for, with
+      // its screen's code held, which is the one case that draws the statement.
+      const held = await holdEveryChunk(page);
+      await page.getByRole('main').getByRole('link').first().click({ noWaitAfter: true });
 
-    held.release();
+      await expect(waitingStatement(page)).toBeVisible({ timeout: 15_000 });
+      expect(
+        await watch.timesDrawn(),
+        'the watch read nothing where the statement was standing',
+      ).toBeGreaterThan(0);
+
+      held.release();
+    });
   });
 
   test('states a first navigation that failed, over the document it was served (018/FR-007, FR-008)', async ({

@@ -125,7 +125,9 @@
       recorded as a modified requirement of `platform/accessible-responsive-operation`. Verify
       with a component test over the outlet reading the node rather than the words: a second
       event spoken identically replaces it, the same event published again does not, and a
-      locale switch empties it. Verify at the shell too, over two failed navigations
+      locale switch empties it. Verify at the shell too, over two failed navigations, and in
+      the journey by watching the region itself across two screens that cannot be fetched —
+      the words are identical, so only the region changing says the second one arrived
       (011/FR-009, 018/FR-007).
 
 ## 5. Unit and component verification
@@ -225,9 +227,11 @@
       when a navigation waits and when one fails, and a step covering the mark standing still
       under the platform's reduced-motion preference in both engines, and whether a still
       mark on the subdued screen still reads as a wait. Add the softened ground to the same
-      reading, where whether the step is right for a Commander is judged. Record the results
-      beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
-      011/FR-013).
+      reading, where whether the step is right for a Commander is judged. Add the second
+      failure to the same step: the words do not move between two failures, so whether a
+      reader is told again at all is a reading only a person can take. Bump the protocol's
+      version and record the results beside the protocols in `e2e/manual/results/`
+      (018/FR-002, FR-006, FR-007, 011/FR-009, 011/FR-010, 011/FR-013).
 - [x] 7.3 Run `pnpm run check` and report what passed. On this head: formatting, the
       generated-artifact and sitemap checks, typechecking, both builds, all ten policy checkers,
       529 script tests, 3155 unit tests with coverage above the floor, the eleven waiting

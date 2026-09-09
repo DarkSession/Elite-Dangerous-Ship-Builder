@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 12.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 13.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -172,12 +172,15 @@ all ten projects.
 ## A screen that is on its way (feature 018)
 
 Step 21 covers what a Commander is told between asking for a screen and getting
-it, what they are told when one never arrives, and whether the mark stands still
-under the platform's reduced-motion preference. Three of those are judgments no
-capture can make: whether a still mark reads as working rather than as stopped,
-whether the softened ground leaves enough of the screen behind visible to say
-which screen is being waited on, and whether a running navigation is
-distinguishable from a failed one by ear alone.
+it, what they are told when one never arrives, whether the same failure a second
+time is said again, and whether the mark stands still under the platform's
+reduced-motion preference. Four of those are judgments no capture can make:
+whether a still mark reads as working rather than as stopped, whether the
+softened ground leaves enough of the screen behind visible to say which screen is
+being waited on, whether a running navigation is distinguishable from a failed one
+by ear alone, and whether two failures in a row are heard as two — the words do
+not move between them, so the only thing separating them is that the second was
+said at all.
 
 The reduced-motion half is observed in both engines, because the mark is drawn
 through `<img>` — a separate document — and whether an engine honours a media
@@ -193,8 +196,10 @@ The automated coverage that does exist for the same requirements is
 named by its sentence, with the mark exposed as decoration, the screen behind
 unreachable by pointer and by focus, the ground asserted translucent, and the
 failure asserted both as words that stay on the page and as one polite
-announcement — together with an axe pass over both states in all ten projects
-and the readings at 200% text and 400% zoom in `e2e/reflow.spec.ts`.
+announcement, and a second failure asserted to replace the node the polite region
+holds rather than to write the same sentence over itself — together with an axe
+pass over both states in all ten projects and the readings at 200% text and 400%
+zoom in `e2e/reflow.spec.ts`.
 
 | Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
 | ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |

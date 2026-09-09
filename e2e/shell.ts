@@ -519,7 +519,10 @@ function readTheWatch(page: Page): StatementWatch {
       name,
     );
     if (read === undefined) {
-      throw new Error(`The statement watch never installed: the page holds no ${name}.`);
+      throw new Error(
+        `The statement watch is not on this page: it holds no ${name}. Either the watch ` +
+          'never installed, or the document it was installed in has been replaced since.',
+      );
     }
     return read;
   };

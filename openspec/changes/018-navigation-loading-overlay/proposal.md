@@ -81,10 +81,18 @@ already carries them:
 
 ### Modified Capabilities
 
-None. No accepted requirement changes. The design system's standing requirements already
-govern the new component — it enters the shared library before a capability uses it, previews
-each state it supports, and takes every visual value from a token — and the three obligations
-named above are standing requirements this change conforms to rather than amends.
+- `platform/accessible-responsive-operation`: "Announcement of errors and changes"
+  (011/FR-009) gains what it did not say. Two separate events announced in identical words
+  must each reach a reader: a live region announces a change to what it holds, and the same
+  sentence written over itself is not a change, so the second of two screens that could not
+  be opened was silence. A republished event is still one event and stays silent. It is
+  amended here rather than elsewhere because this is the first capability to state the same
+  thing twice, and the fix belongs to the policy rather than to one feature.
+
+The design system's standing requirements already govern the new component — it enters the
+shared library before a capability uses it, previews each state it supports, and takes every
+visual value from a token — and the three obligations named above are standing requirements
+this change conforms to rather than amends.
 
 ## Impact
 
@@ -99,6 +107,10 @@ named above are standing requirements this change conforms to rather than amends
 - `src/app/app.html` and `src/app/app.ts` mount the overlay beside the frame, where the help
   modal and the update overlay are already mounted, and route the failure into the shell's
   status slot and announcement outlet.
+- `src/app/ui/announcements/` carries the event's identity to the outlet beside its words,
+  and each live region renders what it holds keyed by that identity. Every capability that
+  announces is subject to this; nothing about what any of them publishes changes, and the
+  outlets' text reads as it did.
 - `src/app/ui/components/app-frame/` — the frame every screen is drawn inside — takes a list
   of status notices where it took one, so a version notice and a failed navigation stand
   together rather than replacing each other. Nothing else about the frame changes, and its

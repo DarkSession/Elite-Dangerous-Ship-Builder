@@ -1,9 +1,3 @@
-## Purpose
-
-How the application stays operable and readable for every Commander, whatever they are
-reading it with and whatever size they are reading it at. This change touches one part of
-it: what a screen reader is told when the same thing goes wrong twice.
-
 ## MODIFIED Requirements
 
 ### Requirement: Announcement of errors and changes
