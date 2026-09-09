@@ -6,7 +6,8 @@ Every route in `src/app/app.routes.ts` is a `loadComponent`, so the router fetch
 code inside the navigation that first asks for it. Nothing observes those navigations today.
 `src/app/app.ts` holds the shell state and `src/app/app.html` mounts three things beside the
 frame that belong to the session rather than to a screen: the help modal and the two halves
-of the update announcement.
+of the update announcement. The shell also carries one status slot on the application frame,
+which the update state uses today to leave a notice on the page beside an announcement.
 
 `src/app/ui/components/layer/layer.ts` is the application's modal. It is a native `<dialog>`
 opened with `showModal()`, which is what gives it a real inert background rather than a
@@ -21,25 +22,34 @@ is happening. That is the established pattern for this mark.
 
 `src/styles/_base.scss` removes nonessential motion under `prefers-reduced-motion: reduce`.
 That rule cannot reach the loader: an SVG drawn through `<img>` is a separate document, and
-the host page's styles do not apply inside it.
+the host page's styles do not apply inside it. The mark therefore animates today under a
+preference that asked it not to, which is a defect against
+`openspec/specs/platform/accessible-responsive-operation/spec.md`, "Reduced motion"
+(011/FR-013).
 
-`src/styles/tokens/` holds one scrim, `--ednb-surface-scrim` at 78% opacity, which is what a
-panel dialog is lifted off. It is dark enough to take the screen behind it out of the
+`src/styles/tokens/` holds one scrim, `--ednb-palette-scrim` at `rgb(6 6 7 / 0.78)`, which is
+what a panel dialog is lifted off. It is dark enough to take the screen behind it out of the
 reading.
+
+`openspec/specs/platform/application-delivery/spec.md`, "The one time limit the application
+carries" (011/FR-025), says applying an update MUST be the application's only time limit, and
+that a second one comes from an amendment rather than from a reading of that requirement.
 
 Two policy checkers constrain the work. `scripts/check-interface-foundations.mjs` requires
 every component exported from `src/app/ui/components` to declare its states in
-`src/app/ui/previews/preview-manifest.ts`. `scripts/check-specification-record.mjs` requires
-every requirement id a specification declares to be registered in `e2e/coverage-ledger.ts`,
-once the feature is listed in `COVERED_FEATURES`.
+`src/app/ui/previews/preview-manifest.ts`, and rejects a colour literal outside the token
+sources. `scripts/check-specification-record.mjs` requires every requirement id a
+specification declares to be registered in `e2e/coverage-ledger.ts`, once the feature is
+listed in `COVERED_FEATURES`.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
 - One answer to a waiting navigation, the same for every address.
-- A navigation the browser can serve at once changes the screen with nothing drawn.
+- A navigation the browser resolves without a request changes the screen with nothing drawn.
 - A wait that cannot be pressed through, so one press cannot become two navigations.
+- A navigation that fails leaves words behind rather than silence.
 - The waiting mark honours reduced motion in all three places the application draws it.
 
 **Non-Goals:**
@@ -47,33 +57,57 @@ once the feature is listed in `COVERED_FEATURES`.
 - No skeleton screens and no placeholder layouts. One overlay answers every navigation, and
   no screen gains a waiting shape of its own.
 - No proportion, percentage or remaining time. The application knows none of them.
-- No change to any other wait. The hull illustration and the hull schematic keep their own
-  local marks, and the deferred layers — the saved builds, the exchange dialogs — are
-  unchanged.
-- No control on the overlay. There is nothing to cancel: the navigation is already running,
-  and the way out is the screen arriving.
+- No new answer for any other wait. The hull illustration and the hull schematic keep their
+  own local marks, their own markup and their own sentences — they gain the reduced-motion
+  fix in the shared asset and nothing else — and the deferred layers (the saved builds, the
+  exchange dialogs) are unchanged.
+- No control on the overlay, and no timer that takes it down. See the two decisions below.
 - No minimum time the overlay stands for once it is drawn, and no fade in or out.
 - No route, address or persisted format changes.
 
 ## Screens
 
-No screen is added and no screen changes. One overlay is added, mounted beside the frame in
-`src/app/app.html`, where the help modal and the update overlay are already mounted — it
-belongs to the session rather than to any screen.
+No screen is added and no screen changes shape. One overlay is added, and the shell's
+existing status slot gains a second thing it can carry.
 
 ### The waiting overlay
 
-Composes: the new `ednb-waiting-overlay` component from `src/app/ui/components/`, driven by
-one signal from `NavigationProgress`.
+Composes: the new `ednb-waiting-overlay` component from `src/app/ui/components/`, mounted in
+`src/app/app.html` beside the frame — where the help modal and the update overlay already
+are, because it belongs to the session rather than to any screen — and driven by one signal
+from `NavigationWaiting`.
 
 Draws: the waiting mark from `public/assets/loader.svg`, centred in the viewport, on a ground
 carrying the softened scrim token. It carries one visually hidden sentence, resolved through
 the localisation layer, which is the overlay's accessible name.
 
-States: standing, and absent. Nothing else. It has no populated, empty, error or disabled
-state, because it holds no content of its own and reports nothing.
+States: standing, and absent.
 
-Requirements: 018/FR-001 to 018/FR-009.
+Requirements: 018/FR-001, FR-002, FR-003, FR-004, FR-005, FR-006.
+
+### The shell's status slot
+
+Composes: the status the application frame already draws, and the announcement outlet beside
+it.
+
+Draws: after a navigation that ended without presenting its screen, an error-toned notice
+saying the screen could not be opened, on the screen the Commander is on. It is taken down by
+the next navigation that succeeds.
+
+The slot takes a list rather than one notice, so a version notice and a failed navigation
+stand together rather than replacing each other. Both have to stay readable: the version
+notice sits beside the control that acts on it, and the failure is the only answer a
+Commander has to a press that produced nothing. The version notice is first in reading
+order — it is about the whole session, where the failure is about one press.
+
+Requirements: 018/FR-007.
+
+### Neither of them, in a generated document
+
+The overlay and the notice are mounted under the browser-only condition the help modal is
+mounted under, so a document generated by the build carries neither.
+
+Requirements: 018/FR-008.
 
 ## Decisions
 
@@ -81,7 +115,7 @@ Requirements: 018/FR-001 to 018/FR-009.
 
 The overlay must take the screen behind it away from a pointer, from focus and from the
 accessibility tree (FR-003). A native modal gives all three at once, puts the overlay in the
-top layer so it stands over a layer that is already open (FR-002), and is the mechanism the
+top layer so it stands over a surface that is already open (FR-002), and is the mechanism the
 application's own modal already uses.
 
 Considered and rejected: a fixed-position element with `inert` set on the frame. It is more
@@ -99,87 +133,141 @@ panel.
 
 ### The router is read in a store, not in the component
 
-`NavigationProgress` in `src/app/application/navigation/` subscribes to the router's
-navigation events, holds the threshold, and exposes one signal. The component takes an input
-and draws. That keeps the behaviour testable without rendering (constitution III), and keeps
-the component presentation-only as the design system requires.
+`NavigationWaiting` in `src/app/application/navigation/` subscribes to the router's
+navigation events, holds the threshold, and exposes two signals: whether a navigation is
+waiting, and whether the last one ended without presenting its screen. The component takes
+an input and draws. That keeps the behaviour testable without rendering (constitution III)
+and the component presentation-only, as the design system requires.
 
-### The threshold is 10ms, stated once
+### The threshold is 10ms, and it is in the specification
 
-A navigation whose code the browser already holds resolves without a network, in the same
+A navigation whose code the browser already holds resolves without a request, in the same
 task or the one after it. 10ms is longer than that and shorter than anything a Commander
-reads as a delay, so a repeat visit changes screen with nothing drawn (FR-004) and a real
-fetch is answered as good as immediately.
+reads as a delay.
 
-Considered and rejected: the 150–250ms threshold a fade-in usually takes. It suppresses the
-flash equally well, but it also leaves a genuinely slow navigation unanswered for a quarter
-of a second, which is the case this change exists for. The owner chose the short threshold.
+It is stated in the capability specification rather than only here, because a scenario that
+says "inside the threshold" and never says what the threshold is cannot be driven once this
+change is archived and the specification is all that remains.
 
-The value is a named constant in the store, not a design token: it is a decision about
-behaviour, not a visual value, and the token layer holds the latter.
+Considered and rejected: the 150–250ms threshold a fade-in usually takes. It suppresses a
+brief mark equally well, but it also leaves a genuinely slow navigation unanswered for a
+quarter of a second, which is the case this change exists for. The owner chose the short
+threshold.
+
+**The trade-off it carries.** A navigation that ends at, say, 30ms — a chunk read from the
+application's own cache on a slow device — draws the mark and removes it a frame or two
+later. There is no minimum standing time to smooth that, because a floor would keep the mark
+up after the screen was ready, which is a statement that is no longer true. The owner
+accepted the brief mark over the quarter-second silence.
 
 ### A softened scrim, added to the token layer
 
-The existing scrim at 78% takes the screen behind it out of the reading. The specification
-asks for the screen to stay recognisable (FR-002), so the tokens gain one softer step —
-a primitive beside `--ednb-palette-scrim` and a semantic name for it. Colour literals live
-only in the token layer, so this is where the value goes.
+The existing scrim at 78% takes the screen behind it out of the reading, and FR-002 asks for
+the screen to stay recognisable. The tokens gain one softer step at `rgb(6 6 7 / 0.55)` — the
+same near-black the existing scrim is mixed from, at the opacity that leaves a screen's
+shapes readable while clearly putting it behind something. Colour literals live only in the
+token layer, so the primitive goes beside `--ednb-palette-scrim` and the semantic name beside
+`--ednb-surface-scrim`.
 
-### Reduced motion is fixed inside the mark itself
+### Reduced motion is fixed inside the mark itself, which is a value outside the token layer
 
 `public/assets/loader.svg` gains a `@media (prefers-reduced-motion: reduce)` block in its own
 `<style>`, stopping its animation. The SVG is a separate document, so this is the only place
 a rule can reach it, and fixing it there fixes all three drawings of the mark rather than
-this one (FR-007).
+this one.
+
+This is a deliberate exception to constitution VII, which makes the token layer the only
+source of motion values: the mark's animation, and now its removal, live inside an asset the
+token layer cannot reach and the literal checker cannot see. The exception is recorded here
+and held by a rule of its own in `scripts/check-interface-foundations.mjs`, so the block
+cannot be dropped unnoticed. Nothing else about the mark's motion is duplicated in the
+stylesheets.
 
 Considered and rejected: inlining the mark into the component as markup. It would put a third
 copy of the artwork in the repository and leave the hull illustration and the hull schematic
 animating under a preference that asked them not to.
 
-### The overlay belongs to a running session
+### No timer takes the overlay down
 
-It is mounted under the same browser-only condition the help modal and the update overlay
-are, so a generated document carries none of it (FR-009). The store also ignores the
-navigation that starts the session, and begins answering once the first navigation has
-ended: a mark drawn over the first paint would hide the readable document a Commander was
-served (`openspec/specs/platform/published-addresses/spec.md`).
+The overlay is removed by the navigation ending and by nothing else. A ceiling that lowered
+it after some period would be a second time limit in an application whose specification says
+applying an update is its only one (011/FR-025) — and it would be a dishonest one, saying the
+wait had ended while the fetch was still running.
 
-### The sentence is the overlay's accessible name
+What bounds a stalled fetch is the platform: a request that never answers is ended by the
+browser's own network handling, which surfaces as a failed navigation, and that is the
+ending FR-007 states to the Commander. See the risk below.
+
+### A failed navigation is stated on the page, not only announced
+
+FR-007 asks for both, and the shell already has both: the status slot the update state uses,
+and the announcement outlet beside it. Reusing them keeps one shape for "something the
+session needs to tell you", and keeps the blocking-error announcement rule
+(011/FR-009) answered by the same mechanism that answers it elsewhere. The slot is widened
+from one notice to a list so the two cannot displace each other.
+
+The words say the screen could not be opened and say nothing about why. The router reports a
+failed navigation, not a diagnosis, and constitution IV refuses a reason the application does
+not have.
+
+### The sentence is the overlay's accessible name, and the mark stays decoration
 
 Opening a modal moves focus into it, and a reader is told what it is by its accessible name.
 So the visually hidden sentence is what names the overlay, and the mark stays `alt=""` and
-`aria-hidden` — the pattern the hull illustration already uses.
+`aria-hidden` — the pattern the hull illustration already uses. This is the platform's own
+behaviour for a modal rather than a keyboard-operation obligation, so it does not rest on any
+of the eight criteria the constitution excludes.
 
 The overlay publishes nothing through `AnnouncementService`. A live-region event as well
-would tell a reader the same thing twice for one event, which the feedback contract refuses.
+would tell a reader the same thing twice for one event. Whether a reader is in fact told is a
+judgment no scan can make: it is settled in `e2e/manual/screen-reader.protocol.md`, as the
+update announcement's own exposure is, and a reader disagreeing there sends this decision
+back.
+
+The sentence is not drawn as visible words. The overlay is the mark on its ground, which is
+what the owner asked for, and no requirement asks for visible words: FR-006 is about what a
+reader is told.
 
 Closing the dialog restores focus by itself, and this component adds nothing to that. The
 layer component remembers its invoking control because a dismissed dialog returns a Commander
 to the row they opened it from; a navigation replaces the screen that control was on, so
 there is nothing to return to.
 
+### Which of the five component states the overlay supports
+
+`populated` — the standing overlay. `empty` — the closed overlay, which draws nothing and
+holds no focus. The other three cannot exist and say so in the manifest: the overlay holds no
+content of its own, so it has no `loading` state distinct from standing, nothing it reports
+that could be an `error`, and no control that could be `disabled`. The design system asks for
+each supported state to be previewed and each unsupported one to carry a machine-readable
+reason, which is what those three get.
+
 ## Risks / Trade-offs
 
-- **A navigation that never ends leaves the mark standing.** → The store lowers the overlay
-  on every terminal navigation event — completed, cancelled, redirected and failed — rather
-  than on completion alone, and a unit test covers each. There is no timeout that lowers it
-  by itself: a mark that gave up while the fetch was still running would say the wait had
-  ended when it had not.
-- **A fetch slower than the threshold but faster than a Commander notices still draws the
-  mark.** → Accepted. The alternative is a longer threshold, which the owner rejected, and
-  the mark appearing for a moment is a smaller cost than a press with no answer.
+- **A fetch that stalls without answering leaves the mark standing.** → No application timer
+  lowers it, for the reason above; what ends it is the browser ending the request, which
+  arrives as a failed navigation and is stated by FR-007. The exposure is the window between
+  a stall and the platform giving up, during which the application is inert. Accepted, and
+  named here rather than mitigated with a second time limit. If it proves real in use, the
+  answer is an amendment to the time-limit requirement, not a reading of it.
+- **A navigation that ends just past the threshold shows the mark briefly.** → Accepted; see
+  the threshold decision.
 - **An engine that ignores a media query inside an SVG drawn through `<img>` keeps
-  animating.** → The scans cannot judge this; the reduced-motion variant in the component
-  previews covers what is drawn, and the manual protocol in `e2e/manual/` is where the mark
-  is watched under the platform preference in both engines.
+  animating.** → No automated check can judge this: the preview variant renders the mark
+  under the preference but cannot assert that it stopped. The policy rule asserts the block
+  is in the asset; the manual protocol in `e2e/manual/` is where the mark is watched in both
+  engines, and its record is the evidence.
 - **The accessibility scan of a screen with the overlay open sees only the overlay**, because
   everything else is inert. → That is the correct reading of that state, and the covered
   state is registered in the ledger as its own surface rather than folded into the screen's.
 - **Two modals at once** — the saved builds layer open, then a navigation out of it. → The
   top layer stacks them in the order they were opened, so the mark stands in front. An
   end-to-end journey opens a saved build from the layer and reads which one is in front.
+- **The failure notice and a version notice want the same slot.** → The slot carries a list,
+  so both stand. Widening it touches a component the whole shell draws, so the existing
+  status assertions are re-run against a slot given one notice and a slot given two.
 
 ## Migration Plan
 
 None. Nothing is persisted, no address changes, and no stored format is touched. The change
-is removable by unmounting the overlay.
+is removable by unmounting the overlay and the notice.
