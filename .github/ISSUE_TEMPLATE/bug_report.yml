@@ -11,7 +11,7 @@ body:
         here.
 
         A security vulnerability goes in a
-        [private report](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/security/advisories/new),
+        [private report](https://github.com/DarkSession/Nav-Beacon/security/advisories/new),
         never in an issue.
   - type: textarea
     id: what-happens

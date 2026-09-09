@@ -25,7 +25,7 @@ The version is shown in the application under **Help · About**. Name it in your
 **Do not open a public issue, a pull request or a discussion for a vulnerability.**
 
 Report it privately:
-[Security → Advisories → Report a vulnerability](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/security/advisories/new).
+[Security → Advisories → Report a vulnerability](https://github.com/DarkSession/Nav-Beacon/security/advisories/new).
 The report is visible only to you and the maintainers.
 
 Include what you have:

@@ -583,8 +583,8 @@ jobs:
       # instead. The path half of the base URL is the only place the preview
       # repository's name is written down; the base href below is derived from
       # it so the built bundle and the published location cannot disagree.
-      PREVIEW_REPOSITORY: DarkSession/Elite-Dangerous-Ship-Builder-Preview
-      PREVIEW_PAGES_BASE_URL: darksession.github.io/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_REPOSITORY: DarkSession/Nav-Beacon-Preview
+      PREVIEW_PAGES_BASE_URL: darksession.github.io/Nav-Beacon-Preview
       PREVIEW_UMBRELLA_DIR: pr-preview
 
     steps:

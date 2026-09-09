@@ -18,7 +18,7 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
     destinations: {
       repositoryLicense: {
         id: 'repositoryLicense',
-        url: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        url: 'https://github.com/DarkSession/Nav-Beacon/blob/main/LICENSE',
         purpose: 'completeLegalTerms',
         leavesApplication: true,
         mayRequireNetwork: true,
@@ -32,7 +32,7 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
       },
       repositorySource: {
         id: 'repositorySource',
-        url: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder',
+        url: 'https://github.com/DarkSession/Nav-Beacon',
         purpose: 'sourceCode',
         leavesApplication: true,
         mayRequireNetwork: true,

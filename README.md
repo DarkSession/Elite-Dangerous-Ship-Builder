@@ -206,7 +206,7 @@ it is merged. A sticky comment on the pull request carries the link, the preview
 is replaced on every push and removed when the pull request closes.
 
 Previews are published to
-**[Elite-Dangerous-Ship-Builder-Preview](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder-Preview)**,
+**[Nav-Beacon-Preview](https://github.com/DarkSession/Nav-Beacon-Preview)**,
 not to this repository, because this repository's Pages site _is_ the production
 site: `public/CNAME` points it at `navbeacon.app`, and a repository serves exactly
 one Pages site. A preview published from here would land on the production
@@ -214,7 +214,7 @@ domain. The preview repository has no custom domain, so its previews reach the
 account's default Pages host instead:
 
 ```
-https://darksession.github.io/Elite-Dangerous-Ship-Builder-Preview/pr-preview/pr-<number>/
+https://darksession.github.io/Nav-Beacon-Preview/pr-preview/pr-<number>/
 ```
 
 The [`preview` job in `ci.yml`](./.github/workflows/ci.yml) publishes them and
@@ -262,12 +262,12 @@ set to **Deploy from a branch**, with the branch `gh-pages` and folder `/ (root)
 — the branch is created by the first preview, so publish one before setting
 this. And in this repository, a secret named `PREVIEW_PAGES_TOKEN` holding a
 fine-grained personal access token owned by `DarkSession`, scoped under **Only
-select repositories** to `Elite-Dangerous-Ship-Builder-Preview` alone, with
-**Repository permissions → Contents: Read and write** as its only permission. It
-needs nothing in this repository; the comment on the pull request is written
-with the run's own `GITHUB_TOKEN`. If the secret is missing or expired, the
-preview job says so in a warning and does nothing else — a missing preview never
-fails a run.
+select repositories** to `Nav-Beacon-Preview` alone, with **Repository
+permissions → Contents: Read and write** as its only permission. It needs
+nothing in this repository; the comment on the pull request is written with the
+run's own `GITHUB_TOKEN`. If the secret is missing or expired, the preview job
+says so in a warning and does nothing else — a missing preview never fails a
+run.
 
 That secret is readable by any workflow run of a pull request raised from a
 branch of this repository, because a `pull_request` run executes the workflow

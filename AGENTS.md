@@ -103,13 +103,13 @@ them: renaming them would change bytes a Commander has already saved.
   new user journey needs both.
 - **Nothing the application asks for at runtime may be a root-absolute path.** A
   pull request is published as a preview, built a second time with a sub-path
-  `<base href>` and pushed to the separate `Elite-Dangerous-Ship-Builder-Preview`
-  repository, because this repository's own Pages site is production
-  (`public/CNAME` → `navbeacon.app`). A leading `/` therefore looks past the
-  deployment base and misses the file — invisible at the root of a domain, fatal
-  one directory down. `fetch` paths resolve against the base href for free (see
-  `hullArtworkPath` and the locale registry's `assetPath`); `@font-face` sources
-  in `src/styles/_fonts.scss` need `externalDependencies: ["fonts/*"]` in
+  `<base href>` and pushed to the separate `Nav-Beacon-Preview` repository,
+  because this repository's own Pages site is production (`public/CNAME` →
+  `navbeacon.app`). A leading `/` therefore looks past the deployment base and
+  misses the file — invisible at the root of a domain, fatal one directory down.
+  `fetch` paths resolve against the base href for free (see `hullArtworkPath`
+  and the locale registry's `assetPath`); `@font-face` sources in
+  `src/styles/_fonts.scss` need `externalDependencies: ["fonts/*"]` in
   `angular.json`, or the bundler resolves them before the emitted CSS sees them.
 - **`package.json` declares `major.minor.0`; CI supplies the patch.** Major and
   minor are advanced by hand in a normal reviewed commit.

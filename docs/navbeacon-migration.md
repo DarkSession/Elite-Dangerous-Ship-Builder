@@ -79,8 +79,19 @@ language, with the build, or with how the product spells its name. That one move
 consumer keying on the old string a new producer, and is the accepted cost of the product
 having one identity; the written name moving again does not move it.
 
-Renaming the repository to match is optional. GitHub redirects the old URLs and Pages
-follows the rename, so it costs a remote update and nothing else.
+The repository is `Nav-Beacon`, and previews are published from `Nav-Beacon-Preview`.
+GitHub redirects the old URLs and Pages follows a rename, so the move itself is a remote
+update. The name is written down as well: the audited URL constants in
+`scripts/generate-help-manifest.mjs`, which their validator and their tests hold to each
+other, and the preview settings in `ci.yml` and `preview-cleanup.yml`, which must match or
+a closed pull request keeps its preview. Nothing reconciles the rest, so a reader has to
+catch it: the licence link on the two `.design` canvases, the expected addresses in
+`src/app/domain/distribution/help-manifest.spec.ts` and
+`src/app/features/help/help-dialog.component.spec.ts`, which build their own fixtures and
+so pass while stale,
+`openspec/changes/archive/012-help-and-licences/contracts/distribution-artifacts.md`,
+which records the name, and the prose in `README.md`, `AGENTS.md`, `SECURITY.md`,
+`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md` and the issue templates.
 
 ### One prefix, everywhere
 

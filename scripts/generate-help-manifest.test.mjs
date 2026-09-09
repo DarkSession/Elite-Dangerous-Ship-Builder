@@ -320,35 +320,29 @@ describe('the help manifest generator', () => {
     // Every one of these is a way application state, a fork or a redirect could
     // ride out of the modal on the one navigation it offers.
     const REJECTED_DESTINATIONS = [
-      [
-        'is not HTTPS',
-        'http://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
-      ],
+      ['is not HTTPS', 'http://github.com/DarkSession/Nav-Beacon/blob/main/LICENSE'],
       [
         'carries credentials',
-        'https://someone:secret@github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        'https://someone:secret@github.com/DarkSession/Nav-Beacon/blob/main/LICENSE',
       ],
-      [
-        'carries a port',
-        'https://github.com:8443/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
-      ],
+      ['carries a port', 'https://github.com:8443/DarkSession/Nav-Beacon/blob/main/LICENSE'],
       ['carries a query or fragment', `${REPOSITORY_LICENSE_URL}?utm_source=help`],
       ['carries a query or fragment', `${REPOSITORY_LICENSE_URL}#L1`],
       [
         'is not on github.com',
-        'https://github.example.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        'https://github.example.com/DarkSession/Nav-Beacon/blob/main/LICENSE',
       ],
       [
         "is not this repository's LICENSE on main",
-        'https://github.com/someone-else/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        'https://github.com/someone-else/Nav-Beacon/blob/main/LICENSE',
       ],
       [
         "is not this repository's LICENSE on main",
-        'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/next/LICENSE',
+        'https://github.com/DarkSession/Nav-Beacon/blob/next/LICENSE',
       ],
       [
         "is not this repository's LICENSE on main",
-        'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/README.md',
+        'https://github.com/DarkSession/Nav-Beacon/blob/main/README.md',
       ],
     ];
 
@@ -425,7 +419,7 @@ describe('the help manifest generator', () => {
       // fork of it, or another project's page are each a different promise
       // from the one the sentence makes.
       for (const url of [
-        'https://github.com/someone-else/Elite-Dangerous-Ship-Builder',
+        'https://github.com/someone-else/Nav-Beacon',
         'https://github.com/DarkSession/Elite-Dangerous-Almanac',
         `${REPOSITORY_SOURCE_URL}/blob/main/LICENSE`,
       ]) {
