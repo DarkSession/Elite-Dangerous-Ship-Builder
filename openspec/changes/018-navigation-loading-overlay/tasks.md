@@ -117,29 +117,29 @@
 
 ## 6. End-to-end journeys
 
-- [ ] 6.1 Add `e2e/navigation-waiting.spec.ts`, running in all ten projects. Hold the ship
+- [x] 6.1 Add `e2e/navigation-waiting.spec.ts`, running in all ten projects. Hold the ship
       builder's chunk with `page.route`, press its entry on the start page, and read: the
       overlay stands, the mark is centred in the viewport, the alpha of the ground's computed
       background colour is above zero and below one so the screen behind stays visible through
       it, that screen is not clickable, the page does not scroll horizontally, and the overlay is gone once the
       chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
       011/FR-011).
-- [ ] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
+- [x] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
       redirected to another address takes the overlay down and states no failure, and a
       navigation whose code is already held draws nothing at all (018/FR-004, FR-005, FR-007).
-- [ ] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
+- [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
-- [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
+- [x] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
       inside a running session, and on the navigation that starts one at an address the build
       generates a document for, where what the Commander is left on is that document
       (018/FR-005, FR-007, FR-008).
-- [ ] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
+- [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
-- [ ] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under
+- [x] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under
       the rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert
       the screen behind the standing overlay is absent from the accessibility tree
       (018/FR-003, 011/FR-012).

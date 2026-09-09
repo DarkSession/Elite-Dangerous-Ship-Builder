@@ -14,19 +14,29 @@
 .waiting {
   position: fixed;
   inset: 0;
-  display: flex;
   // No maximum: a modal dialog is bounded by the user agent unless it is told
   // otherwise, and this one is the viewport.
   inline-size: 100%;
   max-inline-size: 100%;
   block-size: 100%;
   max-block-size: 100%;
-  align-items: center;
-  justify-content: center;
   margin: 0;
   padding: 0;
   border: 0;
   background-color: var(--ednb-surface-scrim-soft);
+}
+
+// Drawn only while it is open, and by the open state itself.
+//
+// A closed `<dialog>` is taken off the page by the user agent's own
+// `dialog:not([open]) { display: none }`, and an author rule outranks a user
+// agent rule whatever its specificity. So a bare `display` here would leave a
+// closed overlay covering the viewport and swallowing every press on the screen
+// behind it — which is what it did.
+.waiting[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .waiting::backdrop {
