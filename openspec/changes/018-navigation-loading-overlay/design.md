@@ -393,10 +393,13 @@ reason, which is what those three get.
   a refused edit at the build revision, which a refusal does not spend, so two refusals with
   no committed edit between them carry one identity and the second says nothing. The lines on
   the page change while a reader is told nothing, which is the case the amended requirement
-  names. It is the same shape as the catalogue and the same age — the policy dropped it
-  before this change as well, whenever the first refusal was the last assertive event — and
-  it belongs to `ship-builder/build-lifecycle` rather than to this capability. Recorded here
-  and raised as its own report.
+  names. It belongs to `ship-builder/build-lifecycle` rather than to this capability, so it is
+  recorded here and raised as its own report. Unlike the catalogue's, though, this change
+  reaches it: the policy dropped a second refusal before as well, but only where no other
+  assertive event came between the two, and remembering per `(kind, urgency)` rather than per
+  outlet closes that last accidental way through. The common case behaved this way already;
+  what this change removes is the exception to it. The catalogue's is caught by the staleness
+  guard, which this change does not touch.
 
 ## Migration Plan
 

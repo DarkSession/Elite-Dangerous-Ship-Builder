@@ -208,6 +208,25 @@ describe('NavigationWaitingStore', () => {
     expect(store.failed()).toBe(false);
   });
 
+  it('leaves the statement standing when a skip arrives while a navigation runs', () => {
+    const store = running();
+
+    start(2);
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
+
+    // A skip with a navigation still running is not that navigation's ending,
+    // and nothing else is going to end it. Taken as one, it would put the
+    // statement down while the screen is still being fetched, leaving the
+    // Commander on a screen that says nothing for as long as the chunk takes —
+    // and the navigation's own ending would then have nothing to take down.
+    skip(3);
+
+    expect(store.waiting()).toBe(true);
+    end(2);
+    expect(store.waiting()).toBe(false);
+  });
+
   it('answers the navigation after a handover that was skipped', () => {
     const store = running();
 
