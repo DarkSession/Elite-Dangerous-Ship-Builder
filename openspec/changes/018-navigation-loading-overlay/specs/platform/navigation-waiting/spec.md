@@ -41,6 +41,13 @@ Source: 018/FR-001.
 
 The statement MUST stand over the whole viewport and in front of everything else the
 application has open, including a surface the application had already opened over a screen.
+
+One thing it MUST NOT stand in front of. Where the application has already put up something
+a Commander has to read about the session itself before the page is replaced under them, the
+waiting statement MUST NOT be drawn at all — not in front of it, and not behind it. A
+navigation is a smaller thing than the session ending, and the text that announces a restart
+is required to be visible when it stands
+(`openspec/specs/platform/application-delivery/`, "Applying a published version").
 What lies behind it MUST be subdued, so what a Commander is looking at is the wait rather
 than the screen under it. The ground it is drawn on MUST be translucent rather than opaque,
 so the screen behind stays visible through it and a Commander can still see which screen
@@ -59,6 +66,13 @@ Source: 018/FR-002.
 
 - **WHEN** a navigation starts from a surface the application already has open over a screen
 - **THEN** the waiting statement stands in front of that surface as well
+
+#### Scenario: The session is being told the page is about to be replaced
+
+- **WHEN** a navigation waits while the application is telling a Commander that the page is
+  about to be replaced
+- **THEN** no waiting statement is drawn
+- **AND** what the Commander has to read stays visible
 
 ### Requirement: The screen behind the statement cannot be used
 
@@ -148,9 +162,8 @@ Source: 018/FR-005.
 
 ### Requirement: What a reader is told while the application waits
 
-The waiting statement MUST carry text saying that the application is waiting, resolved
-through the localisation layer in the reading language, and that text MUST be what names the
-statement to a screen reader. Any mark drawn beside the text MUST be exposed as decoration,
+The waiting statement MUST carry text saying that the application is waiting, and that text
+MUST be what names the statement to a screen reader. Any mark drawn beside the text MUST be exposed as decoration,
 so a reader hears the sentence rather than a description of a graphic.
 
 Source: 018/FR-006.
@@ -163,9 +176,17 @@ Source: 018/FR-006.
 
 ### Requirement: A screen that never arrives is stated, not silently abandoned
 
-Where a navigation ends without presenting its screen — the code could not be fetched, or the
-navigation failed for any other reason — the application MUST state that the screen could not
-be opened, and MUST leave the Commander on a screen they can use. It MUST NOT return them to
+Where a navigation fails — its code could not be fetched, or it ended in an error — the
+application MUST state that the screen could not be opened, and MUST leave the Commander on a
+screen they can use.
+
+A navigation that is cancelled, and one that is redirected to another address, are not
+failures and MUST be stated as nothing. Both are ordinary endings the application asked for:
+an address that resolves to nothing lands at the entry point rather than reporting a fault
+(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"),
+and re-entering the open tool where its re-entry already stands changes nothing at all.
+Between them, this requirement and "The statement ends with the navigation" cover every
+ending once. It MUST NOT return them to
 the screen they pressed from with no answer, which is the unpressed-looking control the
 waiting statement exists to remove.
 
@@ -205,6 +226,12 @@ Source: 018/FR-007.
 
 - **WHEN** the application has no reason for the failure
 - **THEN** it states that the screen could not be opened and states no reason it does not have
+
+#### Scenario: The navigation is cancelled or redirected
+
+- **WHEN** a navigation is cancelled, or redirected to another address
+- **THEN** nothing is stated about it
+- **AND** no failure is reported
 
 ### Requirement: The statement belongs to a running session
 

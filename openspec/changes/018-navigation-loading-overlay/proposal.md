@@ -24,9 +24,13 @@ wait that has no answer.
 - The mark comes down when the navigation ends, whatever the outcome — the screen opened,
   the navigation was cancelled or redirected, or the code never arrived. It never outlives
   the navigation that raised it, and at most one stands at a time.
-- A navigation that ends without presenting its screen is stated rather than abandoned. The
-  Commander is left on a screen they can use and told that the screen could not be opened,
-  in words that stay on the page and are announced once without interrupting a reader.
+- The mark is not drawn at all while the application is telling a Commander that the page is
+  about to be replaced by a newer version. That text has to stay visible, and a navigation
+  running under a restart is not going to finish.
+- A navigation that fails is stated rather than abandoned. The Commander is left on a screen
+  they can use and told that the screen could not be opened, in words that stay on the page
+  and are announced once without interrupting a reader. A cancelled or redirected navigation
+  is an ordinary ending and is stated as nothing.
 - A screen reader is told, in the reading language, that the application is waiting. The
   mark itself is decoration and is not announced as a picture.
 - The design system gains the overlay as a component with its own state previews. No screen
@@ -43,7 +47,8 @@ The change declares requirements `018/FR-001` to `018/FR-008`:
 - **FR-005** The statement ends with the navigation, whatever the outcome, and at most one
   stands at a time.
 - **FR-006** A screen reader is told the application is waiting; the mark is decoration.
-- **FR-007** A screen that never arrives is stated, not silently abandoned.
+- **FR-007** A navigation that fails is stated, not silently abandoned; a cancelled or
+  redirected one is not a failure.
 - **FR-008** The statement belongs to a running session, and never covers its first
   presentation.
 
@@ -104,7 +109,13 @@ named above are standing requirements this change conforms to rather than amends
   carries its reduced-motion block, so the fix cannot be undone unnoticed.
 - Both message catalogues, `src/app/i18n/locales/en.json` and `de.json`, gain the sentence a
   reader hears while the application waits and the words a failed navigation leaves behind.
+- `e2e/navigation-waiting.spec.ts` is new — the journeys over a held chunk, an aborted one, a
+  redirect and the stacked case — and the accessibility, zoom and served-document suites gain
+  readings of the two new states. `e2e/manual/screen-reader.protocol.md` gains the readings no
+  scan can judge, and `e2e/manual/results/` gains their records.
 - `e2e/coverage-ledger.ts` gains `018-navigation-loading-overlay` in `COVERED_FEATURES` and
-  an entry for every requirement id above.
+  an entry for every requirement id above. Its release coverage ledger for the Help route
+  gains no row: `design.md` records why, and the answer if release validation reads it the
+  other way.
 - No route, no address and no build data changes. Nothing is fetched from another origin,
   and the mark is asked for by a relative path, as every other runtime asset is.

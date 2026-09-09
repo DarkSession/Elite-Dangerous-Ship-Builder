@@ -15,8 +15,9 @@
 - [ ] 1.3 Add the softened scrim to the token layer: `rgb(6 6 7 / 0.55)` as a primitive
       beside `--ednb-palette-scrim` in `src/styles/tokens/_primitives.scss`, and the semantic
       name for it in `_semantic.scss`. Verify with `pnpm run policy`, which rejects a colour
-      literal outside the token sources; with the assertion in task 6.1 that the drawn
-      ground's computed opacity is above zero and below one, which is what FR-002 states; and
+      literal outside the token sources; with the assertion in task 6.1 that the alpha of the
+      drawn ground's computed background colour is above zero and below one, which is what
+      FR-002 states; and
       with the reading in task 7.2, which is where whether the step is right for a Commander
       is judged (018/FR-002).
 
@@ -35,10 +36,12 @@
       the specification that fixes the value. Verify with a unit test driving a fake clock to
       one tick either side of it, asserting nothing is raised below and the signal is raised
       above (018/FR-004).
-- [ ] 2.3 Raise a second signal when a navigation ends without presenting its screen, and
-      lower it on the next navigation that succeeds. It carries no reason, because the router
-      reports none. Verify with unit tests over a failed navigation raising it, a successful
-      one lowering it, and no reason being carried (018/FR-007).
+- [ ] 2.3 Raise a second signal when a navigation fails, and lower it on the next navigation
+      that succeeds. A cancelled navigation and a redirected one are ordinary endings and
+      raise nothing. It carries no reason, because the router reports none. Verify with unit
+      tests over a failed navigation raising it, a cancelled one and a redirected one raising
+      nothing, a successful one lowering it, and no reason being carried (018/FR-005,
+      FR-007).
 - [ ] 2.4 Suppress the waiting signal, and only the waiting signal, for the navigation that
       starts the session: it answers from the first navigation that ends onward. The failure
       signal answers from the first navigation, because a first navigation that fails is
@@ -61,8 +64,10 @@
 - [ ] 3.2 Style it from tokens only: the dialog fills the viewport and carries the softened
       scrim from task 1.3, the mark is centred and sized from a spacing token rather than from
       the SVG's own height attribute, and there is no transition on opening or closing. Verify
-      with `pnpm run policy` for the literal rule, and with the preview states in task 3.3
-      rendered at desktop, tablet and mobile widths (018/FR-002, 011/FR-011).
+      with `pnpm run policy` for the literal rule; with a component test reading the drawn
+      element's computed transition and animation durations as zero; and with the preview
+      states in task 3.3 rendered at desktop, tablet and mobile widths (018/FR-002,
+      011/FR-011).
 - [ ] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a `populated`
       state (standing) and an `empty` state (closed), each with the `normal`,
       `expanded-copy`, `rtl` and `reduced-motion` variants, and a stated reason for each of
@@ -84,10 +89,12 @@
       notices, and by the existing frame and update tests staying green (018/FR-007).
 - [ ] 4.3 Mount the overlay in `src/app/app.html` beside the frame, under the same
       browser-only condition the help modal and the update overlay are mounted under, driven
-      by the store's waiting signal and the resolved sentence from `src/app/app.ts`. Verify
-      with unit tests over the shell asserting the overlay is drawn when the signal is raised
-      and absent when it is not, and with task 6.7, which reads the generated documents
-      themselves (018/FR-002, FR-008).
+      by the store's waiting signal and the resolved sentence from `src/app/app.ts`, and hold
+      it down while the restart announcement stands, so the text a Commander has to read
+      before the page is replaced stays visible (011/FR-025). Verify with unit tests over the
+      shell asserting the overlay is drawn when the signal is raised, absent when it is not,
+      and absent while the restart overlay stands whichever of the two was raised first, and
+      with task 6.7, which reads the generated documents themselves (018/FR-002, FR-008).
 - [ ] 4.4 Publish the failed navigation from `src/app/app.ts`: the notice into the frame's
       status list at error tone, and one announcement through `AnnouncementService` at polite
       urgency — nothing is blocked — once per failure. Verify with unit tests asserting the
@@ -110,14 +117,17 @@
 
 - [ ] 6.1 Add `e2e/navigation-waiting.spec.ts`, running in all ten projects. Hold the ship
       builder's chunk with `page.route`, press its entry on the start page, and read: the
-      overlay stands, the mark is centred in the viewport, the ground's computed opacity is
-      above zero and below one so the screen behind stays visible through it, that screen is
-      not clickable, the page does not scroll horizontally, and the overlay is gone once the
+      overlay stands, the mark is centred in the viewport, the alpha of the ground's computed
+      background colour is above zero and below one so the screen behind stays visible through
+      it, that screen is not clickable, the page does not scroll horizontally, and the overlay is gone once the
       chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
       011/FR-011).
 - [ ] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
-      redirected to another address takes the overlay down, and a navigation whose code is
-      already held draws nothing at all (018/FR-004, FR-005).
+      redirected to another address takes the overlay down and states no failure, and a
+      navigation whose code is already held draws nothing at all (018/FR-004, FR-005, FR-007).
+- [ ] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
+      same one the ship builder's navigation drew, so a Commander meets one answer rather than
+      one per screen (018/FR-001).
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
