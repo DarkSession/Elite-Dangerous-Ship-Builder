@@ -823,15 +823,18 @@ test.describe('the build library', () => {
 
     await conflict.getByRole('button', { name: 'Keep both versions' }).click();
 
-    const names = await first.evaluate(() =>
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith('ednb:record:'))
-        .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name)
-        .filter((name): name is string => name !== null),
-    );
-    // Neither version disappeared.
-    expect(names).toContain('From the other page');
-    expect(names).toContain('From this page');
+    const names = () =>
+      first.evaluate(() =>
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('ednb:record:'))
+          .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name)
+          .filter((name): name is string => name !== null),
+      );
+    // Neither version disappeared. Polled for this page's, which is what the
+    // press writes and is written behind a lock; the other page's was there
+    // before the press and is read once.
+    await expect.poll(names).toContain('From this page');
+    expect(await names()).toContain('From the other page');
 
     await context.close();
   });
