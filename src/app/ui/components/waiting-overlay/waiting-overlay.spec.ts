@@ -154,13 +154,15 @@ describe('WaitingOverlay', () => {
 
   it('has nothing to sit through, either way', () => {
     const { fixture, dialog } = render(true);
-    const style = getComputedStyle(dialog);
 
     // No fade in and none out. A statement that arrives late is late, and one
     // that lingers is a statement that is no longer true.
-    expect(style.transitionDuration === '' || style.transitionDuration === '0s').toBe(true);
-    expect(style.animationDuration === '' || style.animationDuration === '0s').toBe(true);
-
+    //
+    // That reading is taken in `e2e/navigation-waiting.spec.ts`, from an engine
+    // that resolves a stylesheet. Here it would be no reading at all: this one
+    // answers the same empty string for a duration set to zero, a duration set
+    // to a second, and a stylesheet it never applied. What is read here is the
+    // half that does not need one — the statement goes when it is told to.
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
 

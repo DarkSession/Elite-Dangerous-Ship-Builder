@@ -116,8 +116,9 @@ navigation the browser resolves without a request changes the screen with nothin
 
 The threshold MUST be 10 milliseconds, and the same threshold MUST apply to every
 navigation. It is stated here so a scenario can be driven against it. It decides when a
-statement appears, never whether one is suppressed: a navigation the two requirements above
-suppress the statement for draws nothing however long it runs.
+statement appears, never whether one is suppressed: a navigation that "The statement is what
+the Commander is looking at" or "The statement belongs to a running session" suppresses the
+statement for draws nothing however long it runs.
 
 Source: 018/FR-004.
 
