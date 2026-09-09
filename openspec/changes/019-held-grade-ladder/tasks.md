@@ -5,10 +5,11 @@
       size at the control leading, plus `--ednb-space-stack-tight`, plus
       `--ednb-layout-grade-step`. Write the comment beside it in the form
       `--ednb-layout-bar-height` uses: what the figure is composed of, and why it is composed
-      rather than declared. Every part is `rem`-based, so the held track scales with text size
-      as the ladder does. Verify with `pnpm run policy`, which rejects a literal outside the
-      token sources, and with `pnpm run build`, which fails on an unresolved custom property
-      in a stylesheet that uses it.
+      rather than declared. Every part is `rem`-based, so the track scales with text size as
+      the ladder does. Verify with `pnpm run build`, which fails on a stylesheet that does not
+      compile, and with the journeys in tasks 5.1 to 5.3, which measure whether the figure is
+      the ladder's. Nothing mechanical checks the figure itself: `pnpm run policy` rejects a
+      literal outside the token layer, and this declaration is inside it.
 
 ## 2. The item column holds the ladder's track
 
@@ -16,26 +17,27 @@
       not the item publishes a grade: move the `@if (item.grades.length > 0)` inside a
       `.item__grades` element that is always drawn, so the ladder is conditional and the track
       is not. Where the track holds no ladder, give it `[attr.inert]="true"` and
-      `aria-hidden="true"`, as the suit gate does for its own previews, so the held track is
-      hidden from the accessibility tree and out of the focus order (019/FR-002). Verify with
-      the unit tests in task 4.1.
+      `aria-hidden="true"`, as the suit gate does for its own previews, so the track is hidden
+      from the accessibility tree and out of the focus order (019/FR-002). Verify with the
+      unit tests in task 4.1.
 - [ ] 2.2 In `src/app/features/equipment/item-view/item-view.scss`, give the empty track its
       held size inside the `container-medium-up(item)` block only, as a `min-block-size` of
-      `--ednb-layout-grade-ladder-block` beside the width the block already declares, so
-      the track measures the ladder where the ladder stands beside the name, and measures
-      nothing where the header takes `display: contents` and the ladder stands below the list
-      (design, "The narrow column holds nothing"). Verify with the journeys in tasks 5.1 and
-      5.4, which measure the wide arrangement and the narrow one; a unit test cannot verify
+      `--ednb-layout-grade-ladder-block` beside the width the block already declares, so the
+      track measures the ladder where the ladder stands beside the name, and measures nothing
+      where the header takes `display: contents` and the ladder stands below the list (design,
+      "The narrow column holds nothing"). Verify with the journey in task 5.1, which runs at
+      all five layout profiles and so measures both arrangements; a unit test cannot verify
       this, because jsdom computes no layout.
 
 ## 3. The empty bench and the item measure the same
 
 - [ ] 3.1 In `src/app/features/equipment/suit-gate/suit-gate.scss`, set the gate header's
       `padding-block-end` to `var(--ednb-space-2xl)`, which is the seam the item column ends
-      its own header with. Record in the comment that the gate stands in the column the item
-      takes and the two must agree with each other, which is the recorded 4px divergence from
-      artboard `2a` (design, "The gate takes the item column's seam"). Verify with the journey
-      in task 5.2.
+      its own header with. State it once, unconditionally: the gate's header is taken out of
+      flow where the column is narrow, so the seam is drawn wide and nowhere else (design,
+      "The gate's seam is stated once, for both arrangements"). Record in the comment that the
+      gate stands in the column the item takes and the two must agree with each other, which
+      is the recorded 4px divergence from artboard `2a`. Verify with the journey in task 5.2.
 
 ## 4. What the unit tests state
 
@@ -51,28 +53,25 @@
 
 ## 5. The journeys the requirements are about
 
-- [ ] 5.1 In `e2e/equipment-builder.spec.ts`, add a journey under a pinned wide viewport
-      (`test.use({ viewport: { width: 1320, height: 900 } })`, as `design-reference.spec.ts`
-      pins one for the wide manifest, so every one of the ten projects still runs it): wear a
-      suit, open an empty weapon mount, read the bounding box of `.item__alternatives`, choose
-      a weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
+- [ ] 5.1 In `e2e/equipment-builder.spec.ts`, add the weapon journey, pinning no viewport so
+      that each of the five layout profiles runs it in both engines (011/FR-021): wear a suit,
+      open an empty weapon mount, read the bounding box of `.item__alternatives`, choose a
+      weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
       journey that the mount's grade ladder is absent before the choice and present after it,
-      so a passing test cannot mean the ladder simply never appeared (019/FR-001). Verify with
+      so a passing test cannot mean the ladder never appeared (019/FR-001). Verify with
       `pnpm run e2e`.
-- [ ] 5.2 In the same file and at the same pinned width, add the empty-bench journey: open the
+- [ ] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
       bench on the gate, read the bounding box of `.gate__choose`, choose a suit, and assert
-      the `y` of `.item__alternatives` matches it. Both lists are the same list in the same
-      place, which is what the requirement says (019/FR-001). Verify with `pnpm run e2e`.
-- [ ] 5.3 In the same file and at the same pinned width, add the third scenario: read a fitted
+      the `y` of `.item__alternatives` matches it. Guard the assertion on the list still being
+      offered, because the narrow bench answers the choice with the loadout in place of the
+      gate and holds no list — which is what the requirement's third scenario states. Assert
+      in that case that the loadout is stated instead, so the guard cannot hide a failure
+      (019/FR-001). Verify with `pnpm run e2e`.
+- [ ] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
       item, open an empty weapon mount, and assert `.item__alternatives` has the same `y` on
       both. This is the case that fails if the held track measures anything other than the
       ladder (019/FR-001). Verify with `pnpm run e2e`.
-- [ ] 5.4 In the same file, add the same weapon journey as task 5.1 with no viewport pinned,
-      so each of the five layout profiles runs it at its own size and the narrow arrangement
-      is measured rather than assumed. Assert only that the list holds its place, which is
-      what the requirement states at every width; the arrangement around it differs by
-      profile. Verify with `pnpm run e2e`.
-- [ ] 5.5 In `e2e/equipment-accessibility.spec.ts`, add a reading over an empty weapon mount
+- [ ] 5.4 In `e2e/equipment-accessibility.spec.ts`, add a reading over an empty weapon mount
       that the held track is absent from the accessibility tree and offers no control, and
       confirm the existing axe scan of the bench still reports no violation of a criterion the
       constitution does not exclude — 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
@@ -80,11 +79,11 @@
 
 ## 6. The record
 
-- [ ] 6.1 Add `019-reserved-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts`
-      and register both ids. `019/FR-001` and `019/FR-002` go on the `equipment/loadout`
-      surface, whose journey is `equipment/bench` and which is already scanned by axe, with
-      one assertion line naming each journey added in group 5. Verify with
-      `pnpm run policy:specs`, which fails naming any declared id that is not registered.
+- [ ] 6.1 Add `019-held-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts` and
+      register both ids. `019/FR-001` and `019/FR-002` go on the `equipment/loadout` surface,
+      whose journey is `equipment/bench` and which is already scanned by axe, with one
+      assertion line naming each journey added in group 5. Verify with `pnpm run policy:specs`,
+      which fails naming any declared id that is not registered.
 - [ ] 6.2 Run `pnpm run check` — format, typecheck, build, unit tests with coverage and the
       Playwright matrix — and report what passed. Then run the implementation gate the project
       context defines, fix every actionable finding, and run it again until none remains.

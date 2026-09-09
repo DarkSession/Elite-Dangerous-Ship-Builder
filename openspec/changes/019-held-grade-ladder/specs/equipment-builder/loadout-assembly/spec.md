@@ -2,17 +2,16 @@
 
 ### Requirement: The list an item is chosen from holds its place
 
-The bench states the selected item: what it is, the grade it is at, the items it can be
-swapped for, its attributes and its modification slots. An empty weapon mount is a selected
-item too, and the library publishes no grade for one, so it offers no grade choice
-(013/FR-002a).
+An empty weapon mount is a selected item, and the library publishes no grade for one, so it
+offers no grade choice (013/FR-002a).
 
 Choosing an item MUST NOT move the list it was chosen from. The list MUST also stand in the
 same place whichever item is selected, so that a Commander who opens one item after another
 reads each list where the last one was.
 
-The same MUST hold at the empty bench. The suit gate stands in place of the selected item,
-and the list of suits it offers MUST hold its place when a suit is chosen from it.
+The same MUST hold at the empty bench, wherever the bench still offers the list of suits
+after the choice. Where the choice answers with the loadout it made in place of that list,
+there is no list left to hold.
 
 Source: 019/FR-001.
 
@@ -25,8 +24,15 @@ Source: 019/FR-001.
 
 #### Scenario: The first suit is chosen at the empty bench
 
-- **WHEN** a Commander chooses a suit from the list the suit gate offers
-- **THEN** the list they chose from is where it was before the choice
+- **WHEN** a Commander chooses a suit from the list the suit gate offers, and the bench still
+  offers that list after the choice
+- **THEN** the list is where it was before the choice
+
+#### Scenario: The choice answers with the loadout instead
+
+- **WHEN** a Commander chooses the first suit and the bench answers by stating the loadout in
+  place of the list
+- **THEN** the loadout is stated, and no list is held
 
 #### Scenario: An empty mount is opened after a fitted item
 
