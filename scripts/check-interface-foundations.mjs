@@ -1542,9 +1542,17 @@ function hasAttribute(tag, name) {
   return new RegExp(`(?:^|\\s)${name}(?=[\\s=>/])`, 'i').test(tag);
 }
 
-/** One attribute of a tag, however it is quoted. */
+/**
+ * One attribute of a tag, however it is quoted.
+ *
+ * The name is anchored on whitespace rather than a word boundary, because a
+ * word boundary also falls after the dot in `onload="this.media='all'"`. That
+ * value carries the name and a value of its own, and reading it as the tag's
+ * own attribute is what would let the deferral this rule exists to catch state
+ * `media="print"` and be read as applying to every screen.
+ */
 function attributeValue(tag, name) {
-  const match = new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag);
+  const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag);
   return match === null ? null : match[2];
 }
 

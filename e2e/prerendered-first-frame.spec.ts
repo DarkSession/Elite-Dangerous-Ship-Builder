@@ -590,9 +590,15 @@ test.describe('a document with no rendered body', () => {
  * links rather than from a list written down here.
  */
 test.describe('the faces a generated document is drawn in', () => {
-  /** One attribute of a tag, or null where the tag does not carry it. */
+  /**
+   * One attribute of a tag, or null where the tag does not carry it.
+   *
+   * The name is anchored on whitespace, not a word boundary: a word boundary
+   * also falls after the dot in `onload="this.media='all'"`, so a tag deferring
+   * itself that way would have the deferral read as its own `media`.
+   */
   function attribute(tag: string, name: string): string | null {
-    return new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
+    return new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
   }
 
   /**
@@ -669,7 +675,11 @@ test.describe('the faces a generated document is drawn in', () => {
         expect(href.startsWith('/'), `${path} asks for ${href} past the deployment base`).toBe(
           false,
         );
-        expect(preload, `${path} asks for ${href} without crossorigin`).toMatch(/crossorigin/i);
+        const mode = attribute(preload, 'crossorigin');
+        expect(
+          /(^|\s)crossorigin([\s=>/]|$)/i.test(preload) && /^(|anonymous)$/i.test(mode ?? ''),
+          `${path} does not ask for ${href} in anonymous mode`,
+        ).toBe(true);
         expect(
           (await page.request.get(`${PRODUCT_URL}/${href}`)).status(),
           `${path} asks for ${href}, which the deployment does not serve`,

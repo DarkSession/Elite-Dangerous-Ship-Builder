@@ -1000,6 +1000,33 @@ describe('the typefaces a served document paints in', () => {
     }
   });
 
+  it('rejects a stylesheet deferred by a tag that states the deferral before the media it defers behind', () => {
+    // Attribute order is the emitter's business, not the rule's. The value of
+    // `onload` names `media` and states one, so a reader anchored on a word
+    // boundary finds `all` there and calls a print stylesheet applied.
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        `<link rel="stylesheet" href="styles.css" onload="this.media='all'" media="print">` +
+        preload,
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /paints before the faces/);
+  });
+
+  it('rejects a stylesheet fetched as a preload that names its own relationship before it carries one', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        `<link as="style" onload="this.rel='stylesheet'" rel="preload" href="styles.css">` +
+        preload,
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /applies no stylesheet/);
+  });
+
   it('rejects a preload whose only crossorigin is inside another attribute’s name', () => {
     const found = rules.firstFrameTypefaceViolations({
       ...stylesheet,
