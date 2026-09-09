@@ -152,17 +152,16 @@ describe('WaitingOverlay', () => {
     expect(element.querySelectorAll('progress, [role="progressbar"]').length).toBe(0);
   });
 
-  it('has nothing to sit through, either way', () => {
+  it('goes when it is told to', () => {
     const { fixture, dialog } = render(true);
 
-    // No fade in and none out. A statement that arrives late is late, and one
-    // that lingers is a statement that is no longer true.
-    //
-    // That reading is taken in `e2e/navigation-waiting.spec.ts`, from an engine
-    // that resolves a stylesheet. Here it would be no reading at all: this one
-    // answers the same empty string for a duration set to zero, a duration set
-    // to a second, and a stylesheet it never applied. What is read here is the
-    // half that does not need one — the statement goes when it is told to.
+    // Whether it goes without sitting through anything — no fade in and none
+    // out, because a statement that arrives late is late and one that lingers
+    // is no longer true — is read in `e2e/navigation-waiting.spec.ts`, from an
+    // engine that resolves a stylesheet. Here that would be no reading at all:
+    // this one answers the same empty string for a duration set to zero, a
+    // duration set to a second, and a stylesheet it never applied. What is read
+    // here is the half that needs no engine — that it goes at all.
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
 

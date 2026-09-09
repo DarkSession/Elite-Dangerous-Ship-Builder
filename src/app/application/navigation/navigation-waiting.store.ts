@@ -59,11 +59,11 @@ function handsOver(event: NavigationCancel): boolean {
  * in flight; `failed` is about one that is over. A navigation that fails lowers
  * the first and raises the second in the same event.
  *
- * **Endings are partitioned.** A navigation that is cancelled — including one
- * superseded by a second press — and one redirected to another address are
- * ordinary endings and are stated as nothing: an address that resolves to
- * nothing lands at the entry point rather than reporting a fault
- * (`openspec/specs/platform/tool-navigation/`). Only an error is a failure.
+ * **Outcomes are partitioned, and only one of them is a failure.** A navigation
+ * that is cancelled with nothing taking over is over, and is stated as nothing:
+ * an address that resolves to nothing lands at the entry point rather than
+ * reporting a fault (`openspec/specs/platform/tool-navigation/`). Only an error
+ * raises `failed`. The two outcomes below are not endings at all.
  *
  * A press on the address a Commander is already at is not an ending, because it
  * is not a navigation: the router says it skipped it and starts nothing, so on

@@ -252,6 +252,10 @@ describe('App and a screen that never arrives', () => {
         provideRouter([
           { path: '', pathMatch: 'full', component: AScreen },
           { path: 'held', loadComponent: () => held },
+          // An address other than the one the shell starts on, so a test can
+          // run a navigation that actually opens a screen: a press on the
+          // address a Commander is already at is skipped rather than run.
+          { path: 'elsewhere', component: AnotherScreen },
           { path: '**', redirectTo: '' },
         ]),
         { provide: ApplicationUpdateAdapter, useValue: new FakeUpdates() },
@@ -343,8 +347,13 @@ describe('App and a screen that never arrives', () => {
     // press after that is a new event rather than the one already spoken.
     // Announcing is deduped on the revision the count carries; a boolean would
     // make the second failure the same event and leave it in silence.
-    await TestBed.inject(Router).navigateByUrl('/');
+    //
+    // It goes to another address rather than back to the one the shell is on:
+    // the router skips a press on the address it is already at, and a skip
+    // opens no screen and would answer nothing here.
+    await TestBed.inject(Router).navigateByUrl('/elsewhere');
     fixture.detectChanges();
+    expect(fixture.componentInstance.statusNotices().map((notice) => notice.message)).toEqual([]);
 
     const second = TestBed.inject(Router)
       .navigateByUrl('/held')

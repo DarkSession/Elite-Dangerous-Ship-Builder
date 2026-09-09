@@ -2357,6 +2357,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'no generated document carries the overlay or the sentence it would speak',
       'no statement is drawn over the first presentation of a session, at any address',
       'a first navigation that fails is stated like any other, with nothing drawn over the presentation it failed on',
+      'the watch that reads all of the above is shown reading, on a generated document, where the statement does stand',
     ],
     manualRecord: null,
   },

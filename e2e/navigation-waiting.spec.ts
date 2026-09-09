@@ -104,7 +104,7 @@ test.describe('a screen that has to be fetched', () => {
     // from a real engine, where a stylesheet the element actually got is the
     // one being asked — a duration never set and one set to zero both compute
     // to `0s`, so what this catches is a transition or an animation being given
-    // to it later (011/FR-011).
+    // to it later (018/FR-001, FR-005).
     expect(
       await overlay(page).evaluate((element) => {
         const style = getComputedStyle(element);
@@ -522,6 +522,34 @@ test.describe('accessibility', () => {
   }, testInfo) => {
     await page.goto('/');
     await waitForTakeover(page);
+
+    // Which of these roles the browser's own accessibility tree holds right
+    // now. Only one engine here answers that question; the other's reading is
+    // the screen-reader record the ledger names, and every assertion outside
+    // this branch holds in both.
+    const behindTheStatement = ['banner', 'main', 'navigation'] as const;
+    const exposed = async (roles: readonly string[]): Promise<string[]> => {
+      const devtools = await page.context().newCDPSession(page);
+      const tree = await devtools.send('Accessibility.getFullAXTree');
+      await devtools.detach();
+      const present = new Set(
+        tree.nodes.filter((node) => !node.ignored).map((node) => node.role?.value),
+      );
+      return roles.filter((role) => present.has(role));
+    };
+
+    // The screen as it reads with nothing standing over it. Asked before the
+    // statement, because three empty answers afterwards would read the same if
+    // this browser spelled any of these roles differently or the tree came back
+    // empty — the reading below would then pass for a reason that has nothing
+    // to do with the statement.
+    if (browserName === 'chromium') {
+      expect(
+        await exposed(behindTheStatement),
+        'the screen is not in the accessibility tree before the statement stands',
+      ).toEqual([...behindTheStatement]);
+    }
+
     const held = await holdEveryChunk(page);
 
     await tools(page).filter({ hasText: 'Ship Builder' }).click({ noWaitAfter: true });
@@ -537,23 +565,17 @@ test.describe('accessibility', () => {
     // layer, so it still holds every landmark behind the statement and would
     // agree with any claim made about them. What takes them out of a reader's
     // reach is the modal dialog, and the browser is the only thing that can be
-    // asked whether it did. Only one engine here answers that question; the
-    // other's reading is the screen-reader record the ledger names, and the two
-    // assertions below hold in both.
+    // asked whether it did. The same three roles that were all there a moment
+    // ago are asked for again, so an empty answer here can only be the
+    // statement.
     if (browserName === 'chromium') {
-      const devtools = await page.context().newCDPSession(page);
-      const tree = await devtools.send('Accessibility.getFullAXTree');
-      await devtools.detach();
-      const exposed = (role: string): string[] =>
-        tree.nodes.filter((node) => !node.ignored && node.role?.value === role).map(() => role);
-
       expect(
-        [...exposed('banner'), ...exposed('main'), ...exposed('navigation')],
+        await exposed(behindTheStatement),
         'the screen behind the statement is still in the accessibility tree',
       ).toEqual([]);
       // The other half of the same reading, so a tree that answered nothing at
       // all could not pass the first.
-      expect(exposed('dialog'), 'the statement is not in the accessibility tree').toEqual([
+      expect(await exposed(['dialog']), 'the statement is not in the accessibility tree').toEqual([
         'dialog',
       ]);
     }

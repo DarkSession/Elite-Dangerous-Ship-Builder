@@ -14,7 +14,12 @@ import {
 } from './first-frame';
 import { PRODUCT_URL } from './servers';
 import { shapeOf } from './served-document';
-import { waitForTakeover, watchForTheStatementFromStart } from './shell';
+import {
+  holdEveryChunk,
+  waitForTakeover,
+  waitingStatement,
+  watchForTheStatementFromStart,
+} from './shell';
 
 /**
  * The frame a Commander is given before the application exists, and what the
@@ -459,6 +464,34 @@ test.describe('the waiting statement and a generated document', () => {
       expect(await watch.wasDrawn(), `${path} was covered by the waiting statement`).toBe(false);
     });
   }
+
+  test('is watched from before the generated document, so a reading of none is a reading (018/FR-008)', async ({
+    page,
+  }) => {
+    // Every reading above is that nothing was drawn, and a watch that never
+    // attached answers exactly that. This is the lane where it could: the
+    // watcher is installed before the document is parsed, and here the document
+    // it is waiting for is one the build generated rather than one a
+    // development server composed. So the same watch, installed the same way,
+    // is asked about a statement that has to be there.
+    const watch = await watchForTheStatementFromStart(page);
+
+    await page.goto('/');
+    await waitForTakeover(page);
+
+    // Not the first presentation — a navigation the Commander asks for, with
+    // its screen's code held, which is the one case that draws the statement.
+    const held = await holdEveryChunk(page);
+    await page.getByRole('main').getByRole('link').first().click({ noWaitAfter: true });
+
+    await expect(waitingStatement(page)).toBeVisible({ timeout: 15_000 });
+    expect(
+      await watch.timesDrawn(),
+      'the watch read nothing where the statement was standing',
+    ).toBeGreaterThan(0);
+
+    held.release();
+  });
 
   test('states a first navigation that failed, over the document it was served (018/FR-007, FR-008)', async ({
     browser,

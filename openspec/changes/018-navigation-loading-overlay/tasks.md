@@ -68,8 +68,9 @@
       scrim from task 1.3, the mark is centred and sized from a token rather than from
       the SVG's own height attribute — `--ednb-target-size`, which is the token the application
       already draws this mark from, and there is no transition on opening or closing. Verify
-      with `pnpm run policy` for the literal rule; with a component test reading the drawn
-      element's computed transition and animation durations as zero; and with the preview
+      with `pnpm run policy` for the literal rule; with a journey reading the drawn element's
+      computed transition and animation durations as zero from a real engine, which is the
+      only engine that answers for a stylesheet the element actually got; and with the preview
       states in task 3.3 rendered at desktop, tablet and mobile widths (018/FR-002,
       011/FR-011).
 - [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a standing state
@@ -187,13 +188,19 @@
       browser's own tree, in the engine that can be asked for it. The runner's model of a tree
       knows `display`, `visibility` and `aria-hidden` and nothing about the top layer, so it
       still holds every landmark behind the statement and would agree with any claim made about
-      them; the other engine's reading is the screen-reader record (018/FR-003, 011/FR-012).
+      them; the other engine's reading is the screen-reader record. Take the same reading before
+      the statement stands, where every landmark must be there: three roles answering empty
+      afterwards would read the same if the browser named any of them differently
+      (018/FR-003, 011/FR-012).
 - [x] 6.6 Read the overlay at 200% text size and at 400% zoom in the profiles that already
       carry those readings, asserting the mark stays centred, whole and inside the viewport
       (011/FR-011).
 - [x] 6.7 Assert in the served-document checks that no generated document carries the overlay
       or its text, and that opening an address draws no overlay over the first presentation
-      (018/FR-008).
+      (018/FR-008). Every reading there is that nothing was drawn, and a watch that never
+      attached answers the same, so show the watch reading in that lane too: install it the
+      same way, then draw the statement on a navigation that is not the first and read it
+      standing.
 
 ## 7. The record
 
