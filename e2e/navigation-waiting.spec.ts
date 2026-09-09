@@ -201,8 +201,12 @@ test.describe('a screen that has to be fetched', () => {
     // Put there rather than walked to for a second reason: walking to it means
     // reloading, and a step back across a reload is a fresh document rather
     // than a navigation the application ever sees.
+    //
+    // The equipment bench, because the press below asks for the ship tool's
+    // screens and this one has to be a screen it never asks for: its request
+    // for its code is what says the navigation taking over has started.
     await page.evaluate(() => {
-      history.pushState(null, '', '/outfitting');
+      history.pushState(null, '', '/equipment');
       history.pushState(null, '', '/ships');
     });
 
@@ -228,8 +232,14 @@ test.describe('a screen that has to be fetched', () => {
     // navigation that takes over waits too. The statement stands through the
     // handover: the browser's own way back is the one way a second navigation
     // can start while the screen behind the statement takes no press.
+    //
+    // The takeover's own request for its code is what says it has started. The
+    // counts are read after it, because before it there is nothing to have
+    // taken the statement down: read at the traversal, a store that removed it
+    // at the handover would be read before it had done so and pass.
+    const takeover = page.waitForRequest((request) => request.resourceType() === 'script');
     await page.evaluate(() => history.back());
-    await stands(page);
+    await takeover;
 
     // The counts are what make this a reading. The application mounts one
     // overlay, so asking how many stand can only ever answer one; what the
@@ -246,7 +256,7 @@ test.describe('a screen that has to be fetched', () => {
 
     // It comes down with the navigation that is still going.
     held.release();
-    await expect(page).toHaveURL(/\/outfitting$/);
+    await expect(page).toHaveURL(/\/equipment(#|$)/);
     await expect
       .poll(() => watch.timesRemoved(), {
         message: 'the statement outlived the navigation that was still going',
@@ -288,10 +298,11 @@ test.describe('a screen that has to be fetched', () => {
     // down at all — and it is a statement a Commander cannot dismiss, over a
     // screen it has made inert (FR-005).
     //
-    // What is read is that it was taken down, not what stands afterwards: a
-    // screen whose code is held from arriving leaves the application asking for
-    // it again, and a later navigation's statement is that navigation's answer
-    // rather than this one's.
+    // What is read is that it was taken down, not what stands afterwards. With
+    // every script held, the application goes on scheduling navigations for the
+    // screen it cannot get — the router's own event log shows another starting
+    // within the second — so a statement standing later is that navigation's
+    // answer rather than this one's.
     await page.evaluate(() => history.back());
     await expect
       .poll(() => watch.timesRemoved(), {
@@ -317,6 +328,27 @@ test.describe('a screen that has to be fetched', () => {
     await expect(page).toHaveURL(/\/(\?.*)?$/);
     await expect(overlay(page)).toHaveCount(0);
     await expect(failureNotice(page)).toHaveCount(0);
+  });
+  test('is watched from before the document, so a reading of none is a reading (018/FR-008)', async ({
+    page,
+  }) => {
+    // The control for the instrument the first-presentation readings use. Those
+    // readings pass when nothing was drawn, so a watch that never attached
+    // would agree with them for ever — and a watch installed before a document
+    // exists is exactly where attaching can fail silently. This one is set the
+    // same way and put where a statement is known to stand.
+    const watch = await watchForTheStatementFromStart(page);
+    await page.goto('/');
+    await waitForTakeover(page);
+
+    const held = await holdEveryChunk(page);
+    await tools(page).filter({ hasText: 'Ship Builder' }).click();
+    await stands(page);
+
+    expect(await watch.wasDrawn(), 'the watch set before the document read nothing').toBe(true);
+    expect(await watch.timesDrawn()).toBe(1);
+
+    held.release();
   });
 });
 

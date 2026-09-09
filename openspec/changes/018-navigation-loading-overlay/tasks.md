@@ -133,14 +133,17 @@
       it, that screen is not clickable, the page does not scroll horizontally, and the overlay is gone once the
       chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
       011/FR-011).
-- [x] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
+- [x] 6.2 In the same file, cover the outcomes that are not a screen arriving: a navigation
       redirected to another address states no failure, and a navigation whose code is already
-      held draws nothing at all — read by watching every frame of that navigation, because a
-      reading taken after the screen arrives passes a statement that stood and came down. That
-      a redirect also takes a standing statement down is read in
-      `navigation-waiting.store.spec.ts`: the one redirect the route table declares is reached
-      by typing an address, which makes it the navigation that starts a session, and no journey
-      in a browser can raise a statement over it to take down (018/FR-004, FR-005, FR-007).
+      held draws nothing at all — read by watching the statement's own attribute through the
+      navigation rather than sampling it, because a reading taken after the screen arrives
+      passes a statement that stood and came down, and a frame callback cannot see a ten
+      millisecond one. The two redirects are read in `navigation-waiting.store.spec.ts`: the one
+      the route table declares, which resolves inside its navigation and ends it, and the one a
+      guard would raise, which cancels its navigation and hands over to the address it named.
+      Neither can be driven from a browser here — the declared redirect is reached by typing an
+      address, which makes it the navigation that starts a session, and no guard in the route
+      table redirects at all (018/FR-004, FR-005, FR-007).
 - [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
@@ -202,8 +205,8 @@
       beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
       011/FR-013).
 - [x] 7.3 Run `pnpm run check` and report what passed. On this head: formatting, the
-      generated-artifact and sitemap checks, typechecking, both builds, all ten policy
-      checkers, 529 script tests, 3154 unit tests with coverage above the floor, the waiting
-      journeys in every Chromium profile, and the production lane. Firefox is not installed in
-      this container, so the five Firefox projects of the matrix are read on the pull request,
-      where the workflow runs the same suite sharded across all ten.
+      generated-artifact and sitemap checks, typechecking, both builds, all ten policy checkers,
+      529 script tests, 3155 unit tests with coverage above the floor, the eleven waiting
+      journeys in all five Chromium profiles, and the production lane. Firefox is not installed
+      in this container, so the five Firefox projects of the matrix are read on the pull
+      request, where the workflow runs the same suite sharded across all ten.

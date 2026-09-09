@@ -212,12 +212,13 @@ application MUST state that the screen could not be opened, and MUST leave the C
 screen they can use.
 
 A navigation that is cancelled, and one that is redirected to another address, are not
-failures and MUST be stated as nothing. Both are ordinary endings the application asked for:
-an address that resolves to nothing lands at the entry point rather than reporting a fault
+failures and MUST be stated as nothing. Both are outcomes the application asked for: an
+address that resolves to nothing lands at the entry point rather than reporting a fault
 (`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"),
 and re-entering the open tool where its re-entry already stands changes nothing at all.
 Between them, this requirement and "The statement ends with the navigation" cover every
-ending once. It MUST NOT return them to
+outcome once — which of them ends the statement is that requirement's to say, and a
+cancellation that hands over to a replacement does not end it there. It MUST NOT return them to
 the screen they pressed from with no answer, which is the unpressed-looking control the
 waiting statement exists to remove.
 

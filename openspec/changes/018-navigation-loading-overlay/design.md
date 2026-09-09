@@ -165,6 +165,12 @@ down and draw it again ten milliseconds later, and a Commander who pressed once 
 answered twice. So the two cancellation codes that name a replacement are read as a handover:
 the statement stays standing, and what takes over is what removes it.
 
+Two cancellation codes name a replacement: one press superseding another, and a guard
+answering with an address instead of a yes or a no. The route table declares no guard that
+redirects, so the second cannot happen in this application today — it is read anyway, because
+the router raises it and the requirement covers it, and a store that read it as an ending
+would be wrong the day a guard is added rather than the day it is written.
+
 That leaves one case to close. The replacement is not always a navigation: where its address
 is the one already open, the router says it skipped it and starts nothing. Nothing would then
 ever remove the statement — a modal the Commander cannot dismiss, standing over a screen it

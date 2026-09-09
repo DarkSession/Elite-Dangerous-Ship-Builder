@@ -276,6 +276,36 @@ describe('NavigationWaitingStore', () => {
     expect(store.failed()).toBe(false);
   });
 
+  it('carries the statement to the navigation a redirect sends the Commander to', () => {
+    const store = running();
+
+    start(2);
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
+
+    // The other handover. A guard answering with an address rather than a yes
+    // or a no cancels the navigation it was asked about and the router starts
+    // the one it named — the same shape as a second press, and the same
+    // reading: one statement, standing until the navigation that took over
+    // ends (FR-005).
+    //
+    // Driven here rather than in a browser because the route table declares no
+    // guard that redirects, so the application cannot produce this cancellation
+    // today. The router can, and the requirement covers it, so the store reads
+    // it rather than waiting to be surprised.
+    events.next(
+      new NavigationCancel(2, '/outfitting', 'redirect', NavigationCancellationCode.Redirect),
+    );
+    expect(store.waiting()).toBe(true);
+
+    start(3, '/equipment');
+    expect(store.waiting()).toBe(true);
+
+    end(3, '/equipment');
+    expect(store.waiting()).toBe(false);
+    expect(store.failed()).toBe(false);
+  });
+
   it('takes the statement down on a navigation that was redirected, and states no failure', () => {
     const store = running();
 
@@ -340,7 +370,10 @@ describe('NavigationWaitingStore', () => {
     // diagnosis, and a reason the application does not have is one it may not
     // state (constitution IV).
     expect(store.failed()).toBe(true);
-    expect(Object.keys(store)).toEqual(['waiting', 'failed', 'failures']);
+    // The closed list is the reading: whether, how many, and nothing that could
+    // carry a reason. Sorted, because what the store exposes is the point and
+    // the order it declares them in is not.
+    expect(Object.keys(store).sort()).toEqual(['failed', 'failures', 'waiting']);
   });
 
   it('draws nothing over the arrival that starts the session', () => {

@@ -467,7 +467,12 @@ const WATCH_THE_STATEMENT = () => {
     standing = now;
   };
   look();
-  new MutationObserver(look).observe(document.documentElement, {
+  // The document itself, not its root element. This watcher is also installed
+  // before the document exists, where the root element has not been parsed yet
+  // and `observe` would be handed nothing — an exception a browser raises into
+  // a page nobody is reading, leaving a watch that answers zero for ever. A
+  // `Document` is always there, and `subtree` reaches everything under it.
+  new MutationObserver(look).observe(document, {
     subtree: true,
     childList: true,
     attributes: true,
