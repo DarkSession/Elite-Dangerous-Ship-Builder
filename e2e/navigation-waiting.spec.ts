@@ -191,6 +191,14 @@ test.describe('a screen that has to be fetched', () => {
     await expect(page).toHaveURL(/\/ships$/);
     await expect(page.getByRole('main')).toBeVisible();
 
+    // The reload is what makes the second navigation a slow one too. It empties
+    // the browser's registry of fetched code, so the entry point behind this
+    // screen has to be fetched again — and a takeover that finishes at once
+    // would read the same whether the statement was carried across the handover
+    // or taken down and never redrawn.
+    await page.reload();
+    await waitForTakeover(page);
+
     // The row is found and brought into view before the gate is armed, and
     // pressed without forcing it.
     //
@@ -209,20 +217,60 @@ test.describe('a screen that has to be fetched', () => {
     await hull.click({ noWaitAfter: true });
     await stands(page);
 
-    // Back to the entry point, whose code the browser already holds, so the
-    // navigation that takes over is one that finishes.
-    //
+    // Back to the entry point, whose code is held from arriving as well, so the
+    // navigation that takes over is one that waits too. The statement stands
+    // through the handover.
+    await page.evaluate(() => history.back());
+    await stands(page);
+
     // The count is what makes this a reading. The application mounts one
     // overlay, so asking how many stand can only ever answer one; what the
     // requirement is about is whether the statement went down and came back
-    // between the two navigations. It is drawn once, by the press, and removed
-    // once, by the navigation that is still going — never by the one it
-    // replaced (FR-005).
-    await page.goBack();
+    // between the two navigations. Drawn once, by the press; removed once, by
+    // the navigation that is still going — never by the one it replaced, which
+    // would draw a second statement a threshold later (FR-005).
+    held.release();
     await expect(page).toHaveURL(/\/(\?.*)?$/);
     await expect(overlay(page)).toHaveCount(0);
     expect(await watch.timesDrawn(), 'the statement was drawn more than once').toBe(1);
     // A cancelled navigation is an ordinary ending, stated as nothing.
+    await expect(failureNotice(page)).toHaveCount(0);
+  });
+
+  test('takes the statement down when what takes over is not a navigation (018/FR-005)', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForTakeover(page);
+    await tools(page).filter({ hasText: 'Ship Builder' }).click();
+    await expect(page).toHaveURL(/\/ships$/);
+    await expect(page.getByRole('main')).toBeVisible();
+
+    // The reload is what sets the pair up. It empties the browser's registry of
+    // fetched code, so from here the entry point has to be fetched again while
+    // the screen this document was served at is already held — one navigation
+    // that waits, and one the application can answer without navigating.
+    await page.reload();
+    await waitForTakeover(page);
+
+    const watch = await watchForTheStatement(page);
+    const held = await holdEveryChunk(page);
+
+    // The browser's own back and forward, not a press: the statement makes the
+    // screen behind it inert, and these are the controls it cannot reach.
+    await page.evaluate(() => history.back());
+    await stands(page);
+
+    // Forward again, to the address the application never left — the navigation
+    // away from it has not arrived. It is answered without navigating, so
+    // nothing is going to end. The statement handed over to it has to come down
+    // here or it never comes down at all, and it is a statement a Commander
+    // cannot dismiss, over a screen it has made inert (FR-005).
+    await page.evaluate(() => history.forward());
+    await expect(overlay(page)).toHaveCount(0);
+    await expect(page).toHaveURL(/\/ships$/);
+    expect(await watch.timesDrawn(), 'the statement was drawn more than once').toBe(1);
+    // Nothing failed: the application answered the address it was asked for.
     await expect(failureNotice(page)).toHaveCount(0);
 
     held.release();

@@ -2312,6 +2312,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the statement is a modal dialog, so the screen behind takes no press and no focus and is absent from the accessibility tree',
       'it carries no control, states no proportion, percentage or remaining time, and refuses the native cancel',
       'the same statement answers every address, and one stands at a time',
+      'a statement passes to the navigation taking over from the one it replaced, drawn once across both',
+      'it comes down when what takes over is answered without navigating, where nothing else would',
       'a screen whose code the browser already holds changes the screen with nothing drawn',
       'it stands in front of a layer the Commander already had open',
       'it comes down when the navigation ends, however it ends',

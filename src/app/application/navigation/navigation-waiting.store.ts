@@ -4,6 +4,7 @@ import {
   NavigationCancellationCode,
   NavigationEnd,
   NavigationError,
+  NavigationSkipped,
   NavigationStart,
   Router,
 } from '@angular/router';
@@ -23,6 +24,23 @@ import {
  * true.
  */
 export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
+
+/**
+ * Whether a cancellation is a handover to a replacement the router has taken on.
+ *
+ * Both codes name a replacement that is already on its way: one press
+ * superseding another, and a guard sending the Commander somewhere else. Every
+ * other cancellation is an ending with nothing behind it.
+ *
+ * What the router does with that replacement is a separate answer. It usually
+ * runs it; where the address is the one it is already at, it skips it instead.
+ */
+function handsOver(event: NavigationCancel): boolean {
+  return (
+    event.code === NavigationCancellationCode.SupersededByNewNavigation ||
+    event.code === NavigationCancellationCode.Redirect
+  );
+}
 
 /**
  * Whether the application is waiting for a screen, and whether the last attempt
@@ -48,13 +66,16 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * (`openspec/specs/platform/tool-navigation/`). Only an error is a failure.
  *
  * A press on the address a Commander is already at is not an ending, because it
- * is not a navigation: the router answers it without starting one, so there is
- * nothing here to raise a statement over and nothing to take down.
+ * is not a navigation: the router says it skipped it and starts nothing, so on
+ * its own there is nothing to raise a statement over and nothing to take down.
  *
  * A cancellation that names its replacement — one press superseding another, or
  * a guard sending the Commander elsewhere — is not an ending either. It is the
  * handover itself, raised before the replacement starts, so the statement it
- * carries stays standing and comes down with the navigation still going.
+ * carries stays standing and comes down with the navigation still going. Where
+ * that replacement is the address the router is already at, the skip is all
+ * that follows the handover, and it is what takes the statement down: nothing
+ * else would, and a statement is never left standing over nothing (FR-005).
  *
  * **The session's first presentation is not covered.** A Commander opening an
  * address arrives at what that address serves, and a mark drawn over it would
@@ -63,20 +84,6 @@ export const NAVIGATION_WAITING_THRESHOLD_MS = 10;
  * the first navigation that ends onward. It suppresses that signal only:
  * a first navigation that fails is stated like any other.
  */
-/**
- * Whether a cancellation is a handover to a navigation the router will start.
- *
- * Both codes name a replacement that is already on its way: one press
- * superseding another, and a guard sending the Commander somewhere else. Every
- * other cancellation is an ending with nothing behind it.
- */
-function handsOver(event: NavigationCancel): boolean {
-  return (
-    event.code === NavigationCancellationCode.SupersededByNewNavigation ||
-    event.code === NavigationCancellationCode.Redirect
-  );
-}
-
 @Injectable({ providedIn: 'root' })
 export class NavigationWaitingStore {
   readonly #router = inject(Router);
@@ -136,6 +143,10 @@ export class NavigationWaitingStore {
         this.#handedOver(event.id);
         return;
       }
+      if (event instanceof NavigationSkipped) {
+        this.#skipped();
+        return;
+      }
       if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
@@ -178,7 +189,9 @@ export class NavigationWaitingStore {
    * Not an ending. The router raises this cancellation on its way to the
    * navigation that takes over — before that navigation's start, because the
    * cancellation is what the handover consists of — so the statement it raised
-   * belongs to the one still going and stays standing (FR-005).
+   * belongs to what takes over and stays standing (FR-005). What takes over is
+   * a navigation, or the router skipping one; `#skipped` closes the handover in
+   * the second case.
    *
    * The session is not started by it either: a first navigation handed over is
    * a first presentation that has still not arrived, and the navigation that
@@ -190,6 +203,26 @@ export class NavigationWaitingStore {
     }
     this.#running = null;
     this.#clearThreshold();
+  }
+
+  /**
+   * A navigation the router answered without running one.
+   *
+   * The address asked for is the one it is already at, so it says so and starts
+   * nothing. Read for one case: the navigation that takes over a handover can
+   * be this, and then the handover is over with nothing running. Whatever the
+   * cancelled navigation raised is taken down here, because nothing else will.
+   *
+   * The session is not started by it and no failure is stated: a skip presented
+   * no screen and asked for nothing (FR-007). Where a navigation is running,
+   * this is not its ending and is left to it.
+   */
+  #skipped(): void {
+    if (this.#running !== null) {
+      return;
+    }
+    this.#clearThreshold();
+    this.#waiting.set(false);
   }
 
   #ended(id: number, failed: boolean, presented: boolean): void {

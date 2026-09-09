@@ -6,6 +6,8 @@ import {
   NavigationCancellationCode,
   NavigationEnd,
   NavigationError,
+  NavigationSkipped,
+  NavigationSkippedCode,
   NavigationStart,
   Router,
   type Event as RouterEvent,
@@ -46,6 +48,18 @@ describe('NavigationWaitingStore', () => {
         'superseded',
         NavigationCancellationCode.SupersededByNewNavigation,
       ),
+    );
+  /**
+   * The answer the router gives a navigation to the address it is already at.
+   *
+   * It raises this instead of a start, and nothing else: no start, no ending.
+   * Reached here the way the application reaches it — as the replacement in a
+   * handover, where a Commander presses back to a screen still arriving and
+   * then forward again.
+   */
+  const skip = (id: number, url = '/outfitting') =>
+    events.next(
+      new NavigationSkipped(id, url, 'same url', NavigationSkippedCode.IgnoredSameUrlNavigation),
     );
   const fail = (id: number, url = '/outfitting') =>
     events.next(new NavigationError(id, url, new Error('chunk')));
@@ -154,6 +168,49 @@ describe('NavigationWaitingStore', () => {
     expect(store.waiting()).toBe(true);
 
     end(3, '/equipment');
+    expect(store.waiting()).toBe(false);
+  });
+
+  it('takes the statement down when the navigation taking over is skipped', () => {
+    const store = running();
+
+    start(2);
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
+
+    // The handover has no navigation behind it: the address it hands over to is
+    // the one the router is already at, so the router says it skipped it and
+    // starts nothing. Nothing is going to end, so the skip is what takes the
+    // statement down — it never outlives what raised it (FR-005).
+    supersede(2);
+    skip(3);
+
+    expect(store.waiting()).toBe(false);
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS * 10);
+    expect(store.waiting()).toBe(false);
+    // A skip is not a failure: it presented no screen and asked for nothing.
+    expect(store.failed()).toBe(false);
+  });
+
+  it('answers the navigation after a handover that was skipped', () => {
+    const store = running();
+
+    start(2);
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    supersede(2);
+    skip(3);
+
+    // The session is still running, so the next navigation is stated like any
+    // other: nothing stands until it has run for the threshold. A statement
+    // still standing here would be the skipped handover's, adopted by a
+    // navigation that never raised one.
+    start(4, '/equipment');
+    expect(store.waiting()).toBe(false);
+
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS);
+    expect(store.waiting()).toBe(true);
+
+    end(4, '/equipment');
     expect(store.waiting()).toBe(false);
   });
 

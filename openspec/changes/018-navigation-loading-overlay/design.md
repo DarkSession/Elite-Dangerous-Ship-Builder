@@ -140,8 +140,11 @@ panel.
 ### The router is read in a store, not in the component
 
 `NavigationWaitingStore` in `src/app/application/navigation/` subscribes to the router's
-navigation events, holds the threshold, and exposes two signals: whether a navigation is
-waiting, and whether the last one failed.
+navigation events, holds the threshold, and exposes three signals: whether a navigation is
+waiting, whether the last one failed, and how many have failed in this session. The third is
+what the shell announces the second by: announcements are deduped by kind and revision, and a
+boolean carries no revision, so two separate failures would be one announcement and the
+second would be the silence FR-007 exists to remove.
 
 It is also where the session's first presentation is protected. The browser-only mount keeps
 the overlay out of a generated document, but in a browser the first navigation is a
@@ -151,6 +154,24 @@ other, which is what FR-007 requires and what "A takeover that does not complete
 (015/FR-012) already expects a Commander to be left with. The component takes
 an input and draws. That keeps the behaviour testable without rendering (constitution III)
 and the component presentation-only, as the design system requires.
+
+### A cancellation can be a handover rather than an ending
+
+The router does not end one navigation and then start the next. Where a second navigation
+replaces one still running, the cancellation of the first is raised _before_ the
+replacement's start — the cancellation is what the handover consists of — and a redirect has
+the same shape. A store that read every cancellation as an ending would take the statement
+down and draw it again ten milliseconds later, and a Commander who pressed once would be
+answered twice. So the two cancellation codes that name a replacement are read as a handover:
+the statement stays standing, and what takes over is what removes it.
+
+That leaves one case to close. The replacement is not always a navigation: where its address
+is the one already open, the router says it skipped it and starts nothing. Nothing would then
+ever remove the statement — a modal the Commander cannot dismiss, standing over a screen it
+has made inert, until they reload the page. It is reachable from the browser's own back and
+forward controls, which the statement does not make inert: back to a screen whose code has to
+be fetched, then forward again before it arrives. So the store reads the skip as well, and
+takes the statement down when one arrives with no navigation left running.
 
 ### The threshold is 10ms, and it is in the specification
 

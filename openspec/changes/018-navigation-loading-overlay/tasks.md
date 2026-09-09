@@ -26,12 +26,15 @@
 - [x] 2.1 Add `NavigationWaitingStore` in `src/app/application/navigation/`: it subscribes to the
       router's navigation events, starts the threshold when a navigation starts, raises its
       waiting signal when the threshold passes with the navigation still going, and lowers it
-      on every terminal event — completed, cancelled, redirected and failed. It renders
-      nothing. Verify with unit tests over each of those four endings, over a navigation that
-      ends inside the threshold raising nothing, over a navigation still going at the
-      threshold raising the signal, and over a second navigation starting before the first
-      ends leaving one raised signal that lowers with the navigation that is still going
-      (018/FR-001, FR-004, FR-005).
+      when that navigation ends — presented, cancelled with nothing taking over, or failed. A
+      cancellation that hands over to a navigation the router has taken on is not an ending:
+      the signal stays raised for the one taking over, and where that one is answered without
+      a navigation the skip is what lowers it. It renders nothing. Verify with unit tests over
+      each ending, over a navigation that ends inside the threshold raising nothing, over a
+      navigation still going at the threshold raising the signal, over a second navigation
+      starting before the first ends leaving one raised signal that lowers with the navigation
+      that is still going, and over a handover whose replacement is skipped (018/FR-001,
+      FR-004, FR-005).
 - [x] 2.2 State the threshold as one named constant of 10 milliseconds in that file, citing
       the specification that fixes the value. Verify with a unit test driving a fake clock to
       one tick either side of it, asserting nothing is raised below and the signal is raised
@@ -141,6 +144,16 @@
 - [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
+- [x] 6.2b In the same file, cover a handover, which in a browser can only come from the
+      browser's own controls: the screen behind the statement takes no press. Reload first, so
+      the code behind the screen the Commander is on has to be fetched again, press into a held
+      screen, and then go back — the navigation that takes over waits too, so the count reads
+      whether the statement went down and came back rather than passing either way. Read that
+      it was drawn once across both. Then cover the handover that hands over to nothing: back
+      the same way, then forward, to the address the application never left and answers without
+      navigating. Nothing is going to end there, so read that the statement comes down on that
+      answer — the alternative is one standing until the page is reloaded, over a screen it has
+      made inert (018/FR-005).
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
@@ -185,7 +198,9 @@
       reading, where whether the step is right for a Commander is judged. Record the results
       beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
       011/FR-013).
-- [x] 7.3 Run `pnpm run check` and report what passed. Everything it runs passed: formatting,
-      the generated-artifact and sitemap checks, typechecking, both builds, all ten policy
-      checkers, the codec capacity report, 529 script tests, 3148 unit tests with coverage
-      above the floor, and Playwright across all ten projects plus the production lane.
+- [x] 7.3 Run `pnpm run check` and report what passed. On this head: formatting, the
+      generated-artifact and sitemap checks, typechecking, both builds, all ten policy
+      checkers, 529 script tests, 3154 unit tests with coverage above the floor, the waiting
+      journeys in every Chromium profile, and the production lane. Firefox is not installed in
+      this container, so the five Firefox projects of the matrix are read on the pull request,
+      where the workflow runs the same suite sharded across all ten.
