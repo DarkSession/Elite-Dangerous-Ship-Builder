@@ -927,21 +927,24 @@ test.describe('shot convergence', () => {
       Math.min(left, top, 1 - left, 1 - top);
     const inside = (dot: { left: number; top: number }): boolean => edge(dot) >= margin - slack;
 
-    await slider.fill(String(await slider.getAttribute('min')));
-    await settled(page);
-    const near = await dotPlacements(page);
-    const sentencesNear = await block.locator('.shots__entry').count();
     // Marks are left off at this range — the rule is doing work rather than
     // being a bound nothing reaches — and every one that is drawn is inside the
-    // frame's own margin rather than pinned to it.
-    expect(near.length).toBeLessThan(mounts);
+    // frame's own margin rather than pinned to it. The count is polled rather
+    // than read once: `settled` waits for animations, and the plate is redrawn
+    // by the change detection the fill schedules, which is not one. The
+    // placements are read after that wait, off the plate the count came from.
+    await slider.fill(String(await slider.getAttribute('min')));
+    await settled(page);
+    await expect.poll(async () => (await dotPlacements(page)).length).toBeLessThan(mounts);
+    const near = await dotPlacements(page);
+    const sentencesNear = await block.locator('.shots__entry').count();
     expect(near.every(inside)).toBe(true);
 
+    // At the far end every mount is back, and none of them is against the frame.
     await slider.fill((await slider.getAttribute('max')) ?? '');
     await settled(page);
+    await expect.poll(async () => (await dotPlacements(page)).length).toBe(mounts);
     const far = await dotPlacements(page);
-    // At the far end every mount is back, and none of them is against the frame.
-    expect(far).toHaveLength(mounts);
     expect(far.every((dot) => edge(dot) > margin + slack)).toBe(true);
 
     // The sentence is the reading, and it is stated at both ranges alike: the
@@ -1137,7 +1140,11 @@ test.describe('shot convergence', () => {
     // sentence beside the plate is rewritten. The span cells that used to be
     // read back beside this went with the 2026-08-26 canvas revision, and
     // reading them was an assertion over an empty list.
-    expect(await block.locator('.shots__entry').allInnerTexts()).not.toEqual(before);
+    //
+    // Polled rather than read once. `settled` waits for animations, and the
+    // sentences are rewritten by the change detection the fill schedules, which
+    // is not one — so a bare read returns the sentences for the range before.
+    await expect.poll(() => block.locator('.shots__entry').allInnerTexts()).not.toEqual(before);
   });
 
   test('announces the range as a Commander reads it, not as a bare number', async ({ page }) => {

@@ -78,6 +78,17 @@ async function recordCount(page: Page): Promise<number> {
   );
 }
 
+/**
+ * Waits until this browser holds exactly this many records.
+ *
+ * Polled rather than read once, wherever the count is the answer to something
+ * the journey just pressed: the store writes after the layer has closed, so a
+ * bare read is a verdict on whichever instant it landed in.
+ */
+async function expectRecords(page: Page, count: number): Promise<void> {
+  await expect.poll(() => recordCount(page)).toBe(count);
+}
+
 test.describe('keeping a loadout', () => {
   test('saves it, finds it in the one library, and opens it back onto the bench', async ({
     page,
@@ -112,7 +123,7 @@ test.describe('keeping a loadout', () => {
   test('deletes one, and leaves the browser holding nothing', async ({ page }) => {
     await wearSuit(page, 'Maverick Suit');
     await saveLoadout(page, 'Salvage run');
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
 
     await openLibrary(page);
     await chooseRecord(page, 'Salvage run');
@@ -123,7 +134,7 @@ test.describe('keeping a loadout', () => {
     await confirmation.getByRole('button', { name: /^Delete/ }).click();
 
     await expect(library(page).getByRole('button', { name: /^Salvage run\b/i })).toHaveCount(0);
-    expect(await recordCount(page)).toBe(0);
+    await expectRecords(page, 0);
   });
 
   test('asks which version survives when a name is already taken (FR-017)', async ({ page }) => {
@@ -147,7 +158,7 @@ test.describe('keeping a loadout', () => {
 
     await expect(second).toContainText(/already use[s]? this name/i);
     await second.getByRole('button', { name: 'Save build' }).click();
-    expect(await recordCount(page)).toBe(2);
+    await expectRecords(page, 2);
   });
 
   test('offers the library from the gate, before a suit is chosen', async ({ page }) => {

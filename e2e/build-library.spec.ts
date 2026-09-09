@@ -105,6 +105,17 @@ async function recordCount(page: Page): Promise<number> {
   );
 }
 
+/**
+ * Waits until this browser holds exactly this many records.
+ *
+ * Polled rather than read once, wherever the count is the answer to something
+ * the journey just pressed: the store writes after the layer has closed, so a
+ * bare read is a verdict on whichever instant it landed in.
+ */
+async function expectRecords(page: Page, count: number): Promise<void> {
+  await expect.poll(() => recordCount(page)).toBe(count);
+}
+
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
   await savedToBrowser(page);
@@ -401,7 +412,7 @@ test.describe('the build library', () => {
 
     // The build that was already stored, and the record this build was in,
     // which the save named rather than duplicated.
-    expect(await recordCount(page)).toBe(2);
+    await expectRecords(page, 2);
   });
 
   test('opens on replacing the save the build came from, and says when it was written', async ({
@@ -557,7 +568,7 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Delete this build' })
       .click();
 
-    expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).toBeNull();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('ednb:record:a'))).toBeNull();
   });
 
   test('deletes only the record that was confirmed', async ({ page }) => {
@@ -755,7 +766,7 @@ test.describe('the build library', () => {
     await manager.getByRole('checkbox').first().check();
     await page.getByRole('button', { name: 'Delete this build' }).click();
 
-    expect(await recordCount(page)).toBe(19);
+    await expectRecords(page, 19);
   });
 
   test('offers overwrite, keep both and cancel when two pages save one build', async ({
