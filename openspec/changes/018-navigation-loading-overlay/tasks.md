@@ -234,7 +234,11 @@
       (018/FR-002, FR-006, FR-007, 011/FR-009, 011/FR-010, 011/FR-013).
 - [x] 7.3 Run `pnpm run check` and report what passed. On this head: formatting, the
       generated-artifact and sitemap checks, typechecking, both builds, all ten policy checkers,
-      529 script tests, 3155 unit tests with coverage above the floor, the eleven waiting
-      journeys in all five Chromium profiles, and the production lane. Firefox is not installed
-      in this container, so the five Firefox projects of the matrix are read on the pull
-      request, where the workflow runs the same suite sharded across all ten.
+      529 script tests, 3162 unit tests with coverage above the floor, the twelve waiting
+      journeys and the four outlet component tests, and the production lane including the
+      generated-document watch control. Two things are read on the pull request rather than
+      here. Firefox is not installed in this container, so the five Firefox projects of the
+      matrix are read there, where the workflow runs the same suite sharded across all ten. And
+      the container cannot run the full ten-project sweep at the parallelism `pnpm run check`
+      asks for: five journeys time out under it that pass on their own and pass in every shard
+      on the pull request, so the whole-matrix reading is the sharded one.
