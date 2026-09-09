@@ -75,6 +75,37 @@ describe('AnnouncementService', () => {
     expect(announcements.announce({ ...event })).toBe(false);
   });
 
+  it('says nothing for a replayed event that another event has spoken over', () => {
+    const { announcements } = setup();
+    const update = {
+      kind: 'app.update',
+      revision: 1,
+      urgency: 'polite' as const,
+      messageKey: 'status.success' as const,
+    };
+
+    expect(announcements.announce(update)).toBe(true);
+
+    // A different event, on the same outlet. The outlet now holds its words,
+    // which is what makes the replay below look new to anything reading the
+    // outlet rather than the event.
+    expect(
+      announcements.announce({
+        kind: 'navigation.failed',
+        revision: 1,
+        urgency: 'polite',
+        messageKey: 'navigation.failed.notice',
+      }),
+    ).toBe(true);
+
+    // The same update, published again. A second `ready` from the worker
+    // raises and lowers the overlay without moving the state or the revision,
+    // so the shell publishes this identity a second time for one event
+    // (`src/app/application/updates/application-update.store.ts`). Nothing has
+    // happened, so a reader is told nothing.
+    expect(announcements.announce(update)).toBe(false);
+  });
+
   it('says nothing for a stale outcome that arrives after a newer one', () => {
     const { announcements } = setup();
 

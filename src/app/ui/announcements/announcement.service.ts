@@ -75,8 +75,15 @@ export class AnnouncementService {
   /** The highest revision seen per (kind, urgency), for staleness. */
   readonly #latestRevision = new Map<string, number>();
 
-  /** The identity of the last event published to each outlet. */
-  readonly #published = new Map<AnnouncementUrgency, string>();
+  /**
+   * The identity of the last event published, per `(kind, urgency)`.
+   *
+   * Keyed by the event rather than by the outlet it went to. An outlet carries
+   * more than one kind of event, so remembering only what it last held would
+   * make a replay silent when it followed itself and speak when something else
+   * had come between — and a replay is the same event either way.
+   */
+  readonly #published = new Map<string, string>();
 
   /** What each outlet is saying, for a reader of text rather than of nodes. */
   readonly assertive = computed(() => this.#assertive()?.text ?? '');
@@ -102,7 +109,7 @@ export class AnnouncementService {
     const staleKey = `${request.kind}|${request.urgency}`;
 
     // Already said, for this exact source revision.
-    if (this.#published.get(request.urgency) === identity) {
+    if (this.#published.get(staleKey) === identity) {
       return false;
     }
 
@@ -114,7 +121,7 @@ export class AnnouncementService {
     }
 
     this.#latestRevision.set(staleKey, Math.max(latest ?? request.revision, request.revision));
-    this.#published.set(request.urgency, identity);
+    this.#published.set(staleKey, identity);
 
     const spoken: SpokenEvent = {
       identity,

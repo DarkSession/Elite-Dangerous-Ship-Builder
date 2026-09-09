@@ -279,7 +279,8 @@ test.describe('a screen that has to be fetched', () => {
         message: 'the statement outlived the navigation that was still going',
       })
       .toBeGreaterThan(0);
-    // A cancelled navigation is an ordinary ending, stated as nothing.
+    // The navigation that was replaced is stated as nothing. It did not end:
+    // it was superseded, and what took it over is what ended.
     await expect(failureNotice(page)).toHaveCount(0);
   });
 
