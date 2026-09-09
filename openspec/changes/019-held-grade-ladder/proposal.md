@@ -88,7 +88,6 @@ None.
   both engines (011/FR-021).
 - `e2e/equipment-accessibility.spec.ts` reads an empty weapon mount for what the held track
   says, which is nothing.
-- The change is `019-held-grade-ladder`, so `COVERED_FEATURES` carries that name.
 - `e2e/coverage-ledger.ts` gains `019-held-grade-ladder` in `COVERED_FEATURES` and an entry
   registering both requirement ids.
 - No loadout data, no address, no catalogue reading and no stored record changes. Nothing new

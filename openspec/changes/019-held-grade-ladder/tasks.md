@@ -25,9 +25,10 @@
       `--ednb-layout-grade-ladder-block` beside the width the block already declares, so the
       track measures the ladder where the ladder stands beside the name, and measures nothing
       where the header takes `display: contents` and the ladder stands below the list (design,
-      "The narrow column holds nothing"). Verify with the journey in task 5.1, which runs at
-      all five layout profiles and so measures both arrangements; a unit test cannot verify
-      this, because jsdom computes no layout.
+      "The narrow column holds nothing"). Verify with the track's own reading in task 5.1: the
+      list's place cannot fail on a wrongly scoped query, because the track stands below the
+      list where the column is narrow and pushes down only what follows it. A unit test cannot
+      verify this either, because jsdom computes no layout.
 
 ## 3. The empty bench and the item measure the same
 
@@ -58,8 +59,12 @@
       open an empty weapon mount, read the bounding box of `.item__alternatives`, choose a
       weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
       journey that the mount's grade ladder is absent before the choice and present after it,
-      so a passing test cannot mean the ladder never appeared (019/FR-001). Verify with
-      `pnpm run e2e`.
+      so a passing test cannot mean the ladder never appeared (019/FR-001). Then read the
+      empty track's own bounding box against the arrangement the bench publishes on
+      `.bench[data-composition]`, as `e2e/hull-anatomy.spec.ts` reads the outfitting screen's:
+      where the composition is `wide` the track's block size is the ladder's, and where it is
+      not the track has none. This is what fails if the container query in task 2.2 is scoped
+      wrongly and a block is held on every narrow profile. Verify with `pnpm run e2e`.
 - [ ] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
       bench on the gate, read the bounding box of `.gate__choose`, choose a suit, and assert
       the `y` of `.item__alternatives` matches it. Guard the assertion on the list still being
