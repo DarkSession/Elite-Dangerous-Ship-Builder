@@ -114,7 +114,10 @@ async function fillStorageNow(page: Page): Promise<void> {
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
   await savedToBrowser(page);
-  await expect(page).toHaveURL(/\/outfitting#b\./);
+  // Its own budget: publishing the fragment fetches the codec and its table as
+  // a lazy chunk and then encodes the build, and an encode states what it is
+  // waiting for rather than taking the default (assertions, ruled 2026-09-06).
+  await expect(page).toHaveURL(/\/outfitting#b\./, { timeout: 15_000 });
 }
 
 /**
@@ -181,6 +184,14 @@ async function saveActiveBuild(
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
 
+/**
+ * Creates a build and waits only for the workspace.
+ *
+ * Used where persistence is expected *not* to succeed. With the store full the
+ * honest status is that nothing was written, so `createBuild`'s wait for
+ * "saved" — and for the address the build is published to — would be waiting
+ * for the bug.
+ */
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
