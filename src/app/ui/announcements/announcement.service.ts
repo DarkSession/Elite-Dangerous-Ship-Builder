@@ -72,18 +72,20 @@ export class AnnouncementService {
   readonly #assertive = signal<SpokenEvent | null>(null);
   readonly #polite = signal<SpokenEvent | null>(null);
 
-  /** The highest revision seen per (kind, urgency), for staleness. */
-  readonly #latestRevision = new Map<string, number>();
-
   /**
-   * The identity of the last event published, per `(kind, urgency)`.
+   * The revision of the last event published, per `(kind, urgency)`.
    *
-   * Keyed by the event rather than by the outlet it went to. An outlet carries
-   * more than one kind of event, so remembering only what it last held would
-   * make a replay silent when it followed itself and speak when something else
-   * had come between — and a replay is the same event either way.
+   * The whole of the policy's memory. An event is one revision of one kind, so
+   * a revision ahead of what that kind has said is the only thing worth
+   * interrupting for: one that matches is the same event again, and one behind
+   * describes a state the interface has moved past.
+   *
+   * Kept per event rather than per outlet. An outlet carries more than one kind
+   * of event, so remembering only what it last held would make a replay silent
+   * when it followed itself and speak when something else had come between —
+   * and a replay is the same event either way.
    */
-  readonly #published = new Map<string, string>();
+  readonly #published = new Map<string, number>();
 
   /** What each outlet is saying, for a reader of text rather than of nodes. */
   readonly assertive = computed(() => this.#assertive()?.text ?? '');
@@ -105,26 +107,20 @@ export class AnnouncementService {
    * against — "it stayed silent" is as much a behaviour as "it spoke".
    */
   announce(request: AnnouncementRequest): boolean {
-    const identity = `${request.kind}|${request.revision}|${request.urgency}`;
-    const staleKey = `${request.kind}|${request.urgency}`;
+    const eventKey = `${request.kind}|${request.urgency}`;
 
-    // Already said, for this exact source revision.
-    if (this.#published.get(staleKey) === identity) {
-      return false;
-    }
-
-    // Behind what has already been announced for this event: a late arrival
+    // Said already, or behind what was said. The first is a replay: the same
+    // event again, which nothing happened for. The second is a late arrival
     // describing a state the interface has moved past.
-    const latest = this.#latestRevision.get(staleKey);
-    if (latest !== undefined && request.revision < latest) {
+    const latest = this.#published.get(eventKey);
+    if (latest !== undefined && request.revision <= latest) {
       return false;
     }
 
-    this.#latestRevision.set(staleKey, Math.max(latest ?? request.revision, request.revision));
-    this.#published.set(staleKey, identity);
+    this.#published.set(eventKey, request.revision);
 
     const spoken: SpokenEvent = {
-      identity,
+      identity: `${request.kind}|${request.revision}|${request.urgency}`,
       text: this.#messages.message(request.messageKey, request.params),
     };
     if (request.urgency === 'assertive') {
@@ -151,7 +147,6 @@ export class AnnouncementService {
   /** Forgets everything. Test support and full application reset only. */
   reset(): void {
     this.clearOutlets();
-    this.#latestRevision.clear();
     this.#published.clear();
   }
 }

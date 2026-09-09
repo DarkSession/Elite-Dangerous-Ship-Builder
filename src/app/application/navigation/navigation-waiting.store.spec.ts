@@ -30,8 +30,24 @@ describe('NavigationWaitingStore', () => {
   /** Every event the store reads, in the order the router publishes them. */
   const start = (id: number, url = '/outfitting') => events.next(new NavigationStart(id, url));
   const end = (id: number, url = '/outfitting') => events.next(new NavigationEnd(id, url, url));
+  /**
+   * A cancellation that ends the navigation rather than handing it over.
+   *
+   * It carries a real code, because that is what the store reads. Driven with
+   * none, `event.code` is `undefined` and these tests would pass against a
+   * store that treated every named code as a handover — which would leave the
+   * statement standing over a screen it has made inert, with nothing left to
+   * take it down.
+   *
+   * `GuardRejected` is the one the application would reach first if it ever
+   * declared a guard. It declares none today, so this cancellation is driven
+   * here the way the redirect below is: by its code, rather than by a route
+   * table that cannot produce it.
+   */
   const cancel = (id: number, url = '/outfitting') =>
-    events.next(new NavigationCancel(id, url, 'cancelled'));
+    events.next(
+      new NavigationCancel(id, url, 'cancelled', NavigationCancellationCode.GuardRejected),
+    );
   /**
    * The cancellation the router raises on its way to a replacement.
    *

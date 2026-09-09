@@ -389,6 +389,14 @@ reason, which is what those three get.
   it until they widen again. It is a breach of the requirement as it already stands, not one
   the amendment creates, and it belongs to the catalogue rather than to this capability. It
   is recorded rather than fixed here, and raised as its own report.
+- **And a second capability the same reading catches.** → The outfitting workspace announces
+  a refused edit at the build revision, which a refusal does not spend, so two refusals with
+  no committed edit between them carry one identity and the second says nothing. The lines on
+  the page change while a reader is told nothing, which is the case the amended requirement
+  names. It is the same shape as the catalogue and the same age — the policy dropped it
+  before this change as well, whenever the first refusal was the last assertive event — and
+  it belongs to `ship-builder/build-lifecycle` rather than to this capability. Recorded here
+  and raised as its own report.
 
 ## Migration Plan
 
