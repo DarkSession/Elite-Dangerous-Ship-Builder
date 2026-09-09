@@ -386,9 +386,10 @@ reason, which is what those three get.
   does not meet it.** → The ship catalogue passes its shown-hull count as the announcement's
   revision, and the policy drops a request whose revision is below the highest seen for that
   event, so a Commander narrowing the catalogue hears the first narrowing and nothing after
-  it until they widen again. It is a breach of the requirement as it already stands, not one
-  the amendment creates, and it belongs to the catalogue rather than to this capability. It
-  is recorded rather than fixed here, and raised as its own report.
+  it until they widen again. The saved builds library does the same with its own match count,
+  so both screens that announce a count have it. It is a breach of the requirement as it
+  already stands, not one the amendment creates, and it belongs to those screens rather than
+  to this capability. It is recorded rather than fixed here, and raised as its own report.
 - **And a second capability the same reading catches.** → The outfitting workspace announces
   a refused edit at the build revision, which a refusal does not spend, so two refusals with
   no committed edit between them carry one identity and the second says nothing. The lines on

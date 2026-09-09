@@ -216,10 +216,14 @@ describe('NavigationWaitingStore', () => {
     expect(store.waiting()).toBe(true);
 
     // A skip with a navigation still running is not that navigation's ending,
-    // and nothing else is going to end it. Taken as one, it would put the
-    // statement down while the screen is still being fetched, leaving the
-    // Commander on a screen that says nothing for as long as the chunk takes —
-    // and the navigation's own ending would then have nothing to take down.
+    // so it is left to it.
+    //
+    // The router does not publish the two in this order: a replacement
+    // supersedes the navigation it takes over from before it runs, and that
+    // cancellation is what clears the running one. So this holds the arm to
+    // the rule rather than reading a wait a Commander meets — and without it
+    // the whole suite stays green, because every order the application can
+    // produce reaches the skip with nothing running.
     skip(3);
 
     expect(store.waiting()).toBe(true);
