@@ -132,12 +132,15 @@ test.describe('a screen that has to be fetched', () => {
     // is already on screen; what is held here is a hull's own code.
     await page.goto('/ships');
     await waitForTakeover(page);
-    const held = await holdEveryChunk(page);
 
-    await page
-      .locator('[data-hull-symbol] button:visible')
-      .first()
-      .click({ noWaitAfter: true, force: true });
+    // Found and brought into view before the gate is armed, and pressed on its
+    // own terms, for the reason the superseding journey below gives.
+    const hull = page.locator('[data-hull-symbol] button:visible').first();
+    await expect(hull).toBeVisible();
+    await hull.scrollIntoViewIfNeeded();
+
+    const held = await holdEveryChunk(page);
+    await hull.click({ noWaitAfter: true });
     await stands(page);
 
     await expect(overlay(page)).toHaveAccessibleName(englishMessages['navigation.waiting.notice']);
@@ -187,11 +190,21 @@ test.describe('a screen that has to be fetched', () => {
     await expect(page).toHaveURL(/\/ships$/);
     await expect(page.getByRole('main')).toBeVisible();
 
+    // The row is found and brought into view before the gate is armed, and
+    // pressed without forcing it.
+    //
+    // The gate holds every script from the moment it is armed, so a screen
+    // still arriving never finishes, and a forced press lands wherever the
+    // element's centre is whether or not anything covers it — on a short
+    // viewport that is the bar rather than the row. Either way the press starts
+    // no navigation, and there is nothing to state. Playwright's own
+    // actionability wait is what makes the press a press.
+    const hull = page.locator('[data-hull-symbol] button:visible').first();
+    await expect(hull).toBeVisible();
+    await hull.scrollIntoViewIfNeeded();
+
     const held = await holdEveryChunk(page);
-    await page
-      .locator('[data-hull-symbol] button:visible')
-      .first()
-      .click({ noWaitAfter: true, force: true });
+    await hull.click({ noWaitAfter: true });
     await stands(page);
     await expect(overlay(page)).toHaveCount(1);
 
