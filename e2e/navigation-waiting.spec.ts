@@ -2,7 +2,14 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { buildStockHull, openLibrary, savedToBrowser, waitForTakeover } from './shell';
+import {
+  buildStockHull,
+  holdEveryChunk,
+  openLibrary,
+  savedToBrowser,
+  waitForTakeover,
+  waitingStatement,
+} from './shell';
 
 /**
  * What a Commander is told between asking for a screen and getting it
@@ -19,7 +26,7 @@ import { buildStockHull, openLibrary, savedToBrowser, waitForTakeover } from './
  */
 
 /** The statement, while it stands. */
-const overlay = (page: Page): Locator => page.locator('ednb-waiting-overlay dialog[open]');
+const overlay = waitingStatement;
 
 /** The mark it draws. */
 const mark = (page: Page): Locator => overlay(page).locator('img');
@@ -41,55 +48,6 @@ const failureNotice = (page: Page): Locator =>
 const politeOutlet = (page: Page): Locator => page.locator('[data-announcement-outlet="polite"]');
 const assertiveOutlet = (page: Page): Locator =>
   page.locator('[data-announcement-outlet="assertive"]');
-
-/**
- * Holds every chunk the browser asks for from here on.
- *
- * By resource type rather than by file name: a development server and a
- * production build name their chunks differently, and a journey that knew which
- * would be a journey that runs in one of the two lanes.
- *
- * Armed after the takeover, so the only script left to ask for is the one the
- * next navigation needs. The gate is read when each request is answered rather
- * than awaited once, so a request already waiting is answered by whatever the
- * journey decides afterwards.
- */
-interface HeldChunks {
-  /** Lets every held chunk through, and every one asked for after it. */
-  release(): void;
-  /** Refuses them, the way a connection that drops does. */
-  refuse(): void;
-}
-
-async function holdEveryChunk(page: Page): Promise<HeldChunks> {
-  let gate: 'hold' | 'release' | 'refuse' = 'hold';
-
-  await page.route('**/*', async (route) => {
-    if (route.request().resourceType() !== 'script') {
-      // A page that navigates away disposes the routes it left waiting, and a
-      // disposed route is not an outcome worth failing a journey over.
-      await route.continue().catch(() => {});
-      return;
-    }
-    while (gate === 'hold') {
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    }
-    if (gate === 'refuse') {
-      await route.abort('failed').catch(() => {});
-      return;
-    }
-    await route.continue().catch(() => {});
-  });
-
-  return {
-    release: () => {
-      gate = 'release';
-    },
-    refuse: () => {
-      gate = 'refuse';
-    },
-  };
-}
 
 /** Waits until the statement is standing, which the threshold makes a moment. */
 async function stands(page: Page): Promise<void> {

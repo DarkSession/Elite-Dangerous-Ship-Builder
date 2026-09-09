@@ -10,6 +10,7 @@ import {
 } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { previewUrl } from './servers';
+import { holdEveryChunk, waitForTakeover, waitingStatement } from './shell';
 
 /**
  * Actual 400% browser zoom, emulated exactly.
@@ -56,6 +57,47 @@ async function expectEveryActionSurvives(page: Page): Promise<void> {
   }
 }
 
+/**
+ * The waiting statement, read where a condition could break it.
+ *
+ * The mark is the whole of what is drawn, so what has to hold at a doubled text
+ * size and at 400% zoom is that it is still centred, still whole and still
+ * inside the viewport — a mark half off the screen states nothing.
+ */
+async function expectTheWaitingStatementHoldsUp(page: Page): Promise<void> {
+  const held = await holdEveryChunk(page);
+  try {
+    await page
+      .getByRole('main')
+      .getByRole('link')
+      .filter({ hasText: 'Ship Builder' })
+      .click({ noWaitAfter: true });
+    await expect(waitingStatement(page)).toBeVisible({ timeout: 15_000 });
+
+    const box = await waitingStatement(page).locator('img').boundingBox();
+    const view = page.viewportSize();
+    expect(box, 'the mark was drawn').not.toBeNull();
+    expect(view, 'the profile has a viewport').not.toBeNull();
+    if (box === null || view === null) {
+      return;
+    }
+    expect(box.width, 'the mark has a width').toBeGreaterThan(0);
+    expect(box.height, 'the mark has a height').toBeGreaterThan(0);
+    expect(box.x, 'the mark starts inside the viewport').toBeGreaterThanOrEqual(0);
+    expect(box.y, 'the mark starts inside the viewport').toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, 'the mark ends inside the viewport').toBeLessThanOrEqual(view.width);
+    expect(box.y + box.height, 'the mark ends inside the viewport').toBeLessThanOrEqual(
+      view.height,
+    );
+    expect(Math.abs(box.x + box.width / 2 - view.width / 2)).toBeLessThanOrEqual(2);
+    expect(Math.abs(box.y + box.height / 2 - view.height / 2)).toBeLessThanOrEqual(2);
+
+    await expectNoDocumentOverflow(page);
+  } finally {
+    held.release();
+  }
+}
+
 test.describe('200% text scale', () => {
   test.beforeEach(async ({ page }) => {
     await withRootTextScale(page, DOUBLED_TEXT);
@@ -87,6 +129,11 @@ test.describe('200% text scale', () => {
     // through: on a tablet held in landscape it took more than half the screen,
     // and the anatomy region's mode strip was behind it.
     await expectBannerLeavesAViewport(page);
+  });
+
+  test('holds the waiting statement whole at doubled text (018/FR-002)', async ({ page }) => {
+    await waitForTakeover(page);
+    await expectTheWaitingStatementHoldsUp(page);
   });
 
   test('passes an accessibility scan at doubled text', async ({ page }, testInfo) => {
@@ -150,6 +197,13 @@ test.describe('400% browser zoom', () => {
     );
 
     await expectNoDocumentOverflow(page);
+  });
+
+  test('holds the waiting statement whole at the zoom-equivalent viewport (018/FR-002)', async ({
+    page,
+  }) => {
+    await waitForTakeover(page);
+    await expectTheWaitingStatementHoldsUp(page);
   });
 
   test('passes an accessibility scan', async ({ page }, testInfo) => {

@@ -73,8 +73,9 @@
       `expanded-copy`, `rtl` and `reduced-motion` variants, and a stated reason for each of
       `loading`, `error` and `disabled` — the overlay holds no content of its own, reports
       nothing, and carries no control. The standing state is isolated, as the layer's open
-      state is, because a modal makes everything beside it inert. Verify with `pnpm run
-      policy`, which fails on an exported UI component that declares no preview, and with
+      state is, because a modal makes everything beside it inert. Verify with
+      `pnpm run policy`, which fails on an exported UI component that declares no preview,
+      and with
       `e2e/ui-preview.spec.ts`, which renders and scans every declared state. The
       reduced-motion variant renders the mark under the preference; what judges that the
       animation stopped is task 1.2's rule and task 7.2's reading, not this (018/FR-002,
@@ -143,21 +144,21 @@
       the rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert
       the screen behind the standing overlay is absent from the accessibility tree
       (018/FR-003, 011/FR-012).
-- [ ] 6.6 Read the overlay at 200% text size and at 400% zoom in the profiles that already
+- [x] 6.6 Read the overlay at 200% text size and at 400% zoom in the profiles that already
       carry those readings, asserting the mark stays centred, whole and inside the viewport
       (011/FR-011).
-- [ ] 6.7 Assert in the served-document checks that no generated document carries the overlay
+- [x] 6.7 Assert in the served-document checks that no generated document carries the overlay
       or its text, and that opening an address draws no overlay over the first presentation
       (018/FR-008).
 
 ## 7. The record
 
-- [ ] 7.1 Add `018-navigation-loading-overlay` to `COVERED_FEATURES` in
+- [x] 7.1 Add `018-navigation-loading-overlay` to `COVERED_FEATURES` in
       `e2e/coverage-ledger.ts`, and register an entry for every id from `018/FR-001` to
       `018/FR-008`, naming the journey, whether it is scanned, the assertions beyond the scan
       and the manual protocol where one covers it. Verify with `pnpm run policy:specs`, which
       names any declared id the ledger does not register.
-- [ ] 7.2 Add a step to `e2e/manual/screen-reader.protocol.md` covering what a reader is told
+- [x] 7.2 Add a step to `e2e/manual/screen-reader.protocol.md` covering what a reader is told
       when a navigation waits and when one fails, and a step covering the mark standing still
       under the platform's reduced-motion preference in both engines, and whether a still
       mark on the subdued screen still reads as a wait. Add the softened ground to the same

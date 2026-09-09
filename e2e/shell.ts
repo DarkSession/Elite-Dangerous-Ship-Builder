@@ -364,3 +364,59 @@ async function reachHull(page: Page, row: Locator): Promise<void> {
     await row.click();
   }
 }
+
+/**
+ * Holds every chunk the browser asks for from here on.
+ *
+ * Every screen is its own code, fetched on the navigation that first asks for
+ * it, so a journey about what a Commander is told while they wait has to be
+ * able to make them wait. Held by resource type rather than by file name: a
+ * development server and a production build name their chunks differently, and
+ * a journey that knew which would be a journey that runs in one lane.
+ *
+ * Arm it after the takeover, so the only script left to ask for is the one the
+ * next navigation needs. The gate is read when each request is answered rather
+ * than awaited once, so a request already waiting is answered by whatever the
+ * journey decides afterwards.
+ */
+export interface HeldChunks {
+  /** Lets every held chunk through, and every one asked for after it. */
+  release(): void;
+  /** Refuses them, the way a connection that drops does. */
+  refuse(): void;
+}
+
+export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
+  let gate: 'hold' | 'release' | 'refuse' = 'hold';
+
+  await page.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'script') {
+      // A page that navigates away disposes the routes it left waiting, and a
+      // disposed route is not an outcome worth failing a journey over.
+      await route.continue().catch(() => {});
+      return;
+    }
+    while (gate === 'hold') {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    if (gate === 'refuse') {
+      await route.abort('failed').catch(() => {});
+      return;
+    }
+    await route.continue().catch(() => {});
+  });
+
+  return {
+    release: () => {
+      gate = 'release';
+    },
+    refuse: () => {
+      gate = 'refuse';
+    },
+  };
+}
+
+/** The waiting statement, while it stands. */
+export function waitingStatement(page: Page): Locator {
+  return page.locator('ednb-waiting-overlay dialog[open]');
+}

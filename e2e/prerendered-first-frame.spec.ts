@@ -436,6 +436,54 @@ test.describe('a document read by a Commander whose browser asks for German', ()
  * it, is in `shell.ts`. What is claimed here is the journey's half: when that
  * wait is over, the screen is drawn.
  */
+/**
+ * The waiting statement and the documents the build writes.
+ *
+ * A generated document has no navigation to wait on, and a statement drawn over
+ * a session's first presentation would hide content the first frame is required
+ * to show and blank content across the takeover — which FR-008 and FR-009
+ * forbid, the second naming the only three exceptions there are (018/FR-008).
+ */
+test.describe('the waiting statement and a generated document', () => {
+  for (const { path } of SCREENS) {
+    test(`is absent from the document ${path} answers with (018/FR-008)`, async ({ page }) => {
+      const served = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+      expect(served, `${path} carried the waiting overlay`).not.toContain('ednb-waiting-overlay');
+      expect(served, `${path} carried the waiting sentence`).not.toContain(
+        englishMessages['navigation.waiting.notice'],
+      );
+    });
+
+    test(`draws nothing over the first presentation of ${path} (018/FR-008)`, async ({ page }) => {
+      // Watched from before the document exists to after the takeover, rather
+      // than read once at the end: what is claimed is that the statement was
+      // never up, not that it is down now.
+      await page.addInitScript(() => {
+        const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+        window_.__waitingWasDrawn = false;
+        const look = () => {
+          if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+            window_.__waitingWasDrawn = true;
+          }
+          requestAnimationFrame(look);
+        };
+        requestAnimationFrame(look);
+      });
+
+      await page.goto(path);
+      await waitForTakeover(page);
+
+      expect(
+        await page.evaluate(
+          () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+        ),
+        `${path} was covered by the waiting statement`,
+      ).toBe(false);
+    });
+  }
+});
+
 test.describe('a document with no rendered body', () => {
   test('is not taken over until the application has drawn the screen', async ({ page }) => {
     // The host's fallback rather than the worker's, because a request the

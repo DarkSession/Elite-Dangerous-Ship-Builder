@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 11.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 12.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -168,3 +168,36 @@ all ten projects.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 20   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 20   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 20   | As stated in the protocol | —      | not run |
+
+## A screen that is on its way (feature 018)
+
+Step 21 covers what a Commander is told between asking for a screen and getting
+it, what they are told when one never arrives, and whether the mark stands still
+under the platform's reduced-motion preference. Three of those are judgments no
+capture can make: whether a still mark reads as working rather than as stopped,
+whether the softened ground leaves enough of the screen behind visible to say
+which screen is being waited on, and whether a running navigation is
+distinguishable from a failed one by ear alone.
+
+The reduced-motion half is observed in both engines, because the mark is drawn
+through `<img>` — a separate document — and whether an engine honours a media
+query inside one is the thing being confirmed. A policy rule holds the block in
+the asset; only a person can say the drawing stopped.
+
+Each configuration is its own observation for the usual reason: the statement is
+the same at every width, but what a reader walks past to reach the screen it
+covers is not.
+
+The automated coverage that does exist for the same requirements is
+`e2e/navigation-waiting.spec.ts` — the statement asserted to be a modal dialog
+named by its sentence, with the mark exposed as decoration, the screen behind
+unreachable by pointer and by focus, the ground asserted translucent, and the
+failure asserted both as words that stay on the page and as one polite
+announcement — together with an axe pass over both states in all ten projects
+and the readings at 200% text and 400% zoom in `e2e/reflow.spec.ts`.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 21   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 21   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 21   | As stated in the protocol | —      | not run |
