@@ -360,6 +360,15 @@ reason, which is what those three get.
 
 ## Risks / Trade-offs
 
+- **A first navigation that fails discards the document the address served.** → FR-007 says
+  the Commander is left on the readable document, and they are not: the takeover empties
+  `main` before the navigation that would fill it has presented anything, so a failure leaves
+  the application's own shell where a prerendered screen stood. The Commander ends with less
+  than the server sent them. The requirement is right and the takeover is what changes — it
+  must hold what the address served until a navigation has replaced it — and that is the
+  contract of `platform/published-addresses`, not of this capability. Settled deliberately
+  rather than absorbed here: raised as its own report, with task 6.3 unticked and the
+  production journey stating which half it does not read.
 - **A fetch that stalls without answering leaves the mark standing.** → No application timer
   lowers it, for the reason above; what ends it is the browser ending the request, which
   arrives as a failed navigation and is stated by FR-007. The exposure is the window between

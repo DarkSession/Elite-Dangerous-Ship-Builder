@@ -576,10 +576,12 @@ test.describe('the waiting statement and a generated document', () => {
     // FR-007's other half — "the Commander is left on the readable document
     // that address served" — is NOT read here, because the application does not
     // do it: the takeover empties `main` when the first navigation fails, and
-    // what the Commander keeps is the shell. Closing that is a change to how
-    // the takeover behaves when its navigation fails, which belongs to
-    // `platform/published-addresses` rather than to this feature, and it is
-    // open rather than settled.
+    // what the Commander keeps is the shell. The requirement stands and the
+    // takeover is what changes — it must hold what the address served until a
+    // navigation has presented a screen to replace it — which belongs to
+    // `platform/published-addresses` rather than to this feature. What is
+    // missing here is an assertion that the served document's own `main` is
+    // still standing, and it is added with that change.
     await expect(fresh.getByRole('banner')).toBeVisible();
     await expect(fresh.getByRole('link', { name: 'Ship Builder' })).toBeVisible();
     await context.close();

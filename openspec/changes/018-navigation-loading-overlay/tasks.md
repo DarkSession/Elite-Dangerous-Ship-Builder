@@ -186,13 +186,15 @@
       production lane has a generated document to be left on, and it is also the only reading
       of the arrangement the built application runs: there the first navigation blocks
       bootstrap, so its events are raised before any component exists (018/FR-005, FR-007,
-      FR-008). Open: the production reading holds that the failure is stated and that no
-      statement was drawn over the first presentation, but the other half of the scenario —
-      "the Commander is left on the readable document that address served" — is not met. When
-      the first navigation fails the takeover empties `main`, and what the Commander keeps is
-      the application's own shell. Closing that changes how the takeover behaves when its
-      navigation fails, which belongs to `platform/published-addresses` rather than to this
-      feature.
+      FR-008). Left unticked, and settled rather than open: the production reading holds that
+      the failure is stated and that no statement was drawn over the first presentation, but
+      the other half of the scenario — "the Commander is left on the readable document that
+      address served" — is not met. When the first navigation fails the takeover empties
+      `main`, and what the Commander keeps is the application's own shell. The requirement
+      stands as written and the takeover is what changes: it must hold what the address served
+      until a navigation has presented a screen to replace it. That is
+      `platform/published-addresses`, not this feature, so it is its own change and this task
+      stays unticked until that change is built.
 - [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
