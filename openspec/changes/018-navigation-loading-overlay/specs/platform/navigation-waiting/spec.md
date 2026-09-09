@@ -168,11 +168,17 @@ Source: 018/FR-005.
 - **WHEN** the navigation is cancelled and nothing takes over from it
 - **THEN** the waiting statement is removed
 
-#### Scenario: The navigation is redirected to another address
+#### Scenario: The navigation is cancelled and sent to another address
 
-- **WHEN** the navigation is redirected to another address
+- **WHEN** a navigation is cancelled because the Commander is being sent to another address,
+  and the application navigates there instead
 - **THEN** one waiting statement stands, not two
-- **AND** it is removed when the navigation it was redirected to ends
+- **AND** it is removed when the navigation to that address ends
+
+#### Scenario: The address resolves to another one
+
+- **WHEN** the address asked for resolves to another address inside the same navigation
+- **THEN** the waiting statement is removed when that navigation ends
 
 #### Scenario: What takes over is not a navigation
 

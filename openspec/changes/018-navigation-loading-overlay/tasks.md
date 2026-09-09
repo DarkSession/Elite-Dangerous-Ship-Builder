@@ -179,10 +179,13 @@
 - [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
-- [x] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under
-      the rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert
-      the screen behind the standing overlay is absent from the accessibility tree
-      (018/FR-003, 011/FR-012).
+- [x] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under the
+      rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert the
+      screen behind the standing overlay is absent from the accessibility tree — from the
+      browser's own tree, in the engine that can be asked for it. The runner's model of a tree
+      knows `display`, `visibility` and `aria-hidden` and nothing about the top layer, so it
+      still holds every landmark behind the statement and would agree with any claim made about
+      them; the other engine's reading is the screen-reader record (018/FR-003, 011/FR-012).
 - [x] 6.6 Read the overlay at 200% text size and at 400% zoom in the profiles that already
       carry those readings, asserting the mark stays centred, whole and inside the viewport
       (011/FR-011).

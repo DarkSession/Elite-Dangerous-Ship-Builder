@@ -384,12 +384,29 @@ export interface HeldChunks {
   release(): void;
   /** Refuses them, the way a connection that drops does. */
   refuse(): void;
+  /**
+   * How many separate pieces of code have been asked for since the gate was
+   * armed.
+   *
+   * What a navigation that has begun looks like from outside the application: a
+   * screen it has not opened before is a `loadComponent`, so it asks for that
+   * screen's code before it can present it. Read where a journey has to know
+   * that the navigation taking over has started and cannot ask the application
+   * — the address does not move until the screen is presented, and the screen
+   * is what the gate is holding back. The chunk's own name says nothing: a
+   * build hashes it.
+   */
+  timesAsked(): number;
 }
 
 export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
   let gate: 'hold' | 'release' | 'refuse' = 'hold';
+  const asked = new Set<string>();
 
   await page.route('**/*', async (route) => {
+    if (route.request().resourceType() === 'script') {
+      asked.add(route.request().url());
+    }
     if (route.request().resourceType() !== 'script') {
       // A page that navigates away disposes the routes it left waiting, and a
       // disposed route is not an outcome worth failing a journey over.
@@ -413,6 +430,7 @@ export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
     refuse: () => {
       gate = 'refuse';
     },
+    timesAsked: () => asked.size,
   };
 }
 
@@ -430,8 +448,11 @@ export function waitingStatement(page: Page): Locator {
  * statement taken down and put back inside one frame either. Both are what the
  * threshold and the handover between two navigations exist to prevent, so this
  * watches the `open` attribute itself rather than sampling: a mutation observer
- * sees every change, where a frame callback sees one every sixteen
- * milliseconds and the threshold is ten.
+ * is called for every change to it, where a frame callback looks once every
+ * sixteen milliseconds and the threshold is ten. It compares state when it is
+ * called, so a statement closed and reopened inside one task reads as no change
+ * — which is not the case being read, because a statement taken down and drawn
+ * again is drawn a threshold later, a task or more away.
  */
 export interface StatementWatch {
   /** Whether the statement stood at any point since the watch was set. */

@@ -141,7 +141,7 @@ test.describe('a screen that has to be fetched', () => {
     await hull.scrollIntoViewIfNeeded();
 
     const held = await holdEveryChunk(page);
-    await hull.click({ noWaitAfter: true });
+    await hull.press('Enter', { noWaitAfter: true });
     await stands(page);
 
     await expect(overlay(page)).toHaveAccessibleName(englishMessages['navigation.waiting.notice']);
@@ -211,21 +211,22 @@ test.describe('a screen that has to be fetched', () => {
     });
 
     // The row is found and brought into view before the gate is armed, and
-    // pressed without forcing it.
+    // pressed from the keyboard.
     //
-    // The gate holds every script from the moment it is armed, so a screen
-    // still arriving never finishes, and a forced press lands wherever the
-    // element's centre is whether or not anything covers it — on a short
-    // viewport that is the bar rather than the row. Either way the press starts
-    // no navigation, and there is nothing to state. Playwright's own
-    // actionability wait is what makes the press a press.
+    // Not forced: a forced press lands wherever the element's centre is whether
+    // or not anything covers it — on a short viewport that is the bar rather
+    // than the row — and starts no navigation, leaving nothing to state. Not
+    // pressed with the pointer either: where a rest reads a hull, the move that
+    // carries the pointer onto the row opens it, and the statement that answers
+    // that navigation covers the row before the press lands on it. The keyboard
+    // reaches the control the Commander means without crossing anything.
     const hull = page.locator('[data-hull-symbol] button:visible').first();
     await expect(hull).toBeVisible();
     await hull.scrollIntoViewIfNeeded();
 
     const watch = await watchForTheStatement(page);
     const held = await holdEveryChunk(page);
-    await hull.click({ noWaitAfter: true });
+    await hull.press('Enter', { noWaitAfter: true });
     await stands(page);
 
     // Back to the screen whose code is held from arriving as well, so the
@@ -233,13 +234,19 @@ test.describe('a screen that has to be fetched', () => {
     // handover: the browser's own way back is the one way a second navigation
     // can start while the screen behind the statement takes no press.
     //
-    // The takeover's own request for its code is what says it has started. The
-    // counts are read after it, because before it there is nothing to have
-    // taken the statement down: read at the traversal, a store that removed it
-    // at the handover would be read before it had done so and pass.
-    const takeover = page.waitForRequest((request) => request.resourceType() === 'script');
+    // The counts are read once the navigation taking over has asked for its own
+    // code, not at the traversal: a store that took the statement down at the
+    // handover would be read before it had done so, and pass. Everything this
+    // press asks for has been asked for by the time the statement stands — the
+    // gate holds it all — so the next thing asked for is the bench, which is a
+    // screen nothing here has opened.
+    const askedBefore = held.timesAsked();
     await page.evaluate(() => history.back());
-    await takeover;
+    await expect
+      .poll(() => held.timesAsked(), {
+        message: 'the navigation taking over never asked for its screen',
+      })
+      .toBeGreaterThan(askedBefore);
 
     // The counts are what make this a reading. The application mounts one
     // overlay, so asking how many stand can only ever answer one; what the
@@ -290,7 +297,7 @@ test.describe('a screen that has to be fetched', () => {
 
     const watch = await watchForTheStatement(page);
     const held = await holdEveryChunk(page);
-    await hull.click({ noWaitAfter: true });
+    await hull.press('Enter', { noWaitAfter: true });
     await stands(page);
 
     // Nothing is going to end here. The statement handed over to an answer that
@@ -502,6 +509,7 @@ test.describe('the statement and a surface that is already open', () => {
 test.describe('accessibility', () => {
   test('scans the standing statement and the failure it can end in (018/FR-003, 011/FR-012)', async ({
     page,
+    browserName,
   }, testInfo) => {
     await page.goto('/');
     await waitForTakeover(page);
@@ -510,16 +518,36 @@ test.describe('accessibility', () => {
     await tools(page).filter({ hasText: 'Ship Builder' }).click({ noWaitAfter: true });
     await stands(page);
 
-    // What a reader is left with, read off the tree rather than inferred from
-    // the markup: the statement, and nothing else. The screen behind it is
-    // gone — no banner, no main, none of the tools that were on it — which is
-    // what FR-003 asks and what no assertion about one element can show.
+    // What a reader is left with, read off the browser's own accessibility tree:
+    // the statement, and none of the screen behind it — no banner, no main, no
+    // tool list — which is what FR-003 asks and what no assertion about one
+    // element can show.
     //
-    // Roles only, as `screen-reader.spec.ts` takes them. The dialog's name is
-    // catalogue text and is asserted against the catalogue above.
-    await expect(page.locator('body')).toMatchAriaSnapshot(`
-      - dialog
-    `);
+    // The browser's tree, not the test runner's model of one. That model knows
+    // `display`, `visibility` and `aria-hidden`, and nothing about the top
+    // layer, so it still holds every landmark behind the statement and would
+    // agree with any claim made about them. What takes them out of a reader's
+    // reach is the modal dialog, and the browser is the only thing that can be
+    // asked whether it did. Only one engine here answers that question; the
+    // other's reading is the screen-reader record the ledger names, and the two
+    // assertions below hold in both.
+    if (browserName === 'chromium') {
+      const devtools = await page.context().newCDPSession(page);
+      const tree = await devtools.send('Accessibility.getFullAXTree');
+      const exposed = (role: string): string[] =>
+        tree.nodes.filter((node) => !node.ignored && node.role?.value === role).map(() => role);
+
+      expect(
+        [...exposed('banner'), ...exposed('main'), ...exposed('navigation')],
+        'the screen behind the statement is still in the accessibility tree',
+      ).toEqual([]);
+      // The other half of the same reading, so a tree that answered nothing at
+      // all could not pass the first.
+      expect(exposed('dialog'), 'the statement is not in the accessibility tree').toEqual([
+        'dialog',
+      ]);
+      await devtools.detach();
+    }
 
     // The mechanism behind it, so a failure says which half broke: the
     // statement is a *modal* dialog, which is what takes the rest of the
