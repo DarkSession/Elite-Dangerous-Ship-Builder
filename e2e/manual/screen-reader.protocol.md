@@ -431,7 +431,7 @@ disagrees or where the announcement is correct but unusable.
     inside its own drawing, which the page's rule cannot reach, so this is
     where the fix in that drawing is confirmed rather than assumed.
 
-    The judgment this step exists for, and it is three. Whether a still mark on
+    The judgment this step exists for, and it is four. Whether a still mark on
     a subdued screen still reads as "the application is working" rather than as
     "the application has stopped". Whether the softened ground leaves enough of
     the screen behind visible to say which screen is being waited on — the

@@ -175,10 +175,11 @@ test.describe('a screen that has to be fetched', () => {
     // …and asked for again, which the browser answers without a request. The
     // threshold is what keeps that from flashing a statement nobody can read.
     //
-    // Watched every frame across the navigation rather than read once at the
-    // end. A reading taken after the screen has arrived is a reading a
+    // Watched for every change across the navigation rather than read once at
+    // the end. A reading taken after the screen has arrived is a reading a
     // statement that stood and came down would pass, which is the whole of
-    // what the threshold is for.
+    // what the threshold is for — and at ten milliseconds it is a statement a
+    // watch that only looked once a frame could miss as well.
     const watch = await watchForTheStatement(page);
     await tools(page).filter({ hasText: 'Ship Builder' }).click();
     await expect(page).toHaveURL(/\/ships$/);
