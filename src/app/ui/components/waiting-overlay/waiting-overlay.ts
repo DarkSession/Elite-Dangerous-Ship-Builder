@@ -66,13 +66,19 @@ export class WaitingOverlay {
 
   constructor() {
     effect(() => {
+      // The input is read first, before anything can return. It is the only
+      // signal here — the element is found by query, not held in one — so an
+      // effect that returned before reading it would register no dependency and
+      // never run again, leaving the statement closed for the life of the
+      // component and saying nothing about it.
+      const open = this.open();
       const dialog = this.#dialog();
       if (!dialog) {
         return;
       }
-      if (this.open() && !dialog.open) {
+      if (open && !dialog.open) {
         dialog.showModal();
-      } else if (!this.open() && dialog.open) {
+      } else if (!open && dialog.open) {
         dialog.close();
       }
     });

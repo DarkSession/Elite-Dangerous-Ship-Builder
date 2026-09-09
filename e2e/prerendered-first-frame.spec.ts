@@ -14,7 +14,12 @@ import {
 } from './first-frame';
 import { PRODUCT_URL } from './servers';
 import { shapeOf } from './served-document';
-import { waitForTakeover } from './shell';
+import {
+  holdEveryChunk,
+  waitForTakeover,
+  waitingStatement,
+  watchForTheStatementFromStart,
+} from './shell';
 
 /**
  * The frame a Commander is given before the application exists, and what the
@@ -451,29 +456,52 @@ test.describe('the waiting statement and a generated document', () => {
       // Watched from before the document exists to after the takeover, rather
       // than read once at the end: what is claimed is that the statement was
       // never up, not that it is down now.
-      await page.addInitScript(() => {
-        const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-        window_.__waitingWasDrawn = false;
-        const look = () => {
-          if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-            window_.__waitingWasDrawn = true;
-          }
-          requestAnimationFrame(look);
-        };
-        requestAnimationFrame(look);
-      });
+      const watch = await watchForTheStatementFromStart(page);
 
       await page.goto(path);
       await waitForTakeover(page);
 
-      expect(
-        await page.evaluate(
-          () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-        ),
-        `${path} was covered by the waiting statement`,
-      ).toBe(false);
+      expect(await watch.wasDrawn(), `${path} was covered by the waiting statement`).toBe(false);
     });
   }
+
+  test.describe('the watch itself', () => {
+    // No worker in this context. The application registers one immediately and
+    // it claims the page it is on, and a worker answers a chunk from its cache
+    // without a request being made — a request that is never made is one no
+    // route can hold. The sibling journey below buys the same thing by building
+    // its own context; this one needs a first navigation to succeed before the
+    // navigation it holds, so it asks for the worker to be kept out instead.
+    test.use({ serviceWorkers: 'block' });
+
+    test('is watched from before the generated document, so a reading of none is a reading (018/FR-008)', async ({
+      page,
+    }) => {
+      // Every reading above is that nothing was drawn, and a watch that never
+      // attached answers exactly that. This is the lane where it could: the
+      // watcher is installed before the document is parsed, and here the
+      // document it is waiting for is one the build generated rather than one a
+      // development server composed. So the same watch, installed the same way,
+      // is asked about a statement that has to be there.
+      const watch = await watchForTheStatementFromStart(page);
+
+      await page.goto('/');
+      await waitForTakeover(page);
+
+      // Not the first presentation — a navigation the Commander asks for, with
+      // its screen's code held, which is the one case that draws the statement.
+      const held = await holdEveryChunk(page);
+      await page.getByRole('main').getByRole('link').first().click({ noWaitAfter: true });
+
+      await expect(waitingStatement(page)).toBeVisible({ timeout: 15_000 });
+      expect(
+        await watch.timesDrawn(),
+        'the watch read nothing where the statement was standing',
+      ).toBeGreaterThan(0);
+
+      held.release();
+    });
+  });
 
   test('states a first navigation that failed, over the document it was served (018/FR-007, FR-008)', async ({
     browser,
@@ -524,6 +552,12 @@ test.describe('the waiting statement and a generated document', () => {
       await route.continue().catch(() => {});
     });
 
+    // Watched from before the document exists, rather than read once at the
+    // end. A reading taken after the failure is stated cannot tell a statement
+    // that was never drawn from one that was drawn and removed, and "never
+    // drawn over the first presentation" is the whole of what FR-008 asks.
+    const watch = await watchForTheStatementFromStart(fresh);
+
     await fresh.goto('/ships');
 
     // Stated, and stated in words that stay on the page.
@@ -531,6 +565,10 @@ test.describe('the waiting statement and a generated document', () => {
       fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
     ).toBeVisible({ timeout: 30_000 });
     await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
+    expect(
+      await watch.wasDrawn(),
+      'the first presentation was covered by the waiting statement',
+    ).toBe(false);
 
     // No statement was drawn over the first presentation, and the shell the
     // Commander is left on is one they can use (018/FR-008).
@@ -538,10 +576,12 @@ test.describe('the waiting statement and a generated document', () => {
     // FR-007's other half — "the Commander is left on the readable document
     // that address served" — is NOT read here, because the application does not
     // do it: the takeover empties `main` when the first navigation fails, and
-    // what the Commander keeps is the shell. Closing that is a change to how
-    // the takeover behaves when its navigation fails, which belongs to
-    // `platform/published-addresses` rather than to this feature, and it is
-    // open rather than settled.
+    // what the Commander keeps is the shell. The requirement stands and the
+    // takeover is what changes — it must hold what the address served until a
+    // navigation has presented a screen to replace it — which belongs to
+    // `platform/published-addresses` rather than to this feature. What is
+    // missing here is an assertion that the served document's own `main` is
+    // still standing, and it is added with that change.
     await expect(fresh.getByRole('banner')).toBeVisible();
     await expect(fresh.getByRole('link', { name: 'Ship Builder' })).toBeVisible();
     await context.close();

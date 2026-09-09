@@ -23,15 +23,18 @@
 
 ## 2. The store that decides when the application is waiting
 
-- [x] 2.1 Add `NavigationWaiting` in `src/app/application/navigation/`: it subscribes to the
+- [x] 2.1 Add `NavigationWaitingStore` in `src/app/application/navigation/`: it subscribes to the
       router's navigation events, starts the threshold when a navigation starts, raises its
       waiting signal when the threshold passes with the navigation still going, and lowers it
-      on every terminal event — completed, cancelled, redirected and failed. It renders
-      nothing. Verify with unit tests over each of those four endings, over a navigation that
-      ends inside the threshold raising nothing, over a navigation still going at the
-      threshold raising the signal, and over a second navigation starting before the first
-      ends leaving one raised signal that lowers with the navigation that is still going
-      (018/FR-001, FR-004, FR-005).
+      when that navigation ends — presented, cancelled with nothing taking over, or failed. A
+      cancellation that hands over to a navigation the router has taken on is not an ending:
+      the signal stays raised for the one taking over, and where that one is answered without
+      a navigation the skip is what lowers it. It renders nothing. Verify with unit tests over
+      each ending, over a navigation that ends inside the threshold raising nothing, over a
+      navigation still going at the threshold raising the signal, over a second navigation
+      starting before the first ends leaving one raised signal that lowers with the navigation
+      that is still going, and over a handover whose replacement is skipped (018/FR-001,
+      FR-004, FR-005).
 - [x] 2.2 State the threshold as one named constant of 10 milliseconds in that file, citing
       the specification that fixes the value. Verify with a unit test driving a fake clock to
       one tick either side of it, asserting nothing is raised below and the signal is raised
@@ -65,13 +68,17 @@
       scrim from task 1.3, the mark is centred and sized from a token rather than from
       the SVG's own height attribute — `--ednb-target-size`, which is the token the application
       already draws this mark from, and there is no transition on opening or closing. Verify
-      with `pnpm run policy` for the literal rule; with a component test reading the drawn
-      element's computed transition and animation durations as zero; and with the preview
+      with `pnpm run policy` for the literal rule; with a journey reading the drawn element's
+      computed transition and animation durations as zero from a real engine, which is the
+      only engine that answers for a stylesheet the element actually got; and with the preview
       states in task 3.3 rendered at desktop, tablet and mobile widths (018/FR-002,
       011/FR-011).
-- [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a `populated`
-      state (standing) and an `empty` state (closed), each with the `normal`,
-      `expanded-copy`, `rtl` and `reduced-motion` variants, and a stated reason for each of
+- [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a standing state
+      and an `empty` state (closed) — the standing one is named `default`, which is the word
+      the component contract uses. The standing state carries the `normal`, `expanded-copy`,
+      `rtl` and `reduced-motion` variants; the closed one carries `normal` alone, because an
+      overlay that renders nothing has nothing for a variant to change, which is what the
+      layer's own closed state does. A stated reason for each of
       `loading`, `error` and `disabled` — the overlay holds no content of its own, reports
       nothing, and carries no control. The standing state is isolated, as the layer's open
       state is, because a modal makes everything beside it inert. Verify with
@@ -100,11 +107,28 @@
       and absent while the restart overlay stands whichever of the two was raised first, and
       with task 6.7, which reads the generated documents themselves (018/FR-002, FR-008).
 - [x] 4.4 Publish the failed navigation from `src/app/app.ts`: the notice into the frame's
-      status list at error tone, and one announcement through `AnnouncementService` at polite
-      urgency — nothing is blocked — once per failure. Verify with unit tests asserting the
+      status list, and one announcement through `AnnouncementService` at polite urgency —
+      nothing is blocked — once per failure. The notice is drawn at warning tone rather than
+      error: an error is exposed as an `alert`, which speaks over what a reader was saying, and
+      a failure that interrupted as well as announcing would be one event stated twice with the
+      first of them cutting in (011/FR-009). Verify with unit tests asserting the
       notice carries the localised words, that the announcement is published once for one failure, and that a
       version notice standing at the same time keeps its place first in the list
       (018/FR-007).
+- [x] 4.5 Make a second failure reach a reader. Two failures say the same sentence, and the
+      outlet held that sentence as text: writing it over itself changed nothing, a live region
+      announces a change to what it holds, and the second failure was the silence the count
+      exists to remove. Carry the event's identity into the outlet alongside its words, and have
+      the outlet render what it holds keyed by that identity, so a genuinely new event replaces
+      the node in the region and a republished one does not. This is the announcement policy
+      rather than this feature — every capability that announces is subject to it — so it is
+      recorded as a modified requirement of `platform/accessible-responsive-operation`. Verify
+      with a component test over the outlet reading the node rather than the words: a second
+      event spoken identically replaces it, the same event published again does not, and a
+      locale switch empties it. Verify at the shell too, over two failed navigations, and in
+      the journey by watching the region itself across two screens that cannot be fetched —
+      the words are identical, so only the region changing says the second one arrived
+      (011/FR-009, 018/FR-007).
 
 ## 5. Unit and component verification
 
@@ -126,17 +150,33 @@
       it, that screen is not clickable, the page does not scroll horizontally, and the overlay is gone once the
       chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
       011/FR-011).
-- [x] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
+- [x] 6.2 In the same file, cover the outcomes that are not a screen arriving: a navigation
       redirected to another address states no failure, and a navigation whose code is already
-      held draws nothing at all — read by watching every frame of that navigation, because a
-      reading taken after the screen arrives passes a statement that stood and came down. That
-      a redirect also takes a standing statement down is read in
-      `navigation-waiting.store.spec.ts`: the one redirect the route table declares is reached
-      by typing an address, which makes it the navigation that starts a session, and no journey
-      in a browser can raise a statement over it to take down (018/FR-004, FR-005, FR-007).
+      held draws nothing at all — read by watching the statement's own attribute through the
+      navigation rather than sampling it, because a reading taken after the screen arrives
+      passes a statement that stood and came down, and a frame callback cannot see a ten
+      millisecond one. The two redirects are read in `navigation-waiting.store.spec.ts`: the one
+      the route table declares, which resolves inside its navigation and ends it, and the one a
+      guard would raise, which cancels its navigation and hands over to the address it named.
+      Neither can be driven from a browser here — the declared redirect is reached by typing an
+      address, which makes it the navigation that starts a session, and no guard in the route
+      table redirects at all (018/FR-004, FR-005, FR-007).
 - [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
+- [x] 6.2b In the same file, cover a handover, which in a browser can only come from the
+      browser's own history: the screen behind the statement takes no press. Put a history entry
+      there for a screen whose code has never been fetched, press into a held screen, and go
+      back to it, so the navigation that takes over waits too — a takeover that finishes at once
+      reads the same whether the statement was carried or taken down and never drawn again. Read
+      that it stands there drawn once and taken down not at all, and that it comes down once the
+      navigation still going ends. Then cover the handover that hands over to nothing: a history
+      entry for the address the application is already on, which it answers without navigating.
+      Nothing is going to end there, so read that the statement is taken down on that answer —
+      the alternative is one standing until the page is reloaded, over a screen it has made
+      inert. Read the taking down rather than what stands afterwards: with every script held the
+      application keeps asking for the screen it cannot get, and a later navigation's statement
+      is that navigation's answer rather than this one's (018/FR-005).
 - [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
@@ -146,26 +186,37 @@
       production lane has a generated document to be left on, and it is also the only reading
       of the arrangement the built application runs: there the first navigation blocks
       bootstrap, so its events are raised before any component exists (018/FR-005, FR-007,
-      FR-008). Open: the production reading holds that the failure is stated and that no
-      statement was drawn over the first presentation, but the other half of the scenario —
-      "the Commander is left on the readable document that address served" — is not met. When
-      the first navigation fails the takeover empties `main`, and what the Commander keeps is
-      the application's own shell. Closing that changes how the takeover behaves when its
-      navigation fails, which belongs to `platform/published-addresses` rather than to this
-      feature.
+      FR-008). Left unticked, and settled rather than open: the production reading holds that
+      the failure is stated and that no statement was drawn over the first presentation, but
+      the other half of the scenario — "the Commander is left on the readable document that
+      address served" — is not met. When the first navigation fails the takeover empties
+      `main`, and what the Commander keeps is the application's own shell. The requirement
+      stands as written and the takeover is what changes: it must hold what the address served
+      until a navigation has presented a screen to replace it. That is
+      `platform/published-addresses`, not this feature, so it is its own change and this task
+      stays unticked until that change is built.
 - [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
-- [x] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under
-      the rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert
-      the screen behind the standing overlay is absent from the accessibility tree
+- [x] 6.5 Scan the standing overlay and the failure notice with `@axe-core/playwright` under the
+      rule set `e2e/accessibility.ts` already applies, with nothing disabled, and assert the
+      screen behind the standing overlay is absent from the accessibility tree — from the
+      browser's own tree, in the engine that can be asked for it. The runner's model of a tree
+      knows `display`, `visibility` and `aria-hidden` and nothing about the top layer, so it
+      still holds every landmark behind the statement and would agree with any claim made about
+      them; the other engine's reading is the screen-reader record. Take the same reading before
+      the statement stands, where every landmark must be there: three roles answering empty
+      afterwards would read the same if the browser named any of them differently
       (018/FR-003, 011/FR-012).
 - [x] 6.6 Read the overlay at 200% text size and at 400% zoom in the profiles that already
       carry those readings, asserting the mark stays centred, whole and inside the viewport
       (011/FR-011).
 - [x] 6.7 Assert in the served-document checks that no generated document carries the overlay
       or its text, and that opening an address draws no overlay over the first presentation
-      (018/FR-008).
+      (018/FR-008). Every reading there is that nothing was drawn, and a watch that never
+      attached answers the same, so show the watch reading in that lane too: install it the
+      same way, then draw the statement on a navigation that is not the first and read it
+      standing.
 
 ## 7. The record
 
@@ -178,7 +229,18 @@
       when a navigation waits and when one fails, and a step covering the mark standing still
       under the platform's reduced-motion preference in both engines, and whether a still
       mark on the subdued screen still reads as a wait. Add the softened ground to the same
-      reading, where whether the step is right for a Commander is judged. Record the results
-      beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
-      011/FR-013).
-- [ ] 7.3 Run `pnpm run check` and report what passed.
+      reading, where whether the step is right for a Commander is judged. Add the second
+      failure to the same step: the words do not move between two failures, so whether a
+      reader is told again at all is a reading only a person can take. Bump the protocol's
+      version and record the results beside the protocols in `e2e/manual/results/`
+      (018/FR-002, FR-006, FR-007, 011/FR-009, 011/FR-010, 011/FR-013).
+- [x] 7.3 Run `pnpm run check` and report what passed. On this head: formatting, the
+      generated-artifact and sitemap checks, typechecking, both builds, all ten policy checkers,
+      529 script tests, 3164 unit tests with coverage above the floor, the twelve waiting
+      journeys and the four outlet component tests, and the production lane including the
+      generated-document watch control. Two things are read on the pull request rather than
+      here. Firefox is not installed in this container, so the five Firefox projects of the
+      matrix are read there, where the workflow runs the same suite sharded across all ten. And
+      the container cannot run the full ten-project sweep at the parallelism `pnpm run check`
+      asks for: five journeys time out under it that pass on their own and pass in every shard
+      on the pull request, so the whole-matrix reading is the sharded one.

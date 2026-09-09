@@ -384,12 +384,29 @@ export interface HeldChunks {
   release(): void;
   /** Refuses them, the way a connection that drops does. */
   refuse(): void;
+  /**
+   * How many separate pieces of code have been asked for since the gate was
+   * armed.
+   *
+   * What a navigation that has begun looks like from outside the application: a
+   * screen it has not opened before is a `loadComponent`, so it asks for that
+   * screen's code before it can present it. Read where a journey has to know
+   * that the navigation taking over has started and cannot ask the application
+   * — the address does not move until the screen is presented, and the screen
+   * is what the gate is holding back. The chunk's own name says nothing: a
+   * build hashes it.
+   */
+  timesAsked(): number;
 }
 
 export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
   let gate: 'hold' | 'release' | 'refuse' = 'hold';
+  const asked = new Set<string>();
 
   await page.route('**/*', async (route) => {
+    if (route.request().resourceType() === 'script') {
+      asked.add(route.request().url());
+    }
     if (route.request().resourceType() !== 'script') {
       // A page that navigates away disposes the routes it left waiting, and a
       // disposed route is not an outcome worth failing a journey over.
@@ -413,6 +430,7 @@ export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
     refuse: () => {
       gate = 'refuse';
     },
+    timesAsked: () => asked.size,
   };
 }
 
@@ -422,37 +440,115 @@ export function waitingStatement(page: Page): Locator {
 }
 
 /**
- * A watch on the waiting statement, kept across a navigation on the page as it
- * stands.
+ * A watch on the waiting statement, counting every time it is drawn and taken
+ * down.
  *
- * A reading taken once the screen has arrived cannot tell a statement that was
- * never drawn from one that was drawn and removed, and the second is what a
- * threshold exists to prevent. This looks every frame instead, and answers for
- * the whole of the navigation.
+ * A reading taken once a navigation is over cannot tell a statement that was
+ * never drawn from one that was drawn and removed, and it cannot see a
+ * statement taken down and put back inside one frame either. Both are what the
+ * threshold and the handover between two navigations exist to prevent, so this
+ * watches the `open` attribute itself rather than sampling: a mutation observer
+ * is called for every change to it, where a frame callback looks once every
+ * sixteen milliseconds and the threshold is ten. It compares state when it is
+ * called, so a statement closed and reopened inside one task reads as no change
+ * — which is not the case being read, because a statement taken down and drawn
+ * again is drawn a threshold later, a task or more away.
  */
 export interface StatementWatch {
-  /** Whether the statement stood at any frame since the watch was set. */
+  /** Whether the statement stood at any point since the watch was set. */
   wasDrawn(): Promise<boolean>;
+  /** How many separate times it was drawn. One handover is still one. */
+  timesDrawn(): Promise<number>;
+  /**
+   * How many separate times it was taken down.
+   *
+   * Read where the end state cannot be: a screen whose code is held from
+   * arriving leaves the application asking for it again, so what stands a
+   * second later is a later navigation's answer rather than this one's. Whether
+   * a statement was taken down, and when, is the reading — not what happens to
+   * stand afterwards.
+   */
+  timesRemoved(): Promise<number>;
+}
+
+/** The watcher itself, held apart because it is installed in two ways. */
+const WATCH_THE_STATEMENT = () => {
+  const window_ = window as unknown as { __waitingDrawn?: number; __waitingRemoved?: number };
+  let standing = false;
+  const look = (): void => {
+    const now = document.querySelector('ednb-waiting-overlay dialog[open]') !== null;
+    if (now && !standing) {
+      window_.__waitingDrawn = (window_.__waitingDrawn ?? 0) + 1;
+    }
+    if (!now && standing) {
+      window_.__waitingRemoved = (window_.__waitingRemoved ?? 0) + 1;
+    }
+    standing = now;
+  };
+
+  // The document itself, not its root element. This watcher is also installed
+  // before the document exists, where the root element has not been parsed yet
+  // and `observe` would be handed nothing — an exception a browser raises into
+  // a page nobody is reading, leaving a watch that answers zero for ever. A
+  // `Document` is always there, and `subtree` reaches everything under it.
+  //
+  // Watched first, counted second. The counters are what a reading is taken
+  // from, and an install that threw here leaves them unwritten, which is how a
+  // watch that was never installed tells itself apart from one that saw
+  // nothing. A callback cannot arrive before they are written: it is a
+  // microtask, and the next two lines are this one's own turn.
+  new MutationObserver(look).observe(document, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['open'],
+  });
+  window_.__waitingDrawn = 0;
+  window_.__waitingRemoved = 0;
+  look();
+};
+
+function readTheWatch(page: Page): StatementWatch {
+  // A count the watcher never wrote is not a count of none. Almost every
+  // reading taken through this watch is that the statement was never drawn, and
+  // a watcher that failed to install answers that too — quietly, and for ever.
+  // So the absent counter is an error rather than a zero.
+  const count = async (name: '__waitingDrawn' | '__waitingRemoved'): Promise<number> => {
+    const read = await page.evaluate(
+      (key) => (window as unknown as Record<string, number | undefined>)[key],
+      name,
+    );
+    if (read === undefined) {
+      throw new Error(
+        `The statement watch is not on this page: it holds no ${name}. Either the watch ` +
+          'never installed, or the document it was installed in has been replaced since.',
+      );
+    }
+    return read;
+  };
+  const drawn = (): Promise<number> => count('__waitingDrawn');
+  const removed = (): Promise<number> => count('__waitingRemoved');
+  return {
+    wasDrawn: async () => (await drawn()) > 0,
+    timesDrawn: drawn,
+    timesRemoved: removed,
+  };
 }
 
 /** Starts watching the page as it stands, without reloading it. */
 export async function watchForTheStatement(page: Page): Promise<StatementWatch> {
-  await page.evaluate(() => {
-    const window_ = window as unknown as { __waitingWasDrawn?: boolean };
-    window_.__waitingWasDrawn = false;
-    const look = (): void => {
-      if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
-        window_.__waitingWasDrawn = true;
-      }
-      requestAnimationFrame(look);
-    };
-    requestAnimationFrame(look);
-  });
+  await page.evaluate(WATCH_THE_STATEMENT);
+  return readTheWatch(page);
+}
 
-  return {
-    wasDrawn: async () =>
-      (await page.evaluate(
-        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
-      )) === true,
-  };
+/**
+ * The same, from before the document exists.
+ *
+ * What a session's first presentation is covered by can only be watched from
+ * before there is a page to watch, so this one is installed for the next
+ * navigation rather than run on this one.
+ */
+export async function watchForTheStatementFromStart(page: Page): Promise<StatementWatch> {
+  await page.addInitScript(WATCH_THE_STATEMENT);
+  return readTheWatch(page);
 }

@@ -5,7 +5,9 @@
   aria-atomic="true"
   [attr.aria-label]="assertiveLabel()"
 >
-  {{ assertive() }}
+  @for (spoken of assertive(); track spoken.identity) {
+    {{ spoken.text }}
+  }
 </div>
 
 <div
@@ -15,5 +17,7 @@
   aria-atomic="true"
   [attr.aria-label]="politeLabel()"
 >
-  {{ polite() }}
+  @for (spoken of polite(); track spoken.identity) {
+    {{ spoken.text }}
+  }
 </div>
