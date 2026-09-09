@@ -129,6 +129,11 @@
   // Scrim and shadow, canvas literals rather than named properties.
   --ednb-palette-scrim: rgb(6 6 7 / 0.78);
   --ednb-palette-scrim-strong: rgb(6 6 7 / 0.8);
+  // The same near-black, at a step the screen behind stays readable through.
+  // What a panel dialog is lifted off takes the page out of the reading, which
+  // is right for a layer a Commander is working in and wrong for a wait: the
+  // screen being waited on is still the answer to which screen this is.
+  --ednb-palette-scrim-soft: rgb(6 6 7 / 0.55);
   --ednb-palette-shadow: rgb(0 0 0 / 0.6);
 
   // ---------------------------------------------------------------------------

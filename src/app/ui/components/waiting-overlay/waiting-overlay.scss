@@ -1,0 +1,45 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+// The whole viewport, on a ground the screen behind stays visible through.
+//
+// The scrim is on the dialog rather than on `::backdrop` because the dialog is
+// what covers the viewport, and because a ground a journey can read off the
+// element is a ground a journey can hold to being translucent. The backdrop
+// under it is cleared so the two do not stack: a user agent draws one of its
+// own, and two grounds is a darker screen than the token declares.
+.waiting {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  // No maximum: a modal dialog is bounded by the user agent unless it is told
+  // otherwise, and this one is the viewport.
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 100%;
+  max-block-size: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: var(--ednb-surface-scrim-soft);
+}
+
+.waiting::backdrop {
+  background-color: transparent;
+}
+
+// The mark at the size it is drawn at everywhere else, from the token layer
+// rather than from the drawing's own height attribute.
+.waiting__mark {
+  inline-size: var(--ednb-target-size);
+  block-size: var(--ednb-target-size);
+}
+
+.waiting__spoken {
+  @include layout.visually-hidden;
+}
