@@ -2763,17 +2763,34 @@ export function waitingMarkViolations(source, file = SCOPE.waitingMark) {
   const found = [];
   const report = (message) => found.push({ file, line: 0, rule: 'waiting-mark-motion', message });
 
-  const block = source.match(
-    /@media[^{]*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)[^{]*\{([\s\S]*?)\n\s*\}/,
-  );
-  if (block === null) {
+  const opening = source.match(/@media[^{]*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)[^{]*\{/);
+  if (opening === null || opening.index === undefined) {
     report(
       'The waiting mark carries no reduced-motion block. It is drawn through <img>, so the page\u2019s own rule cannot reach it and the mark goes on animating for a Commander who asked it not to.',
     );
     return found;
   }
 
-  const body = block[1];
+  // Counted to the brace that closes the block rather than read to the first
+  // one. The block holds a rule of its own, so a lazy match stops inside it and
+  // what the rule then reads depends on how the file is laid out.
+  const start = opening.index + opening[0].length;
+  let depth = 1;
+  let end = start;
+  while (end < source.length && depth > 0) {
+    if (source[end] === '{') {
+      depth += 1;
+    } else if (source[end] === '}') {
+      depth -= 1;
+    }
+    end += 1;
+  }
+  if (depth !== 0) {
+    report('The waiting mark\u2019s reduced-motion block is never closed.');
+    return found;
+  }
+
+  const body = source.slice(start, end - 1);
   for (const name of ANIMATED_MARK_CLASSES) {
     if (!new RegExp(`\\.${name}\\b`).test(body)) {
       report(

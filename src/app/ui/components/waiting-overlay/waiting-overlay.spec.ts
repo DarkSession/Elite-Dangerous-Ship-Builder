@@ -11,10 +11,28 @@ import { WaitingOverlay } from './waiting-overlay';
  * overlay asks for a *modal* rather than for a dialog that merely covers.
  */
 
-/** The modal methods jsdom does not implement, faithful in the one respect. */
+/**
+ * The modal methods jsdom does not implement, faithful in the one respect.
+ *
+ * `restoreNativeDialog` puts the prototype back. The environment is shared with
+ * every other file in the run, so a stub left on it is a stub the next file
+ * inherits.
+ */
+let restoreNativeDialog: () => void = () => {};
+
 function stubNativeDialog(): string[] {
   const calls: string[] = [];
   const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+  const original = {
+    showModal: prototype['showModal'],
+    show: prototype['show'],
+    close: prototype['close'],
+  };
+  restoreNativeDialog = () => {
+    prototype['showModal'] = original.showModal;
+    prototype['show'] = original.show;
+    prototype['close'] = original.close;
+  };
   prototype['showModal'] = function showModal(this: HTMLDialogElement) {
     calls.push('showModal');
     this.setAttribute('open', '');
@@ -61,6 +79,10 @@ function render(open: boolean): {
 const textOf = (node: Element | null) => (node?.textContent ?? '').replace(/\s+/g, ' ').trim();
 
 describe('WaitingOverlay', () => {
+  afterEach(() => {
+    restoreNativeDialog();
+  });
+
   it('asks for a modal, which is what makes the screen behind inert', () => {
     const { calls, dialog } = render(true);
 

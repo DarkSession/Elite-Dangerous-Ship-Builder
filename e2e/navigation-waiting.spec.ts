@@ -9,6 +9,7 @@ import {
   savedToBrowser,
   waitForTakeover,
   waitingStatement,
+  watchForTheStatement,
 } from './shell';
 
 /**
@@ -149,8 +150,16 @@ test.describe('a screen that has to be fetched', () => {
 
     // …and asked for again, which the browser answers without a request. The
     // threshold is what keeps that from flashing a statement nobody can read.
+    //
+    // Watched every frame across the navigation rather than read once at the
+    // end. A reading taken after the screen has arrived is a reading a
+    // statement that stood and came down would pass, which is the whole of
+    // what the threshold is for.
+    const watch = await watchForTheStatement(page);
     await tools(page).filter({ hasText: 'Ship Builder' }).click();
     await expect(page).toHaveURL(/\/ships$/);
+    await expect(page.getByRole('main')).toBeVisible();
+    expect(await watch.wasDrawn(), 'a statement was drawn').toBe(false);
     await expect(overlay(page)).toHaveCount(0);
   });
 

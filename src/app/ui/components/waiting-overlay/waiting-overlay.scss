@@ -24,6 +24,10 @@
   padding: 0;
   border: 0;
   background-color: var(--ednb-surface-scrim-soft);
+  // The user agent gives a dialog its own `color: CanvasText`, which is black
+  // on this ground. Every colour the application draws comes from the token
+  // layer (constitution VII), so the element states its own.
+  color: var(--ednb-text-primary);
 }
 
 // Drawn only while it is open, and by the open state itself.
@@ -32,7 +36,7 @@
 // `dialog:not([open]) { display: none }`, and an author rule outranks a user
 // agent rule whatever its specificity. So a bare `display` here would leave a
 // closed overlay covering the viewport and swallowing every press on the screen
-// behind it — which is what it did.
+// behind it.
 .waiting[open] {
   display: flex;
   align-items: center;

@@ -1007,6 +1007,24 @@ describe('the waiting mark under reduced motion', () => {
 
     assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
   });
+
+  it('reads the whole block however the file is laid out', () => {
+    // One line, so a reading that stopped at the first closing brace would see
+    // an empty block and reject a mark that is correct.
+    const oneLine = `<svg><style><![CDATA[
+    @media (prefers-reduced-motion: reduce) { .l1, .l2 { animation: none; opacity: 1; } }
+  ]]></style></svg>`;
+
+    assert.deepEqual(rules.waitingMarkViolations(oneLine), []);
+  });
+
+  it('rejects a reduced-motion block that is never closed', () => {
+    const found = rules.waitingMarkViolations(
+      '<svg><style>@media (prefers-reduced-motion: reduce) { .l1, .l2 { animation: none;</style></svg>',
+    );
+
+    assert.deepEqual(ruleIds(found), ['waiting-mark-motion']);
+  });
 });
 
 describe('extracted schematics', () => {

@@ -17,6 +17,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
+import { NavigationWaiting } from './application/navigation/navigation-waiting.store';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
 import { RenderingTarget } from './platform/browser/rendering-target';
@@ -55,6 +56,29 @@ export const appConfig: ApplicationConfig = {
     // this feature replaced. Replay records those presses and delivers them
     // once the application owns the node.
     provideClientHydration(withEventReplay()),
+    // The store that watches navigations, created before the first one runs.
+    //
+    // It has to be here rather than left to the shell component that reads it.
+    // The blocking initial navigation below is started from an application
+    // initializer and releases bootstrap part-way through, so the router's
+    // first `NavigationStart` — and, where the first screen's code never
+    // arrives, its `NavigationError` — is raised before any component exists.
+    // A store created with the shell would miss them: it would take the press
+    // after the arrival for the session's first navigation and draw nothing
+    // over it, and a first navigation that failed would be stated to nobody
+    // (018/FR-001, FR-004, FR-007).
+    //
+    // The order is the whole point, so it is stated by position: this
+    // initializer is registered before `provideRouter` below, and initializers
+    // run in the order they are provided.
+    //
+    // Not in the build's renderer. There is no Commander at build time and
+    // nothing to state a wait to (015/FR-001).
+    provideAppInitializer(() => {
+      if (inject(RenderingTarget).isBrowser) {
+        inject(NavigationWaiting);
+      }
+    }),
     // Route parameters are bound to component inputs, so a screen takes its
     // subject as an input rather than reaching into the router for it.
     //

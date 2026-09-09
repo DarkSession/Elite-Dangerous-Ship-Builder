@@ -420,3 +420,39 @@ export async function holdEveryChunk(page: Page): Promise<HeldChunks> {
 export function waitingStatement(page: Page): Locator {
   return page.locator('ednb-waiting-overlay dialog[open]');
 }
+
+/**
+ * A watch on the waiting statement, kept across a navigation on the page as it
+ * stands.
+ *
+ * A reading taken once the screen has arrived cannot tell a statement that was
+ * never drawn from one that was drawn and removed, and the second is what a
+ * threshold exists to prevent. This looks every frame instead, and answers for
+ * the whole of the navigation.
+ */
+export interface StatementWatch {
+  /** Whether the statement stood at any frame since the watch was set. */
+  wasDrawn(): Promise<boolean>;
+}
+
+/** Starts watching the page as it stands, without reloading it. */
+export async function watchForTheStatement(page: Page): Promise<StatementWatch> {
+  await page.evaluate(() => {
+    const window_ = window as unknown as { __waitingWasDrawn?: boolean };
+    window_.__waitingWasDrawn = false;
+    const look = (): void => {
+      if (document.querySelector('ednb-waiting-overlay dialog[open]') !== null) {
+        window_.__waitingWasDrawn = true;
+      }
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  });
+
+  return {
+    wasDrawn: async () =>
+      (await page.evaluate(
+        () => (window as unknown as { __waitingWasDrawn?: boolean }).__waitingWasDrawn,
+      )) === true,
+  };
+}

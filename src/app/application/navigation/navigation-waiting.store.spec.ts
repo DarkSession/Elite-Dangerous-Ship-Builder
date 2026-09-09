@@ -181,13 +181,24 @@ describe('NavigationWaiting', () => {
     expect(store.failed()).toBe(false);
   });
 
-  it('states nothing about a navigation that was redirected', () => {
+  it('takes the statement down on a navigation that was redirected, and states no failure', () => {
     const store = running();
 
     // A redirect the route table declares ends at the address it resolved to.
+    // It is an ordinary ending: the statement comes down with it, and nothing
+    // is said about it.
+    //
+    // This is where the redirect is read. The one redirect the application
+    // declares is reached by typing an address, which makes it the navigation
+    // that starts a session — so no journey in a browser can raise a statement
+    // over it to take down.
     start(2, '/nowhere');
+    vi.advanceTimersByTime(NAVIGATION_WAITING_THRESHOLD_MS + 1);
+    expect(store.waiting()).toBe(true);
+
     events.next(new NavigationEnd(2, '/nowhere', '/'));
 
+    expect(store.waiting()).toBe(false);
     expect(store.failed()).toBe(false);
   });
 

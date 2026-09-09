@@ -59,14 +59,24 @@ class FakeUpdates {
   }
 }
 
-/** `<dialog>` without the modal methods, which jsdom does not implement. */
-function stubNativeDialog(): void {
+/**
+ * `<dialog>` without the modal methods, which jsdom does not implement.
+ *
+ * Returns what puts the prototype back. The environment is shared with every
+ * other file in the run, so a stub left on it is a stub the next file inherits.
+ */
+function stubNativeDialog(): () => void {
   const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+  const original = { showModal: prototype['showModal'], close: prototype['close'] };
   prototype['showModal'] = function showModal(this: HTMLDialogElement) {
     this.setAttribute('open', '');
   };
   prototype['close'] = function close(this: HTMLDialogElement) {
     this.removeAttribute('open');
+  };
+  return () => {
+    prototype['showModal'] = original.showModal;
+    prototype['close'] = original.close;
   };
 }
 
@@ -76,8 +86,11 @@ describe('App and a screen that is on its way', () => {
   /** The screen whose code the test holds, and how it is let go. */
   let arrive: () => void;
 
+  /** Puts the modal methods back on the prototype the whole run shares. */
+  let restoreNativeDialog: () => void;
+
   beforeEach(async () => {
-    stubNativeDialog();
+    restoreNativeDialog = stubNativeDialog();
     updates = new FakeUpdates();
     const held = new Promise<typeof AnotherScreen>((resolve) => {
       arrive = () => resolve(AnotherScreen);
@@ -102,6 +115,7 @@ describe('App and a screen that is on its way', () => {
   afterEach(() => {
     vi.useRealTimers();
     TestBed.inject(Location).go('/');
+    restoreNativeDialog();
   });
 
   /** The shell, with the session's first navigation already behind it. */
@@ -220,8 +234,11 @@ describe('App and a screen that is on its way', () => {
 describe('App and a screen that never arrives', () => {
   let refuse: () => void;
 
+  /** Puts the modal methods back on the prototype the whole run shares. */
+  let restoreNativeDialog: () => void;
+
   beforeEach(async () => {
-    stubNativeDialog();
+    restoreNativeDialog = stubNativeDialog();
     const held = new Promise<typeof AnotherScreen>((_resolve, reject) => {
       refuse = () => reject(new Error('The chunk could not be fetched.'));
     });
@@ -245,6 +262,7 @@ describe('App and a screen that never arrives', () => {
 
   afterEach(() => {
     TestBed.inject(Location).go('/');
+    restoreNativeDialog();
   });
 
   /** The shell, with the held screen asked for and refused. */

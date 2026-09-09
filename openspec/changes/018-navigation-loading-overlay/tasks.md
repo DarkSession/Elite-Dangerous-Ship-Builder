@@ -62,8 +62,9 @@
       exposes the mark to no reader, draws no control, and states no proportion, percentage,
       remaining time or step count (018/FR-001, FR-003, FR-006).
 - [x] 3.2 Style it from tokens only: the dialog fills the viewport and carries the softened
-      scrim from task 1.3, the mark is centred and sized from a spacing token rather than from
-      the SVG's own height attribute, and there is no transition on opening or closing. Verify
+      scrim from task 1.3, the mark is centred and sized from a token rather than from
+      the SVG's own height attribute — `--ednb-target-size`, which is the token the application
+      already draws this mark from, and there is no transition on opening or closing. Verify
       with `pnpm run policy` for the literal rule; with a component test reading the drawn
       element's computed transition and animation durations as zero; and with the preview
       states in task 3.3 rendered at desktop, tablet and mobile widths (018/FR-002,
@@ -126,8 +127,13 @@
       chunk is released and the screen is presented (018/FR-001, FR-002, FR-003, FR-005,
       011/FR-011).
 - [x] 6.2 In the same file, cover the endings that are not a screen arriving: a navigation
-      redirected to another address takes the overlay down and states no failure, and a
-      navigation whose code is already held draws nothing at all (018/FR-004, FR-005, FR-007).
+      redirected to another address states no failure, and a navigation whose code is already
+      held draws nothing at all — read by watching every frame of that navigation, because a
+      reading taken after the screen arrives passes a statement that stood and came down. That
+      a redirect also takes a standing statement down is read in
+      `navigation-waiting.store.spec.ts`: the one redirect the route table declares is reached
+      by typing an address, which makes it the navigation that starts a session, and no journey
+      in a browser can raise a statement over it to take down (018/FR-004, FR-005, FR-007).
 - [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
@@ -135,8 +141,12 @@
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
       inside a running session, and on the navigation that starts one at an address the build
-      generates a document for, where what the Commander is left on is that document
-      (018/FR-005, FR-007, FR-008).
+      generates a document for, where what the Commander is left on is that document. The
+      second reading belongs in `e2e/prerendered-first-frame.spec.ts`, because only the
+      production lane has a generated document to be left on, and it is also the only reading
+      of the arrangement the built application runs: there the first navigation blocks
+      bootstrap, so its events are raised before any component exists (018/FR-005, FR-007,
+      FR-008).
 - [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).

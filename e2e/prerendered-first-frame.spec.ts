@@ -429,14 +429,6 @@ test.describe('a document read by a Commander whose browser asks for German', ()
 });
 
 /**
- * The other document the production output serves: the one with no rendered
- * body, which every journey reaches `waitForTakeover` on.
- *
- * What the takeover means there, and why the wait asks a second question about
- * it, is in `shell.ts`. What is claimed here is the journey's half: when that
- * wait is over, the screen is drawn.
- */
-/**
  * The waiting statement and the documents the build writes.
  *
  * A generated document has no navigation to wait on, and a statement drawn over
@@ -482,8 +474,71 @@ test.describe('the waiting statement and a generated document', () => {
       ).toBe(false);
     });
   }
+
+  test('states a first navigation that failed, over the document it was served (018/FR-007, FR-008)', async ({
+    page,
+  }) => {
+    // The lane that has a document. `navigation-waiting.spec.ts` reads the same
+    // failure on a development server, where what the Commander is left on is
+    // the application's own shell; here the address answers with a written
+    // document first, and the promise is that the failure is stated over it and
+    // the document stays readable.
+    //
+    // It is also the only reading of the arrangement the built application
+    // actually runs: there the first navigation blocks bootstrap, so the events
+    // it raises come before any component exists. Nothing in the development
+    // lane can see that.
+    //
+    // The screen's own code is refused and the application's is not. They are
+    // told apart by asking for the screen once and remembering what that
+    // fetched, because both are chunks and only the address distinguishes them.
+    const screenChunks = new Set<string>();
+    await page.goto('/');
+    await waitForTakeover(page);
+    page.on('request', (request) => {
+      if (request.resourceType() === 'script') {
+        screenChunks.add(request.url());
+      }
+    });
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: /Ship Builder/ })
+      .click();
+    await expect(page).toHaveURL(/\/ships$/);
+    await expect(page.getByRole('main')).toBeVisible();
+
+    const fresh = await page.context().newPage();
+    await fresh.route('**/*', async (route) => {
+      if (screenChunks.has(route.request().url())) {
+        await route.abort('failed').catch(() => {});
+        return;
+      }
+      await route.continue().catch(() => {});
+    });
+
+    await fresh.goto('/ships');
+
+    // Stated, and stated in words that stay on the page.
+    await expect(
+      fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(fresh.locator('ednb-waiting-overlay dialog[open]')).toHaveCount(0);
+
+    // And what the address was written to answer with is still on the page,
+    // rather than a shell with nothing in it (018/FR-008).
+    await expect(fresh.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    await fresh.close();
+  });
 });
 
+/**
+ * The other document the production output serves: the one with no rendered
+ * body, which every journey reaches `waitForTakeover` on.
+ *
+ * What the takeover means there, and why the wait asks a second question about
+ * it, is in `shell.ts`. What is claimed here is the journey's half: when that
+ * wait is over, the screen is drawn.
+ */
 test.describe('a document with no rendered body', () => {
   test('is not taken over until the application has drawn the screen', async ({ page }) => {
     // The host's fallback rather than the worker's, because a request the
