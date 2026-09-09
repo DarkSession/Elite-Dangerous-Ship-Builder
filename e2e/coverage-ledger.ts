@@ -2353,7 +2353,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'no generated document carries the overlay or the sentence it would speak',
       'no statement is drawn over the first presentation of a session, at any address',
-      'a first navigation that fails is stated like any other, on whatever that address served',
+      'a first navigation that fails is stated like any other, with nothing drawn over the presentation it failed on',
     ],
     manualRecord: null,
   },

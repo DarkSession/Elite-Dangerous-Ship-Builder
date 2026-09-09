@@ -137,7 +137,7 @@
 - [x] 6.2a Hold a second address's chunk — a hull's — and read that the statement drawn is the
       same one the ship builder's navigation drew, so a Commander meets one answer rather than
       one per screen (018/FR-001).
-- [x] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
+- [ ] 6.3 Cover the failure: abort the chunk, and read that the overlay comes down, the
       Commander is left on a screen they can still use, the notice states that the screen
       could not be opened, and the words stay on the page. Cover it twice — on a navigation
       inside a running session, and on the navigation that starts one at an address the build
@@ -146,7 +146,13 @@
       production lane has a generated document to be left on, and it is also the only reading
       of the arrangement the built application runs: there the first navigation blocks
       bootstrap, so its events are raised before any component exists (018/FR-005, FR-007,
-      FR-008).
+      FR-008). Open: the production reading holds that the failure is stated and that no
+      statement was drawn over the first presentation, but the other half of the scenario —
+      "the Commander is left on the readable document that address served" — is not met. When
+      the first navigation fails the takeover empties `main`, and what the Commander keeps is
+      the application's own shell. Closing that changes how the takeover behaves when its
+      navigation fails, which belongs to `platform/published-addresses` rather than to this
+      feature.
 - [x] 6.4 Cover the stacked case: open the saved builds layer, open a build from it with the
       workspace chunk held, and read that the overlay stands in front of that layer
       (018/FR-002).
