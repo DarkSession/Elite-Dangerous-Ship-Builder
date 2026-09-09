@@ -591,10 +591,15 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Delete this build' })
       .click();
 
-    const stored = await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
-    );
-    expect(stored).toEqual(['ednb:record:b']);
+    // Polled: the deletion is what the press wrote, and the press is answered a
+    // moment after it returns.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
+        ),
+      )
+      .toEqual(['ednb:record:b']);
   });
 
   test('opens a stored build into the workspace', async ({ page }) => {

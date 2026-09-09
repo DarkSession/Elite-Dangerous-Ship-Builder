@@ -716,10 +716,14 @@ test.describe('the faces a generated document is drawn in', () => {
       await openWithoutTheBundle(page, path);
       await page.evaluate(() => document.fonts.ready.then(() => undefined));
 
+      // The family is unquoted on both sides before they are compared. The
+      // stylesheet writes `"Barlow Condensed"` and a browser is free to report
+      // the descriptor back as it was written, so a multi-word family would
+      // otherwise match on one engine and not on the other.
       const drawn = await page.evaluate(() =>
         [...document.fonts]
           .filter((face) => face.status === 'loaded')
-          .map((face) => `${face.family} ${face.weight}`),
+          .map((face) => `${face.family.trim().replace(/^["']|["']$/g, '')} ${face.weight}`),
       );
       expect(drawn.length, `${path} is drawn in no declared face at all`).toBeGreaterThan(0);
 

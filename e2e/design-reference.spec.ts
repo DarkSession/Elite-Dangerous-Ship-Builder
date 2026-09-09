@@ -655,8 +655,12 @@ test.describe('the wide manifest', () => {
     await expect(page.locator('[data-hull-symbol]:visible')).not.toHaveCount(48);
     expect(await widths()).toEqual(before);
 
+    // Gated like the search above it: the sizes narrow the manifest further, and
+    // measuring before they have been applied would measure the same list twice
+    // and say nothing about the size filter at all.
     await page.getByRole('radio', { name: 'Large' }).check();
-    expect(await widths()).toEqual(before);
+    await expect(page.locator('[data-hull-symbol]:visible')).not.toHaveCount(48);
+    await expect.poll(widths).toEqual(before);
   });
 });
 

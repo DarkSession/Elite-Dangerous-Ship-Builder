@@ -186,7 +186,12 @@ export function frames(page: Page): Promise<readonly Frame[]> {
  * address answered by the body-less shell looks like — the failure both of the
  * journeys reading these frames exist to catch — and a recorder that dropped
  * every empty frame would report the application's own later render as the
- * first thing a Commander saw. `recordList` gates on the same two facts.
+ * first thing a Commander saw.
+ *
+ * `recordList` reads the same two facts and requires both, which is right for
+ * what it watches: on the catalogue an empty frame can only be the document not
+ * being there yet. Here it can also be the shell answering, which is the
+ * evidence rather than the noise, so the two are combined the other way.
  *
  * Lower-cased for the same reason `recordFrames` matches without case: what is
  * being asked is whether a word was on the screen, not how it was set.
