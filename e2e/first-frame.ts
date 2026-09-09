@@ -176,6 +176,13 @@ export function frames(page: Page): Promise<readonly Frame[]> {
  * Recorded rather than read afterwards, because by the time a test can ask, the
  * application has answered — and the question is what was there before it did.
  *
+ * Only frames that showed a word are kept. The callback is asked for before the
+ * body has been parsed as well as after, and under load it is answered there
+ * first: the document has a body, the body has no text in it yet, and reading
+ * it records a frame that showed nothing. A reader asking what the first frame
+ * said would be told the document said nothing, which is a statement about when
+ * the recorder was asked and not about what a Commander saw.
+ *
  * Lower-cased for the same reason `recordFrames` matches without case: what is
  * being asked is whether a word was on the screen, not how it was set.
  */
@@ -185,7 +192,10 @@ export async function recordFirstFrameText(page: Page): Promise<void> {
     (window as unknown as { __text: string[] }).__text = seen;
     const record = () => {
       if (document.body) {
-        seen.push((document.body.innerText || '').replace(/\s+/g, ' ').trim().toLowerCase());
+        const text = (document.body.innerText || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (text !== '') {
+          seen.push(text);
+        }
       }
       requestAnimationFrame(record);
     };
