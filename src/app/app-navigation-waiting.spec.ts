@@ -252,6 +252,10 @@ describe('App and a screen that never arrives', () => {
         provideRouter([
           { path: '', pathMatch: 'full', component: AScreen },
           { path: 'held', loadComponent: () => held },
+          // An address other than the one the shell starts on, so a test can
+          // run a navigation that actually opens a screen: a press on the
+          // address a Commander is already at is skipped rather than run.
+          { path: 'elsewhere', component: AnotherScreen },
           { path: '**', redirectTo: '' },
         ]),
         { provide: ApplicationUpdateAdapter, useValue: new FakeUpdates() },
@@ -284,6 +288,23 @@ describe('App and a screen that never arrives', () => {
   const textIn = (fixture: ComponentFixture<App>) =>
     ((fixture.nativeElement as HTMLElement).textContent ?? '').replace(/\s+/g, ' ');
 
+  /**
+   * The node the polite outlet is holding, which is what a reader is told about.
+   *
+   * Text nodes only: the framework's own anchors are comments, and they stay put
+   * across a change.
+   */
+  const spokenNode = (fixture: ComponentFixture<App>): ChildNode | null => {
+    const outlet = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-announcement-outlet="polite"]',
+    );
+    return (
+      [...(outlet?.childNodes ?? [])].find(
+        (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+      ) ?? null
+    );
+  };
+
   it('says the screen could not be opened, in words that stay on the page', async () => {
     const fixture = await failed();
 
@@ -313,6 +334,63 @@ describe('App and a screen that never arrives', () => {
     // A second pass over the same failure is the same event, and says nothing.
     fixture.detectChanges();
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
+  });
+
+  it('draws the notice as a status, so nothing interrupts what a reader was saying', async () => {
+    const fixture = await failed();
+
+    // The outlets are not the only live region on the page: the notice is one
+    // too, so an assertive outlet that is empty proves nothing on its own. A
+    // `status` is the polite one — it waits its turn — where the `alert` an
+    // error tone would draw speaks over whatever was being said. Whether a
+    // reader then says the sentence twice, once from each polite region, is a
+    // judgment no scan can make: step 21 of
+    // `e2e/manual/screen-reader.protocol.md` is where that is settled.
+    const notice = (fixture.nativeElement as HTMLElement).querySelector(
+      '.frame__status ednb-status-notice [role]',
+    );
+
+    expect(notice?.getAttribute('role')).toBe('status');
+  });
+
+  it('states a second failure as a second event', async () => {
+    const announcements = TestBed.inject(AnnouncementService);
+    const announce = vi.spyOn(announcements, 'announce');
+
+    const fixture = await failed();
+    expect(announce.mock.results.map((result) => result.value)).toEqual([true]);
+    const first = spokenNode(fixture);
+
+    // A screen that opens is the answer to the failure before it, and the
+    // press after that is a new event rather than the one already spoken.
+    // Announcing is deduped on the revision the count carries; a boolean would
+    // make the second failure the same event and leave it in silence.
+    //
+    // It goes to another address rather than back to the one the shell is on:
+    // the router skips a press on the address it is already at, and a skip
+    // opens no screen and would answer nothing here.
+    await TestBed.inject(Router).navigateByUrl('/elsewhere');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.statusNotices().map((notice) => notice.message)).toEqual([]);
+
+    const second = TestBed.inject(Router)
+      .navigateByUrl('/held')
+      .catch(() => false);
+    await second;
+    fixture.detectChanges();
+
+    expect(announce.mock.results.map((result) => result.value)).toEqual([true, true]);
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
+    expect(announcements.assertive()).toBe('');
+
+    // What the service decided is not what a reader hears. Both failures say
+    // the same sentence, so the outlet holding that sentence at the end says
+    // nothing about whether the second one was ever a change to announce. The
+    // node is what a live region announces, so the node is what is read.
+    const spoken = spokenNode(fixture);
+    expect(first, 'the first failure put nothing in the polite outlet').not.toBeNull();
+    expect(spoken, 'the second failure emptied the polite outlet').not.toBeNull();
+    expect(spoken, 'the polite outlet was left holding the first failure').not.toBe(first);
   });
 
   it('keeps the version notice first when both are standing', async () => {

@@ -4,7 +4,7 @@
 **Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-013, FR-020, FR-023, FR-025,
 FR-026, SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002; 018 FR-002,
 FR-006, FR-007
-**Version**: 12
+**Version**: 13
 
 ## What is automated, and what is left
 
@@ -420,18 +420,26 @@ disagrees or where the announcement is correct but unusable.
     afterwards and re-readable. Expect no reason to be stated, and expect the
     screen the Commander is on to be usable.
 
+    Then the same failure again, with the connection still down: ask for a
+    second screen, one whose code has not been fetched either. Expect a second
+    polite announcement, in the same words as the first. This is the reading
+    nothing automated can take. The words do not move between the two, so what
+    is being confirmed is that the reader is told a second time at all.
+
     And the mark itself, in both engines with the platform's reduced-motion
     preference on: expect it to stand still. It carries its own animation
     inside its own drawing, which the page's rule cannot reach, so this is
     where the fix in that drawing is confirmed rather than assumed.
 
-    The judgment this step exists for, and it is three. Whether a still mark on
+    The judgment this step exists for, and it is four. Whether a still mark on
     a subdued screen still reads as "the application is working" rather than as
     "the application has stopped". Whether the softened ground leaves enough of
     the screen behind visible to say which screen is being waited on — the
     automated reading can only say the ground is translucent, not that the step
     is right. And whether a Commander who has only heard this can tell a
-    navigation that is still running from one that has failed.
+    navigation that is still running from one that has failed — including two
+    failures in a row, where the second says nothing new and the only thing
+    separating them is that it is said.
 
 ## Recording the result
 

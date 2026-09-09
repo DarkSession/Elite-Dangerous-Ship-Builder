@@ -286,7 +286,7 @@ describe('AppFrame', () => {
     const fixture = renderComponent(AppFrame, {
       status: [
         { tone: 'info', message: 'A newer version is available.' },
-        { tone: 'error', message: 'The screen could not be opened.' },
+        { tone: 'warning', message: 'The screen could not be opened.' },
       ],
     });
     const notices = query(fixture, '.frame__status').querySelectorAll('ednb-status-notice');

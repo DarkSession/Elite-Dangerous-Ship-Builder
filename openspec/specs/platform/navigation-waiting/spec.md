@@ -6,7 +6,7 @@ it, and this capability owns the answer while that fetch is in flight: that the 
 is working, that the screen underneath is not to be pressed, and what happens when the
 screen never arrives.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: A navigation that waits says so
 
@@ -116,8 +116,9 @@ navigation the browser resolves without a request changes the screen with nothin
 
 The threshold MUST be 10 milliseconds, and the same threshold MUST apply to every
 navigation. It is stated here so a scenario can be driven against it. It decides when a
-statement appears, never whether one is suppressed: a navigation the two requirements above
-suppress the statement for draws nothing however long it runs.
+statement appears, never whether one is suppressed: a navigation that "The statement is what
+the Commander is looking at" or "The statement belongs to a running session" suppresses the
+statement for draws nothing however long it runs.
 
 Source: 018/FR-004.
 
@@ -140,12 +141,21 @@ Source: 018/FR-004.
 ### Requirement: The statement ends with the navigation
 
 The statement MUST be removed when the navigation that raised it ends, whatever the outcome:
-the screen opened, the navigation was cancelled or redirected, or the code never arrived. A
-statement MUST NEVER outlive the navigation that raised it.
+the screen opened, the navigation was cancelled, or the code never arrived. A statement MUST
+NEVER outlive what raised it.
 
-Where several navigations follow one another, at most one statement MUST stand at a time,
-and it MUST be removed by the navigation that is still going rather than by the one it
-replaced.
+One cancellation is not an ending, and this is where the two readings part. Where a
+navigation is cancelled because another is taking over from it — a second press replacing the
+first, or a redirect sending the Commander to another address — the statement MUST pass to
+what takes over rather than be removed and drawn again: several navigations following one
+another MUST stand at most one statement between them, and it MUST be removed by the one
+still going rather than by the one it replaced. A Commander who pressed once is answered
+once, and an answer that blinked out and back would read as two.
+
+Where what takes over turns out not to be a navigation — the address handed over to is the
+one already open, which the application answers without navigating — nothing is left that
+would remove the statement, so it MUST be removed then. There is no ending a statement is
+allowed to wait for that never comes.
 
 Source: 018/FR-005.
 
@@ -154,9 +164,27 @@ Source: 018/FR-005.
 - **WHEN** the navigation completes and the screen is presented
 - **THEN** the waiting statement is removed
 
-#### Scenario: The navigation is cancelled or redirected
+#### Scenario: The navigation is cancelled with nothing taking over
 
-- **WHEN** the navigation is cancelled, or redirected to another address
+- **WHEN** the navigation is cancelled and nothing takes over from it
+- **THEN** the waiting statement is removed
+
+#### Scenario: The navigation is cancelled and sent to another address
+
+- **WHEN** a navigation is cancelled because the Commander is being sent to another address,
+  and the application navigates there instead
+- **THEN** one waiting statement stands, not two
+- **AND** it is removed when the navigation to that address ends
+
+#### Scenario: The address resolves to another one
+
+- **WHEN** the address asked for resolves to another address inside the same navigation
+- **THEN** the waiting statement is removed when that navigation ends
+
+#### Scenario: What takes over is not a navigation
+
+- **WHEN** a navigation is replaced by one to the address already open, which the application
+  answers without navigating
 - **THEN** the waiting statement is removed
 
 #### Scenario: The code never arrives
@@ -191,12 +219,13 @@ application MUST state that the screen could not be opened, and MUST leave the C
 screen they can use.
 
 A navigation that is cancelled, and one that is redirected to another address, are not
-failures and MUST be stated as nothing. Both are ordinary endings the application asked for:
-an address that resolves to nothing lands at the entry point rather than reporting a fault
+failures and MUST be stated as nothing. Both are outcomes the application asked for: an
+address that resolves to nothing lands at the entry point rather than reporting a fault
 (`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"),
 and re-entering the open tool where its re-entry already stands changes nothing at all.
 Between them, this requirement and "The statement ends with the navigation" cover every
-ending once. It MUST NOT return them to
+outcome once — which of them ends the statement is that requirement's to say, and a
+cancellation that hands over to a replacement does not end it there. It MUST NOT return them to
 the screen they pressed from with no answer, which is the unpressed-looking control the
 waiting statement exists to remove.
 
