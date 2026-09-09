@@ -112,6 +112,11 @@ export class NavigationWaiting {
         this.#started(event.id);
         return;
       }
+      // `NavigationSkipped` is here for completeness rather than for a case
+      // that arrives: the router raises it instead of starting a navigation at
+      // all, so it never matches a running one and never takes a statement
+      // down. Listing it says what the partition is, and a router that one day
+      // raised it after a start would already be handled.
       if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||

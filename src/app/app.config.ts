@@ -72,8 +72,10 @@ export const appConfig: ApplicationConfig = {
     // initializer is registered before `provideRouter` below, and initializers
     // run in the order they are provided.
     //
-    // Not in the build's renderer. There is no Commander at build time and
-    // nothing to state a wait to (015/FR-001).
+    // The renderer does not need it this early. It runs one navigation and has
+    // no Commander to state a wait to (015/FR-001), and the shell it builds
+    // injects the store anyway — what the guard leaves out is the initializer,
+    // not the store.
     provideAppInitializer(() => {
       if (inject(RenderingTarget).isBrowser) {
         inject(NavigationWaiting);

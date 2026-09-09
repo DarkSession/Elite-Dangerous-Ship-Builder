@@ -69,8 +69,9 @@
       element's computed transition and animation durations as zero; and with the preview
       states in task 3.3 rendered at desktop, tablet and mobile widths (018/FR-002,
       011/FR-011).
-- [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a `populated`
-      state (standing) and an `empty` state (closed), each with the `normal`,
+- [x] 3.3 Declare the component in `src/app/ui/previews/preview-manifest.ts`: a standing state
+      and an `empty` state (closed) — the standing one is named `default`, which is the word
+      the component contract uses — each with the `normal`,
       `expanded-copy`, `rtl` and `reduced-motion` variants, and a stated reason for each of
       `loading`, `error` and `disabled` — the overlay holds no content of its own, reports
       nothing, and carries no control. The standing state is isolated, as the layer's open
@@ -100,8 +101,11 @@
       and absent while the restart overlay stands whichever of the two was raised first, and
       with task 6.7, which reads the generated documents themselves (018/FR-002, FR-008).
 - [x] 4.4 Publish the failed navigation from `src/app/app.ts`: the notice into the frame's
-      status list at error tone, and one announcement through `AnnouncementService` at polite
-      urgency — nothing is blocked — once per failure. Verify with unit tests asserting the
+      status list, and one announcement through `AnnouncementService` at polite urgency —
+      nothing is blocked — once per failure. The notice is drawn at warning tone rather than
+      error: an error is exposed as an `alert`, which speaks over what a reader was saying, and
+      a failure that interrupted as well as announcing would be one event stated twice with the
+      first of them cutting in (011/FR-009). Verify with unit tests asserting the
       notice carries the localised words, that the announcement is published once for one failure, and that a
       version notice standing at the same time keeps its place first in the list
       (018/FR-007).
@@ -181,4 +185,7 @@
       reading, where whether the step is right for a Commander is judged. Record the results
       beside the protocols in `e2e/manual/results/` (018/FR-002, FR-006, FR-007, 011/FR-010,
       011/FR-013).
-- [ ] 7.3 Run `pnpm run check` and report what passed.
+- [x] 7.3 Run `pnpm run check` and report what passed. Everything it runs passed: formatting,
+      the generated-artifact and sitemap checks, typechecking, both builds, all ten policy
+      checkers, the codec capacity report, 529 script tests, 3148 unit tests with coverage
+      above the floor, and Playwright across all ten projects plus the production lane.

@@ -315,6 +315,21 @@ describe('App and a screen that never arrives', () => {
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
   });
 
+  it('draws the notice as a status, so the outlet is the only thing that speaks', async () => {
+    const fixture = await failed();
+
+    // The outlets are not the only live region on the page. A notice drawn at
+    // error tone is an `alert`, which a reader speaks over whatever it was
+    // saying — so an assertive outlet that is empty proves nothing on its own.
+    // Both channels are read here, because one event announced twice is what
+    // the requirement forbids, whichever region carried the second of them.
+    const notice = (fixture.nativeElement as HTMLElement).querySelector(
+      '.frame__status ednb-status-notice [role]',
+    );
+
+    expect(notice?.getAttribute('role')).toBe('status');
+  });
+
   it('keeps the version notice first when both are standing', async () => {
     const fixture = await failed();
 

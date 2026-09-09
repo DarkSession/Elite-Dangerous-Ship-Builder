@@ -98,6 +98,17 @@ test.describe('a screen that has to be fetched', () => {
     expect(alpha).toBeGreaterThan(0);
     expect(alpha).toBeLessThan(1);
 
+    // Nothing to sit through, either way. A statement that arrives late is
+    // late, and one that lingers is a statement that is no longer true. Read
+    // from a real engine, where a duration a stylesheet never set and one it
+    // set to zero are told apart (011/FR-011).
+    expect(
+      await overlay(page).evaluate((element) => {
+        const style = getComputedStyle(element);
+        return [style.transitionDuration, style.animationDuration];
+      }),
+    ).toEqual(['0s', '0s']);
+
     // The screen behind it is still on the page, and is not reachable.
     await expect(page.locator('main')).toBeAttached();
     const covered = await tools(page)
@@ -235,8 +246,15 @@ test.describe('a screen that never arrives', () => {
     ).toBeVisible();
 
     // Said once as well, politely: nothing is blocked, so nothing interrupts.
+    //
+    // The outlets are not the only live region on the page. A notice drawn at
+    // error tone carries `role="alert"`, which a reader speaks over whatever it
+    // was saying — so an empty assertive outlet proves nothing by itself. Both
+    // channels are read here, because one event announced twice is what the
+    // requirement forbids, whichever region carried the second of them.
     await expect(politeOutlet(page)).toHaveText(englishMessages['navigation.failed.notice']);
     await expect(assertiveOutlet(page)).toHaveText('');
+    await expect(page.locator('.frame__status [role]')).toHaveAttribute('role', 'status');
 
     // And the Commander is on a screen they can use, rather than back where
     // they pressed with no answer.
