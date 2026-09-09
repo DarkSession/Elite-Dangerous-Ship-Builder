@@ -382,6 +382,13 @@ reason, which is what those three get.
 - **The failure notice and a version notice want the same slot.** → The slot carries a list,
   so both stand. Widening it touches a component the whole shell draws, so the existing
   status assertions are re-run against a slot given one notice and a slot given two.
+- **The amended announcement requirement is stated plainly enough to catch a capability that
+  does not meet it.** → The ship catalogue passes its shown-hull count as the announcement's
+  revision, and the policy drops a request whose revision is below the highest seen for that
+  event, so a Commander narrowing the catalogue hears the first narrowing and nothing after
+  it until they widen again. It is a breach of the requirement as it already stands, not one
+  the amendment creates, and it belongs to the catalogue rather than to this capability. It
+  is recorded rather than fixed here, and raised as its own report.
 
 ## Migration Plan
 
