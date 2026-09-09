@@ -1,9 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   buildStockHull,
+  expectRecords,
   openLibrary,
   reachShellAction,
   reachShellLink,
+  recordCount,
   savedToBrowser,
 } from './shell';
 
@@ -97,24 +99,6 @@ async function renameShip(page: Page, name: string): Promise<void> {
  * save dialog holds the same record's name in a label of its own.
  */
 const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
-
-/** How many records this browser is holding, whatever their kind. */
-async function recordCount(page: Page): Promise<number> {
-  return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-  );
-}
-
-/**
- * Waits until this browser holds exactly this many records.
- *
- * Polled rather than read once: autosave coalesces its writes, and the status
- * line still reads "saved" from the previous build while the next one's write
- * is still owed.
- */
-async function expectRecords(page: Page, count: number): Promise<void> {
-  await expect.poll(() => recordCount(page)).toBe(count);
-}
 
 /** The exact bytes one record is stored as, so "untouched" can be checked. */
 async function recordBytes(page: Page, id: string): Promise<string | null> {

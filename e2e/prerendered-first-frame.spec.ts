@@ -573,3 +573,108 @@ test.describe('a document with no rendered body', () => {
     ).toBe(1);
   });
 });
+
+/**
+ * The typefaces a document is drawn in, from the frame it first paints.
+ *
+ * A document that paints in a system face and re-paints in Barlow changes shape
+ * in front of the Commander, and the two families do not measure the same, so it
+ * changes height as well. Two things keep the faces in front of that paint, and
+ * both live in the emitted files rather than in a screen: the stylesheet that
+ * declares them is applied before the document paints, and the faces the
+ * document draws with are asked for beside the document (019/FR-001).
+ *
+ * `check-interface-foundations.mjs` holds the same two facts over the whole
+ * output. This reads them from a served address, which is the side a Commander
+ * is on, and it reads the faces back out of the stylesheet the document itself
+ * links rather than from a list written down here.
+ */
+test.describe('the faces a generated document is drawn in', () => {
+  /** Every `<link>` a document carries with the given relationship. */
+  function links(document: string, rel: string): readonly string[] {
+    return (
+      document.match(new RegExp(`<link\\b(?=[^>]*\\brel\\s*=\\s*["']${rel}["'])[^>]*>`, 'gi')) ?? []
+    );
+  }
+
+  /** One attribute of a tag, or null where the tag does not carry it. */
+  function attribute(tag: string, name: string): string | null {
+    return new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
+  }
+
+  test('asks for them beside the document, ahead of the stylesheet that declares them', async ({
+    page,
+  }) => {
+    for (const { path } of SCREENS) {
+      const document = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+      // Applied, not deferred. A stylesheet behind `media="print"` lands after
+      // the paint, and the faces it declares land with it.
+      for (const sheet of links(document, 'stylesheet')) {
+        expect(attribute(sheet, 'media'), `${path} defers a stylesheet`).toBeNull();
+      }
+
+      // Every family that stylesheet declares, read from the sheet the document
+      // links rather than from a list kept here, which would go stale the first
+      // time a face is added.
+      const sheet = links(document, 'stylesheet')
+        .map((link) => attribute(link, 'href'))
+        .find((href): href is string => href !== null);
+      expect(sheet, `${path} links no stylesheet`).toBeDefined();
+      const styles = await (await page.request.get(`${PRODUCT_URL}/${sheet}`)).text();
+      const declared = new Map(
+        (styles.match(/@font-face\s*\{[^}]*\}/g) ?? []).flatMap((rule) => {
+          const source = /url\(([^)]+)\)/.exec(rule);
+          const family = /font-family\s*:\s*([^;}]+)/.exec(rule);
+          const bare = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+          return source === null || family === null ? [] : [[bare(source[1]), bare(family[1])]];
+        }),
+      );
+      expect(declared.size, `${path} applies a stylesheet declaring no face`).toBeGreaterThan(0);
+
+      const asked = new Set<string>();
+      for (const preload of links(document, 'preload')) {
+        const href = attribute(preload, 'href');
+        if (attribute(preload, 'as') !== 'font' || href === null) {
+          continue;
+        }
+        // Relative, so a deployment under a sub-path reaches its own fonts, and
+        // in anonymous mode, which is the only way a face is fetched at all.
+        expect(href.startsWith('/'), `${path} asks for ${href} past the deployment base`).toBe(
+          false,
+        );
+        expect(preload, `${path} asks for ${href} without crossorigin`).toMatch(/crossorigin/i);
+        expect(
+          (await page.request.get(`${PRODUCT_URL}/${href}`)).status(),
+          `${path} asks for ${href}, which the deployment does not serve`,
+        ).toBe(200);
+
+        const family = declared.get(href);
+        expect(
+          family,
+          `${path} asks for ${href}, which its stylesheet declares no face for`,
+        ).toBeDefined();
+        asked.add(family as string);
+      }
+
+      for (const family of new Set(declared.values())) {
+        expect([...asked], `${path} draws with ${family} and asks for no face of it`).toContain(
+          family,
+        );
+      }
+    }
+  });
+
+  test('is wearing them with no application running', async ({ page }) => {
+    // The bundle is held, so what is read here is the document alone: the faces
+    // it asked for are its own, and they are loaded without a line of this
+    // application having run.
+    await openBeforeTheBundleArrives(page, '/');
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => [...document.fonts].filter((face) => face.status === 'loaded').length),
+      )
+      .toBeGreaterThan(0);
+  });
+});

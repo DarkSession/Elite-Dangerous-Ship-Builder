@@ -79,9 +79,9 @@
          the text changes shape in front of the Commander.
 
          The `latin` subset covers every language the application ships,
-         German included; `latin-ext` is asked for by a game name that needs it
-         and is fetched when a face wants it. Barlow 500, 600 and 700 are left
-         out because no served document draws with one.
+         German included. Every other face — the `latin-ext` subsets, and the
+         weights only a screen draws — is fetched when something asks for it,
+         which is after the application has taken the document over.
 
          Each path is relative, like every other path this document asks for: a
          leading slash sends a preview deployment's fonts to the host root.

@@ -3,9 +3,11 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
 import {
   buildStockHull,
+  expectRecords,
   openLibrary,
   openRecordFromLibrary,
   reachShellAction,
+  recordCount,
   savedToBrowser,
 } from './shell';
 
@@ -96,24 +98,6 @@ async function fillStorage(page: Page): Promise<void> {
  */
 async function fillStorageNow(page: Page): Promise<void> {
   await page.evaluate(FILL_STORAGE);
-}
-
-/** How many records this browser is holding, whatever their kind. */
-async function recordCount(page: Page): Promise<number> {
-  return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-  );
-}
-
-/**
- * Waits until this browser holds exactly this many records.
- *
- * Polled rather than read once, wherever the count is the answer to something
- * the journey just pressed: the store writes after the layer has closed, so a
- * bare read is a verdict on whichever instant it landed in.
- */
-async function expectRecords(page: Page, count: number): Promise<void> {
-  await expect.poll(() => recordCount(page)).toBe(count);
 }
 
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {

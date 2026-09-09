@@ -844,7 +844,7 @@ describe('ledger reconciliation', () => {
 });
 
 describe('the typefaces a served document paints in', () => {
-  /** The emitted stylesheet, cut down to the one face the fixtures preload. */
+  /** The emitted stylesheet, cut down to the one family the fixtures preload. */
   const stylesheet = {
     'dist/app/browser/styles.css':
       '@font-face{font-family:Barlow;font-display:swap;src:url("fonts/barlow/barlow-latin-400-normal.woff2") format("woff2")}',
@@ -880,7 +880,19 @@ describe('the typefaces a served document paints in', () => {
     });
 
     assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
-    assert.match(found[0].message, /no font preload/);
+    assert.match(found[0].message, /draws with Barlow and asks for none/);
+  });
+
+  it('rejects a tag that reads like a preload and fetches nothing early', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      ...stylesheet,
+      'dist/app/browser/index.html':
+        '<link rel="stylesheet" href="styles.css">' +
+        '<link rel="prefetch" as="font" href="fonts/barlow/barlow-latin-400-normal.woff2" crossorigin>',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /asks for none of its faces/);
   });
 
   it('rejects a preload that reaches past the deployment base', () => {
@@ -891,8 +903,8 @@ describe('the typefaces a served document paints in', () => {
         '<link rel="preload" as="font" href="/fonts/barlow/barlow-latin-400-normal.woff2" crossorigin>',
     });
 
-    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
     assert.match(found[0].message, /relative/);
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface', 'first-frame-typeface']);
   });
 
   it('rejects a preload no browser will use, and a face no stylesheet declares', () => {
@@ -903,22 +915,40 @@ describe('the typefaces a served document paints in', () => {
         '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-500-normal.woff2">',
     });
 
-    assert.deepEqual(ruleIds(found), ['first-frame-typeface', 'first-frame-typeface']);
     assert.match(found[0].message, /crossorigin/);
     assert.match(found[1].message, /no emitted stylesheet declares/);
+  });
+
+  it('rejects a family the document draws with and asks for no face of', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      'dist/app/browser/styles.css':
+        '@font-face{font-family:Barlow;src:url("fonts/barlow/barlow-latin-400-normal.woff2")}' +
+        '@font-face{font-family:"JetBrains Mono";src:url("fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2")}',
+      'dist/app/browser/index.html': `<link rel="stylesheet" href="styles.css">${preload}`,
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /JetBrains Mono/);
+  });
+
+  it('rejects a stylesheet that declares no face at all', () => {
+    const found = rules.firstFrameTypefaceViolations({
+      'dist/app/browser/styles.css': 'body{margin:0}',
+      'dist/app/browser/index.html': '<link rel="stylesheet" href="styles.css">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
+    assert.match(found[0].message, /declares no face at all/);
   });
 
   it('reads the faces from an unminified stylesheet as well', () => {
     const found = rules.firstFrameTypefaceViolations({
       'dist/app/browser/styles.css':
         '@font-face {\n  font-family: Barlow;\n  src: url("fonts/barlow/barlow-latin-400-normal.woff2") format("woff2");\n}',
-      'dist/app/browser/index.html':
-        '<link rel="stylesheet" href="styles.css">' +
-        '<link rel="preload" as="font" href="fonts/barlow/barlow-latin-700-normal.woff2" crossorigin>',
+      'dist/app/browser/index.html': `<link rel="stylesheet" href="styles.css">${preload}`,
     });
 
-    assert.deepEqual(ruleIds(found), ['first-frame-typeface']);
-    assert.match(found[0].message, /no emitted stylesheet declares/);
+    assert.deepEqual(found, []);
   });
 
   it('accepts a document with no stylesheet of its own', () => {

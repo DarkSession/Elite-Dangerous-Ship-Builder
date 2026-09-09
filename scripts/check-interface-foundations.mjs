@@ -1516,17 +1516,29 @@ export function productionOutputViolations(contents) {
 /** A stylesheet the document asks for, with the attributes it carries. */
 const STYLESHEET_LINK = /<link\b[^>]*?\brel\s*=\s*["']stylesheet["'][^>]*>/gi;
 
-/** A face the document asks for before the stylesheet that declares it. */
-const FONT_PRELOAD = /<link\b[^>]*?\bas\s*=\s*["']font["'][^>]*>/gi;
+/**
+ * A face the document asks for before the stylesheet that declares it.
+ *
+ * The relationship is required rather than assumed from `as="font"`. A
+ * `prefetch`, a misspelt `rel` and a missing one all leave a tag that reads like
+ * a preload and fetches nothing early, which is the regression this rule is for.
+ */
+const FONT_PRELOAD =
+  /<link\b(?=[^>]*\brel\s*=\s*["']preload["'])[^>]*?\bas\s*=\s*["']font["'][^>]*>/gi;
 
 /**
- * The file one `@font-face` is served from, as the emitted stylesheet spells it.
+ * One `@font-face`, as the emitted stylesheet spells it: its family and its file.
  *
  * Whitespace-tolerant, because the same rule is read from a minified stylesheet
  * and from an unminified one, and a pattern that only matches the minified
  * spelling stops checking without failing anything.
  */
-const FACE_SOURCE = /@font-face\s*\{[^}]*?url\(([^)]+)\)/g;
+const FACE_RULE = /@font-face\s*\{[^}]*\}/g;
+
+/** A CSS value with its quotes and surrounding space taken off. */
+function unquoted(value) {
+  return value.trim().replace(/^["']|["']$/g, '');
+}
 
 /** One attribute of a tag, however it is quoted. */
 function attributeValue(tag, name) {
@@ -1553,6 +1565,11 @@ function attributeValue(tag, name) {
  *   * `src/index.html` preloads the faces a served document draws with, so they
  *     arrive with that stylesheet rather than a round trip behind it.
  *
+ * What it holds a document to is every family, not every weight: which weights
+ * one address draws is a property of the screen it renders, and no rule reading
+ * the emitted files can know it. A family with no face asked for is a whole
+ * typeface arriving behind the paint, and that this rule does catch.
+ *
  * `contents` is `{ [emitted file]: text }`, the same map the production-output
  * rule reads. Only the documents and the emitted stylesheets are inspected.
  */
@@ -1561,16 +1578,22 @@ export function firstFrameTypefaceViolations(contents) {
   const fail = (file, message) =>
     found.push({ file, line: 0, rule: 'first-frame-typeface', message });
 
-  const declared = new Set();
+  // What the emitted stylesheets declare: every face's file, and which family
+  // each file belongs to. The families are what a document is held to asking
+  // for, because a family with no preloaded face is a whole typeface arriving
+  // behind the paint rather than one weight of one.
+  const declared = new Map();
   for (const [file, text] of Object.entries(contents)) {
     if (!file.endsWith('.css')) {
       continue;
     }
-    FACE_SOURCE.lastIndex = 0;
-    let face = FACE_SOURCE.exec(text);
-    while (face !== null) {
-      declared.add(face[1].trim().replace(/^["']|["']$/g, ''));
-      face = FACE_SOURCE.exec(text);
+    for (const rule of text.match(FACE_RULE) ?? []) {
+      const source = /url\(([^)]+)\)/.exec(rule);
+      const family = /font-family\s*:\s*([^;}]+)/.exec(rule);
+      if (source === null || family === null) {
+        continue;
+      }
+      declared.set(unquoted(source[1]), unquoted(family[1]));
     }
   }
 
@@ -1599,15 +1622,20 @@ export function firstFrameTypefaceViolations(contents) {
       continue;
     }
 
-    const preloads = text.match(FONT_PRELOAD) ?? [];
-    if (applied.length > 0 && preloads.length === 0) {
+    if (applied.length === 0) {
+      continue;
+    }
+
+    if (declared.size === 0) {
       fail(
         file,
-        'The document declares no font preload, so every face arrives a round trip behind the stylesheet.',
+        'The document applies a stylesheet that declares no face at all, so every word of it is drawn in a system fallback.',
       );
       continue;
     }
 
+    const preloads = text.match(FONT_PRELOAD) ?? [];
+    const asked = new Set();
     for (const preload of preloads) {
       const href = attributeValue(preload, 'href');
       if (href === null || href.startsWith('/') || /^[a-z]+:/i.test(href)) {
@@ -1623,10 +1651,22 @@ export function firstFrameTypefaceViolations(contents) {
           `The preload of ${href} carries no \`crossorigin\`. A face is fetched in anonymous mode whatever its origin, so the preload goes unused and the file is fetched twice.`,
         );
       }
-      if (declared.size > 0 && !declared.has(href)) {
+      const family = declared.get(href);
+      if (family === undefined) {
         fail(
           file,
           `The document preloads ${href}, which no emitted stylesheet declares a face for.`,
+        );
+        continue;
+      }
+      asked.add(family);
+    }
+
+    for (const family of new Set(declared.values())) {
+      if (!asked.has(family)) {
+        fail(
+          file,
+          `The document draws with ${family} and asks for none of its faces, so the whole family arrives behind the stylesheet.`,
         );
       }
     }

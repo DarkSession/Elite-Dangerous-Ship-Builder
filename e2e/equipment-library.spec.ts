@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openLibrary, reachShellAction } from './shell';
+import { expectRecords, openLibrary, reachShellAction, recordCount } from './shell';
 
 /**
  * Keeping a loadout and coming back to it (US3).
@@ -69,24 +69,6 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
     await row.click({ timeout: 2_000 });
     await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
   }).toPass({ timeout: 15_000 });
-}
-
-/** How many records this browser is holding, whatever their tool. */
-async function recordCount(page: Page): Promise<number> {
-  return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-  );
-}
-
-/**
- * Waits until this browser holds exactly this many records.
- *
- * Polled rather than read once, wherever the count is the answer to something
- * the journey just pressed: the store writes after the layer has closed, so a
- * bare read is a verdict on whichever instant it landed in.
- */
-async function expectRecords(page: Page, count: number): Promise<void> {
-  await expect.poll(() => recordCount(page)).toBe(count);
 }
 
 test.describe('keeping a loadout', () => {
@@ -211,6 +193,8 @@ test.describe('a record this version cannot open', () => {
     await library(page).getByRole('button', { name: 'Open in outfitting', exact: true }).click();
 
     await expect(library(page)).toContainText(/could not be opened|nonexistentsuit/i);
+    // Read once rather than polled: this states that the refusal wrote nothing,
+    // and the count is already 1 whatever the browser does next.
     expect(await recordCount(page)).toBe(1);
   });
 });
