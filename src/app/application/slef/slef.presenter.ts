@@ -246,11 +246,17 @@ export class SlefPresenter {
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#announcements.announce({
       kind: 'slef.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey: 'slef.import.announce.scanning',
     });
-    await this.#import.scanFiles(files);
+
+    // Only the scan a Commander is still waiting for says how it ended. A scan
+    // replaced by a newer one is a question nobody is asking, and announcing it
+    // would state the abandoned reading and leave the current one unsaid
+    // (011/FR-009).
+    if (!(await this.#import.scanFiles(files))) {
+      return;
+    }
     this.#announceScan();
   }
 
@@ -267,7 +273,6 @@ export class SlefPresenter {
     const found = this.#store.journalEntries().length;
     this.#announcements.announce({
       kind: 'slef.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey:
         found === 0
@@ -289,7 +294,6 @@ export class SlefPresenter {
     if (submission.kind === 'committed') {
       this.#announcements.announce({
         kind: 'slef.import',
-        revision: this.#active.revision(),
         urgency: 'polite',
         messageKey: 'slef.import.announce.imported',
         params: { hull: this.#active.hullName() ?? '' },
@@ -297,7 +301,6 @@ export class SlefPresenter {
     } else if (submission.kind === 'stored') {
       this.#announcements.announce({
         kind: 'slef.import',
-        revision: this.#store.requestToken,
         urgency: 'polite',
         messageKey:
           submission.stored === 1
@@ -311,7 +314,6 @@ export class SlefPresenter {
       // detail is on the screen, to be read at their own pace.
       this.#announcements.announce({
         kind: 'slef.import',
-        revision: this.#store.requestToken,
         urgency: 'polite',
         messageKey: 'slef.import.announce.failed',
       });
@@ -341,13 +343,16 @@ export class SlefPresenter {
   }
 
   /**
-   * Says what an action reported, once per artifact.
+   * Says what an action reported, every time one reports.
    *
-   * Deduplicated on the artifact's revision, so a Commander who copies the same
-   * payload twice is not told twice, and an outcome that arrives after the
-   * build moved on is not announced against the build that replaced it. Never
-   * the payload, never a filename taken from a Commander's own text, never a
-   * raw DOM exception.
+   * A Commander who presses Copy a second time does so because they were unsure
+   * of the first press, and the answer to that is the sentence — so two presses
+   * are two announcements, even when the export has not changed and the words
+   * are identical (011/FR-009). A press that fails and then succeeds says two
+   * different things, and both are heard.
+   *
+   * Bounded on purpose: never the payload, never a filename taken from a
+   * Commander's own text, never a raw DOM exception.
    */
   #announceDelivery(outcome: DeliveryOutcome): DeliveryOutcome {
     if (outcome.status === 'working') {
@@ -355,7 +360,6 @@ export class SlefPresenter {
     }
     this.#announcements.announce({
       kind: `slef.delivery.${outcome.action}`,
-      revision: this.#store.artifact()?.revision ?? 0,
       urgency: 'polite',
       messageKey: 'slef.announce.delivery',
       params: {

@@ -31,7 +31,6 @@ export class EditRefusalNotice {
   readonly #gameText = inject(GameTextPresenter);
 
   readonly failure = input.required<EditFailure | null>();
-  readonly revision = input.required<number>();
 
   /** The mount's drawn label, so the notice names it the way the ledger does. */
   readonly slotLabel = input<string | null>(null);

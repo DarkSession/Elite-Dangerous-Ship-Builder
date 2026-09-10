@@ -335,7 +335,6 @@ export class OutfittingWorkspace {
 
   readonly selectedSlot = this.store.selectedSlot;
   readonly failure = this.store.lastEditFailure;
-  readonly revision = this.store.revision;
 
   /** Why a build the Commander tried to open never became this one. */
   readonly ingressFailures = this.active.ingressFailures;

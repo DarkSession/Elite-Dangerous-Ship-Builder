@@ -112,27 +112,23 @@ export class LoadoutImportPresenter {
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#announcements.announce({
       kind: 'equipment.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey: 'equipment.import.announce.scanning',
     });
-    await this.#import.scanFiles(files);
+
+    // Only the scan a Commander is still waiting for says how it ended. A scan
+    // replaced by a newer one is a question nobody is asking (011/FR-009).
+    if (!(await this.#import.scanFiles(files))) {
+      return;
+    }
     this.#announceScan();
   }
 
-  /**
-   * Says how a scan ended, not only that one started (016/FR-004, FR-006).
-   *
-   * The revision is the store's own token, which only ever rises. A count would
-   * not: `AnnouncementService` drops any request whose revision is below the
-   * highest it has published for that kind, so announcing the second of two
-   * scans at a lower number would silence it for the rest of the session.
-   */
+  /** Says how a scan ended, not only that one started (016/FR-004, FR-006). */
   #announceScan(): void {
     const found = this.#store.entries().length;
     this.#announcements.announce({
       kind: 'equipment.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey:
         found === 0
@@ -166,10 +162,6 @@ export class LoadoutImportPresenter {
   #announce(messageKey: MessageKey, params: Record<string, string> = {}): void {
     this.#announcements.announce({
       kind: 'equipment.import',
-      // The store's monotonic token, never a measurement of the draft: a
-      // revision that can fall is a mute switch for every later announcement of
-      // this kind.
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey,
       params,

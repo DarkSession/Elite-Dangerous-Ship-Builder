@@ -82,31 +82,51 @@ the policy's highest token where it stands, so a late outcome carrying that toke
 anything. The store already answers the question. `SlefStore.isCurrent` and
 `LoadoutImportStore.isCurrent` exist for it, and both coordinators call them.
 
-So each presenter asks before it announces, as its coordinator asks before it commits.
+A submit already reports a withdrawn one as its own outcome kind, which no branch announces. A
+scan reported nothing, so its coordinator now answers whether it settled and its presenter
+announces the outcome only when it did.
 
-This closes a defect the token boundary hid. `SlefPresenter.scanFiles` announces its outcome
-after the await without asking, and reads the store's token at that moment rather than the
-token its own scan carried. Two scans in flight therefore announce the abandoned outcome and
-drop the current one. A guard at the announcement is what the flow needed, and the number never
-supplied it.
+This closes a defect the token hid. `SlefPresenter.scanFiles` announced its outcome after the
+await without asking, and read the store's token at that moment rather than the token its own
+scan carried. Two scans in flight therefore announced the abandoned outcome and dropped the
+current one. `SlefImportCoordinator.scanFiles` now answers whether its scan settled, which is
+the fact the presenter needed and the number never carried.
 
 ### Where each site lands
 
-| Site                                                    | Declares          | Why                                                                                            |
-| ------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------- |
-| `ship-catalogue.page.ts`, `build-library.page.ts`       | nothing           | The effect runs when the count changes, which is the event.                                    |
-| `outfitting.store.ts` refused edit, refused import      | nothing           | Announced where the refusal is produced.                                                       |
-| `outfitting-notice.ts`                                  | announces nothing | Draws the lines. The event is the refusal, not the drawing.                                    |
-| `hull-detail.page.ts`                                   | nothing           | With the message resolved in `untracked`, the effect runs when an address resolves to no hull. |
-| `hull-anatomy.ts`                                       | nothing           | Announces at the transition. `#transition` goes with the field.                                |
-| `app.ts` navigation failure, update notice              | nothing           | Both resolve in `untracked`.                                                                   |
-| `app-frame.ts` locale fallback                          | nothing           | The same.                                                                                      |
-| `slef.presenter.ts` delivery                            | nothing           | Every delivery is an outcome a Commander asked for.                                            |
-| `slef.presenter.ts` accepted, stored and refused import | `request`         | Three outcomes of a submit the Commander can withdraw.                                         |
-| `slef.presenter.ts` scan                                | `request`         | Holds the token. Unchanged in behaviour.                                                       |
-| `loadout-import.presenter.ts`                           | `request`         | The same.                                                                                      |
+| Site                                                              | Declares                                            | Why                                                                                            |
+| ----------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ship-catalogue.page.ts`, `build-library.page.ts`                 | nothing                                             | The effect runs when the count changes, which is the event.                                    |
+| `outfitting.store.ts` refused edit, refused import, refused batch | nothing                                             | Announced where each refusal is produced.                                                      |
+| `outfitting-notice.ts`                                            | announces nothing                                   | Draws the lines. The event is the refusal, not the drawing.                                    |
+| `hull-detail.page.ts`                                             | nothing                                             | With the message resolved in `untracked`, the effect runs when an address resolves to no hull. |
+| `hull-anatomy.ts`                                                 | nothing                                             | Announces at the transition. `#transition` goes with the field.                                |
+| `app.ts` navigation failure                                       | nothing                                             | The effect runs once per failure.                                                              |
+| `app.ts` update notice                                            | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.           |
+| `app-frame.ts` locale fallback                                    | nothing                                             | The same.                                                                                      |
+| `slef.presenter.ts` delivery                                      | nothing                                             | Every delivery is an outcome a Commander asked for.                                            |
+| `slef.presenter.ts` accepted, stored and refused import           | nothing                                             | A withdrawn submit is its own outcome kind, and no branch announces it.                        |
+| `slef.presenter.ts` scan                                          | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                            |
+| `loadout-import.presenter.ts`                                     | announces a scan outcome only when the scan settled | The same two shapes as above.                                                                  |
 
-No declaration, and two files ask a question they already hold the answer to.
+No declaration. Two files ask a question they already hold the answer to, and one remembers what
+it said.
+
+### One effect watches more than its own event
+
+`app.ts` announces a waiting version from an effect that reads the update snapshot and whether
+the restart overlay stands. The overlay is read tracked on purpose: a restart that could not be
+carried out lowers it without moving the state or the version, and the notice left on the shell
+is the one thing telling a reader the session is behind. So the effect must run when the
+overlay comes down.
+
+That makes one version able to re-run the effect. `untracked` does not reach it, because the
+trigger is not the message catalogue. The caller remembers the version it announced and does
+not announce it again, which is the same rule the other callers keep by depending only on their
+own event.
+
+It is the one site where the removed field was doing work that neither `untracked` nor a store
+already does.
 
 ### Every delivery is announced
 

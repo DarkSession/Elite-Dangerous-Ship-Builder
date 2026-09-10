@@ -34,15 +34,13 @@ describe('AnnouncementService', () => {
   it('publishes one assertive summary for a new blocking error', () => {
     const { announcements } = setup();
 
-    const published = announcements.announce({
+    announcements.announce({
       kind: 'build.invalid',
-      revision: 1,
       urgency: 'assertive',
       messageKey: 'error.blocking.summary',
       params: { reason: 'power draw exceeds output' },
     });
 
-    expect(published).toBe(true);
     expect(announcements.assertive()).toContain('power draw exceeds output');
     expect(announcements.polite()).toBe('');
   });
@@ -52,7 +50,6 @@ describe('AnnouncementService', () => {
 
     announcements.announce({
       kind: 'build.updated',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
@@ -61,128 +58,47 @@ describe('AnnouncementService', () => {
     expect(announcements.assertive()).toBe('');
   });
 
-  it('says nothing for a replayed event with the same identity', () => {
+  it('announces the second of two events spoken in identical words', () => {
     const { announcements } = setup();
-    const event = {
-      kind: 'build.updated',
-      revision: 4,
-      urgency: 'polite' as const,
-      messageKey: 'status.success' as const,
-    };
-
-    expect(announcements.announce(event)).toBe(true);
-    expect(announcements.announce(event)).toBe(false);
-    expect(announcements.announce({ ...event })).toBe(false);
-  });
-
-  it('says nothing for a replayed event that another event has spoken over', () => {
-    const { announcements } = setup();
-    const update = {
-      kind: 'app.update',
-      revision: 1,
-      urgency: 'polite' as const,
-      messageKey: 'status.success' as const,
-    };
-
-    expect(announcements.announce(update)).toBe(true);
-
-    // A different event, on the same outlet. The outlet now holds its words,
-    // which is what makes the replay below look new to anything reading the
-    // outlet rather than the event.
-    expect(
-      announcements.announce({
-        kind: 'navigation.failed',
-        revision: 1,
-        urgency: 'polite',
-        messageKey: 'navigation.failed.notice',
-      }),
-    ).toBe(true);
-
-    // The same update, published again. A second `ready` from the worker
-    // raises and lowers the overlay without moving the state or the revision,
-    // so the shell publishes this identity a second time for one event
-    // (`src/app/application/updates/application-update.store.ts`). Nothing has
-    // happened, so a reader is told nothing.
-    expect(announcements.announce(update)).toBe(false);
-  });
-
-  it('says nothing for a stale outcome that arrives after a newer one', () => {
-    const { announcements } = setup();
-
-    announcements.announce({
-      kind: 'jump.range',
-      revision: 5,
-      urgency: 'polite',
-      messageKey: 'status.success',
-    });
-    const stale = announcements.announce({
-      kind: 'jump.range',
-      revision: 3,
-      urgency: 'polite',
-      messageKey: 'status.error',
-    });
-
-    expect(stale).toBe(false);
-    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['status.success']);
-  });
-
-  it('announces a genuinely newer revision of the same event', () => {
-    const { announcements } = setup();
-
-    announcements.announce({
-      kind: 'jump.range',
-      revision: 1,
-      urgency: 'polite',
-      messageKey: 'status.loading',
-    });
-    const newer = announcements.announce({
-      kind: 'jump.range',
-      revision: 2,
-      urgency: 'polite',
-      messageKey: 'status.success',
-    });
-
-    expect(newer).toBe(true);
-    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['status.success']);
-  });
-
-  it('hands the outlet a new event when the words do not change', () => {
-    const { announcements } = setup();
-    const failure = (revision: number) => ({
+    const failure = {
       kind: 'navigation.failed',
-      revision,
       urgency: 'polite' as const,
       messageKey: 'navigation.failed.notice' as const,
-    });
+    };
 
-    announcements.announce(failure(1));
+    announcements.announce(failure);
     const first = announcements.politeEvent();
-    announcements.announce(failure(2));
+    announcements.announce(failure);
     const second = announcements.politeEvent();
 
-    // Two navigations that failed say the same sentence. The text alone cannot
-    // tell the outlet that anything happened, and a live region that did not
-    // change is one a reader is not told about again — so what the outlet is
-    // handed carries which event it is (011/FR-009).
+    // Two navigations that failed say one sentence. The text alone cannot tell
+    // the outlet that anything happened, and a live region that did not change
+    // is one a reader is not told about again — so what the outlet is handed
+    // carries which event it is, and the second reaches a reader (011/FR-009).
     expect(first?.text).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
     expect(second?.text).toBe(first?.text);
     expect(second?.identity).not.toBe(first?.identity);
   });
 
-  it('hands the outlet the same event back when nothing happened', () => {
+  it('announces every request it is given, for one kind at one urgency', () => {
     const { announcements } = setup();
     const event = {
-      kind: 'navigation.failed',
-      revision: 1,
+      kind: 'catalogue.match-count',
       urgency: 'polite' as const,
-      messageKey: 'navigation.failed.notice' as const,
+      messageKey: 'status.success' as const,
     };
 
     announcements.announce(event);
     const first = announcements.politeEvent();
     announcements.announce(event);
+    const second = announcements.politeEvent();
+    announcements.announce(event);
 
-    expect(announcements.politeEvent()).toBe(first);
+    // Nothing here decides that a caller has spoken too often. A caller that
+    // must not be heard twice decides that before it calls, because the facts
+    // that answer it are the caller's (011/FR-009).
+    expect(second?.identity).not.toBe(first?.identity);
+    expect(announcements.politeEvent()?.identity).not.toBe(second?.identity);
   });
 
   it('treats the two urgencies as separate outlets', () => {
@@ -190,13 +106,11 @@ describe('AnnouncementService', () => {
 
     announcements.announce({
       kind: 'build.state',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
     announcements.announce({
       kind: 'build.state',
-      revision: 1,
       urgency: 'assertive',
       messageKey: 'status.error',
     });
@@ -205,34 +119,32 @@ describe('AnnouncementService', () => {
     expect(announcements.assertive()).toBe(BUNDLED_ENGLISH['status.error']);
   });
 
-  it('distinguishes events by kind rather than by their text', () => {
+  it('carries the kind in the identity, so one outlet can tell two events apart', () => {
     const { announcements } = setup();
 
     announcements.announce({
       kind: 'power.updated',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
-    const other = announcements.announce({
+    const power = announcements.politeEvent();
+    announcements.announce({
       kind: 'mass.updated',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
 
-    expect(other).toBe(true);
+    expect(power?.identity).toContain('power.updated');
+    expect(announcements.politeEvent()?.identity).toContain('mass.updated');
   });
 
   it('clears outlet text on a locale switch without replaying old events', () => {
     const { announcements, store } = setup();
-    const event = {
+    announcements.announce({
       kind: 'build.updated',
-      revision: 1,
-      urgency: 'polite' as const,
-      messageKey: 'status.success' as const,
-    };
-    announcements.announce(event);
+      urgency: 'polite',
+      messageKey: 'status.success',
+    });
 
     announcements.clearOutlets();
     store.commitCandidate(
@@ -246,17 +158,16 @@ describe('AnnouncementService', () => {
     );
 
     expect(announcements.polite()).toBe('');
-    expect(announcements.announce(event)).toBe(false);
   });
 
-  it('resolves a genuinely new event in the new language after a switch', () => {
+  it('keeps the sequence running across a locale switch', () => {
     const { announcements, store } = setup();
     announcements.announce({
       kind: 'build.updated',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
+    const before = announcements.politeEvent();
 
     announcements.clearOutlets();
     store.commitCandidate(
@@ -270,11 +181,13 @@ describe('AnnouncementService', () => {
     );
     announcements.announce({
       kind: 'build.updated',
-      revision: 2,
       urgency: 'polite',
       messageKey: 'status.success',
     });
 
+    // A reused number would hand the outlet an event it has already drawn, and
+    // the region would not change for the one that followed the switch.
+    expect(announcements.politeEvent()?.identity).not.toBe(before?.identity);
     expect(announcements.polite()).toBe('Erfolg');
   });
 
@@ -282,7 +195,6 @@ describe('AnnouncementService', () => {
     const { announcements } = setup();
     announcements.announce({
       kind: 'a',
-      revision: 1,
       urgency: 'polite',
       messageKey: 'status.success',
     });
@@ -295,17 +207,15 @@ describe('AnnouncementService', () => {
 
   it('forgets everything on reset', () => {
     const { announcements } = setup();
-    const event = {
+    announcements.announce({
       kind: 'a',
-      revision: 1,
-      urgency: 'polite' as const,
-      messageKey: 'status.success' as const,
-    };
-    announcements.announce(event);
+      urgency: 'polite',
+      messageKey: 'status.success',
+    });
 
     announcements.reset();
 
     expect(announcements.polite()).toBe('');
-    expect(announcements.announce(event)).toBe(true);
+    expect(announcements.politeEvent()).toBeNull();
   });
 });

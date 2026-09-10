@@ -40,7 +40,6 @@ export class IngressRefusalNotice {
   readonly #formatters = inject(Formatters);
 
   readonly failures = input.required<readonly PartialEngineeringFailure[]>();
-  readonly revision = input.required<number>();
 
   /** The mount labels, already localized, keyed by the package's slot key. */
   readonly slotLabels = input<Readonly<Record<string, string>>>({});

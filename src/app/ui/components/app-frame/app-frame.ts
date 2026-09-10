@@ -422,12 +422,12 @@ export class AppFrame {
   constructor() {
     // One polite announcement per committed locale revision, and only when
     // there is something to say. A settled change does not interrupt current
-    // speech, and the dedupe identity keeps a re-render from repeating it.
+    // speech.
     //
-    // The snapshot is the only thing this depends on. Announcing resolves a
-    // message, which reads the catalogue the same snapshot carries — tracked,
-    // that would be a second run for one commit, republishing an event over
-    // whatever the outlet had moved on to.
+    // The snapshot is the only thing this depends on, so a re-render does not
+    // repeat it. Announcing resolves a message, which reads the catalogue the
+    // same snapshot carries — tracked, that would be a second run for one
+    // commit, republishing an event over whatever the outlet had moved on to.
     effect(() => {
       const snapshot = this.#locale.snapshot();
       if (snapshot.status !== 'fallback') {
@@ -437,7 +437,6 @@ export class AppFrame {
       untracked(() =>
         this.#announcements.announce({
           kind: 'locale.fallback',
-          revision: snapshot.revision,
           urgency: 'polite',
           messageKey: 'locale.fallback.notice',
           params: { locale: snapshot.requestedLocale },

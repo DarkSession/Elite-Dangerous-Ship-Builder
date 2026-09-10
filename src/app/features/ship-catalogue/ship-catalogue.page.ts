@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
+} from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CatalogueFacade } from '../../application/catalogue/catalogue.facade';
 import { Formatters } from '../../i18n/formatters/formatters';
@@ -187,8 +194,13 @@ export class ShipCataloguePage {
     });
 
     // The count is the one thing that changes without the Commander looking at
-    // it, so it is the one thing announced — politely, once per revision, and
-    // only when a constraint actually changed it.
+    // it, so it is the one thing announced — politely, and each time a
+    // constraint they set moves it, in either direction (011/FR-009).
+    //
+    // The count is the effect's only dependency, and announcing is read in
+    // `untracked` because resolving a message reads the catalogue. Tracked, a
+    // committed locale would re-run this and publish a narrowing that already
+    // happened, over whatever the outlet had moved on to.
     //
     // The first run is deliberately silent. The opening count is initial
     // content: it is already in reading order above the manifest, and
@@ -201,16 +213,17 @@ export class ShipCataloguePage {
         opened = true;
         return;
       }
-      this.#announcements.announce({
-        kind: 'catalogue.match-count',
-        revision: shown,
-        urgency: 'polite',
-        messageKey: 'catalogue.match-count',
-        params: {
-          count: this.#formatters.integer(shown),
-          total: this.#formatters.integer(this.#catalogue.total),
-        },
-      });
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'catalogue.match-count',
+          urgency: 'polite',
+          messageKey: 'catalogue.match-count',
+          params: {
+            count: this.#formatters.integer(shown),
+            total: this.#formatters.integer(this.#catalogue.total),
+          },
+        }),
+      );
     });
   }
 

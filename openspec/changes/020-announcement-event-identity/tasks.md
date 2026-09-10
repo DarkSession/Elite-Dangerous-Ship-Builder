@@ -8,25 +8,25 @@
 
 ## 2. The policy
 
-- [ ] 2.1 Remove `revision` from `AnnouncementRequest`. Mint the sequence in the service and
+- [x] 2.1 Remove `revision` from `AnnouncementRequest`. Mint the sequence in the service and
       stamp it into `SpokenEvent.identity`. Verify with task 1.1's case (011/FR-009).
-- [ ] 2.2 Record on the type that every request is announced, and that a caller decides not to
+- [x] 2.2 Record on the type that every request is announced, and that a caller decides not to
       publish a replay or a withdrawn question's outcome. Verify a reader finds both statements
       and the reason the policy cannot decide either (011/FR-009).
-- [ ] 2.3 Verify the service announces every request it is given. Drive it with two events of
+- [x] 2.3 Verify the service announces every request it is given. Drive it with two events of
       one kind at one urgency and assert both publish (011/FR-009).
-- [ ] 2.4 Rewrite the `clearOutlets()` and `reset()` cases against the sequence, which is the
+- [x] 2.4 Rewrite the `clearOutlets()` and `reset()` cases against the sequence, which is the
       whole of the policy's memory. Verify `clearOutlets()` empties both outlets and publishes
       nothing, and that `reset()` empties the sequence (011/FR-009).
 
 ## 3. The seven sites
 
-- [ ] 3.1 `ship-catalogue.page.ts` announces the match count in `untracked`, with no
+- [x] 3.1 `ship-catalogue.page.ts` announces the match count in `untracked`, with no
       declaration, keeping its first-run guard. Verify 5 → 3 → 1 publishes three times
       (011/FR-009).
-- [ ] 3.2 Verify in the same spec that a rising count publishes once, and that a reading
+- [x] 3.2 Verify in the same spec that a rising count publishes once, and that a reading
       language changing with the count unchanged publishes nothing (011/FR-009).
-- [ ] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads a falling
+- [x] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads a falling
       count three times, a rising count once, and a browser language change not at all
       (011/FR-009).
 - [ ] 3.4 Announce the refused edit and the refused import in `outfitting.store.ts`, where each
@@ -34,35 +34,38 @@
       between them publish twice (011/FR-009).
 - [ ] 3.5 Keep the batch coalesced. Verify in the store's spec that a batch refusing four
       entries publishes one message naming four (011/FR-009).
-- [ ] 3.6 Remove the `revision` input, the `announce` call and the effect from
+- [x] 3.6 Remove the `revision` input, the `announce` call and the effect from
       `outfitting-notice.ts`. Remove the binding from `edit-refusal-notice.html`,
       `ingress-refusal-notice.html` and `outfitting-workspace.html`. Verify the notice's spec
       reads that the lines stay in reading order and that it publishes nothing (011/FR-009).
-- [ ] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
+- [x] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
       Verify two unresolvable addresses publish twice, and a browser language change publishes
       nothing (011/FR-009).
-- [ ] 3.8 Ask `SlefStore.isCurrent` before each of the three `slef.import` announcements, and
+- [x] 3.8 Ask `SlefStore.isCurrent` before each of the three `slef.import` announcements, and
       drop the numbers. Verify a stored import and a refused import each publish after a
       committed one, and that one batch reporting a count and a refusal publishes both
       (011/FR-009, 016/FR-010, 016/FR-011).
-- [ ] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
+- [x] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
       publishes twice, and a copy that fails then succeeds publishes both outcomes
       (011/FR-009).
 
 ## 4. The remaining sites
 
-- [ ] 4.1 Hold each scan's own token in `SlefPresenter.scanFiles` and ask `isCurrent` with it
-      before announcing the outcome. Verify two scans in flight announce the second scan's
-      outcome and not the abandoned one (011/FR-009).
-- [ ] 4.2 `loadout-import.presenter.ts` asks `isCurrent` before each announcement and drops the
-      token. Verify its spec reads that a superseded outcome publishes nothing (011/FR-009).
-- [ ] 4.3 `app-frame.ts` and `app.ts` announce with no declaration. Verify each spec reads that
-      a browser language change publishes nothing, and a new locale snapshot or version
-      publishes once (011/FR-009).
-- [ ] 4.4 `hull-anatomy.ts` announces with no declaration and loses `#transition`. Verify its
+- [x] 4.1 Answer from `SlefImportCoordinator.scanFiles` whether the scan settled, and announce
+      the outcome only then. Verify two scans in flight announce the second scan's outcome and
+      not the abandoned one (011/FR-009).
+- [x] 4.2 Do the same in `loadout-import.coordinator.ts`, and drop the tokens from
+      `loadout-import.presenter.ts`. Verify its spec reads that a superseded scan announces
+      nothing (011/FR-009).
+- [x] 4.3 `app-frame.ts` announces with no declaration. Verify its spec reads that a re-render
+      publishes nothing and a new locale snapshot publishes once (011/FR-009).
+- [x] 4.4 `app.ts` announces the failed navigation with no declaration, and remembers the
+      version it announced for the update notice. Verify the overlay rising and falling twice
+      on one version publishes once, and a newer version publishes again (011/FR-009).
+- [x] 4.5 `hull-anatomy.ts` announces with no declaration and loses `#transition`. Verify its
       spec reads that one anatomy region failing, recovering and failing again at one build
       revision publishes three times (011/FR-009).
-- [ ] 4.5 Keep `NavigationWaitingStore.failures` as the effect's trigger. Verify the standing
+- [x] 4.6 Keep `NavigationWaitingStore.failures` as the effect's trigger. Verify the standing
       two-failure case in `app.spec.ts` passes unchanged (018/FR-007).
 
 ## 5. The gate
