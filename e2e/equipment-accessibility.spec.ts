@@ -124,6 +124,32 @@ test.describe('every bench state', () => {
     await expect(page.locator('.ledger__row[data-target="PrimaryWeapon2"]')).toHaveCount(0);
     await sweepOutfittingState(page, testInfo, 'fewer mounts');
   });
+
+  test('an empty mount holds the ladder’s track and states nothing in it', async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/equipment');
+    await expect(page.locator('.gate')).toBeVisible();
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, RIFLE_MOUNT);
+
+    // The track is held so the list does not move when a weapon is chosen, and
+    // an item that publishes no grade has no grade to state. So it is not in
+    // the accessibility tree and it is not a control: a Commander is never
+    // handed a grade to press for a mount that carries nothing (019/FR-002).
+    const track = page.locator('.item__grades');
+    await expect(track).toHaveAttribute('aria-hidden', 'true');
+    await expect(track).toHaveAttribute('inert');
+    await expect(track.getByRole('radio')).toHaveCount(0);
+    await expect(track.locator('input, button, a, [tabindex]')).toHaveCount(0);
+
+    // And the state as a whole still clears the floor: an axe pass over WCAG
+    // 2.0, 2.1 and 2.2 A and AA with no rule disabled, an ordered heading walk,
+    // a target measurement, an overflow check and a clipping check. The eight
+    // criteria the constitution excludes — 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1,
+    // 2.4.3, 2.4.7 and 2.4.11 — are the only ones outside this.
+    await sweepOutfittingState(page, testInfo, 'empty mount');
+  });
 });
 
 /** Opens the bench and waits for the gate, which is what it opens on. */

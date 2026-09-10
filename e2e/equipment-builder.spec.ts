@@ -431,3 +431,104 @@ test.describe('a slot the grade no longer opens', () => {
     await expectTotal(page, fitted);
   });
 });
+
+/**
+ * The list an item is chosen from holds its place (019/FR-001).
+ *
+ * The grade ladder stands beside the item's name where the column has room for
+ * it, and it is the taller of the two, so a mount that publishes no grade drew
+ * a shorter header and the list under it sat higher until a weapon was chosen.
+ * Every journey here pins no viewport: the requirement holds at every width, so
+ * each of the five layout profiles runs them in both engines (011/FR-021).
+ */
+
+/**
+ * Where a block sits on the page, and how tall it is.
+ *
+ * Measured down the document rather than down the viewport. Whether the list
+ * moved is a question about the layout, and a viewport reading answers a
+ * different one: opening a row scrolls the compact bench, so two viewport
+ * readings of a list that never moved differ by however far the page ran.
+ * A block with no height is read too — a track that holds nothing is exactly
+ * what one of these journeys is about, and `boundingBox()` answers `null` for
+ * it.
+ */
+async function boxOf(page: Page, selector: string): Promise<{ y: number; height: number }> {
+  return page.locator(selector).evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return { y: box.top + window.scrollY, height: box.height };
+  });
+}
+
+test.describe('the list an item is chosen from', () => {
+  test.beforeEach(async ({ page }) => {
+    await openBench(page);
+  });
+
+  test('stays where it was when a weapon is fitted into an empty mount', async ({ page }) => {
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, 'PrimaryWeapon1');
+    await expect(page.locator('.item__alternatives .choice').first()).toBeVisible();
+
+    // An empty mount publishes no grade, so there is no ladder to read yet.
+    await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(0);
+    const before = await boxOf(page, '.item__alternatives');
+    const held = await boxOf(page, '.item__grades');
+
+    await pickSwap(swapList(page).first());
+    await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(1);
+
+    // The ladder appeared, and the list a Commander pressed did not move for it.
+    const after = await boxOf(page, '.item__alternatives');
+    expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+
+    // What the track measured while it was empty, read against the arrangement
+    // the item column itself draws rather than against the bench's composition,
+    // which answers a second threshold and crosses this one. The ladder is what
+    // says which arrangement is drawn, because it has a box in both: above the
+    // list it stands beside the name, and the empty track has to have held its
+    // height; below the list it moves nothing above it, and the track holds
+    // nothing at all — an empty box there would be a gap under the list.
+    const ladder = await boxOf(page, '.item__grades');
+    if (ladder.y < after.y) {
+      expect(held.height).toBeGreaterThan(0);
+      expect(Math.abs(held.height - ladder.height)).toBeLessThanOrEqual(1);
+    } else {
+      expect(held.height).toBe(0);
+    }
+  });
+
+  test('stays where it was when the first suit is chosen at the empty bench', async ({ page }) => {
+    const before = await boxOf(page, '.gate__choose');
+    await page.locator('.gate__suits .choice').filter({ hasText: 'Dominator Suit' }).click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+
+    // Where the bench has no room to keep the list, it answers the choice with
+    // the loadout it made instead, and there is no list left to hold. Stated
+    // rather than skipped, so the guard cannot hide a failure.
+    const list = page.locator('.item__alternatives');
+    if ((await list.count()) === 0) {
+      await expect(page.locator('.bench__region--loadout .ledger__row')).not.toHaveCount(0);
+      return;
+    }
+
+    const after = await boxOf(page, '.item__alternatives');
+    expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+  });
+
+  test('stands in one place whichever item is selected', async ({ page }) => {
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, 'PrimaryWeapon1');
+    await pickSwap(swapList(page).first());
+    await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(1);
+    const fitted = await boxOf(page, '.item__alternatives');
+
+    // The mount next door, which carries nothing and publishes no grade.
+    await openRow(page, 'PrimaryWeapon2');
+    await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(0);
+    const empty = await boxOf(page, '.item__alternatives');
+
+    // This is what fails if the held track measures anything but the ladder.
+    expect(Math.abs(empty.y - fitted.y)).toBeLessThanOrEqual(1);
+  });
+});

@@ -27,7 +27,16 @@
   align-items: flex-end;
   justify-content: space-between;
   padding-inline: var(--ednb-space-3xl);
-  padding-block-end: var(--ednb-space-lg);
+  // The item column's own seam, not the canvas's 14px. The gate stands in the
+  // column the item will take, and the two have to agree with each other before
+  // either agrees with its artboard: at 14px the list of suits sat 4px higher
+  // than the list the chosen suit puts in its place, so choosing from it moved
+  // it (019/FR-001). The 4px divergence from artboard `2a` is recorded in
+  // `openspec/changes/archive/019-held-grade-ladder/design.md`.
+  //
+  // Stated once, for both arrangements: the header is taken out of flow where
+  // the column is narrow, so this seam is drawn wide and nowhere else.
+  padding-block-end: var(--ednb-space-2xl);
   border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
 

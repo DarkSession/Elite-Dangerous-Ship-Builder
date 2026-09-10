@@ -17,14 +17,13 @@ in it.
 The two heights are close and the ladder is the taller. The identity is the item name at
 `--ednb-text-size-heading-item` over its subtitle at `--ednb-text-size-compact`, with
 `--ednb-space-3xs` between them; the ladder is its label at `--ednb-text-size-micro` and
-`--ednb-text-leading-control` over `--ednb-space-stack-tight` over a cell row at
-`--ednb-layout-grade-step`. At the values those tokens hold, the identity reads about 47px and
-the ladder about 54px. So a header with a ladder in it is about 7px taller than one without,
+`--ednb-text-leading-control` over a cell row at `--ednb-layout-grade-step`. At the values
+those tokens hold, the identity reads about 47px and the ladder about 50px. So a header with a ladder in it is about 3px taller than one without,
 and everything below the header carries the difference. The item column draws the ladder only
 where the item publishes a grade
 (`src/app/features/equipment/item-view/item-view.html`), and the library publishes none for an
 empty weapon mount (`src/app/application/equipment/loadout.presenter.ts`, `#weaponItem`),
-which is where the 7px comes and goes.
+which is where the difference comes and goes.
 
 The empty bench is a second case of the same thing, and a wide one. Wide, the suit gate stands
 in the column the item will take and previews the ladder, so its header is the same height;
@@ -86,8 +85,12 @@ every text size. The item column's template therefore always draws the track and
 ladder inside it only when there is a grade to choose.
 
 **The held height is a token composed from the ladder's own parts.**
-`--ednb-layout-grade-ladder-block` is the label's line, the stack gap and the step cell added
-together, from the tokens the ladder itself uses. Declaring a flat figure would be a second
+`--ednb-layout-grade-ladder-block` is the label's line and the step cell added together, from
+the tokens the ladder itself uses. The stack gap between the two is not in the sum, because it
+is not drawn: the ladder is a `fieldset` and its label is the `legend`, which is not a flex
+item of its own fieldset in any engine, so the fieldset's `row-gap` has a single flex item to
+sit between and never applies. `grade-selector.scss` records the same fact about the legend's
+width, which is why the ladder's own measure is declared rather than left to the control. Declaring a flat figure would be a second
 statement of the ladder's height that nothing keeps true; composed, a change to the step cell
 moves the held track with it. The token layer already carries one composed measure of this
 kind (`--ednb-layout-bar-height`), and the comment beside it is the pattern to follow. The

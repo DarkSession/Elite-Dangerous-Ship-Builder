@@ -1,9 +1,12 @@
 ## 1. The held height in the token layer
 
-- [ ] 1.1 Add `--ednb-layout-grade-ladder-block` to `src/styles/tokens/_semantic.scss` as the
-      grade ladder's own label line, stack gap and step cell added together: the micro text
-      size at the control leading, plus `--ednb-space-stack-tight`, plus
-      `--ednb-layout-grade-step`. Write the comment beside it in the form
+- [x] 1.1 Add `--ednb-layout-grade-ladder-block` to `src/styles/tokens/_semantic.scss` as the
+      grade ladder's own label line over its step cell: the micro text size at the control
+      leading, plus `--ednb-layout-grade-step`. The stack gap between the two is not in the
+      sum, because it is not drawn — the ladder is a `fieldset` whose label is its `legend`,
+      which is not a flex item of its own fieldset, so the fieldset's `row-gap` has one flex
+      item to sit between and never applies (`grade-selector.scss` states the same thing about
+      the legend's width). Write the comment beside it in the form
       `--ednb-layout-bar-height` uses: what the figure is composed of, and why it is composed
       rather than declared. Every part is `rem`-based, so the track scales with text size as
       the ladder does. Verify with `pnpm run build`, which fails on a stylesheet that does not
@@ -13,14 +16,14 @@
 
 ## 2. The item column holds the ladder's track
 
-- [ ] 2.1 In `src/app/features/equipment/item-view/item-view.html`, draw the track whether or
+- [x] 2.1 In `src/app/features/equipment/item-view/item-view.html`, draw the track whether or
       not the item publishes a grade: move the `@if (item.grades.length > 0)` inside a
       `.item__grades` element that is always drawn, so the ladder is conditional and the track
       is not. Where the track holds no ladder, give it `[attr.inert]="true"` and
       `aria-hidden="true"`, as the suit gate does for its own previews, so the track is hidden
       from the accessibility tree and out of the focus order (019/FR-002). Verify with the
       unit tests in task 4.1.
-- [ ] 2.2 In `src/app/features/equipment/item-view/item-view.scss`, give the empty track its
+- [x] 2.2 In `src/app/features/equipment/item-view/item-view.scss`, give the empty track its
       held size inside the `container-medium-up(item)` block only, as a `min-block-size` of
       `--ednb-layout-grade-ladder-block` beside the width the block already declares, so the
       track measures the ladder where the ladder stands beside the name, and measures nothing
@@ -32,7 +35,7 @@
 
 ## 3. The empty bench and the item measure the same
 
-- [ ] 3.1 In `src/app/features/equipment/suit-gate/suit-gate.scss`, set the gate header's
+- [x] 3.1 In `src/app/features/equipment/suit-gate/suit-gate.scss`, set the gate header's
       `padding-block-end` to `var(--ednb-space-2xl)`, which is the seam the item column ends
       its own header with. State it once, unconditionally: the gate's header is taken out of
       flow where the column is narrow, so the seam is drawn wide and nowhere else (design,
@@ -42,19 +45,19 @@
 
 ## 4. What the unit tests state
 
-- [ ] 4.1 In `src/app/features/equipment/item-view/item-view.spec.ts`, add cases over an item
+- [x] 4.1 In `src/app/features/equipment/item-view/item-view.spec.ts`, add cases over an item
       that publishes no grade: the track is drawn, it carries no `ednb-grade-selector` and no
       radio, it carries `inert`, and it is `aria-hidden`. Keep the standing case that an item
       with grades draws the ladder with one radio per grade, and add that the track carries
       neither attribute there. Verify with `pnpm run test`.
-- [ ] 4.2 In the same file, add a case that the track is drawn whatever the item is, so a
+- [x] 4.2 In the same file, add a case that the track is drawn whatever the item is, so a
       later edit cannot make it conditional again. Note in the test that its size is measured
       by the end-to-end journeys, which are the only place layout is computed. Verify with
       `pnpm run test`.
 
 ## 5. The journeys the requirements are about
 
-- [ ] 5.1 In `e2e/equipment-builder.spec.ts`, add the weapon journey, pinning no viewport so
+- [x] 5.1 In `e2e/equipment-builder.spec.ts`, add the weapon journey, pinning no viewport so
       that each of the five layout profiles runs it in both engines (011/FR-021): wear a suit,
       open an empty weapon mount, read the bounding box of `.item__alternatives`, choose a
       weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
@@ -67,18 +70,18 @@
       composition is a second threshold and the two cross (design, "The bench's composition is
       not the oracle"). This is what fails if the container query in task 2.2 is scoped wrongly
       and a block is held where the ladder stands below the list. Verify with `pnpm run e2e`.
-- [ ] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
+- [x] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
       bench on the gate, read the bounding box of `.gate__choose`, choose a suit, and assert
       the `y` of `.item__alternatives` matches it. Guard the assertion on the list still being
       offered, because the narrow bench answers the choice with the loadout in place of the
       gate and holds no list — which is what the requirement's third scenario states. Assert
       in that case that the loadout is stated instead, so the guard cannot hide a failure
       (019/FR-001). Verify with `pnpm run e2e`.
-- [ ] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
+- [x] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
       item, open an empty weapon mount, and assert `.item__alternatives` has the same `y` on
       both. This is the case that fails if the held track measures anything other than the
       ladder (019/FR-001). Verify with `pnpm run e2e`.
-- [ ] 5.4 In `e2e/equipment-accessibility.spec.ts`, add a reading over an empty weapon mount
+- [x] 5.4 In `e2e/equipment-accessibility.spec.ts`, add a reading over an empty weapon mount
       that the held track is absent from the accessibility tree and offers no control, and
       confirm the existing axe scan of the bench still reports no violation of a criterion the
       constitution does not exclude — 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
@@ -86,7 +89,7 @@
 
 ## 6. The record
 
-- [ ] 6.1 Add `019-held-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts` and
+- [x] 6.1 Add `019-held-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts` and
       register both ids. `019/FR-001` and `019/FR-002` go on the `equipment/loadout` surface,
       whose journey is `equipment/bench` and which is already scanned by axe, with one
       assertion line naming each journey added in group 5. Verify with `pnpm run policy:specs`,

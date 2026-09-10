@@ -7,10 +7,9 @@ the list they were reading moves down, because the ladder has appeared above it.
 happens on the empty bench: choosing the first suit moves the list of suits the choice was
 made from.
 
-The movement is small in both cases. Fitting a weapon into an empty mount moves the list
-about seven pixels, because the ladder appears above it. Choosing the first suit moves it
-about four, because the empty bench and the chosen item disagree about the seam under the
-heading. Either is enough to make a Commander lose their place in the list. On a second press
+The movement is small in both cases. Fitting a weapon into an empty mount moves the list,
+because the ladder appears above it. Choosing the first suit moves it about four pixels,
+because the empty bench and the chosen item disagree about the seam under the heading. Either is enough to make a Commander lose their place in the list. On a second press
 either is enough to put a different row under the pointer than the one that was there when the
 press began.
 

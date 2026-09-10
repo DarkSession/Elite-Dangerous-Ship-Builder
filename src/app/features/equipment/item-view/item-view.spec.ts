@@ -99,4 +99,50 @@ describe('ItemView', () => {
 
     expect((render().nativeElement as HTMLElement).querySelector('.item__back')).toBeNull();
   });
+
+  it('holds the ladder’s track on a mount that publishes no grade, and states nothing in it', () => {
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store.select('PrimaryWeapon1');
+    const track = (render().nativeElement as HTMLElement).querySelector('.item__grades');
+
+    // The track is there and empty. Where it came and went with the ladder, the
+    // header shrank and the list a Commander was choosing from moved under the
+    // press (019/FR-001).
+    expect(track).not.toBeNull();
+    expect(track?.querySelector('ednb-grade-selector')).toBeNull();
+    expect(track?.querySelectorAll('.grade__radio').length).toBe(0);
+
+    // An empty mount publishes no grade, so the track answers nothing and says
+    // so: out of the accessibility tree and out of the focus order (019/FR-002).
+    expect(track?.classList.contains('item__grades--held')).toBe(true);
+    expect(track?.hasAttribute('inert')).toBe(true);
+    expect(track?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('gives the track no such attribute where it holds a ladder', () => {
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon1', symbol: RIFLE });
+    store.select('PrimaryWeapon1');
+    const track = (render().nativeElement as HTMLElement).querySelector('.item__grades');
+
+    expect(track?.querySelectorAll('.grade__radio').length).toBeGreaterThan(0);
+    expect(track?.classList.contains('item__grades--held')).toBe(false);
+    expect(track?.hasAttribute('inert')).toBe(false);
+    expect(track?.hasAttribute('aria-hidden')).toBe(false);
+  });
+
+  it('draws the track whatever the item is', () => {
+    // The track's whole job is to be the same box before and after a choice, so
+    // what a later edit must not do is make it conditional again. Its size is
+    // not asserted here: jsdom computes no layout, and `equipment-builder.spec`
+    // is where the held height is measured against the ladder's own.
+    store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+    expect((render().nativeElement as HTMLElement).querySelector('.item__grades')).not.toBeNull();
+
+    store.select('PrimaryWeapon1');
+    expect((render().nativeElement as HTMLElement).querySelector('.item__grades')).not.toBeNull();
+
+    store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon1', symbol: RIFLE });
+    expect((render().nativeElement as HTMLElement).querySelector('.item__grades')).not.toBeNull();
+  });
 });
