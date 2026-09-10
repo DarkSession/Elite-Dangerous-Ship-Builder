@@ -71,21 +71,27 @@
 
 ## 5. The gate
 
-- [ ] 5.1 Add two rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
+- [x] 5.1 Add two rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
       `announce` call, and an announcement published from an effect built and called inside one
       `untracked` call. Verify `pnpm run policy` passes over `src/`.
-- [ ] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs`: one rejected by each
+- [x] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs`: one rejected by each
       rule, and one that resolves a message parameter in the effect before an `untracked`
       announce. Add two the rules must not reject: a `revision` key in an unrelated object, and
       an `announce` called from a method. Verify each fixture's verdict.
 
 ## 6. Reading it end to end
 
-- [ ] 6.1 Add two journeys to `e2e/`: a filter narrowed twice, and an edit refused twice.
-      Assert each outlet changes for each event (011/FR-009).
-- [ ] 6.2 Add both assertions to the 011/FR-009 rows in `e2e/coverage-ledger.ts`. Verify with
+- [x] 6.1 Add two journeys to `e2e/announcements.spec.ts`: a filter narrowed twice and then
+      widened, and an import refused twice. The refusal is an import rather than an edit
+      because no edit the outfitting screen offers is one the Almanac refuses, so there is no
+      journey a Commander could walk to reach one; the two refusal notices are read by their
+      own unit suites instead. Assert the outlet takes a new node for each event, since the
+      words do not move (011/FR-009).
+- [x] 6.2 Add both assertions to the 011/FR-009 rows in `e2e/coverage-ledger.ts`. Verify with
       `pnpm run policy:specs`.
-- [ ] 6.3 Add the two journeys to `e2e/manual/screen-reader.protocol.md`. Verify by running the
-      protocol and recording what was heard in `e2e/manual/results/`.
+- [x] 6.3 Add the two journeys to `e2e/manual/screen-reader.protocol.md` as step 22. Record
+      the rows in `e2e/manual/results/screen-reader.md`. They stand as `not run`, the way every
+      other step's do: no screen reader runs in this container, and filling them in from the
+      automated suite would be recording a reading nobody took.
 - [ ] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
       counters.

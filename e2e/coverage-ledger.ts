@@ -344,9 +344,11 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'exactly one assertive and one polite outlet exist and no other region is live',
       'a new blocking error publishes one assertive summary',
-      'a settled change coalesces to one polite summary for its source revision',
-      'initial, unchanged, stale and unaffected content produces no announcement',
+      'a batch of changes coalesces to one polite summary naming how many there are',
+      'initial and unaffected content produces no announcement',
       'a locale switch clears outlet text without replaying prior events',
+      'a filter narrowed, narrowed again and widened puts a new node in the outlet each time',
+      'a refusal repeated in identical words puts a new node in the outlet each time',
     ],
     manualRecord: 'screen-reader',
   },

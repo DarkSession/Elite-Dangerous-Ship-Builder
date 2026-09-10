@@ -4,7 +4,7 @@
 **Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-013, FR-020, FR-023, FR-025,
 FR-026, SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002; 018 FR-002,
 FR-006, FR-007
-**Version**: 13
+**Version**: 14
 
 ## What is automated, and what is left
 
@@ -440,6 +440,32 @@ disagrees or where the announcement is correct but unusable.
     navigation that is still running from one that has failed — including two
     failures in a row, where the second says nothing new and the only thing
     separating them is that it is said.
+
+22. **The same thing, twice.** Two readings of one contract, and the reason this
+    step exists is that in both of them the second sentence is identical to the
+    first. Nothing automated can judge whether hearing it again is an answer or
+    a nuisance.
+
+    First, narrowing. On the shipyard, choose a landing-pad class, then choose
+    another, then clear the filter. Expect one polite announcement per press,
+    each naming how many hulls are shown out of how many, arriving without
+    cutting off what the reader was saying. Expect the third — the widening —
+    to be announced too: a list growing back is news in the same way a list
+    shrinking is.
+
+    Then a refusal. In the import layer, paste a payload the Almanac refuses
+    and press the action. Expect one polite announcement saying the payload was
+    not imported, and expect the detail to be findable on the layer afterwards
+    and re-readable at the reader's own pace. Press the action a second time
+    without changing anything. Expect a second announcement, in the same words.
+
+    The judgment this step exists for, and it is two. Whether the count read
+    out on every press is help or chatter — a Commander stepping through four
+    pad classes hears four sentences, and if that is a nuisance the message
+    changes rather than the policy. And whether a Commander who pressed a
+    refused action twice can tell, from speech alone, that the second press was
+    received: the words do not move between the two, so what is being confirmed
+    is that anything is said at all.
 
 ## Recording the result
 

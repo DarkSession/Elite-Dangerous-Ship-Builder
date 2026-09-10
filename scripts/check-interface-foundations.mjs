@@ -891,6 +891,220 @@ async function checkTestDiscipline() {
 }
 
 // ---------------------------------------------------------------------------
+// Rule: what an announcement declares, and where it is built
+// ---------------------------------------------------------------------------
+
+/**
+ * The span of the call whose opening parenthesis is at `open`.
+ *
+ * Returns the offsets of the text between the parentheses, or `null` where they
+ * never balance. Strings, template literals and comments are skipped, because a
+ * bracket inside any of them is text rather than structure.
+ */
+function callSpan(source, open) {
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    const character = source[index];
+
+    if (character === '/' && source[index + 1] === '/') {
+      index = source.indexOf('\n', index);
+      if (index === -1) {
+        return null;
+      }
+      continue;
+    }
+    if (character === '/' && source[index + 1] === '*') {
+      const end = source.indexOf('*/', index + 2);
+      if (end === -1) {
+        return null;
+      }
+      index = end + 1;
+      continue;
+    }
+    if (character === "'" || character === '"' || character === '`') {
+      index = endOfString(source, index);
+      if (index === -1) {
+        return null;
+      }
+      continue;
+    }
+
+    if (character === '(') {
+      depth += 1;
+    } else if (character === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        return { start: open + 1, end: index };
+      }
+    }
+  }
+  return null;
+}
+
+/** The offset of the closing quote of the string opening at `open`. */
+function endOfString(source, open) {
+  const quote = source[open];
+  for (let index = open + 1; index < source.length; index += 1) {
+    if (source[index] === '\\') {
+      index += 1;
+      continue;
+    }
+    if (source[index] === quote) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+/**
+ * The keys an object literal states directly, ignoring anything nested.
+ *
+ * Depth is what makes this worth writing rather than matching: `params` is a
+ * caller's own message data, and a key inside it is a word in a sentence rather
+ * than something the policy is being handed.
+ */
+function topLevelKeys(literal) {
+  const keys = [];
+  let depth = 0;
+  for (let index = 0; index < literal.length; index += 1) {
+    const character = literal[index];
+    if (character === "'" || character === '"' || character === '`') {
+      index = endOfString(literal, index);
+      if (index === -1) {
+        break;
+      }
+      continue;
+    }
+    if (character === '{' || character === '[' || character === '(') {
+      depth += 1;
+      continue;
+    }
+    if (character === '}' || character === ']' || character === ')') {
+      depth -= 1;
+      continue;
+    }
+    if (depth !== 1) {
+      continue;
+    }
+    const key = /^([A-Za-z_$][\w$]*)\s*:/.exec(literal.slice(index));
+    if (key !== null && !/[\w$.]/.test(literal[index - 1] ?? '')) {
+      keys.push(key[1]);
+      index += key[0].length - 1;
+    }
+  }
+  return keys;
+}
+
+/** Every offset at which `pattern` matches, with the match. */
+function occurrences(source, pattern) {
+  return [...source.matchAll(pattern)].map((match) => ({
+    index: match.index ?? 0,
+    text: match[0],
+  }));
+}
+
+const ANNOUNCE_CALL = /\bannounce\s*\(\s*\{/g;
+const EFFECT_CALL = /\beffect\s*\(/g;
+const UNTRACKED_CALL = /\buntracked\s*\(/g;
+const MESSAGE_READ = /\.message(?:Signal)?\s*\(/g;
+
+/**
+ * What an announcement may declare, and where an effect may build one.
+ *
+ * Two rules over one subject.
+ *
+ * `revision` is gone from `AnnouncementRequest`, and the first rule is what
+ * stops it coming back one caller at a time. The field asked the policy to
+ * decide whether an event had already happened, from a number the caller
+ * supplied — and every one of the seven callers that supplied one got it wrong
+ * in the same direction, which is silence (011/FR-009).
+ *
+ * The second rule carries the obligation that moved to the caller with it. An
+ * effect re-runs when anything it read changes, and resolving a message reads
+ * the message catalogue, so an announcement built in the open is republished
+ * whenever a Commander's reading language is committed. Building the request
+ * and calling `announce` inside one `untracked` call is what makes the effect
+ * depend on its own event and nothing else. It is a requirement rather than a
+ * preference: without it there is nothing left that keeps a replay silent.
+ */
+function announcementViolations(file, source) {
+  const found = [];
+  const add = (offset, rule, message) =>
+    found.push({ file, line: lineOf(source, offset), rule, message });
+
+  for (const call of occurrences(source, ANNOUNCE_CALL)) {
+    const span = callSpan(source, call.index + call.text.indexOf('('));
+    if (span === null) {
+      continue;
+    }
+    const literal = source.slice(span.start, span.end);
+    if (topLevelKeys(literal).includes('revision')) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement states its event, never a number for the policy to compare. ' +
+          'A caller that must not be heard twice decides that before it calls.',
+      );
+    }
+  }
+
+  for (const effectCall of occurrences(source, EFFECT_CALL)) {
+    const body = callSpan(source, effectCall.index + effectCall.text.indexOf('('));
+    if (body === null) {
+      continue;
+    }
+    const region = source.slice(body.start, body.end);
+    if (!ANNOUNCE_CALL.test(region)) {
+      ANNOUNCE_CALL.lastIndex = 0;
+      continue;
+    }
+    ANNOUNCE_CALL.lastIndex = 0;
+
+    const sheltered = [];
+    for (const untracked of occurrences(region, UNTRACKED_CALL)) {
+      const span = callSpan(region, untracked.index + untracked.text.indexOf('('));
+      if (span !== null) {
+        sheltered.push(span);
+      }
+    }
+    const inside = (offset) => sheltered.some((span) => offset >= span.start && offset < span.end);
+
+    for (const call of occurrences(region, ANNOUNCE_CALL)) {
+      if (!inside(call.index)) {
+        add(
+          body.start + call.index,
+          'announcement-effect',
+          'An announcement published from an effect is built and made inside one `untracked` ' +
+            'call. Outside it, resolving the message reads the catalogue, and a committed ' +
+            'locale republishes an event that already happened.',
+        );
+      }
+    }
+
+    for (const read of occurrences(region, MESSAGE_READ)) {
+      if (!inside(read.index)) {
+        add(
+          body.start + read.index,
+          'announcement-effect',
+          'This effect announces, so every part of what it says is resolved inside its ' +
+            '`untracked` call. Resolving one out here reads the message catalogue from the ' +
+            'effect, which is the shape the rule exists to reject.',
+        );
+      }
+    }
+  }
+
+  return found;
+}
+
+/** IO wrapper. */
+async function checkAnnouncements(sources) {
+  for (const file of sources) {
+    violations.push(...announcementViolations(relative(ROOT, file), await readFile(file, 'utf8')));
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 /** Runs every rule and returns the violations found. */
 export async function runChecks({ scope = SCOPE } = {}) {
@@ -922,6 +1136,7 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkPreviewCoverage();
   await checkDuplicatedSteps();
   await checkTestDiscipline();
+  await checkAnnouncements(sources);
   await checkCatalogues();
   await checkServiceWorkerOwnership(sources);
   await checkConformanceClaims(sources);
@@ -3042,6 +3257,7 @@ export const rules = {
   governedStylesheetViolations,
   previewCoverageViolations,
   testDisciplineViolations,
+  announcementViolations,
   duplicatedStepViolations,
   isTokenisedValue,
   isStructuralText,

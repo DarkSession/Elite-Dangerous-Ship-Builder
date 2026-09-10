@@ -380,6 +380,108 @@ describe('test discipline', () => {
   });
 });
 
+describe('announcements', () => {
+  it('rejects a request carrying a number for the policy to compare', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", revision: 1, urgency: "polite", messageKey: "k" });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('rejects an announcement published from an effect in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'effect(() => { this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }); });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
+  it('rejects a message resolved in the effect before an untracked announce', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const name = this.#messages.message("k");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('accepts an effect that builds and announces inside one untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "catalogue.match-count",',
+        '      urgency: "polite",',
+        '      messageKey: "catalogue.match-count",',
+        '      params: { count: this.#formatters.integer(shown) },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a revision on something that is not an announcement', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'const snapshot = { state: "ready", revision: 4 };\nreturn { kind: "refused", failure, revision };',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a revision named inside a message\u2019s own parameters', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'announce({ kind: "x", urgency: "polite", messageKey: "k", params: { revision: 3 } });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an announcement made from a method rather than an effect', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'scanFiles(files) {',
+        '  this.#announcements.announce({',
+        '    kind: "slef.import.scan",',
+        '    urgency: "polite",',
+        '    messageKey: this.#messages.key("scanning"),',
+        '  });',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an effect that resolves a message but announces nothing', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'effect(() => { this.#title.set(this.#messages.message("k")); });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+});
+
 describe('duplicated composition steps', () => {
   const PAIR = {
     scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },

@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 13.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 14.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -208,3 +208,30 @@ reading of one element's own markup belongs.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 21   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 21   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 21   | As stated in the protocol | —      | not run |
+
+## The second time something happens (change 020)
+
+Step 22 covers the reading no capture can take: a second event spoken in the
+same words as the first. Both halves of it — a filter narrowed twice and then
+widened, and a refusal repeated without anything changing between the presses —
+are cases where the announcement policy used to stay silent, and where what is
+in question now is not whether something is said but whether hearing it again
+helps.
+
+**Status: not yet executed.** No screen-reader run has been performed against
+this build. The rows below are deliberately left without actual results rather
+than filled in from the automated suite, which cannot hear anything.
+
+The automated coverage that does exist for the same requirement is
+`e2e/announcements.spec.ts` — a filter narrowed, narrowed again and widened
+asserted to put a new node in the polite outlet each time, and a refusal
+repeated in identical words asserted to do the same — together with the unit
+suite beside each announcing file, which reads what that file publishes, and the
+two rules in `scripts/check-interface-foundations.mjs` that hold the shape every
+announcing effect is built in.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 22   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 22   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 22   | As stated in the protocol | —      | not run |
