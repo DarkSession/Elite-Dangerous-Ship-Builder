@@ -11,11 +11,16 @@ over itself is not a change: a second screen that could not be opened says exact
 first one said, and without this it would be the silence this requirement exists to
 prevent. A replay of one event is still one event and MUST stay silent.
 
-Where the application cannot tell a second occurrence of something from a restatement of
-the first, it MUST announce. A reader told twice about one event has heard a repetition; a
-reader told nothing about the second of two events has lost it, and has no way of knowing
-they have. A reading a Commander is narrowing is one such event each time it changes,
-in either direction.
+Where the application cannot tell a second occurrence from a restatement of the first, it
+MUST announce. A reader told twice about one event has heard a repetition. A reader told
+nothing about the second of two events has lost it, and cannot know that.
+
+A reading a filter publishes is a distinct event each time it changes. It is one whether the
+change raises it or lowers it.
+
+An outcome to a question the Commander has withdrawn MUST NOT be announced. It is the one
+distinct event this requirement excuses. Nobody is waiting for it: the question was replaced
+or cancelled before the answer arrived.
 
 Source: 011/FR-009.
 
@@ -42,15 +47,28 @@ Source: 011/FR-009.
 - **THEN** the live region carrying it does not change
 - **AND** a reader is not told anything a second time
 
-#### Scenario: A reading falls
+#### Scenario: A filter is narrowed twice
 
-- **WHEN** a Commander narrows a filter and the reading it publishes is lower than the one
-  before it
-- **THEN** the new reading is announced
-- **AND** it is announced again for each further narrowing
+- **WHEN** a Commander narrows a filter twice, and each narrowing publishes a lower reading
+- **THEN** each reading is announced
 
-#### Scenario: A second outcome for one subject
+#### Scenario: A filter is widened
 
-- **WHEN** an action is repeated on one subject and reports something other than what it
-  reported the first time
+- **WHEN** a Commander widens a filter, and the reading it publishes rises
+- **THEN** the reading is announced
+
+#### Scenario: One action is repeated on one subject
+
+- **WHEN** an action is repeated on one subject, and reports something other than before
 - **THEN** the new outcome is announced
+
+#### Scenario: An answer arrives after the question is withdrawn
+
+- **WHEN** an outcome arrives for a request the Commander replaced or cancelled
+- **THEN** it is not announced
+
+#### Scenario: The reading language changes
+
+- **WHEN** the Commander commits a different reading language
+- **THEN** what each live region holds is resolved in that language
+- **AND** no event already announced is announced again
