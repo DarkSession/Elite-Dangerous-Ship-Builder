@@ -21,12 +21,12 @@ the revision. Seven sites supply something that is not a count of events:
 | An accepted import                  | the build revision, where the same event elsewhere supplies a request token | a stored or failed import after a committed one                              |
 | A delivered export                  | the export's revision                                                       | a second delivery of one export, and any outcome that differs from the first |
 
-Each of these is silent, and silence reports nothing. This is a defect against
+Each of these is silent. This is a defect against
 `platform/accessible-responsive-operation`, "Announcement of errors and changes" (011/FR-009):
 two distinct events must each be announced.
 
-Fixing seven sites leaves the eighth to be written. The field is named for a measurement, so
-each caller supplied a measurement.
+Correcting seven sites does not stop an eighth being written. The field is named for a
+measurement, so each caller supplied a measurement.
 
 ## What Changes
 
@@ -37,8 +37,8 @@ each caller supplied a measurement.
 - One optional declaration replaces the number. A caller whose outcome can arrive after its
   question was withdrawn declares the request it belongs to, and a superseded outcome stays
   silent. Two import flows use it.
-- Omitting the declaration makes an event announced rather than silent. A caller written
-  without reading the policy is heard.
+- Omitting the declaration makes an event announced rather than silent. A caller that states
+  nothing about suppression is announced every time it asks.
 - Narrowing the ship catalogue or the saved builds announces the new count each time it
   changes. Widening them announces it too. The count stays in the message.
 - A refused edit and a refused import are each announced, each time. So is each address that
@@ -46,8 +46,10 @@ each caller supplied a measurement.
 - Every delivery of an export is announced, including a second delivery of one export. A
   Commander who presses Copy again because they were unsure of the first press is answered
   both times.
-- The interface policy checker holds the shape. No announcement may carry a caller-supplied
-  revision, so the removed field cannot return one call at a time.
+- The interface policy checker carries two rules. No announcement may carry a caller-supplied
+  revision, so the removed field cannot return one call at a time. No announcement published
+  from an effect resolves its message inside that effect, which is what keeps one occurrence
+  from being announced twice.
 
 ## Capabilities
 
@@ -60,8 +62,10 @@ None.
 - `platform/accessible-responsive-operation`: "Announcement of errors and changes" (011/FR-009)
   states that two distinct events must each be announced, and states no exception. One is
   needed and is added here: an outcome to a question the Commander has withdrawn is not
-  announced. The requirement also gains the cases the seven sites mute — a count that changes
-  in either direction, a condition that recurs, and an action repeated on one subject.
+  announced. The requirement also gains the cases the seven sites mute — a figure that changes
+  in either direction, a condition that recurs, an action repeated on one subject, and one
+  request reporting two outcomes. Its replay rule moves to what a Commander can observe,
+  because the caller keeps a replay from being published rather than the policy dropping one.
 
 ## Impact
 
@@ -75,7 +79,8 @@ None.
   `src/app/ui/outfitting/edit-refusal-notice.html`,
   `src/app/ui/outfitting/ingress-refusal-notice.html` and
   `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.html`.
-- Eight files state their events without a revision:
+- Eight files state their events without a revision, and `outfitting.store.ts` above joins
+  them:
   `src/app/features/ship-catalogue/ship-catalogue.page.ts`,
   `src/app/features/build-library/build-library.page.ts`,
   `src/app/features/hull-detail/hull-detail.page.ts`,
@@ -83,7 +88,7 @@ None.
   `src/app/application/equipment/loadout-import.presenter.ts`,
   `src/app/features/build-workspace/outfitting/hull-anatomy/hull-anatomy.ts`,
   `src/app/app.ts` and `src/app/ui/components/app-frame/app-frame.ts`.
-- `scripts/check-interface-foundations.mjs` gains the rule, with fixtures beside it in
+- `scripts/check-interface-foundations.mjs` gains both rules, with fixtures beside them in
   `scripts/check-interface-foundations.test.mjs`.
 - The unit suite beside each of those files reads what was silent.
   `announcement.service.spec.ts` reads the policy directly.

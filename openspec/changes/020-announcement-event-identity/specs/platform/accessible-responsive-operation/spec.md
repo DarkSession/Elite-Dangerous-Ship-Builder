@@ -11,12 +11,15 @@ over itself is not a change: a second screen that could not be opened says exact
 first one said, and without this it would be the silence this requirement exists to
 prevent. A replay of one event is still one event and MUST stay silent.
 
+One occurrence MUST be announced once. Recomputing the state an announcement was made from is
+not a second occurrence, and MUST NOT announce again.
+
 A figure a filter publishes is a distinct event each time it changes, whether it rises or
 falls. A condition that arises a second time is a distinct event. An action a Commander
 repeats on one subject is a distinct event each time it reports an outcome.
 
-An outcome to a question the Commander has withdrawn MUST NOT be announced. It is the one
-distinct event this requirement excuses. Nobody is waiting for it: the question was replaced
+An outcome to a question the Commander has withdrawn MUST NOT be announced, and this exception
+to the two-events rule holds for no other case in this requirement. The question was replaced
 or cancelled before the answer arrived.
 
 Source: 011/FR-009.
@@ -40,9 +43,10 @@ Source: 011/FR-009.
 
 #### Scenario: One event is published twice
 
-- **WHEN** the same event is published again, describing nothing that has happened since
-- **THEN** the live region carrying it does not change
-- **AND** a reader is not told anything a second time
+- **WHEN** the state an announcement was made from is recomputed, and the event has not
+  recurred
+- **THEN** nothing further is announced
+- **AND** the live region carrying that event does not change
 
 #### Scenario: A filter is narrowed twice
 
@@ -55,11 +59,20 @@ Source: 011/FR-009.
 - **WHEN** a Commander widens a filter, and the figure it publishes rises
 - **THEN** the figure is announced
 
+#### Scenario: A blocking condition arises a second time
+
+- **WHEN** a condition that blocks a Commander arises, is left, and arises again
+- **THEN** it is announced each time it arises
+
 #### Scenario: One action is repeated on one subject
 
 - **WHEN** a Commander repeats an action on one subject
 - **THEN** each outcome is announced
-- **AND** an outcome that differs from the one before it is announced in its own words
+
+#### Scenario: One request reports two outcomes
+
+- **WHEN** one request the Commander made reports two outcomes
+- **THEN** both are announced
 
 #### Scenario: An answer arrives after the question is withdrawn
 
