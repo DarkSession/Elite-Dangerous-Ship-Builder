@@ -26,9 +26,11 @@
 - [x] 2.2 In `src/app/features/equipment/item-view/item-view.scss`, give the empty track its
       held size inside the `container-medium-up(item)` block only, as a `min-block-size` of
       `--ednb-layout-grade-ladder-block` beside the width the block already declares, so the
-      track measures the ladder where the ladder stands beside the name, and measures nothing
-      where the header takes `display: contents` and the ladder stands below the list (design,
-      "The narrow column holds nothing"). Verify with the track's own reading in task 5.1: the
+      track measures the ladder where the ladder stands beside the name. Where the header takes
+      `display: contents` and the ladder stands below the list, take the empty track out of
+      flow rather than leaving it at no height: the column is a stack with a gap between its
+      items, so a zero-height item still costs 22px under the list (design, "The narrow column
+      holds nothing, and holds it out of flow"). Verify with the track's own reading in task 5.1: the
       list's place cannot fail on a wrongly scoped query, because the track stands below the
       list where the column is narrow and pushes down only what follows it. A unit test cannot
       verify this either, because jsdom computes no layout.

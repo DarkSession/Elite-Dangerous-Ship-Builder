@@ -32,19 +32,19 @@
            chosen grade filled and the rest bare.
 
            The track around it is drawn whether or not there is a ladder to put
-           in it. An empty mount publishes no grade, and a track that came and
-           went with the ladder took the difference between the two out of the
-           header, so the list a Commander was choosing from moved under the
-           press (019/FR-001).
-           Held empty the track states nothing: no ladder, out of the
-           accessibility tree and out of the focus order (019/FR-002). -->
+           in it. Wide, the header's height is the taller of the identity and
+           the track, and an empty mount publishes no grade — so the track holds
+           the ladder's own height either way, and the list below the header
+           keeps its place across the choice (019/FR-001). An empty track states
+           nothing: no ladder, out of the accessibility tree and out of the focus
+           order (019/FR-002). -->
       <div
         class="item__grades"
-        [class.item__grades--held]="item.grades.length === 0"
-        [attr.inert]="item.grades.length === 0 ? true : null"
-        [attr.aria-hidden]="item.grades.length === 0 ? 'true' : null"
+        [class.item__grades--held]="ladderHeld()"
+        [attr.inert]="ladderHeld() ? true : null"
+        [attr.aria-hidden]="ladderHeld() ? 'true' : null"
       >
-        @if (item.grades.length > 0) {
+        @if (!ladderHeld()) {
           <ednb-grade-selector
             [grades]="item.grades"
             [selected]="item.grade"

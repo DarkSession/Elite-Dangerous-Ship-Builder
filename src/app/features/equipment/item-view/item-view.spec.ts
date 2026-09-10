@@ -105,9 +105,9 @@ describe('ItemView', () => {
     store.select('PrimaryWeapon1');
     const track = (render().nativeElement as HTMLElement).querySelector('.item__grades');
 
-    // The track is there and empty. Where it came and went with the ladder, the
-    // header shrank and the list a Commander was choosing from moved under the
-    // press (019/FR-001).
+    // The track is there and empty. It holds the ladder's place, so the header
+    // keeps one height and the list under it keeps its place across the choice
+    // (019/FR-001).
     expect(track).not.toBeNull();
     expect(track?.querySelector('ednb-grade-selector')).toBeNull();
     expect(track?.querySelectorAll('.grade__radio').length).toBe(0);
@@ -119,7 +119,7 @@ describe('ItemView', () => {
     expect(track?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('gives the track no such attribute where it holds a ladder', () => {
+  it('leaves inert and aria-hidden off the track where it holds a ladder', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
     store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon1', symbol: RIFLE });
     store.select('PrimaryWeapon1');

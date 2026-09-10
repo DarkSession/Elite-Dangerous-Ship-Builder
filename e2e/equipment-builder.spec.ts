@@ -436,10 +436,11 @@ test.describe('a slot the grade no longer opens', () => {
  * The list an item is chosen from holds its place (019/FR-001).
  *
  * The grade ladder stands beside the item's name where the column has room for
- * it, and it is the taller of the two, so a mount that publishes no grade drew
- * a shorter header and the list under it sat higher until a weapon was chosen.
- * Every journey here pins no viewport: the requirement holds at every width, so
- * each of the five layout profiles runs them in both engines (011/FR-021).
+ * it, and it is the taller of the two. So the track holds the ladder's height
+ * whether or not the item publishes a grade, and the list under the header
+ * keeps its place. Every journey here pins no viewport: the requirement holds at
+ * every width, so each of the five layout profiles runs them in both engines
+ * (011/FR-021).
  */
 
 /**

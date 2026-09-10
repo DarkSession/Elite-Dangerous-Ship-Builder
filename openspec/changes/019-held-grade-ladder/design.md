@@ -113,10 +113,16 @@ The gate's header is taken out of flow where the column is narrow, so the seam u
 drawn wide and nowhere else. One unconditional declaration is therefore the whole of it, and a
 container query around it would state a condition the header already answers.
 
-**The narrow column holds nothing.**
+**The narrow column holds nothing, and holds it out of flow.**
 Stated as a container query, the same one the column already uses to decide whether the header
 is a row (`container-medium-up(item)`), so one condition decides both. The two cannot disagree
 about which arrangement is being drawn.
+
+An empty track is taken out of the column's flow here rather than merely given no height. The
+column is a stack with a gap between its items, so a zero-height item still costs that gap —
+22px of nothing under the list, for a movement this arrangement does not have. The gate's own
+header carries the same rule and the same reason (`suit-gate.scss`, the header's
+`visually-hidden` branch).
 
 **The bench's composition is not the oracle.**
 The held track is scoped to the item column's own container query, so what verifies the
@@ -151,6 +157,12 @@ either attribute alone would do; both keep it out if something is later put in i
   the filled state draws one, which is the behaviour that keeps the list still.
 - **Empty space beside a mount name reads as something missing.** → The mount's own subtitle
   says the mount is empty, and the library publishes no grade for the track to state.
+- **An item's own name still moves the list.** → The identity block is content-sized, so two
+  items whose names take a different number of lines put their lists in different places. That
+  is reachable at 200% text and under a longer translation. The requirement is bounded to
+  match: the grade choice is not what moves the list, and a name takes the room that name
+  needs. Holding the identity to one measure as well would truncate or pad an item's own name,
+  which is a larger decision than this change, and it is left to one of its own.
 - **The gate's 4px seam is a recorded divergence from artboard `2a`.** → Recorded here, and the
   reason is that the gate and the item column must agree with each other before either agrees
   with its own artboard.

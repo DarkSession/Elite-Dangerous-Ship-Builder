@@ -31,8 +31,8 @@ press began.
 
 The change declares requirements `019/FR-001` and `019/FR-002`:
 
-- **FR-001** The list an item is chosen from holds its place — across the choice, and between
-  one selected item and the next.
+- **FR-001** The list an item is chosen from holds its place across the choice, and the grade
+  choice is not what moves it between one selected item and the next.
 - **FR-002** Space held for an absent grade choice states nothing.
 
 Two things this change does are not requirements of its own, because a standing requirement
@@ -59,10 +59,10 @@ None.
 ### Modified Capabilities
 
 - `equipment-builder/loadout-assembly`: gains two requirements. The first states that the list
-  an item is chosen from holds its place — when a weapon is fitted into an empty mount, when
-  the first suit is chosen at the empty bench and the bench still offers that list, and
-  between one selected item and the next. The second states what the ladder's track may say
-  where the item offers no grade, which is nothing.
+  an item is chosen from holds its place — when a weapon is fitted into an empty mount, and
+  when the first suit is chosen at the empty bench and the bench still offers that list — and
+  that the grade choice takes the same room whichever item is selected. The second states what
+  the ladder's track may say where the item offers no grade, which is nothing.
 
 ## Impact
 
