@@ -124,6 +124,6 @@ test:scripts`.
       whose journey is `equipment/bench` and which is already scanned by axe, with one
       assertion line naming each journey added in group 5. Verify with `pnpm run policy:specs`,
       which fails naming any declared id that is not registered.
-- [ ] 6.2 Run `pnpm run check` — format, typecheck, build, unit tests with coverage and the
+- [x] 6.2 Run `pnpm run check` — format, typecheck, build, unit tests with coverage and the
       Playwright matrix — and report what passed. Then run the implementation gate the project
       context defines, fix every actionable finding, and run it again until none remains.
