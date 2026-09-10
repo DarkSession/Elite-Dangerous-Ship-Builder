@@ -11,12 +11,9 @@ over itself is not a change: a second screen that could not be opened says exact
 first one said, and without this it would be the silence this requirement exists to
 prevent. A replay of one event is still one event and MUST stay silent.
 
-Where the application cannot tell a second occurrence from a restatement of the first, it
-MUST announce. A reader told twice about one event has heard a repetition. A reader told
-nothing about the second of two events has lost it, and cannot know that.
-
-A reading a filter publishes is a distinct event each time it changes. It is one whether the
-change raises it or lowers it.
+A figure a filter publishes is a distinct event each time it changes, whether it rises or
+falls. A condition that arises a second time is a distinct event. An action a Commander
+repeats on one subject is a distinct event each time it reports an outcome.
 
 An outcome to a question the Commander has withdrawn MUST NOT be announced. It is the one
 distinct event this requirement excuses. Nobody is waiting for it: the question was replaced
@@ -49,26 +46,22 @@ Source: 011/FR-009.
 
 #### Scenario: A filter is narrowed twice
 
-- **WHEN** a Commander narrows a filter twice, and each narrowing publishes a lower reading
-- **THEN** each reading is announced
+- **WHEN** a Commander narrows a filter twice, and each narrowing lowers the figure it
+  publishes
+- **THEN** each figure is announced
 
 #### Scenario: A filter is widened
 
-- **WHEN** a Commander widens a filter, and the reading it publishes rises
-- **THEN** the reading is announced
+- **WHEN** a Commander widens a filter, and the figure it publishes rises
+- **THEN** the figure is announced
 
 #### Scenario: One action is repeated on one subject
 
-- **WHEN** an action is repeated on one subject, and reports something other than before
-- **THEN** the new outcome is announced
+- **WHEN** a Commander repeats an action on one subject
+- **THEN** each outcome is announced
+- **AND** an outcome that differs from the one before it is announced in its own words
 
 #### Scenario: An answer arrives after the question is withdrawn
 
 - **WHEN** an outcome arrives for a request the Commander replaced or cancelled
 - **THEN** it is not announced
-
-#### Scenario: The reading language changes
-
-- **WHEN** the Commander commits a different reading language
-- **THEN** what each live region holds is resolved in that language
-- **AND** no event already announced is announced again

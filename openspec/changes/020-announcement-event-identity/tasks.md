@@ -1,79 +1,82 @@
 ## 1. The failing tests
 
-- [ ] 1.1 Add the reproducing cases to `announcement.service.spec.ts`. Two events of one kind
-      in identical words must both publish. Verify each case fails now (011/FR-009).
-- [ ] 1.2 Add a reproducing case beside each of the six silent sites: the two match counts, the
-      two outfitting refusals, the unresolvable address, and the import announced from two
-      counters. Verify all six fail now (011/FR-009).
+- [ ] 1.1 Add to `announcement.service.spec.ts` the case two events of one kind in identical
+      words both publish. Verify it fails against the standing policy (011/FR-009).
+- [ ] 1.2 Add a reproducing case beside each of the seven silent sites. Verify each of the
+      seven fails against the standing code (011/FR-009).
 
 ## 2. The policy
 
-- [ ] 2.1 Remove `revision` from `AnnouncementRequest` and mint the sequence in the service.
-      Stamp it into `SpokenEvent.identity`. Verify with the cases from task 1.1 (011/FR-009).
-- [ ] 2.2 Record on the type why a caller supplies no number, and which way the policy leans
-      in doubt. Verify by reading the file against the requirement (011/FR-009).
+- [ ] 2.1 Remove `revision` from `AnnouncementRequest`. Mint the sequence in the service and
+      stamp it into `SpokenEvent.identity`. Verify with task 1.1's case (011/FR-009).
+- [ ] 2.2 Record on the type that a caller supplies no number, and that an unrecognised event
+      is announced. Verify the file names the rule, the one exception and the reason
+      (011/FR-009).
 - [ ] 2.3 Add the optional `request` declaration, keyed by `(kind, urgency)`. An outcome whose
       token does not exceed the highest seen stays silent. Verify with a lower token, an equal
       token and a higher one (011/FR-009).
-- [ ] 2.4 Add the optional `occurrence` declaration, keyed by `(kind, urgency)`. Equal to the
-      last announced it stays silent. Verify with a repeat, a change, and a return to an
-      earlier value, which announces (011/FR-009).
-- [ ] 2.5 Rewrite the `clearOutlets()` and `reset()` cases against the new memory: the
-      sequence, and both declaration maps. Verify a locale switch clears the outlets and
-      replays nothing, and that `reset()` empties all three (011/FR-009).
+- [ ] 2.4 Rewrite the `clearOutlets()` and `reset()` cases against the sequence and the token
+      map. Verify `clearOutlets()` empties both outlets and replays nothing, and that `reset()`
+      empties the sequence and the map (011/FR-009).
 
-## 3. The sites that were silent
+## 3. The seven sites
 
-- [ ] 3.1 `ship-catalogue.page.ts` announces the match count with no declaration, keeping its
-      first-run guard. Verify 5 → 3 → 1 publishes three times (011/FR-009).
-- [ ] 3.2 `ship-catalogue.page.ts` publishes a rising count too. Verify 3 → 10 publishes
+- [ ] 3.1 `ship-catalogue.page.ts` announces the match count in `untracked`, with no
+      declaration, keeping its first-run guard. Verify 5 → 3 → 1 publishes three times
       (011/FR-009).
-- [ ] 3.3 `build-library.page.ts` the same, with both readings in its spec (011/FR-009).
+- [ ] 3.2 Verify in the same spec that a rising count publishes: 3 → 10 announces once
+      (011/FR-009).
+- [ ] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads a falling
+      count three times and a rising count once (011/FR-009).
 - [ ] 3.4 Announce the refused edit and the refused import in `outfitting.store.ts`, where each
       refusal is produced. Verify without rendering that two refusals with no committed edit
       between them publish twice (011/FR-009).
-- [ ] 3.5 Keep the batch coalesced: one accepted import completing four partial rolls publishes
-      one message naming four. Verify in the store's spec with a four-line batch (011/FR-009).
+- [ ] 3.5 Keep the batch coalesced. Verify in the store's spec that an import completing four
+      partial rolls publishes one message naming four (011/FR-009).
 - [ ] 3.6 Remove the `revision` input, the `announce` call and the effect from
-      `outfitting-notice.ts`, and the binding from `outfitting-workspace.html` and the two
-      notice templates. Verify the notice's spec reads that the lines stay in reading order and
-      that it announces nothing.
+      `outfitting-notice.ts`. Remove the binding from `edit-refusal-notice.html`,
+      `ingress-refusal-notice.html` and `outfitting-workspace.html`. Verify the notice's spec
+      reads that the lines stay in reading order and that it announces nothing (011/FR-009).
 - [ ] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
-      Verify two unresolvable addresses publish twice, and a locale commit publishes nothing
+      Verify two unresolvable addresses publish twice, and a reading-language change publishes
+      nothing (011/FR-009).
+- [ ] 3.8 Declare `request` from the store token on all four `slef.import` announcements.
+      Verify a stored import and a refused import each publish after a committed one
       (011/FR-009).
-- [ ] 3.8 `slef.presenter.ts` announces an accepted import with no declaration, so a stored or
-      failed import after a committed one is heard. Verify that sequence in its spec
+- [ ] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
+      publishes twice, and a copy that fails then succeeds publishes both outcomes
       (011/FR-009).
 
 ## 4. The sites that were already right
 
 - [ ] 4.1 `slef.presenter.ts` scan and `loadout-import.presenter.ts` declare `request` where
-      they passed the token. Verify their specs read the same superseded-outcome behaviour as
-      the standing suite (011/FR-009).
-- [ ] 4.2 `slef.presenter.ts` delivery declares `occurrence` as the artifact revision with the
-      reported result. Verify one artifact copied twice publishes once, and a copy that fails
-      then succeeds publishes twice (011/FR-009).
-- [ ] 4.3 `app-frame.ts`, `app.ts` and `hull-anatomy.ts` announce with no declaration, and
-      `hull-anatomy.ts` loses `#transition`. Verify each spec: a re-render publishes nothing,
-      and a side failing, recovering and failing again publishes three times (011/FR-009).
+      they passed the token. Verify each spec still reads that a superseded outcome publishes
+      nothing (011/FR-009).
+- [ ] 4.2 `app-frame.ts` and `app.ts` announce with no declaration. Verify each spec reads that
+      a re-render publishes nothing and a new locale snapshot or version publishes once
+      (011/FR-009).
+- [ ] 4.3 `hull-anatomy.ts` announces with no declaration and loses `#transition`. Verify its
+      spec reads that one anatomy region failing, recovering and failing again at one build
+      revision publishes three times (011/FR-009).
 - [ ] 4.4 Keep `NavigationWaitingStore.failures` as the effect's trigger. Verify the standing
       two-failure case in `app.spec.ts` passes unchanged (018/FR-007).
 
 ## 5. The gate
 
-- [ ] 5.1 Add the three rules to `scripts/check-interface-foundations.mjs`: no `revision` key,
-      no literal `occurrence`, and no `announce` inside an `effect` outside `untracked`.
-- [ ] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs` for each rejection,
-      and for what each rule must not mistake for one: a `revision` key in an unrelated object,
-      an `occurrence` built from a signal read, and an `announce` called from a method.
-      Verify with `pnpm run policy`.
+- [ ] 5.1 Add two rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
+      `announce` call, and no `announce` inside an `effect` outside `untracked`. Verify
+      `pnpm run policy` fails on the working tree before task 3 lands and passes after.
+- [ ] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs` for each rejection.
+      Add one for what each rule must not reject: a `revision` key in an unrelated object, and
+      an `announce` called from a method. Verify with `pnpm run policy`.
 
 ## 6. Reading it end to end
 
-- [ ] 6.1 Add the two journeys to `e2e/`: a filter narrowed twice, and an edit refused twice.
+- [ ] 6.1 Add two journeys to `e2e/`: a filter narrowed twice, and an edit refused twice.
       Assert each outlet changes for each event (011/FR-009).
 - [ ] 6.2 Add both assertions to the 011/FR-009 rows in `e2e/coverage-ledger.ts`. Verify with
       `pnpm run policy:specs`.
-- [ ] 6.3 Add the two readings to `e2e/manual/screen-reader.protocol.md`, and record the result
-      in `e2e/manual/results/`.
-- [ ] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters.
+- [ ] 6.3 Add the two journeys to `e2e/manual/screen-reader.protocol.md`. Verify by running the
+      protocol and recording what was heard in `e2e/manual/results/`.
+- [ ] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
+      counters.
