@@ -17,7 +17,7 @@ The same MUST hold at the empty bench, wherever the bench still offers the list 
 after the choice. Where the choice answers with the loadout it made in place of that list,
 there is no list left to hold.
 
-Source: 019/FR-001.
+Source: 020/FR-001.
 
 #### Scenario: A weapon is fitted into an empty mount
 
@@ -51,7 +51,7 @@ MUST be hidden from the accessibility tree and MUST NOT be a control.
 An item that publishes no grade has no grade to state, and a control that answers nothing is
 worse than no control. Holding the space is the whole of what it does.
 
-Source: 019/FR-002.
+Source: 020/FR-002.
 
 #### Scenario: A reader reaches an empty weapon mount
 

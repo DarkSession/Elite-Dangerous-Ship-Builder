@@ -51,7 +51,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '017-tool-bar-navigation',
   '018-navigation-loading-overlay',
   '019-first-frame-typefaces',
-  '019-held-grade-ladder',
+  '020-held-grade-ladder',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -156,8 +156,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       '013/FR-003',
       '013/FR-005',
       '013/FR-022',
-      '019/FR-001',
-      '019/FR-002',
+      '020/FR-001',
+      '020/FR-002',
     ],
     journey: 'equipment/bench',
     axe: true,

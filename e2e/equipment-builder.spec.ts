@@ -433,7 +433,7 @@ test.describe('a slot the grade no longer opens', () => {
 });
 
 /**
- * The list an item is chosen from holds its place (019/FR-001).
+ * The list an item is chosen from holds its place (020/FR-001).
  *
  * The grade ladder stands beside the item's name where the column has room for
  * it, and it is the taller of the two. So the track holds the ladder's height

@@ -29,7 +29,7 @@ press began.
   parts rather than declared as a figure, a drift between the ladder's track and the ladder
   becomes a test failure rather than a silent one.
 
-The change declares requirements `019/FR-001` and `019/FR-002`:
+The change declares requirements `020/FR-001` and `020/FR-002`:
 
 - **FR-001** The list an item is chosen from holds its place across the choice, and the grade
   choice is not what moves it between one selected item and the next.
@@ -87,7 +87,7 @@ None.
   both engines (011/FR-021).
 - `e2e/equipment-accessibility.spec.ts` reads an empty weapon mount for what the held track
   says, which is nothing.
-- `e2e/coverage-ledger.ts` gains `019-held-grade-ladder` in `COVERED_FEATURES` and an entry
+- `e2e/coverage-ledger.ts` gains `020-held-grade-ladder` in `COVERED_FEATURES` and an entry
   registering both requirement ids.
 - No loadout data, no address, no catalogue reading and no stored record changes. Nothing new
   is fetched, and no component of the shared design system changes, so the preview manifest

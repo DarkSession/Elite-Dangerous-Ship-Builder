@@ -107,13 +107,13 @@ describe('ItemView', () => {
 
     // The track is there and empty. It holds the ladder's place, so the header
     // keeps one height and the list under it keeps its place across the choice
-    // (019/FR-001).
+    // (020/FR-001).
     expect(track).not.toBeNull();
     expect(track?.querySelector('ednb-grade-selector')).toBeNull();
     expect(track?.querySelectorAll('.grade__radio').length).toBe(0);
 
     // An empty mount publishes no grade, so the track answers nothing and says
-    // so: out of the accessibility tree and out of the focus order (019/FR-002).
+    // so: out of the accessibility tree and out of the focus order (020/FR-002).
     expect(track?.classList.contains('item__grades--held')).toBe(true);
     expect(track?.hasAttribute('inert')).toBe(true);
     expect(track?.getAttribute('aria-hidden')).toBe('true');

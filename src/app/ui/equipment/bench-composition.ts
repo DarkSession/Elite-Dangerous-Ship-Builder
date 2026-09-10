@@ -31,7 +31,7 @@ export type BenchComposition = 'wide' | 'compact';
  * two disagree with each other: the gate draws canvas 2a's header because the
  * bench composes wide, and the item view draws canvas 1b's band because its own
  * column is narrow, so choosing the first suit moves the list it was chosen from
- * (019/FR-001). Stated at one step, a wide bench never draws a middle column
+ * (020/FR-001). Stated at one step, a wide bench never draws a middle column
  * narrower than that column's own stylesheets ask for.
  *
  * The rules are the two hairlines the grid shows between the three columns. They

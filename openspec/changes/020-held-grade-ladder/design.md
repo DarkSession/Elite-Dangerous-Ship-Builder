@@ -65,18 +65,18 @@ No screen is introduced. Two regions already recorded change measure only:
   `openspec/changes/archive/013-equipment-builder/design/screen-inventory.md`. It composes the
   game-text heading, the grade ladder, the choice list, the metric group, the modification
   slots and the slot picker. The item column draws the ladder's track whether or not the item
-  publishes a grade. It satisfies `019/FR-001` and `019/FR-002`.
+  publishes a grade. It satisfies `020/FR-001` and `020/FR-002`.
 - **The suit gate** — artboards `2a` and `2b`
   (`openspec/changes/archive/013-equipment-builder/design/reference-review.md`, which is where
   the gate is recorded, together with
   `openspec/changes/archive/013-equipment-builder/design/screen-reader-record.md`; the screen
   inventory carries no row for it). Unchanged in what it composes. Its header seam becomes the
-  item column's, which is what makes the two measure the same wide. It satisfies `019/FR-001`.
+  item column's, which is what makes the two measure the same wide. It satisfies `020/FR-001`.
 - **The bench** — artboards `1a` and `1b`
   (`openspec/changes/archive/013-equipment-builder/design/equipment-bench.md`). Unchanged in
   what it composes and in the two arrangements it has. The width it takes the three-column
   arrangement at moves up, so the item column between the rails always clears its own step.
-  It satisfies `019/FR-001`.
+  It satisfies `020/FR-001`.
 
 ## Decisions
 

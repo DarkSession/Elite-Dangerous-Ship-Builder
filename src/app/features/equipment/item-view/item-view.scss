@@ -215,7 +215,7 @@
   // of the two, and the ladder is the taller. So the track carries the ladder's
   // own composed height whether or not there is a ladder in it: the header keeps
   // one height, and the list under it keeps its place across the choice
-  // (019/FR-001).
+  // (020/FR-001).
   .item__grades--held {
     display: block;
     min-block-size: var(--ednb-layout-grade-ladder-block);

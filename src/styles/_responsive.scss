@@ -252,7 +252,7 @@ $outfitting-wide-min: 24.5rem + $outfitting-bench-wide-min + 19.125rem;
 // two disagree with each other: the gate draws canvas 2a's header because the
 // bench composes wide, and the item view draws canvas 1b's band because its own
 // column is narrow, so choosing the first suit moves the list it was chosen
-// from (019/FR-001). Stated at one step, the bench never draws a middle column
+// from (020/FR-001). Stated at one step, the bench never draws a middle column
 // narrower than that column's own stylesheets ask for (responsive composition,
 // "Behaviour keyed to a composition is stated at the same step the stylesheets
 // use").

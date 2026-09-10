@@ -136,7 +136,7 @@ test.describe('every bench state', () => {
     // The track is held so the list does not move when a weapon is chosen, and
     // an item that publishes no grade has no grade to state. So it is not in
     // the accessibility tree and it is not a control: a Commander is never
-    // handed a grade to press for a mount that carries nothing (019/FR-002).
+    // handed a grade to press for a mount that carries nothing (020/FR-002).
     const track = page.locator('.item__grades');
     await expect(track).toHaveAttribute('aria-hidden', 'true');
     await expect(track).toHaveAttribute('inert');

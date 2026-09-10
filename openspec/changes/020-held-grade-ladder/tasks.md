@@ -21,7 +21,7 @@
       `.item__grades` element that is always drawn, so the ladder is conditional and the track
       is not. Where the track holds no ladder, give it `[attr.inert]="true"` and
       `aria-hidden="true"`, as the suit gate does for its own previews, so the track is hidden
-      from the accessibility tree and out of the focus order (019/FR-002). Verify with the
+      from the accessibility tree and out of the focus order (020/FR-002). Verify with the
       unit tests in task 4.1.
 - [x] 2.2 In `src/app/features/equipment/item-view/item-view.scss`, give the empty track its
       held size inside the `container-medium-up(item)` block only, as a `min-block-size` of
@@ -84,7 +84,7 @@ test:scripts`.
       open an empty weapon mount, read the bounding box of `.item__alternatives`, choose a
       weapon from `swapList`, and assert the block's `y` is unchanged. Assert in the same
       journey that the mount's grade ladder is absent before the choice and present after it,
-      so a passing test cannot mean the ladder never appeared (019/FR-001). Then read the empty
+      so a passing test cannot mean the ladder never appeared (020/FR-001). Then read the empty
       track's own bounding box against the arrangement the item column draws, which the journey
       takes from the boxes themselves: where the track's top is above `.item__alternatives` the
       header is a row and the track's block size is the ladder's, and where the track stands
@@ -101,13 +101,13 @@ test:scripts`.
       the gate and holds no list — the requirement's third scenario — so assert both that no
       list is drawn and that the loadout is stated. Where it is wide, assert the list is there
       before measuring it, so a bench that lost the list fails rather than taking the other
-      branch (019/FR-001). Verify with `pnpm run e2e`.
+      branch (020/FR-001). Verify with `pnpm run e2e`.
 - [x] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
       item, open an empty weapon mount, and branch on the arrangement the item column draws,
       which the journey takes from the ladder's own box as task 5.1 does. Where the ladder
       stands above the list, assert `.item__alternatives` has the same `y` on both items; this
       is the case that fails if the held track measures anything other than the ladder
-      (019/FR-001). Where it stands below, assert the empty mount's track holds nothing,
+      (020/FR-001). Where it stands below, assert the empty mount's track holds nothing,
       because there the grade choice reaches nothing above the list and what is above it is
       each item's own name, which the requirement leaves to the item. Verify with
       `pnpm run e2e`.
@@ -115,12 +115,12 @@ test:scripts`.
       that the held track is absent from the accessibility tree and offers no control, and
       confirm the existing axe scan of the bench still reports no violation of a criterion the
       constitution does not exclude — 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
-      2.4.11 (019/FR-002). Verify with `pnpm run e2e`.
+      2.4.11 (020/FR-002). Verify with `pnpm run e2e`.
 
 ## 6. The record
 
-- [x] 6.1 Add `019-held-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts` and
-      register both ids. `019/FR-001` and `019/FR-002` go on the `equipment/loadout` surface,
+- [x] 6.1 Add `020-held-grade-ladder` to `COVERED_FEATURES` in `e2e/coverage-ledger.ts` and
+      register both ids. `020/FR-001` and `020/FR-002` go on the `equipment/loadout` surface,
       whose journey is `equipment/bench` and which is already scanned by axe, with one
       assertion line naming each journey added in group 5. Verify with `pnpm run policy:specs`,
       which fails naming any declared id that is not registered.

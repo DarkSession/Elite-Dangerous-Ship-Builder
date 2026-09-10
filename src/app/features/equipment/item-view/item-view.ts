@@ -65,9 +65,9 @@ export class ItemView {
    * Whether the ladder's track stands empty.
    *
    * The track is drawn whether or not the item publishes a grade, so that the
-   * header keeps one height and the list under it keeps its place (019/FR-001).
+   * header keeps one height and the list under it keeps its place (020/FR-001).
    * An empty track carries no ladder, and it says nothing: it is out of the
-   * accessibility tree and out of the focus order (019/FR-002). One reading
+   * accessibility tree and out of the focus order (020/FR-002). One reading
    * decides all four, so the drawing and the two attributes cannot disagree
    * about which state the track is in.
    */
