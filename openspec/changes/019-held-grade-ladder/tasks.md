@@ -44,6 +44,16 @@
       "The gate's seam is stated once, for both arrangements"). Record in the comment that the
       gate stands in the column the item takes and the two must agree with each other, which
       is the recorded 4px divergence from artboard `2a`. Verify with the journey in task 5.2.
+- [x] 3.2 Give the item column its own step in the width the bench takes its three-column
+      arrangement at, so the gate and the item column answer alike wherever the bench draws
+      them side by side. In `src/styles/_responsive.scss` compose
+      `$equipment-bench-wide-min` from the ledger rail, `$container-medium-min`, the commander
+      rail and the two hairline rules the grid draws between them, and read it from the
+      `@container bench-page` query in `src/app/features/equipment/equipment-bench.page.scss`;
+      in `src/app/ui/equipment/bench-composition.ts` compose `BENCH_WIDE_MINIMUM_REM` from the
+      same parts. Record in both comments why the item share is that step and not a content
+      minimum of its own (design, "A wide bench leaves the item column its own step"). Verify
+      with the case in task 4.3 and with the journey in task 5.2.
 
 ## 4. What the unit tests state
 
@@ -56,6 +66,11 @@
       later edit cannot make it conditional again. Note in the test that its size is measured
       by the end-to-end journeys, which are the only place layout is computed. Verify with
       `pnpm run test`.
+- [x] 4.3 In `src/app/features/equipment/equipment-bench.page.spec.ts`, add a case that the
+      width the bench takes its three-column arrangement at leaves the item column at least
+      the medium container step, once the two rails and the two rules are taken off it. The
+      band this closes lies between two Playwright profiles, so no journey visits it and this
+      is what holds the two steps together. Verify with `pnpm run test`.
 
 ## 5. The journeys the requirements are about
 

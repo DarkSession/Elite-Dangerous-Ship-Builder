@@ -243,6 +243,25 @@ $outfitting-wide-min: 24.5rem + $outfitting-bench-wide-min + 19.125rem;
   }
 }
 
+// The equipment bench wide enough for canvas 1a's three columns: the ledger's
+// 392px rail, the item column, the commander's 320px rail, and the two hairline
+// rules the grid draws between them.
+//
+// The item column's share is the medium container step, which is the step the
+// item view and the suit gate answer at from inside that column. Below it the
+// two disagree with each other: the gate draws canvas 2a's header because the
+// bench composes wide, and the item view draws canvas 1b's band because its own
+// column is narrow, so choosing the first suit moves the list it was chosen
+// from (019/FR-001). Stated at one step, the bench never draws a middle column
+// narrower than that column's own stylesheets ask for (responsive composition,
+// "Behaviour keyed to a composition is stated at the same step the stylesheets
+// use").
+//
+// Asked from both sides of the seam and they may not drift:
+// `ui/equipment/bench-composition.ts` decides whether the item view is a third
+// column or a drill-in, and this draws the tracks.
+$equipment-bench-wide-min: 24.5rem + $container-medium-min + 20rem + 0.125rem;
+
 // The bench wide enough for canvas 1c's three columns. Declared once and asked
 // from both sides of the seam: the workspace lays the two panels out, and the
 // chooser's step ② draws its chevron only where step ③ is actually beside it.

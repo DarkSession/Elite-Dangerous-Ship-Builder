@@ -72,6 +72,11 @@ No screen is introduced. Two regions already recorded change measure only:
   `openspec/changes/archive/013-equipment-builder/design/screen-reader-record.md`; the screen
   inventory carries no row for it). Unchanged in what it composes. Its header seam becomes the
   item column's, which is what makes the two measure the same wide. It satisfies `019/FR-001`.
+- **The bench** — artboards `1a` and `1b`
+  (`openspec/changes/archive/013-equipment-builder/design/equipment-bench.md`). Unchanged in
+  what it composes and in the two arrangements it has. The width it takes the three-column
+  arrangement at moves up, so the item column between the rails always clears its own step.
+  It satisfies `019/FR-001`.
 
 ## Decisions
 
@@ -135,6 +140,26 @@ check to the bench would fail a correct build there and pass a stylesheet scoped
 condition. The record rules on exactly this: behaviour keyed to a composition is stated at the
 same step the stylesheets use, never at a second threshold of its own
 (`openspec/changes/archive/011-interface-foundations/design/responsive-composition.md`).
+
+**A wide bench leaves the item column its own step.**
+The bench's own answer and the item column's query used to cross in the one direction that
+breaks this change. The bench composed `wide` from three declared minimums that gave the item
+column 21.5rem, while the column's stylesheets answer at `$container-medium-min`, which is
+24rem. Between the two the bench drew three columns and the middle one was narrow: the suit
+gate drew artboard `2a`'s header because the bench was wide, the item column drew artboard
+`1b`'s band because its own column was not, and choosing the first suit moved the list by 92px
+— the movement this change exists to remove.
+
+So the bench's item share is now that same step, and the sum carries the two hairline rules
+the grid draws between the three columns as well. One question, asked once: a wide bench never
+draws a middle column narrower than that column's own stylesheets ask for, and both regions in
+it answer the same way. The figure is composed in `_responsive.scss` and read from there by the
+grid, and `bench-composition.ts` composes the same parts for the decision CSS cannot make.
+
+The other direction still crosses and is meant to: a compact bench draws the item view as a
+full-width drill-in, so the column clears its own step while the bench's answer is `compact`.
+Nothing in this change depends on it — a compact bench answers the first suit with the loadout
+in place of the gate, so there is no list left to hold (the requirement's third scenario).
 
 **Every journey runs at all five layout profiles.**
 No journey pins a viewport. `platform/accessible-responsive-operation`, "Journeys across the
