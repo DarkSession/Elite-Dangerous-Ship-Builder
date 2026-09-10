@@ -523,13 +523,29 @@ test.describe('the list an item is chosen from', () => {
     await pickSwap(swapList(page).first());
     await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(1);
     const fitted = await boxOf(page, '.item__alternatives');
+    const ladder = await boxOf(page, '.item__grades');
 
     // The mount next door, which carries nothing and publishes no grade.
     await openRow(page, 'PrimaryWeapon2');
     await expect(page.locator('.item__grades ednb-grade-selector')).toHaveCount(0);
     const empty = await boxOf(page, '.item__alternatives');
+    const held = await boxOf(page, '.item__grades');
 
-    // This is what fails if the held track measures anything but the ladder.
-    expect(Math.abs(empty.y - fitted.y)).toBeLessThanOrEqual(1);
+    // Which arrangement the item column draws, taken from the ladder's own box
+    // as the first journey takes it.
+    if (ladder.y < fitted.y) {
+      // The ladder stands beside the name, so the header's height is the
+      // ladder's on both items. This is what fails if the held track measures
+      // anything but the ladder.
+      expect(Math.abs(empty.y - fitted.y)).toBeLessThanOrEqual(1);
+      return;
+    }
+
+    // Here the ladder stands below the list, so the grade choice reaches
+    // nothing above it and the track holds no room at all. What is above the
+    // list is each item's own name and subtitle, which the requirement leaves
+    // to the item: a name that needs two lines takes two, and comparing the two
+    // bands would assert something the requirement does not say.
+    expect(held.height).toBe(0);
   });
 });

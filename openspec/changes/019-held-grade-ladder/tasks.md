@@ -75,7 +75,7 @@
       the rule cannot read and a step that refers to itself, rather than passing on either.
       Drive both readings from fixtures in `scripts/check-interface-foundations.test.mjs`, as
       every other rule there is driven. Verify with `pnpm run policy` and `pnpm run
-    test:scripts`.
+test:scripts`.
 
 ## 5. The journeys the requirements are about
 

@@ -165,6 +165,12 @@ from the terms it is written from: a change to the container step, to a rail or 
 one side alone fails the build. The band this closes lies between two layout profiles, so no
 journey visits it and the policy is what holds it shut.
 
+At the tablet-landscape profile the bench measures 1112px, which is 14px above the step and
+leaves the item column 398px. No profile reserves a scrollbar: the shell scrolls its own
+region rather than the document, so the bench measures the window at every one of them. A
+window between the old step and the new draws the tab strip and the drill-in instead of the
+three columns, which is the arrangement its middle column has room for.
+
 The other direction still crosses and is meant to: a compact bench draws the item view as a
 full-width drill-in, so the column clears its own step while the bench's answer is `compact`.
 Nothing in this change depends on it — a compact bench answers the first suit with the loadout
