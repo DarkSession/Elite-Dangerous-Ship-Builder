@@ -11,16 +11,16 @@ over itself is not a change: a second screen that could not be opened says exact
 first one said, and without this it would be the silence this requirement exists to
 prevent. A replay of one event is still one event and MUST stay silent.
 
-One occurrence MUST be announced once. Recomputing the state an announcement was made from is
-not a second occurrence, and MUST NOT announce again.
+One occurrence MUST be announced once. Re-resolving what an announcement says is not a second
+occurrence.
 
 A figure a filter publishes is a distinct event each time it changes, whether it rises or
 falls. A condition that arises a second time is a distinct event. An action a Commander
 repeats on one subject is a distinct event each time it reports an outcome.
 
-An outcome to a question the Commander has withdrawn MUST NOT be announced, and this exception
-to the two-events rule holds for no other case in this requirement. The question was replaced
-or cancelled before the answer arrived.
+An outcome to a question the Commander has withdrawn MUST NOT be announced. It is the one case
+this requirement excepts from the rule above. The question was replaced or cancelled before the
+answer arrived.
 
 Source: 011/FR-009.
 
@@ -43,10 +43,10 @@ Source: 011/FR-009.
 
 #### Scenario: One event is published twice
 
-- **WHEN** the state an announcement was made from is recomputed, and the event has not
-  recurred
+- **WHEN** a Commander changes the browser language setting, and nothing has happened since the
+  last announcement
 - **THEN** nothing further is announced
-- **AND** the live region carrying that event does not change
+- **AND** the live region carrying the last event does not change
 
 #### Scenario: A filter is narrowed twice
 

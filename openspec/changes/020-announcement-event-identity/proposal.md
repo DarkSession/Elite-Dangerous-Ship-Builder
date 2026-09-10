@@ -33,12 +33,12 @@ measurement, so each caller supplied a measurement.
 - The announcement policy counts its own events. A caller states what happened, and it is
   announced. There is no number to supply.
 - An announcement published from an effect resolves its message outside the effect's
-  dependencies, so a reading language the browser reports does not republish the event.
-- One optional declaration replaces the number. A caller whose outcome can arrive after its
-  question was withdrawn declares the request it belongs to, and a superseded outcome stays
-  silent. Two import flows use it.
-- Omitting the declaration makes an event announced rather than silent. A caller that states
-  nothing about suppression is announced every time it asks.
+  dependencies, so a browser language change does not republish the event.
+- Nothing replaces the number. A caller whose outcome can arrive after its question was
+  withdrawn asks its own store whether the question still stands, and announces only if it
+  does. Two import flows ask.
+- Every request the policy is given is announced. A caller that decides nothing is heard every
+  time it asks.
 - Narrowing the ship catalogue or the saved builds announces the new count each time it
   changes. Widening them announces it too. The count stays in the message.
 - A refused edit and a refused import are each announced, each time. So is each address that
@@ -70,7 +70,7 @@ None.
 ## Impact
 
 - `src/app/ui/announcements/announcement.service.ts` carries the policy: the sequence it mints,
-  the one declaration, and why the default is to announce. `SpokenEvent` and
+  and why every request it is given is announced. `SpokenEvent` and
   `announcement-outlet.ts` are unchanged.
 - `src/app/application/outfitting/outfitting.store.ts` announces a refused edit and a refused
   import where each refusal is produced.

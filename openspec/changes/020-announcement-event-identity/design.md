@@ -7,7 +7,8 @@ The policy is `src/app/ui/announcements/announcement.service.ts`. It keeps one n
 in a field called `revision`.
 
 One number answers three questions. Two are stated on the type: is this a replay, and is this a
-late answer to a withdrawn question. The third is not stated anywhere.
+late answer to a withdrawn question. The third is not stated anywhere. None of the three is a
+question the policy can answer from a number a caller hands it.
 
 Seven announcements are published from an Angular effect. An effect re-runs when anything it
 read changes, and resolving a message reads the message catalogue, so a reading language
@@ -22,8 +23,8 @@ That third job is why five of the seven defective sites supply what they supply.
 
 **Goals:**
 
-- An announcement is heard unless a caller has said why it should not be.
-- Each of the three questions is answered by whatever owns it.
+- An announcement is heard unless a caller has decided it should not be published.
+- Each of the three questions is answered by whatever holds the facts to answer it.
 - A caller that gets the policy wrong is heard twice rather than not at all.
 - The removed field cannot return one call at a time.
 
@@ -69,19 +70,25 @@ effect over the resolved view, with the message resolved inside the effect, so a
 language re-runs it. The literal `1` it supplies stops that second publication, and stops every
 later address with it.
 
-### One declaration, for the one question that remains
+### The caller answers both silences
 
-`request: number` is optional: a monotonic token naming the request an outcome belongs to. An
-outcome whose token is below the highest seen for `(kind, urgency)` stays silent.
+`AnnouncementRequest` carries `kind`, `urgency`, `messageKey` and `params`. Nothing else. The
+service announces what it is given.
 
-The boundary is below, not below-or-equal. One request can report two outcomes: a batch import
-stores three records and refuses a fourth, and `ship-builder/slef-exchange` requires both — the
-count stored, and the refusal naming the entry it is about. Both carry that submission's token,
-and both are events. Only a token from a submission the Commander replaced or cancelled is
-behind, and only that is silent.
+The withdrawn question cannot be answered anywhere else. A token names the request an outcome
+belongs to, and whether that request is still the one the Commander is waiting for is a fact
+the store holds, not the policy: a Commander who cancels a scan without starting another leaves
+the policy's highest token where it stands, so a late outcome carrying that token is not behind
+anything. The store already answers the question. `SlefStore.isCurrent` and
+`LoadoutImportStore.isCurrent` exist for it, and both coordinators call them.
 
-`SlefStore.requestToken` and `LoadoutImportStore.requestToken` hold these tokens. The field
-names what they are for.
+So each presenter asks before it announces, as its coordinator asks before it commits.
+
+This closes a defect the token boundary hid. `SlefPresenter.scanFiles` announces its outcome
+after the await without asking, and reads the store's token at that moment rather than the
+token its own scan carried. Two scans in flight therefore announce the abandoned outcome and
+drop the current one. A guard at the announcement is what the flow needed, and the number never
+supplied it.
 
 ### Where each site lands
 
@@ -99,7 +106,7 @@ names what they are for.
 | `slef.presenter.ts` scan                                | `request`         | Holds the token. Unchanged in behaviour.                                                       |
 | `loadout-import.presenter.ts`                           | `request`         | The same.                                                                                      |
 
-One declaration, two files. That is how much of the removed field's work belonged elsewhere.
+No declaration, and two files ask a question they already hold the answer to.
 
 ### Every delivery is announced
 
@@ -107,8 +114,8 @@ One declaration, two files. That is how much of the removed field's work belonge
 one payload twice is told once. That silence goes.
 
 Two presses are two events, and the requirement excuses only the withdrawn question. A
-Commander presses Copy a second time because they were unsure of the first press, and the
-sentence they did not hear is the answer. The same rule muted a copy that failed and then
+Commander presses Copy a second time because they were unsure of the first press. The second
+sentence answers the second press. The same rule muted a copy that failed and then
 succeeded, because the export did not change between them, which is the seventh site in the
 proposal's table.
 
@@ -116,14 +123,16 @@ Considered and rejected: keep the silence and write it into the requirement as a
 exception. The requirement would then excuse the case its own scenario "The same thing goes
 wrong twice" exists to prevent.
 
-### The three import outcomes declare one token
+### The three import outcomes stop counting
 
 `slef.presenter.ts` announces `slef.import` from the build revision when a submission commits,
 and from the store's request token when it stores or fails. Two counters under one
 `(kind, urgency)` is what mutes a stored import after a committed one.
 
-All three declare `request` from the store token. One submit carries one token, so the branches
-cannot disagree, and the boundary above lets one submit report two outcomes.
+None of the three carries a number. Each asks whether its submission is still current and
+announces if it is, so one submit reporting two outcomes states both — a batch that stores
+three records and refuses a fourth owes the count and the refusal, and
+`ship-builder/slef-exchange` requires each.
 
 ### A refusal announces where it is refused
 
@@ -139,11 +148,13 @@ It is also the only announcing effect that depends on rendered text, so `untrack
 not reach it. Announcing in the store puts the decision where principle III puts domain logic:
 it does not need a component to have rendered.
 
-The coalescing stays. One accepted import completing four partial rolls is one announcement
-naming four, and the store holds the batch that makes it four.
+The coalescing stays. A batch that refuses four entries is one announcement naming four rather
+than four announcements, and the store holds the batch that makes it four. What the package
+completed on a build it accepted is not announced here and is not announced at all
+(`ship-builder/slef-exchange`, "the normalisation MUST NOT be reported to the Commander").
 
 Considered and rejected: a refusal counter on the store, declared by the component. Issue #89
-suggests it. It keeps a number whose only job is to defeat a dedupe the event never needed.
+suggests it. It keeps a number that exists only to make the policy treat two refusals as two events.
 
 ### The gate
 
@@ -151,7 +162,9 @@ suggests it. It keeps a number whose only job is to defeat a dedupe the event ne
 `src/`:
 
 1. No `revision` key.
-2. An `announce` call inside an `effect` is inside an `untracked` call.
+2. An announcement published from an effect builds its request and calls `announce` inside one
+   `untracked` call. Resolving any part of the request outside that call reads the message
+   catalogue from the effect, which is the shape the rule exists to reject.
 
 Rule 1 stops the field returning. Rule 2 is what keeps a replay silent once the service stops
 recognising one, so it carries a requirement rather than a preference.
