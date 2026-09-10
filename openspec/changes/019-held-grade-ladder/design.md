@@ -123,6 +123,11 @@ Stated as a container query, the same one the column already uses to decide whet
 is a row (`container-medium-up(item)`), so one condition decides both. The two cannot disagree
 about which arrangement is being drawn.
 
+So the grade choice takes different room in the two arrangements, and the requirement is
+bounded to match: it holds the same room where it stands above the list, and where it stands
+below it moves nothing above it and holds no room at all. Both readings are one statement —
+the grade choice is not what moves the list.
+
 An empty track is taken out of the column's flow here rather than merely given no height. The
 column is a stack with a gap between its items, so a zero-height item still costs that gap —
 22px of nothing under the list, for a movement this arrangement does not have. The gate's own
@@ -154,7 +159,11 @@ So the bench's item share is now that same step, and the sum carries the two hai
 the grid draws between the three columns as well. One question, asked once: a wide bench never
 draws a middle column narrower than that column's own stylesheets ask for, and both regions in
 it answer the same way. The figure is composed in `_responsive.scss` and read from there by the
-grid, and `bench-composition.ts` composes the same parts for the decision CSS cannot make.
+grid, and `bench-composition.ts` composes the same parts for the decision CSS cannot make. The
+two are a registered pair of the repository's composition-step policy, which adds each side up
+from the terms it is written from: a change to the container step, to a rail or to a rule on
+one side alone fails the build. The band this closes lies between two layout profiles, so no
+journey visits it and the policy is what holds it shut.
 
 The other direction still crosses and is meant to: a compact bench draws the item view as a
 full-width drill-in, so the column clears its own step while the bench's answer is `compact`.

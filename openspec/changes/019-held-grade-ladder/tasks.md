@@ -66,11 +66,16 @@
       later edit cannot make it conditional again. Note in the test that its size is measured
       by the end-to-end journeys, which are the only place layout is computed. Verify with
       `pnpm run test`.
-- [x] 4.3 In `src/app/features/equipment/equipment-bench.page.spec.ts`, add a case that the
-      width the bench takes its three-column arrangement at leaves the item column at least
-      the medium container step, once the two rails and the two rules are taken off it. The
-      band this closes lies between two Playwright profiles, so no journey visits it and this
-      is what holds the two steps together. Verify with `pnpm run test`.
+- [x] 4.3 Register the two statements of the bench's step as a reconciled pair in
+      `SCOPE.duplicatedSteps` in `scripts/check-interface-foundations.mjs`, so the policy that
+      already holds the other composition steps together holds this one. Teach
+      `duplicatedStepViolations` to add a step up from the terms it is composed of, resolving
+      a named term from the source it is written in, so a step built on `$container-medium-min`
+      moves when that step does and a change to one side alone is a violation. Reject a term
+      the rule cannot read and a step that refers to itself, rather than passing on either.
+      Drive both readings from fixtures in `scripts/check-interface-foundations.test.mjs`, as
+      every other rule there is driven. Verify with `pnpm run policy` and `pnpm run
+    test:scripts`.
 
 ## 5. The journeys the requirements are about
 
@@ -95,9 +100,14 @@
       in that case that the loadout is stated instead, so the guard cannot hide a failure
       (019/FR-001). Verify with `pnpm run e2e`.
 - [x] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
-      item, open an empty weapon mount, and assert `.item__alternatives` has the same `y` on
-      both. This is the case that fails if the held track measures anything other than the
-      ladder (019/FR-001). Verify with `pnpm run e2e`.
+      item, open an empty weapon mount, and branch on the arrangement the item column draws,
+      which the journey takes from the ladder's own box as task 5.1 does. Where the ladder
+      stands above the list, assert `.item__alternatives` has the same `y` on both items; this
+      is the case that fails if the held track measures anything other than the ladder
+      (019/FR-001). Where it stands below, assert the empty mount's track holds nothing,
+      because there the grade choice reaches nothing above the list and what is above it is
+      each item's own name, which the requirement leaves to the item. Verify with
+      `pnpm run e2e`.
 - [x] 5.4 In `e2e/equipment-accessibility.spec.ts`, add a reading over an empty weapon mount
       that the held track is absent from the accessibility tree and offers no control, and
       confirm the existing axe scan of the bench still reports no violation of a criterion the

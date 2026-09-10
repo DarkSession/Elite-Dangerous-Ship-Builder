@@ -84,27 +84,6 @@ describe('EquipmentBenchPage', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
   };
 
-  it('leaves the item column its own step at the width the bench takes three columns', () => {
-    // The rails artboard `1a` fixes, and the two hairline rules the grid shows
-    // between the three columns. What is left over is the item column.
-    const LEDGER_RAIL_REM = 24.5;
-    const COMMANDER_RAIL_REM = 20;
-    const RULES_REM = 0.125;
-    // `$container-medium-min`: the step the item view and the suit gate both
-    // answer at from inside that column.
-    const MEDIUM_CONTAINER_REM = 24;
-
-    // Below this the bench drew three columns with a narrow one in the middle,
-    // and the two regions that stand in it disagreed about which arrangement
-    // they were in: the gate drew its header and the item column drew its band,
-    // so choosing the first suit moved the list it was chosen from
-    // (019/FR-001). The band lies between two layout profiles, so no journey
-    // visits it and this is what holds the two steps together.
-    expect(BENCH_WIDE_MINIMUM_REM - LEDGER_RAIL_REM - COMMANDER_RAIL_REM - RULES_REM).toBe(
-      MEDIUM_CONTAINER_REM,
-    );
-  });
-
   it('opens an empty compact bench straight onto the chooser', () => {
     // Canvas 2b draws no ledger at all: the `LOADOUT` tab opens on `STEP 1 ·
     // CHOOSE A SUIT`. Every row a ledger would draw there says `LOCKED` about a

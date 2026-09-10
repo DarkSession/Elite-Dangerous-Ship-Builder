@@ -98,6 +98,10 @@ export const SCOPE = {
       scss: { file: 'src/styles/_responsive.scss', name: '$viewport-short-max' },
       ts: { file: 'src/app/ui/short-viewport.ts', name: 'STACKABLE_MINIMUM_REM' },
     },
+    {
+      scss: { file: 'src/styles/_responsive.scss', name: '$equipment-bench-wide-min' },
+      ts: { file: 'src/app/ui/equipment/bench-composition.ts', name: 'BENCH_WIDE_MINIMUM_REM' },
+    },
   ],
 };
 
@@ -768,6 +772,78 @@ async function checkPreviewCoverage() {
 // Rule: the composition steps are declared once
 // ---------------------------------------------------------------------------
 
+/** How many terms a composed step may be added up from before the rule gives up. */
+const STEP_TERM_BUDGET = 16;
+
+/**
+ * Adds up one step from the terms it is composed of.
+ *
+ * A step is either a figure or a sum of figures and other steps, which is how
+ * both sides state a composition made of tracks and the rules between them. The
+ * terms are resolved from the same source they are written in, so a step built
+ * on another one moves with it. Anything else — a subtraction, a product, a
+ * figure in another unit — reads as unreadable, and an unreadable step is a
+ * violation rather than an agreement.
+ *
+ * `declaration` finds a name's expression in the source, and `figure` reads a
+ * single term as a number. The two differ between a stylesheet and a TypeScript
+ * source; everything else about adding a step up does not.
+ */
+function stepTotal(source, name, declaration, figure, seen = new Set()) {
+  if (seen.has(name) || seen.size > STEP_TERM_BUDGET) return null;
+  seen.add(name);
+
+  const found = declaration(source, name);
+  if (found === null) return null;
+
+  let total = 0;
+  for (const term of found.expression.split('+')) {
+    const written = term.trim();
+    if (written === '') return null;
+    const read = figure(written);
+    if (read !== null) {
+      total += read;
+      continue;
+    }
+    const composed = stepTotal(source, written, declaration, figure, seen);
+    if (composed === null) return null;
+    total += composed.total;
+  }
+  return { total, index: found.index };
+}
+
+/** A stylesheet's own step: `$name: 24.5rem + $other;`, in rem and nothing else. */
+function scssStep(source, name) {
+  return stepTotal(
+    source,
+    name,
+    (text, wanted) => {
+      const found = new RegExp(`\\${wanted}\\s*:\\s*([^;]+);`).exec(text);
+      return found === null ? null : { expression: found[1], index: found.index };
+    },
+    (term) => {
+      const found = /^(\d*\.?\d+)rem$/.exec(term);
+      return found === null ? null : Number(found[1]);
+    },
+  );
+}
+
+/** The TypeScript restatement: `const NAME = 24.5 + OTHER;`, in the same rem. */
+function tsStep(source, name) {
+  return stepTotal(
+    source,
+    name,
+    (text, wanted) => {
+      const found = new RegExp(`\\b${wanted}\\s*=\\s*([^;\\n]+)`).exec(text);
+      return found === null ? null : { expression: found[1], index: found.index };
+    },
+    (term) => {
+      const found = /^(\d*\.?\d+)$/.exec(term);
+      return found === null ? null : Number(found[1]);
+    },
+  );
+}
+
 /**
  * Reconciles one duplicated step: the stylesheets' declaration against the
  * TypeScript restatement of it.
@@ -776,6 +852,11 @@ async function checkPreviewCoverage() {
  * a pair rather than of the file system. `null` for either source is the file
  * being absent, which is itself a violation: a rule that quietly passes when
  * half of what it reconciles has been moved or renamed reconciles nothing.
+ *
+ * Either side may be composed from other steps in its own source, and the sum is
+ * what the two are compared on. So a step built on a container size moves when
+ * that size does, on both sides, and a change to one of them alone is what this
+ * catches.
  */
 function duplicatedStepViolations(pair, scssSource, tsSource) {
   const { scss, ts } = pair;
@@ -800,8 +881,8 @@ function duplicatedStepViolations(pair, scssSource, tsSource) {
     return found;
   }
 
-  const declared = new RegExp(`\\${scss.name}\\s*:\\s*(\\d*\\.?\\d+)rem`).exec(scssSource);
-  const restated = new RegExp(`${ts.name}\\s*=\\s*(\\d*\\.?\\d+)\\b`).exec(tsSource);
+  const declared = scssStep(scssSource, scss.name);
+  const restated = tsStep(tsSource, ts.name);
 
   if (declared === null) {
     return [
@@ -823,14 +904,14 @@ function duplicatedStepViolations(pair, scssSource, tsSource) {
       },
     ];
   }
-  if (Number(declared[1]) !== Number(restated[1])) {
+  if (declared.total !== restated.total) {
     return [
       {
         file: ts.file,
         line: lineOf(tsSource, restated.index),
         rule: 'composition-step',
         message:
-          `${ts.name} is ${restated[1]}rem where ${scss.name} is ${declared[1]}rem. ` +
+          `${ts.name} is ${restated.total}rem where ${scss.name} is ${declared.total}rem. ` +
           'A behaviour keyed to a composition has to turn at the width the stylesheets draw it at.',
       },
     ];

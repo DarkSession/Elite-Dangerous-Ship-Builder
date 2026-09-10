@@ -7,9 +7,11 @@ offers no grade choice (013/FR-002a).
 
 Choosing an item MUST NOT move the list it was chosen from.
 
-Between one selected item and the next, the grade choice MUST NOT be what moves that list: it
-MUST take the same room whether or not the selected item offers one. What an item's own name
-and subtitle take is that item's own, and a name that needs two lines takes two.
+Between one selected item and the next, the grade choice MUST NOT be what moves that list.
+Where the grade choice stands above the list, it MUST take the same room whether or not the
+selected item offers one. Where it stands below the list, it moves nothing above it and holds
+no room at all. What an item's own name and subtitle take is that item's own, and a name that
+needs two lines takes two.
 
 The same MUST hold at the empty bench, wherever the bench still offers the list of suits
 after the choice. Where the choice answers with the loadout it made in place of that list,
@@ -39,7 +41,7 @@ Source: 019/FR-001.
 #### Scenario: An empty mount is opened after a fitted item
 
 - **WHEN** a Commander reads a fitted item and then opens an empty weapon mount
-- **THEN** the grade choice takes the same room on both, so it moves neither list
+- **THEN** the grade choice moves neither list
 
 ### Requirement: Space held for an absent grade choice states nothing
 

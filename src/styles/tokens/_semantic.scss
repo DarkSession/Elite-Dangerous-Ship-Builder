@@ -529,6 +529,13 @@
   // The ladder is a `fieldset` and its label is the `legend`, which is not a
   // flex item of its own fieldset in any engine (`grade-selector.scss`), so the
   // fieldset's `row-gap` has one flex item to sit between and never applies.
+  //
+  // The label's line is the whole of the legend's height because the legend is
+  // a flex container (`grade-selector.scss`, `.grades__legend`). That
+  // blockifies what is in it and leaves the box no line of its own, so the
+  // height is the label's own leading rather than the inherited body line the
+  // legend would otherwise carry. The legend has to stay a flex container for
+  // this figure to hold.
   --ednb-layout-grade-ladder-block: calc(
     var(--ednb-text-size-micro) * var(--ednb-text-leading-control) + var(--ednb-layout-grade-step)
   );
