@@ -23,7 +23,10 @@ describe('HullDetailPage announcements', () => {
       imports: [HullDetailPage],
       providers: [
         provideLocalization(),
-        provideRouter([]),
+        // A route to land on. The sheet replaces the address with the hull's
+        // canonical spelling, and a router with nothing to match rejects that
+        // navigation rather than the test noticing.
+        provideRouter([{ path: '**', children: [] }]),
         ...provideMemoryStorage(new MemoryStorage()),
       ],
     });

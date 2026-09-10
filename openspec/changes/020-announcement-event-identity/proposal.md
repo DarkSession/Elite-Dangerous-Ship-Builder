@@ -33,7 +33,10 @@ measurement, so each caller supplied a measurement.
 - The announcement policy counts its own events. A caller states what happened, and it is
   announced. There is no number to supply.
 - An announcement published from an effect resolves its message outside the effect's
-  dependencies, so a browser language change does not republish the event.
+  dependencies, so a browser language change does not republish the event. Its trigger is the
+  event itself rather than something rebuilt alongside it: the ship manifest's count is read
+  as a number, because the object carrying it is rebuilt whenever a reading language reorders
+  the manifest.
 - Nothing replaces the number. A caller whose outcome can arrive after its question was
   withdrawn asks its own store whether the question still stands, and announces only if it
   does. Two import flows ask.
@@ -72,15 +75,16 @@ None.
 - `src/app/ui/announcements/announcement.service.ts` carries the policy: the sequence it mints,
   and why every request it is given is announced. `SpokenEvent` and
   `announcement-outlet.ts` are unchanged.
-- `src/app/application/outfitting/outfitting.store.ts` announces a refused edit and a refused
-  import where each refusal is produced.
 - `src/app/ui/outfitting/outfitting-notice.ts` draws the lines and announces nothing. It loses
   its `revision` input, and three templates lose the binding that fed it:
   `src/app/ui/outfitting/edit-refusal-notice.html`,
   `src/app/ui/outfitting/ingress-refusal-notice.html` and
   `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.html`.
-- Eight files state their events without a revision, and `outfitting.store.ts` above joins
-  them:
+- `src/app/ui/outfitting/edit-refusal-notice.ts` and
+  `src/app/ui/outfitting/ingress-refusal-notice.ts` announce instead. Each holds the refusal
+  itself, which changes once per refusal, where the generic notice holds resolved text that a
+  committed locale rewrites.
+- Eight files state their events without a revision:
   `src/app/features/ship-catalogue/ship-catalogue.page.ts`,
   `src/app/features/build-library/build-library.page.ts`,
   `src/app/features/hull-detail/hull-detail.page.ts`,
