@@ -39,7 +39,7 @@ That third job is why five of the seven defective sites supply what they supply.
 ## Screens
 
 None. This change introduces no screen and alters no layout. `OutfittingNotice` loses an input
-and an effect, and draws what it drew.
+and an effect and draws what it drew, and its two wrappers gain an effect that draws nothing.
 
 ## Decisions
 
@@ -64,6 +64,14 @@ an announcement was made from is recomputed, and nothing further is announced.
 Two things carry it. An announcement published from an effect resolves its message in
 `untracked`, so the effect depends on the state the event is about and on nothing else. Gate
 rule 2 holds that shape for every later caller.
+
+`untracked` answers what the effect _reads_. What the effect is _triggered by_ has to be the
+event as well, and a signal carrying the event inside a fresh object is not: a computed
+returning `{ shown, total }` is a new object whenever anything under it recomputes, and a
+reading language recomputes the ship manifest's ordering because it sorts game text through the
+locale's collator. So `ship-catalogue.page.ts` tracks the number rather than the object — a
+computed over a number compares by value, and only a count that moved re-runs what depends on
+it. `build-library.page.ts` already had a number, and needed nothing.
 
 `hull-detail.page.ts` shows what this replaces. It announces an unresolvable address from an
 effect over the resolved view, with the message resolved inside the effect, so a reading
@@ -94,20 +102,21 @@ the fact the presenter needed and the number never carried.
 
 ### Where each site lands
 
-| Site                                                              | Declares                                            | Why                                                                                            |
-| ----------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `ship-catalogue.page.ts`, `build-library.page.ts`                 | nothing                                             | The effect runs when the count changes, which is the event.                                    |
-| `outfitting.store.ts` refused edit, refused import, refused batch | nothing                                             | Announced where each refusal is produced.                                                      |
-| `outfitting-notice.ts`                                            | announces nothing                                   | Draws the lines. The event is the refusal, not the drawing.                                    |
-| `hull-detail.page.ts`                                             | nothing                                             | With the message resolved in `untracked`, the effect runs when an address resolves to no hull. |
-| `hull-anatomy.ts`                                                 | nothing                                             | Announces at the transition. `#transition` goes with the field.                                |
-| `app.ts` navigation failure                                       | nothing                                             | The effect runs once per failure.                                                              |
-| `app.ts` update notice                                            | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.           |
-| `app-frame.ts` locale fallback                                    | nothing                                             | The same.                                                                                      |
-| `slef.presenter.ts` delivery                                      | nothing                                             | Every delivery is an outcome a Commander asked for.                                            |
-| `slef.presenter.ts` accepted, stored and refused import           | nothing                                             | A withdrawn submit is its own outcome kind, and no branch announces it.                        |
-| `slef.presenter.ts` scan                                          | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                            |
-| `loadout-import.presenter.ts`                                     | announces a scan outcome only when the scan settled | The same two shapes as above.                                                                  |
+| Site                                                    | Declares                                            | Why                                                                                            |
+| ------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ship-catalogue.page.ts`                                | nothing                                             | Tracks the count as a number, so only a count that moved runs the effect.                      |
+| `build-library.page.ts`                                 | nothing                                             | Its count is already a number. The effect runs when it moves, which is the event.              |
+| `outfitting-notice.ts`                                  | announces nothing                                   | Its `lines` input is resolved text, so an effect over it is not an event.                      |
+| `edit-refusal-notice.ts`, `ingress-refusal-notice.ts`   | nothing                                             | Each holds the refusal itself, which changes once per refusal.                                 |
+| `hull-detail.page.ts`                                   | nothing                                             | With the message resolved in `untracked`, the effect runs when an address resolves to no hull. |
+| `hull-anatomy.ts`                                       | nothing                                             | Announces at the transition. `#transition` goes with the field.                                |
+| `app.ts` navigation failure                             | nothing                                             | The effect runs once per failure.                                                              |
+| `app.ts` update notice                                  | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.           |
+| `app-frame.ts` locale fallback                          | nothing                                             | The same.                                                                                      |
+| `slef.presenter.ts` delivery                            | nothing                                             | Every delivery is an outcome a Commander asked for.                                            |
+| `slef.presenter.ts` accepted, stored and refused import | nothing                                             | A withdrawn submit is its own outcome kind, and no branch announces it.                        |
+| `slef.presenter.ts` scan                                | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                            |
+| `loadout-import.presenter.ts`                           | announces a scan outcome only when the scan settled | The same two shapes as above.                                                                  |
 
 No declaration. Two files ask a question they already hold the answer to, and one remembers what
 it said.
@@ -154,27 +163,36 @@ announces if it is, so one submit reporting two outcomes states both — a batch
 three records and refuses a fourth owes the count and the refusal, and
 `ship-builder/slef-exchange` requires each.
 
-### A refusal announces where it is refused
+### A refusal is announced by what holds the refusal
 
-`OutfittingNotice` announces from an effect over its resolved lines and takes a `revision`
-input bound to the build revision. A refusal spends no build revision, so the second one is
-silent.
+`OutfittingNotice` announced from an effect over its resolved lines, and took a `revision` input
+bound to the build revision. A refusal spends no build revision, so the second one was silent.
 
-The event is not "these lines are on screen". It is "an edit was refused", and that happens in
-`OutfittingStore`. The store announces it and the component draws it. The `revision` input goes
-with the bindings in the two notice templates and the workspace template.
+The generic notice announces nothing. Its `lines` input is resolved text, so an effect over it
+re-runs whenever a locale is committed, and the number it was given is what stopped that.
 
-It is also the only announcing effect that depends on rendered text, so `untracked` alone would
-not reach it. Announcing in the store puts the decision where principle III puts domain logic:
-it does not need a component to have rendered.
+The two wrappers around it hold the refusal itself: `EditRefusalNotice` takes an `EditFailure`,
+`IngressRefusalNotice` an array of package failures. `OutfittingStore` sets a new failure object
+per refusal, and a committed locale touches neither. So each wrapper announces, with its own
+input as the trigger and everything the announcement says read inside `untracked`. That is gate
+rule 2's shape.
 
-The coalescing stays. A batch that refuses four entries is one announcement naming four rather
-than four announcements, and the store holds the batch that makes it four. What the package
-completed on a build it accepted is not announced here and is not announced at all
-(`ship-builder/slef-exchange`, "the normalisation MUST NOT be reported to the Commander").
+It also keeps one count in one place. `outfitting.notice.announced` says how many lines there
+are to read, and the wrapper that builds the lines is what counts them.
+
+Considered and rejected: announcing in `OutfittingStore`. The refusal is domain, but the
+sentence is not — it names a number of rendered lines, which only the component building them
+knows. The store would re-derive that rule in a second place and take a dependency on
+`src/app/ui/` to do it.
 
 Considered and rejected: a refusal counter on the store, declared by the component. Issue #89
-suggests it. It keeps a number that exists only to make the policy treat two refusals as two events.
+suggests it. It keeps a number that exists only to make the policy treat two refusals as two
+events.
+
+The coalescing stays. A batch that refuses four entries is one announcement naming four rather
+than four announcements. What the package completed on a build it accepted is not announced
+here and is not announced at all (`ship-builder/slef-exchange`, "the normalisation MUST NOT be
+reported to the Commander").
 
 ### The gate
 
@@ -200,13 +218,10 @@ recognising one, so it carries a requirement rather than a preference.
   and the second press is a question that deserves an answer. The manual protocol reads whether
   two identical sentences in a row are a nuisance. If they are, the message changes rather than
   the policy.
-- **`OutfittingStore` gains two dependencies: the announcement service under `src/app/ui/`, and
-  the localisation layer it resolves messages through.** → `SlefPresenter` and
-  `LoadoutImportPresenter` carry both, for the same reason, and both are tested without
-  rendering. The service renders nothing.
-- **A reader could hear a refusal before the notice is drawn.** → Both come from one state in
-  one change-detection pass, and the outlet is a region a reader hears rather than reads in
-  place. The manual protocol reads the ordering.
+- **Two wrapper components announce, and a third does not.** A later notice built on
+  `OutfittingNotice` could reasonably expect it to announce, and stay silent. → The generic
+  component says so at the top of the file, and each wrapper's own effect names the input that
+  is its event. Gate rule 2 catches the shape that would go wrong.
 - **Every announcing caller changes in one commit.** The field leaves the type, so the compiler
   names every site. → Each caller's unit suite reads its announcement, and the two journeys
   that were silent are read end to end and by hand.

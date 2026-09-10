@@ -1,6 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { AppFrame, type ScreenReturn } from './app-frame';
 import { provideLocalization } from '../../../i18n/i18n.providers';
+import { LocaleStore } from '../../../i18n/locale.store';
+import { AnnouncementService } from '../../announcements/announcement.service';
 
 /** Canvas 1b's sheet bar, as the hull sheet publishes it. */
 const HULL_SHEET: ScreenReturn = {
@@ -17,13 +19,17 @@ describe('AppFrame', () => {
     }).compileComponents();
   });
 
-  function render(back: ScreenReturn | null): HTMLElement {
+  function mount(back: ScreenReturn | null): ComponentFixture<AppFrame> {
     const fixture = TestBed.createComponent(AppFrame);
     fixture.componentRef.setInput('routeContext', 'Ship Builder');
     fixture.componentRef.setInput('routeCount', '48 ships');
     fixture.componentRef.setInput('back', back);
     fixture.detectChanges();
-    return fixture.nativeElement as HTMLElement;
+    return fixture;
+  }
+
+  function render(back: ScreenReturn | null): HTMLElement {
+    return mount(back).nativeElement as HTMLElement;
   }
 
   it('draws the ordinary bar when no screen is layered over another', () => {
@@ -273,5 +279,51 @@ describe('AppFrame', () => {
     back?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
     expect(followed).toBe('/ships');
+  });
+});
+
+describe('AppFrame and a locale that could not be used', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AppFrame],
+      providers: [provideLocalization()],
+    }).compileComponents();
+  });
+
+  function mount(): ComponentFixture<AppFrame> {
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('routeContext', 'Ship Builder');
+    fixture.componentRef.setInput('routeCount', '48 ships');
+    fixture.componentRef.setInput('back', null);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('says nothing while the reading language is the one that was asked for', () => {
+    mount();
+
+    expect(TestBed.inject(AnnouncementService).polite()).toBe('');
+  });
+
+  it('states each committed fallback, and says nothing for a re-render', () => {
+    const fixture = mount();
+    const locale = TestBed.inject(LocaleStore);
+    const announcements = TestBed.inject(AnnouncementService);
+
+    locale.commitFallbackToEnglish('de', 'load-failed', 'browser');
+    fixture.detectChanges();
+    const first = announcements.politeEvent();
+    expect(first, 'the first fallback said nothing').not.toBeNull();
+
+    // A re-render is not an event. The snapshot is the effect's only
+    // dependency, and drawing the frame again does not move it (011/FR-009).
+    fixture.detectChanges();
+    expect(announcements.politeEvent()).toBe(first);
+
+    // A second language asked for and not shipped is a second event, spoken
+    // in a sentence that names it.
+    locale.commitFallbackToEnglish('fr', 'load-failed', 'browser');
+    fixture.detectChanges();
+    expect(announcements.politeEvent()?.identity).not.toBe(first?.identity);
   });
 });

@@ -1,9 +1,10 @@
+import { signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { DocumentAdapter } from '../../platform/browser/document.adapter';
 import { AnnouncementOutlet } from './announcement-outlet';
-import { AnnouncementService } from './announcement.service';
+import { AnnouncementService, type SpokenEvent } from './announcement.service';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
@@ -55,9 +56,8 @@ describe('AnnouncementOutlet', () => {
       (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
     ) ?? null;
 
-  const failure = (revision: number) => ({
+  const failure = () => ({
     kind: 'navigation.failed',
-    revision,
     urgency: 'polite' as const,
     messageKey: 'navigation.failed.notice' as const,
   });
@@ -72,7 +72,7 @@ describe('AnnouncementOutlet', () => {
   it('replaces what it holds for a second event spoken in the same words', () => {
     const { fixture, announcements } = render();
 
-    announcements.announce(failure(1));
+    announcements.announce(failure());
     fixture.detectChanges();
     const polite = region(fixture, 'polite');
     const first = nodeIn(polite);
@@ -83,7 +83,7 @@ describe('AnnouncementOutlet', () => {
     // same sentence — which is the whole difficulty: text written over itself
     // is not a change, and a region that did not change is a region a reader is
     // not told about again. So the node itself has to be a new one.
-    announcements.announce(failure(2));
+    announcements.announce(failure());
     fixture.detectChanges();
     const second = nodeIn(polite);
 
@@ -92,16 +92,34 @@ describe('AnnouncementOutlet', () => {
     expect(second, 'the region held the same node, so nothing changed to announce').not.toBe(first);
   });
 
-  it('keeps the node it holds when the same event is published again', () => {
-    const { fixture, announcements } = render();
+  it('renders by the event rather than by its words, so one event keeps its node', () => {
+    // The outlet's half of the contract, driven directly rather than through
+    // the service. The service publishes a fresh identity per request and
+    // cannot hand out one twice, so the only way to read what the identity is
+    // *for* is to hold one still: a region re-rendered for the same event has
+    // not changed, and a reader is not told about it a second time.
+    const held = signal<SpokenEvent | null>({
+      identity: 'navigation.failed|1|polite',
+      text: BUNDLED_ENGLISH['navigation.failed.notice'],
+    });
 
-    announcements.announce(failure(1));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideLocalization(),
+        { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },
+        {
+          provide: AnnouncementService,
+          useValue: { assertiveEvent: signal(null), politeEvent: held },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(AnnouncementOutlet);
     fixture.detectChanges();
     const first = nodeIn(region(fixture, 'polite'));
+    expect(first, 'the event put nothing in the region').not.toBeNull();
 
-    // The same event, not a second one. Nothing happened, so nothing may look
-    // to a reader as though it did.
-    announcements.announce(failure(1));
+    held.set({ ...held()! });
     fixture.detectChanges();
 
     expect(nodeIn(region(fixture, 'polite'))).toBe(first);
@@ -110,7 +128,7 @@ describe('AnnouncementOutlet', () => {
   it('empties the region on a locale switch rather than leaving the old words', () => {
     const { fixture, announcements } = render();
 
-    announcements.announce(failure(1));
+    announcements.announce(failure());
     fixture.detectChanges();
     announcements.clearOutlets();
     fixture.detectChanges();

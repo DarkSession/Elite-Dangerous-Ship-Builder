@@ -20,11 +20,12 @@ export interface NoticeLine {
  * own. What this adds is the framing outfitting needs: several lines under one
  * heading, each individually readable and in reading order.
  *
- * It announces nothing. A notice is drawn because an edit was refused, and the
- * refusal is what a reader is told about — announced by `OutfittingStore`, where
- * it happens, so a second refusal reaches a reader whether or not it moves
- * anything on screen (011/FR-009). A component announcing what it renders can
- * only speak when it renders, and can speak again whenever it re-renders.
+ * It announces nothing, and a component built on it must announce for itself.
+ * `lines` is already-resolved text, so an effect over it re-runs whenever a
+ * locale is committed, which would tell a reader a second time about a refusal
+ * that happened once (011/FR-009). The wrappers — `EditRefusalNotice` and
+ * `IngressRefusalNotice` — hold the refusal itself, which changes once per
+ * refusal, so each announces from its own input.
  *
  * `alert` is for something that did not happen — a refusal — and `status` for
  * something that did. That is not a styling choice: an alert interrupts, and

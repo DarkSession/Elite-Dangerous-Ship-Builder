@@ -557,4 +557,31 @@ describe('what a journal source adds to the words', () => {
 
     expect(announcements.polite()).toBe('Nothing was found to import.');
   });
+
+  it('says nothing about the outcome of a scan a newer one replaced', async () => {
+    let release: (text: string) => void = () => {};
+    const slow = {
+      name: 'Journal.slow.log',
+      size: 1,
+      text: () => new Promise<string>((resolve) => (release = resolve)),
+    };
+
+    const abandoned = presenter.scanFiles([slow]);
+
+    // A second drop while the first is still being read. Its outcome is the
+    // answer the Commander is waiting for.
+    await presenter.scanFiles([
+      FILE('Journal.02.log', [line({ ShipName: 'A' }), line({ ShipName: 'B' })]),
+    ]);
+    const answered = announcements.politeEvent();
+    expect(answered?.text).toBe('2 builds found. Choose one or more.');
+
+    // The abandoned scan then settles, on nothing at all. Announced, it would
+    // talk over the answer to the question that replaced it — which is what a
+    // token read at the wrong moment used to allow.
+    release('{"event":"Docked"}');
+    await abandoned;
+
+    expect(announcements.politeEvent()).toBe(answered);
+  });
 });

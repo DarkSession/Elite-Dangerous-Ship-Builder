@@ -2631,7 +2631,6 @@ registerPreview({
       'default',
       {
         title: 'Imported build',
-        revision: 1,
         mode: 'status',
         lines: [
           {
@@ -2642,12 +2641,12 @@ registerPreview({
         ],
       },
       [
-        'the notice is announced politely, once, rather than interrupting',
         'the tone is named in text and is not carried by colour alone',
+        'the notice draws and does not announce; what announces is what holds the event',
       ],
       CONTROL_VARIANTS,
     ),
-    state('empty', { title: 'Imported build', revision: 1, mode: 'status', lines: [] }, [
+    state('empty', { title: 'Imported build', mode: 'status', lines: [] }, [
       'a notice with nothing to say renders nothing rather than an empty frame',
     ]),
     notApplicable(
@@ -2658,7 +2657,6 @@ registerPreview({
       'error',
       {
         title: 'That change was not made',
-        revision: 2,
         mode: 'alert',
         lines: [
           {
@@ -2942,17 +2940,16 @@ registerPreview({
     ['default', 'empty', 'error'],
   ),
   states: [
-    state('default', { failure: null, revision: 1 }, [
+    state('default', { failure: null }, [
       'no refusal renders nothing, so a cleared failure leaves no residue',
     ]),
-    state('empty', { failure: null, revision: 1 }, [
+    state('empty', { failure: null }, [
       'the empty and default states are the same absence, stated once',
     ]),
     notApplicable('loading', 'A refusal is the outcome of an attempt that has already finished.'),
     state(
       'error',
       {
-        revision: 2,
         slotLabel: 'Huge Hardpoint 1',
         failure: {
           category: 'packageEdit',
@@ -3683,7 +3680,6 @@ registerPreview({
     state(
       'default',
       {
-        revision: 4,
         slotLabels: { MainEngines: 'Thrusters', FrameShiftDrive: 'Frame Shift Drive' },
         failures: [
           {
@@ -3721,9 +3717,7 @@ registerPreview({
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
     ),
-    state('empty', { revision: 4, failures: [], slotLabels: {} }, [
-      'nothing refused renders nothing at all',
-    ]),
+    state('empty', { failures: [], slotLabels: {} }, ['nothing refused renders nothing at all']),
     notApplicable(
       'loading',
       'The refusal is the ingress gate’s finished answer; there is no partway state to render.',

@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 import type { EditFailure } from '../../application/outfitting/build-edit-intent';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
+import { AnnouncementService } from '../announcements/announcement.service';
 import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
 
 /**
@@ -17,7 +26,11 @@ import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
  *
  * The refusal is an alert. A Commander who has just pressed a button and had
  * nothing happen needs to be told now, not when they next happen to read the
- * page.
+ * page — so it is announced as well as drawn, and announced from here rather
+ * than from the notice it is drawn in. `failure` is the refusal itself and the
+ * store hands over a new one per refusal, so this effect runs once per event;
+ * an effect over the drawn lines would run again for every committed locale
+ * (011/FR-009).
  */
 @Component({
   selector: 'ednb-edit-refusal-notice',
@@ -29,6 +42,7 @@ import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
 export class EditRefusalNotice {
   readonly #messages = inject(MessageService);
   readonly #gameText = inject(GameTextPresenter);
+  readonly #announcements = inject(AnnouncementService);
 
   readonly failure = input.required<EditFailure | null>();
 
@@ -61,6 +75,25 @@ export class EditRefusalNotice {
 
     return lines;
   });
+
+  constructor() {
+    effect(() => {
+      if (this.failure() === null) {
+        return;
+      }
+      // Everything the sentence says is read in here, so the only thing this
+      // effect depends on is the refusal. One announcement for the whole
+      // notice: the lines stay on the page, in reading order, to be re-read.
+      untracked(() => {
+        this.#announcements.announce({
+          kind: 'outfitting.edit-refused',
+          urgency: 'assertive',
+          messageKey: 'outfitting.notice.announced',
+          params: { title: this.title(), count: this.lines().length },
+        });
+      });
+    });
+  }
 
   /**
    * The Almanac's own sentence, resolved for the active locale.

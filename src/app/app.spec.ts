@@ -627,11 +627,11 @@ describe('App and a newly published version', () => {
 
     // A further version behind the first is the same sentence for the same
     // revision, and the overlay going up and down again does not repeat it.
-    // Asserted on what the service did with the request, not on what the outlet
-    // holds: a republished event writes the same string, so reading the outlet
-    // again would pass either way. The effect does re-run — the overlay going
-    // up and coming down is a change it tracks — and the identity is what
-    // refuses it, which is the half worth proving.
+    // Asserted on what was published, not on what the outlet holds: the same
+    // string written twice reads the same either way. The effect does re-run —
+    // the overlay going up and coming down is a change it tracks — and the
+    // shell remembering the version it announced is what refuses the second
+    // publication, which is the half worth proving.
     const published = vi.spyOn(announcements, 'announce');
 
     updates.report('ready');
@@ -641,8 +641,18 @@ describe('App and a newly published version', () => {
     fixture.detectChanges();
 
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
-    expect(published.mock.calls.length).toBeGreaterThan(0);
-    expect(published.mock.results.map(({ value }) => value)).not.toContain(true);
+    expect(published.mock.calls.filter(([request]) => request.kind === 'app.update')).toEqual([]);
+
+    // A version the shell has not announced is a second event, and is heard.
+    updates.report('unusable');
+    fixture.detectChanges();
+    await settled();
+    fixture.detectChanges();
+
+    expect(published.mock.calls.filter(([request]) => request.kind === 'app.update')).toHaveLength(
+      1,
+    );
+    expect(announcements.assertive()).toBe(BUNDLED_ENGLISH['update.unusable.announcement']);
   });
 
   it('does not republish the version event when a locale commits behind it', async () => {

@@ -1,10 +1,10 @@
 ## 1. The failing tests
 
-- [ ] 1.1 Add to `announcement.service.spec.ts` the case two events of one kind in identical
+- [x] 1.1 Add to `announcement.service.spec.ts` the case two events of one kind in identical
       words both publish. Verify it fails against the standing policy (011/FR-009).
-- [ ] 1.2 Add a reproducing case for each of the seven silent sites, beside the file that will
-      hold the fixed announcement. The refusal cases go beside `outfitting.store.ts`. Verify
-      each of the seven fails (011/FR-009).
+- [x] 1.2 Add a reproducing case for each of the seven silent sites, beside the file that will
+      hold the fixed announcement. The refusal cases go beside the two refusal notices, which
+      are what hold the refusal. Verify each of the seven fails (011/FR-009).
 
 ## 2. The policy
 
@@ -22,20 +22,21 @@
 ## 3. The seven sites
 
 - [x] 3.1 `ship-catalogue.page.ts` announces the match count in `untracked`, with no
-      declaration, keeping its first-run guard. Verify 5 → 3 → 1 publishes three times
-      (011/FR-009).
+      declaration, keeping its first-run guard. Track the count as a number: `count()` is a
+      fresh object whenever a reading language reorders the manifest. Verify a filter narrowed
+      twice and then widened publishes three times (011/FR-009).
 - [x] 3.2 Verify in the same spec that a rising count publishes once, and that a reading
       language changing with the count unchanged publishes nothing (011/FR-009).
 - [x] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads a falling
       count three times, a rising count once, and a browser language change not at all
       (011/FR-009).
-- [ ] 3.4 Announce the refused edit and the refused import in `outfitting.store.ts`, where each
-      refusal is produced. Verify without rendering that two refusals with no committed edit
-      between them publish twice (011/FR-009).
-- [ ] 3.5 Keep the batch coalesced. Verify in the store's spec that a batch refusing four
-      entries publishes one message naming four (011/FR-009).
+- [x] 3.4 Announce the refusal from `edit-refusal-notice.ts` and `ingress-refusal-notice.ts`,
+      with the refusal input as the trigger and everything the message says read in `untracked`.
+      Verify two refusals with no committed edit between them publish twice (011/FR-009).
+- [x] 3.5 Verify in the same specs that a committed locale publishes nothing, and that a batch
+      refusing four entries publishes one message rather than four (011/FR-009).
 - [x] 3.6 Remove the `revision` input, the `announce` call and the effect from
-      `outfitting-notice.ts`. Remove the binding from `edit-refusal-notice.html`,
+      `outfitting-notice.ts`, and the bindings from `edit-refusal-notice.html`,
       `ingress-refusal-notice.html` and `outfitting-workspace.html`. Verify the notice's spec
       reads that the lines stay in reading order and that it publishes nothing (011/FR-009).
 - [x] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
