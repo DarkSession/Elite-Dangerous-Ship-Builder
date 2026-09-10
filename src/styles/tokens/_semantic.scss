@@ -516,6 +516,29 @@
   --ednb-layout-import-picks: var(--ednb-measure-import-picks);
   --ednb-layout-grade-step: var(--ednb-measure-grade-step);
   --ednb-layout-grade-ladder: var(--ednb-measure-grade-ladder);
+
+  // The grade ladder's own height: its label's line over its row of step cells.
+  // What holds the ladder's place where an item publishes no grade has to
+  // measure the ladder, and the only figure that stays true is the one made of
+  // the ladder's own parts — a declared figure is a second statement of the same
+  // height that nothing keeps in step, and the label and the cell each move on
+  // their own token. Every part is `rem`-based, so the held track scales with
+  // text size as the ladder does.
+  //
+  // The stack gap between the two is not in the sum, because it is not drawn.
+  // The ladder is a `fieldset` and its label is the `legend`, which is not a
+  // flex item of its own fieldset in any engine (`grade-selector.scss`), so the
+  // fieldset's `row-gap` has one flex item to sit between and never applies.
+  //
+  // The label's line is the whole of the legend's height because the legend is
+  // a flex container (`grade-selector.scss`, `.grades__legend`). That
+  // blockifies what is in it and leaves the box no line of its own, so the
+  // height is the label's own leading rather than the inherited body line the
+  // legend would otherwise carry. The legend has to stay a flex container for
+  // this figure to hold.
+  --ednb-layout-grade-ladder-block: calc(
+    var(--ednb-text-size-micro) * var(--ednb-text-leading-control) + var(--ednb-layout-grade-step)
+  );
   --ednb-layout-defence-resist: var(--ednb-measure-defence-resist);
   --ednb-layout-resistance-bar: var(--ednb-measure-resistance-bar);
   --ednb-layout-defence-value: var(--ednb-measure-defence-value);

@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as layout;
+
 // The bench's own container, so the arrangement follows the room the shell gave
 // the route rather than the window. `rem` inside a container query is the root's
 // computed size, so the seam follows a reader's text size as well as the
@@ -43,8 +45,10 @@
 }
 
 // Canvas 1a's `392px 1fr 320px`: the ledger, the item view, and the commander
-// column carrying the stats over the materials.
-@container bench-page (min-width: 66rem) {
+// column carrying the stats over the materials. The step is composed in
+// `_responsive.scss` from the three tracks and the rules between them, so this
+// grid and `observeBenchComposition()` answer one question.
+@container bench-page (min-width: #{layout.$equipment-bench-wide-min}) {
   .bench {
     gap: var(--ednb-space-rule);
     grid-template-columns:

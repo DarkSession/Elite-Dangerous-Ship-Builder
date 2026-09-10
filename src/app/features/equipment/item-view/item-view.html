@@ -29,18 +29,31 @@
       </div>
 
       <!-- The ship tool's own ladder, drawn as canvas 1a draws this one: the
-           chosen grade filled and the rest bare. An empty mount publishes no
-           grade, so it draws no ladder rather than an empty one. -->
-      @if (item.grades.length > 0) {
-        <ednb-grade-selector
-          class="item__grades"
-          [grades]="item.grades"
-          [selected]="item.grade"
-          [cellLabels]="gradeLabels()"
-          [asSteps]="true"
-          (chosen)="gradeChosen.emit($event)"
-        />
-      }
+           chosen grade filled and the rest bare.
+
+           The track around it is drawn whether or not there is a ladder to put
+           in it. Wide, the header's height is the taller of the identity and
+           the track, and an empty mount publishes no grade — so the track holds
+           the ladder's own height either way, and the list below the header
+           keeps its place across the choice (020/FR-001). An empty track states
+           nothing: no ladder, out of the accessibility tree and out of the focus
+           order (020/FR-002). -->
+      <div
+        class="item__grades"
+        [class.item__grades--held]="ladderHeld()"
+        [attr.inert]="ladderHeld() ? true : null"
+        [attr.aria-hidden]="ladderHeld() ? 'true' : null"
+      >
+        @if (!ladderHeld()) {
+          <ednb-grade-selector
+            [grades]="item.grades"
+            [selected]="item.grade"
+            [cellLabels]="gradeLabels()"
+            [asSteps]="true"
+            (chosen)="gradeChosen.emit($event)"
+          />
+        }
+      </div>
     </header>
 
     <!--

@@ -27,7 +27,18 @@
   align-items: flex-end;
   justify-content: space-between;
   padding-inline: var(--ednb-space-3xl);
-  padding-block-end: var(--ednb-space-lg);
+  // The item column's own seam, which is 4px more than artboard `2a` draws. The
+  // gate stands in the column the item will take, and the two agree with each
+  // other before either agrees with its artboard: on the gate's own 12px the
+  // list of suits stands 4px above the list the chosen suit puts in its place,
+  // and choosing from it moves the list (020/FR-001).
+  //
+  // Stated once, for both arrangements: the header is taken out of flow on
+  // canvas 2b, so this seam is drawn on canvas 2a and nowhere else. Which of
+  // the two the gate draws is the bench's own composition rather than this
+  // column's width, because the bench decides whether the gate is a column
+  // beside two others or the whole of one screen.
+  padding-block-end: var(--ednb-space-2xl);
   border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
 
