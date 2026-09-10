@@ -504,15 +504,25 @@ test.describe('the list an item is chosen from', () => {
     await page.locator('.gate__suits .choice').filter({ hasText: 'Dominator Suit' }).click();
     await expect(page.locator('.gate')).toHaveCount(0);
 
-    // Where the bench has no room to keep the list, it answers the choice with
-    // the loadout it made instead, and there is no list left to hold. Stated
-    // rather than skipped, so the guard cannot hide a failure.
-    const list = page.locator('.item__alternatives');
-    if ((await list.count()) === 0) {
+    // Whether the bench keeps the list is the bench's own decision, so the bench
+    // is what the journey reads. It is the one condition here that really is a
+    // composition: the gate draws canvas 2a's arrangement on the same signal
+    // (`equipment-bench.page.html`, the gate's `compact` input), and the page
+    // draws the item column in place of the ledger on it too.
+    const composition = await page.locator('.bench').getAttribute('data-composition');
+
+    if (composition !== 'wide') {
+      // Canvas 2b answers the choice with the loadout it made instead, and
+      // there is no list left to hold. Stated rather than skipped: both halves
+      // are asserted, so a bench that simply drew nothing fails here.
+      await expect(page.locator('.item__alternatives')).toHaveCount(0);
       await expect(page.locator('.bench__region--loadout .ledger__row')).not.toHaveCount(0);
       return;
     }
 
+    // Canvas 2a keeps the list, so a bench that lost it fails rather than
+    // taking the branch above.
+    await expect(page.locator('.item__alternatives')).toHaveCount(1);
     const after = await boxOf(page, '.item__alternatives');
     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
   });

@@ -114,9 +114,12 @@ item a Commander ever opens to match a region they see once. The divergence from
 is 4px of padding and is recorded here.
 
 **The gate's seam is stated once, for both arrangements.**
-The gate's header is taken out of flow where the column is narrow, so the seam under it is
-drawn wide and nowhere else. One unconditional declaration is therefore the whole of it, and a
-container query around it would state a condition the header already answers.
+The gate's header is taken out of flow on canvas 2b, so the seam under it is drawn on canvas
+2a and nowhere else. One unconditional declaration is therefore the whole of it, and a query
+around it would state a condition the header already answers. Which arrangement the gate draws
+is the bench's own composition and not this column's width: the bench decides whether the gate
+is a column beside two others or the whole of one screen, which is a decision no container
+query can make.
 
 **The narrow column holds nothing, and holds it out of flow.**
 Stated as a container query, the same one the column already uses to decide whether the header

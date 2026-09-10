@@ -94,11 +94,14 @@ test:scripts`.
       and a block is held where the ladder stands below the list. Verify with `pnpm run e2e`.
 - [x] 5.2 In the same file, add the empty-bench journey, again pinning no viewport: open the
       bench on the gate, read the bounding box of `.gate__choose`, choose a suit, and assert
-      the `y` of `.item__alternatives` matches it. Guard the assertion on the list still being
-      offered, because the narrow bench answers the choice with the loadout in place of the
-      gate and holds no list — which is what the requirement's third scenario states. Assert
-      in that case that the loadout is stated instead, so the guard cannot hide a failure
-      (019/FR-001). Verify with `pnpm run e2e`.
+      the `y` of `.item__alternatives` matches it. Branch on the bench's own `data-composition`,
+      which is the one condition here that really is a composition: the gate draws its
+      arrangement on that signal, and the page draws the item column in place of the ledger on
+      it too. Where the bench is not wide it answers the choice with the loadout in place of
+      the gate and holds no list — the requirement's third scenario — so assert both that no
+      list is drawn and that the loadout is stated. Where it is wide, assert the list is there
+      before measuring it, so a bench that lost the list fails rather than taking the other
+      branch (019/FR-001). Verify with `pnpm run e2e`.
 - [x] 5.3 In the same file, add the item-to-item journey, pinning no viewport: read a fitted
       item, open an empty weapon mount, and branch on the arrangement the item column draws,
       which the journey takes from the ladder's own box as task 5.1 does. Where the ladder

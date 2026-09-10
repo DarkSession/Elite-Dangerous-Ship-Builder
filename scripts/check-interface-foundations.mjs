@@ -772,8 +772,13 @@ async function checkPreviewCoverage() {
 // Rule: the composition steps are declared once
 // ---------------------------------------------------------------------------
 
-/** How many terms a composed step may be added up from before the rule gives up. */
-const STEP_TERM_BUDGET = 16;
+/** How deep a step may be built on other steps before the rule gives up. */
+const STEP_DEPTH_BUDGET = 16;
+
+/** A term read into a pattern is a name, not a pattern of its own. */
+function asLiteralPattern(term) {
+  return term.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+}
 
 /**
  * Adds up one step from the terms it is composed of.
@@ -785,13 +790,16 @@ const STEP_TERM_BUDGET = 16;
  * figure in another unit — reads as unreadable, and an unreadable step is a
  * violation rather than an agreement.
  *
+ * `path` is the way back to the step this call is adding up, so a step that
+ * names itself somewhere along it stops rather than adding up forever. A term
+ * that appears twice side by side is a sum, not a cycle, and is added twice.
+ *
  * `declaration` finds a name's expression in the source, and `figure` reads a
  * single term as a number. The two differ between a stylesheet and a TypeScript
  * source; everything else about adding a step up does not.
  */
-function stepTotal(source, name, declaration, figure, seen = new Set()) {
-  if (seen.has(name) || seen.size > STEP_TERM_BUDGET) return null;
-  seen.add(name);
+function stepTotal(source, name, declaration, figure, path = []) {
+  if (path.includes(name) || path.length > STEP_DEPTH_BUDGET) return null;
 
   const found = declaration(source, name);
   if (found === null) return null;
@@ -805,7 +813,7 @@ function stepTotal(source, name, declaration, figure, seen = new Set()) {
       total += read;
       continue;
     }
-    const composed = stepTotal(source, written, declaration, figure, seen);
+    const composed = stepTotal(source, written, declaration, figure, [...path, name]);
     if (composed === null) return null;
     total += composed.total;
   }
@@ -818,7 +826,7 @@ function scssStep(source, name) {
     source,
     name,
     (text, wanted) => {
-      const found = new RegExp(`\\${wanted}\\s*:\\s*([^;]+);`).exec(text);
+      const found = new RegExp(`${asLiteralPattern(wanted)}\\s*:\\s*([^;]+);`).exec(text);
       return found === null ? null : { expression: found[1], index: found.index };
     },
     (term) => {
@@ -834,7 +842,7 @@ function tsStep(source, name) {
     source,
     name,
     (text, wanted) => {
-      const found = new RegExp(`\\b${wanted}\\s*=\\s*([^;\\n]+)`).exec(text);
+      const found = new RegExp(`\\b${asLiteralPattern(wanted)}\\s*=\\s*([^;\\n]+)`).exec(text);
       return found === null ? null : { expression: found[1], index: found.index };
     },
     (term) => {

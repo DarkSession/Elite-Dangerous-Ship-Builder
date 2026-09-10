@@ -33,8 +33,11 @@
   // list of suits stands 4px above the list the chosen suit puts in its place,
   // and choosing from it moves the list (019/FR-001).
   //
-  // Stated once, for both arrangements: the header is taken out of flow where
-  // the column is narrow, so this seam is drawn wide and nowhere else.
+  // Stated once, for both arrangements: the header is taken out of flow on
+  // canvas 2b, so this seam is drawn on canvas 2a and nowhere else. Which of
+  // the two the gate draws is the bench's own composition rather than this
+  // column's width, because the bench decides whether the gate is a column
+  // beside two others or the whole of one screen.
   padding-block-end: var(--ednb-space-2xl);
   border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
