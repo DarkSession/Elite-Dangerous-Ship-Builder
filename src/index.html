@@ -73,6 +73,79 @@
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
 
+    <!-- The faces a served document draws with, fetched beside the document
+         rather than after the stylesheet that declares them. Without this a
+         document paints in a system fallback and re-paints a moment later, and
+         the text changes shape in front of the Commander.
+
+         These seven are what a served document is drawn in, measured on the
+         built output with the bundle held. Fifty of the fifty-two published
+         addresses arrive with their content rendered, in three shapes — the
+         start page, the catalogue and a hull — and all three were measured. The
+         two benches and the fallback arrive as an empty shell, so they paint no
+         face until the application takes them over. JetBrains Mono 700 is drawn
+         through a weight nothing declares — the mark beside a shell action asks
+         for 600, and 700 is the face the browser matches it to. The `latin`
+         subset covers every language the application ships, German included.
+         Every other face — the `latin-ext` subsets, and the weights only a
+         screen draws — is fetched when something asks for it, which is after
+         the application has taken the document over.
+
+         Each path is relative, like every other path this document asks for: a
+         leading slash sends a preview deployment's fonts to the host root.
+         `crossorigin` is what makes the preload count — a font is fetched in
+         anonymous mode whatever its origin, and a preload declared without it
+         is a second, unused request. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/barlow/barlow-latin-400-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/barlow/barlow-latin-700-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/barlow-condensed/barlow-condensed-latin-600-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/barlow-condensed/barlow-condensed-latin-700-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/jetbrains-mono/jetbrains-mono-latin-500-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="fonts/jetbrains-mono/jetbrains-mono-latin-700-normal.woff2"
+      crossorigin
+    />
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",

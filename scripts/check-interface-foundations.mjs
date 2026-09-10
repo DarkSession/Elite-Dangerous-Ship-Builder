@@ -1077,6 +1077,7 @@ async function checkProductionOutput() {
   }
 
   violations.push(...productionOutputViolations(contents));
+  violations.push(...firstFrameTypefaceViolations(contents));
 }
 
 /**
@@ -1501,6 +1502,204 @@ export function productionOutputViolations(contents) {
           });
         }
         match = pattern.exec(requestable);
+      }
+    }
+  }
+
+  return found;
+}
+
+// ---------------------------------------------------------------------------
+// Rule: a served document is drawn in its own typefaces from its first frame
+// ---------------------------------------------------------------------------
+
+/**
+ * Every `<link>` a document carries, whole.
+ *
+ * Read as tags and sorted by their own attributes rather than matched by a
+ * pattern per relationship: `onload="this.rel='stylesheet'"` carries the word a
+ * `rel="stylesheet"` pattern looks for, and the deferral that spells it that way
+ * is exactly the one this rule exists to catch.
+ */
+const LINK_TAG = /<link\b[^>]*>/gi;
+
+/**
+ * One `@font-face`, as the emitted stylesheet spells it: its family and its file.
+ *
+ * Whitespace-tolerant, because the same rule is read from a minified stylesheet
+ * and from an unminified one, and a pattern that only matches the minified
+ * spelling stops checking without failing anything.
+ */
+const FACE_RULE = /@font-face\s*\{[^}]*\}/g;
+
+/** A CSS value with its quotes and surrounding space taken off. */
+function unquoted(value) {
+  return value.trim().replace(/^["']|["']$/g, '');
+}
+
+/** Whether a tag carries an attribute at all, with or without a value. */
+function hasAttribute(tag, name) {
+  return new RegExp(`(?:^|\\s)${name}(?=[\\s=>/])`, 'i').test(tag);
+}
+
+/**
+ * One attribute of a tag, however it is quoted.
+ *
+ * The name is anchored on whitespace rather than a word boundary, because a
+ * word boundary also falls after the dot in `onload="this.media='all'"`. That
+ * value carries the name and a value of its own, and reading it as the tag's
+ * own attribute is what would let the deferral this rule exists to catch state
+ * `media="print"` and be read as applying to every screen.
+ */
+function attributeValue(tag, name) {
+  const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag);
+  return match === null ? null : match[2];
+}
+
+/**
+ * Checks that every published document paints in the faces it was designed in.
+ *
+ * A document painted in a system fallback and re-painted in Barlow a moment
+ * later changes shape in front of the Commander, and the change is the whole
+ * page: the fallback stacks are metrically different, so the text moves as well
+ * as changing. Two things keep it from happening, and both are invisible in a
+ * source file:
+ *
+ *   * the stylesheet that declares the faces is applied before the first paint,
+ *     which is what `optimization.styles.inlineCritical: false` in
+ *     `angular.json` holds. The critical-CSS pass moves the stylesheet behind
+ *     the first paint, and it keeps a face only where a rule it judges critical
+ *     names the family in a `font-family` value — every rule here names one
+ *     through a design token, which that pass cannot resolve, so it drops all
+ *     twenty faces and the document paints in whatever the system offers;
+ *   * `src/index.html` preloads the faces a served document draws with, so they
+ *     arrive with that stylesheet rather than a round trip behind it.
+ *
+ * What it holds a document to is every family, not every weight: which weights
+ * one address draws is a property of the screen it renders, and no rule reading
+ * the emitted files can know it. A family with no face asked for is a whole
+ * typeface arriving behind the paint, and that this rule does catch.
+ *
+ * `contents` is `{ [emitted file]: text }`, the same map the production-output
+ * rule reads. Only the documents and the emitted stylesheets are inspected.
+ */
+export function firstFrameTypefaceViolations(contents) {
+  const found = [];
+  const fail = (file, message) =>
+    found.push({ file, line: 0, rule: 'first-frame-typeface', message });
+
+  // What the emitted stylesheets declare: every face's file, and which family
+  // each file belongs to. The families are what a document is held to asking
+  // for, because a family with no preloaded face is a whole typeface arriving
+  // behind the paint rather than one weight of one.
+  const declared = new Map();
+  for (const [file, text] of Object.entries(contents)) {
+    if (!file.endsWith('.css')) {
+      continue;
+    }
+    for (const rule of text.match(FACE_RULE) ?? []) {
+      const source = /url\(([^)]+)\)/.exec(rule);
+      const family = /font-family\s*:\s*([^;}]+)/.exec(rule);
+      if (source === null || family === null) {
+        continue;
+      }
+      declared.set(unquoted(source[1]), unquoted(family[1]));
+    }
+  }
+
+  for (const [file, text] of Object.entries(contents)) {
+    if (!file.endsWith('.html')) {
+      continue;
+    }
+
+    // `all` and `screen` are the two values that leave a stylesheet applied to
+    // the screen a Commander reads. Anything else — `print`, and a width query
+    // as much as a type — holds it back on some viewport or all of them, and a
+    // held-back stylesheet is one the document paints without.
+    const applies = (link) => {
+      const media = attributeValue(link, 'media');
+      return media === null || /^(all|screen)$/i.test(media.trim());
+    };
+
+    const links = text.match(LINK_TAG) ?? [];
+    const relationship = (tag) => (attributeValue(tag, 'rel') ?? '').trim().toLowerCase();
+    const stylesheets = links.filter((tag) => relationship(tag) === 'stylesheet');
+    for (const link of stylesheets.filter((sheet) => !applies(sheet))) {
+      fail(
+        file,
+        `A stylesheet is deferred behind media="${attributeValue(link, 'media')}", so the document paints before the faces it declares are known.`,
+      );
+    }
+
+    if (stylesheets.length === 0) {
+      fail(
+        file,
+        'The document applies no stylesheet, so nothing it is drawn in reaches it before it paints.',
+      );
+      continue;
+    }
+
+    // Every stylesheet it has is held back, which the failures above have
+    // already said once each.
+    if (!stylesheets.some(applies)) {
+      continue;
+    }
+
+    if (declared.size === 0) {
+      fail(
+        file,
+        'The document applies a stylesheet that declares no face at all, so every word of it is drawn in a system fallback.',
+      );
+      continue;
+    }
+
+    // The relationship is required rather than assumed from `as="font"`: a
+    // `prefetch`, a misspelt `rel` and a missing one all leave a tag that reads
+    // like a preload and fetches nothing early.
+    const preloads = links.filter(
+      (tag) =>
+        relationship(tag) === 'preload' &&
+        (attributeValue(tag, 'as') ?? '').trim().toLowerCase() === 'font',
+    );
+    const asked = new Set();
+    for (const preload of preloads) {
+      const href = attributeValue(preload, 'href');
+      if (href === null || href.startsWith('/') || /^[a-z]+:/i.test(href)) {
+        fail(
+          file,
+          `A font preload states ${href ?? 'no address'}. It has to be relative, so a deployment under a sub-path reaches its own fonts.`,
+        );
+        continue;
+      }
+      // Stated, and stated as the anonymous mode: a face is fetched anonymously
+      // whatever its origin, so a preload that carries no `crossorigin`, or
+      // carries `use-credentials`, does not match the fetch it exists for. The
+      // attribute is asked for by presence, because the spelling this document
+      // uses states no value at all.
+      const mode = attributeValue(preload, 'crossorigin');
+      if (!hasAttribute(preload, 'crossorigin') || !/^(|anonymous)$/i.test(mode ?? '')) {
+        fail(
+          file,
+          `The preload of ${href} does not ask for it in anonymous mode. A face is fetched anonymously whatever its origin, so the preload goes unused and the file is fetched twice.`,
+        );
+      }
+      const family = declared.get(href);
+      if (family === undefined) {
+        fail(
+          file,
+          `The document preloads ${href}, which no emitted stylesheet declares a face for.`,
+        );
+        continue;
+      }
+      asked.add(family);
+    }
+
+    for (const family of new Set(declared.values())) {
+      if (!asked.has(family)) {
+        fail(
+          file,
+          `The document draws with ${family} and asks for none of its faces, so the whole family arrives behind the stylesheet.`,
+        );
       }
     }
   }
@@ -2832,6 +3031,7 @@ export const rules = {
   conformanceClaimViolations,
   ledgerReconciliationViolations,
   productionOutputViolations,
+  firstFrameTypefaceViolations,
   searchMetadataViolations,
   searchMetadataSources,
   routeTableTriples,

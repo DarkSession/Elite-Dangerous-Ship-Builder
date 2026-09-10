@@ -651,11 +651,22 @@ test.describe('the wide manifest', () => {
     const before = await widths();
     expect(before).toHaveLength(6);
 
+    const rows = page.locator('[data-hull-symbol]:visible');
+
+    // Forty-eight is the whole manifest, so this is the search having been
+    // applied and not merely typed.
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('federal');
-    await expect(page.locator('[data-hull-symbol]:visible')).not.toHaveCount(48);
+    await expect(rows).not.toHaveCount(48);
     expect(await widths()).toEqual(before);
 
+    // Gated on what this press changes rather than on what the search already
+    // changed: the list is off forty-eight before the size is chosen, so
+    // waiting for that again would return on the first look and the widths
+    // would be the search's list measured twice, which says nothing about the
+    // sizes at all.
+    const searched = await rows.count();
     await page.getByRole('radio', { name: 'Large' }).check();
+    await expect(rows).not.toHaveCount(searched);
     expect(await widths()).toEqual(before);
   });
 });

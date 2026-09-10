@@ -46,11 +46,13 @@ export interface Frame {
   /**
    * Whether the typeface the page asked for has arrived.
    *
-   * The faces are same-origin subsets declared `font-display: swap`, so a cold
-   * load paints in a system fallback and re-paints in Barlow a moment later.
-   * Where the two disagree on metrics the page changes height under that swap —
-   * measured on Firefox at 1112px, ten pixels across the catalogue — and it does
-   * so whether or not this application ever loads, which is what makes it the
+   * The faces are same-origin subsets declared `font-display: swap`. The ones a
+   * served document draws with are preloaded and arrive with the stylesheet, so
+   * a document normally paints in them; a face that arrives late still paints in
+   * a system fallback first and re-paints in Barlow a moment later. Where the
+   * two disagree on metrics the page changes height under that swap — measured
+   * on Firefox at 1112px, ten pixels across the catalogue — and it does so
+   * whether or not this application ever loads, which is what makes it the
    * network rather than the takeover. Recorded so a measurement of the takeover
    * can start from the frame the page is wearing what it asked for, the same way
    * `parsed` lets one start from the frame the page had all of itself.
@@ -174,6 +176,23 @@ export function frames(page: Page): Promise<readonly Frame[]> {
  * Recorded rather than read afterwards, because by the time a test can ask, the
  * application has answered — and the question is what was there before it did.
  *
+ * A frame is skipped only while the document is still being parsed and has
+ * nothing in it yet. The callback is asked for before the body has been parsed
+ * as well as after, and under load it is answered there first: the document has
+ * a body, the body has no text in it, and recording that would say the first
+ * frame showed nothing when what it describes is when the recorder was asked.
+ *
+ * An empty frame after the parse is kept, and has to be. That is what a hull's
+ * address answered by the body-less shell looks like — the failure both of the
+ * journeys reading these frames exist to catch — and a recorder that dropped
+ * every empty frame would report the application's own later render as the
+ * first thing a Commander saw.
+ *
+ * `recordList` reads the same two facts and requires both, which is right for
+ * what it watches: on the catalogue an empty frame can only be the document not
+ * being there yet. Here it can also be the shell answering, which is the
+ * evidence rather than the noise, so the two are combined the other way.
+ *
  * Lower-cased for the same reason `recordFrames` matches without case: what is
  * being asked is whether a word was on the screen, not how it was set.
  */
@@ -183,7 +202,10 @@ export async function recordFirstFrameText(page: Page): Promise<void> {
     (window as unknown as { __text: string[] }).__text = seen;
     const record = () => {
       if (document.body) {
-        seen.push((document.body.innerText || '').replace(/\s+/g, ' ').trim().toLowerCase());
+        const text = (document.body.innerText || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (text !== '' || document.readyState !== 'loading') {
+          seen.push(text);
+        }
       }
       requestAnimationFrame(record);
     };
@@ -256,10 +278,10 @@ export async function openBeforeTheBundleArrives(page: Page, path: string): Prom
  * typeface it asked for.
  *
  * A fixed delay is not enough for a movement measurement. The faces are
- * declared `font-display: swap`, so the page paints in a system fallback and
- * re-lays itself out as each subset lands — Firefox at 1112px is ten pixels
- * taller in the fallback than in Barlow — and those re-layouts are the document
- * settling into itself, not the application moving anything. They cannot be
+ * declared `font-display: swap`, so a subset that arrives after the paint it is
+ * wanted for lays the page out again — Firefox at 1112px is ten pixels taller in
+ * the fallback than in Barlow — and those re-layouts are the document settling
+ * into itself, not the application moving anything. They cannot be
  * subtracted after the fact either: `document.fonts.status` is one verdict over
  * every face at once, so it still reads `loading` long after the face that
  * changed the metrics has landed, and a frame is not told apart by it.

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openLibrary, reachShellAction } from './shell';
+import { expectRecords, openLibrary, reachShellAction, recordCount } from './shell';
 
 /**
  * Keeping a loadout and coming back to it (US3).
@@ -71,13 +71,6 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
   }).toPass({ timeout: 15_000 });
 }
 
-/** How many records this browser is holding, whatever their tool. */
-async function recordCount(page: Page): Promise<number> {
-  return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-  );
-}
-
 test.describe('keeping a loadout', () => {
   test('saves it, finds it in the one library, and opens it back onto the bench', async ({
     page,
@@ -112,7 +105,7 @@ test.describe('keeping a loadout', () => {
   test('deletes one, and leaves the browser holding nothing', async ({ page }) => {
     await wearSuit(page, 'Maverick Suit');
     await saveLoadout(page, 'Salvage run');
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
 
     await openLibrary(page);
     await chooseRecord(page, 'Salvage run');
@@ -123,7 +116,7 @@ test.describe('keeping a loadout', () => {
     await confirmation.getByRole('button', { name: /^Delete/ }).click();
 
     await expect(library(page).getByRole('button', { name: /^Salvage run\b/i })).toHaveCount(0);
-    expect(await recordCount(page)).toBe(0);
+    await expectRecords(page, 0);
   });
 
   test('asks which version survives when a name is already taken (FR-017)', async ({ page }) => {
@@ -147,7 +140,7 @@ test.describe('keeping a loadout', () => {
 
     await expect(second).toContainText(/already use[s]? this name/i);
     await second.getByRole('button', { name: 'Save build' }).click();
-    expect(await recordCount(page)).toBe(2);
+    await expectRecords(page, 2);
   });
 
   test('offers the library from the gate, before a suit is chosen', async ({ page }) => {
@@ -200,6 +193,8 @@ test.describe('a record this version cannot open', () => {
     await library(page).getByRole('button', { name: 'Open in outfitting', exact: true }).click();
 
     await expect(library(page)).toContainText(/could not be opened|nonexistentsuit/i);
+    // Read once rather than polled: this states that the refusal wrote nothing,
+    // and the count is already 1 whatever the browser does next.
     expect(await recordCount(page)).toBe(1);
   });
 });

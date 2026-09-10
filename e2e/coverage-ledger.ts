@@ -50,6 +50,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '016-journal-import',
   '017-tool-bar-navigation',
   '018-navigation-loading-overlay',
+  '019-first-frame-typefaces',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -2351,6 +2352,19 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a version notice and a failed navigation stand together, the version notice first, read in the shell tests and drawn as a preview state',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'system/first-frame-typefaces',
+    requirements: ['019/FR-001'],
+    journey: 'product/published-address',
+    axe: false,
+    assertions: [
+      'each address this journey serves applies its stylesheet before it paints, with no media query holding it back',
+      'each of them asks for a face of every family that stylesheet declares, relatively and in anonymous mode',
+      'every face one of them asks for is a face the same deployment serves',
+      'each of them, opened with the bundle held, is drawn in no face it did not ask for',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'shell/navigation-waiting-first-frame',

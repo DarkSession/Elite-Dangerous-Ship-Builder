@@ -3,9 +3,11 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
 import {
   buildStockHull,
+  expectRecords,
   openLibrary,
   openRecordFromLibrary,
   reachShellAction,
+  recordCount,
   savedToBrowser,
 } from './shell';
 
@@ -98,25 +100,31 @@ async function fillStorageNow(page: Page): Promise<void> {
   await page.evaluate(FILL_STORAGE);
 }
 
-/** How many records this browser is holding, whatever their kind. */
-async function recordCount(page: Page): Promise<number> {
-  return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-  );
-}
-
+/**
+ * Creates a build and waits for the workspace to have finished settling.
+ *
+ * The address is part of that. The workspace publishes the build to the
+ * fragment a moment after the screen is drawn, and a journey that opens the
+ * library before it lands pushes the layer's history entry over an address with
+ * no build on it — so back returns to `/outfitting`, and the layer's own
+ * assertion that it took no address of its own has nothing to compare against.
+ * Waiting here rather than in each journey keeps the two ways out of the layer
+ * reading as the one thing they are.
+ *
+ * A Commander meeting that same window loses the build from the address for
+ * real, which is issue 86 and is not this change's to fix. These journeys read
+ * the two ways out of the layer, not the race, so they step around it; the wait
+ * can go when 86 is closed.
+ */
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
   await savedToBrowser(page);
+  // Its own budget: publishing the fragment fetches the codec and its table as
+  // a lazy chunk and then encodes the build, and an encode states what it is
+  // waiting for rather than taking the default (assertions, ruled 2026-09-06).
+  await expect(page).toHaveURL(/\/outfitting#b\./, { timeout: 15_000 });
 }
 
-/**
- * Creates a build and waits only for the workspace.
- *
- * Used where persistence is expected *not* to succeed — at the retention limit
- * the honest status is that nothing was written, so waiting for "saved" would
- * be waiting for the bug.
- */
 /**
  * Chooses a row, which is what the footer's actions act on.
  *
@@ -181,6 +189,15 @@ async function saveActiveBuild(
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
 
+/**
+ * Creates a build and waits only for the workspace.
+ *
+ * Chosen over `createBuild` where the write is expected *not* to land: with the
+ * store full the honest status is that nothing was written, so waiting for
+ * "saved" would be waiting for the bug. The address is published either way —
+ * a build link is encoded from the loadout, which a full store does not touch —
+ * so these journeys simply have no use for it.
+ */
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
@@ -383,7 +400,7 @@ test.describe('the build library', () => {
 
     await openLibrary(page);
     await expect(library(page).getByText('Anaconda explorer').first()).toBeVisible();
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('warns about a duplicate name and still saves a separate build', async ({ page }) => {
@@ -401,7 +418,7 @@ test.describe('the build library', () => {
 
     // The build that was already stored, and the record this build was in,
     // which the save named rather than duplicated.
-    expect(await recordCount(page)).toBe(2);
+    await expectRecords(page, 2);
   });
 
   test('opens on replacing the save the build came from, and says when it was written', async ({
@@ -509,13 +526,16 @@ test.describe('the build library', () => {
 
     await saveActiveBuild(page, 'Anaconda explorer copy');
 
-    const names = await page.evaluate(() =>
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith('ednb:record:'))
-        .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
-    );
-    expect(names).toContain('Anaconda explorer');
-    expect(names).toContain('Anaconda explorer copy');
+    // Polled: the copy is what the press wrote, and the press is answered a
+    // moment after it returns.
+    const names = () =>
+      page.evaluate(() =>
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('ednb:record:'))
+          .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
+      );
+    await expect.poll(names).toContain('Anaconda explorer copy');
+    expect(await names()).toContain('Anaconda explorer');
     expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).not.toBeNull();
   });
 
@@ -536,7 +556,7 @@ test.describe('the build library', () => {
         }),
       )
       .toBe('Deep black');
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('confirms a deletion, names the record, and cancelling keeps it', async ({ page }) => {
@@ -557,7 +577,7 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Delete this build' })
       .click();
 
-    expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).toBeNull();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('ednb:record:a'))).toBeNull();
   });
 
   test('deletes only the record that was confirmed', async ({ page }) => {
@@ -571,10 +591,15 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Delete this build' })
       .click();
 
-    const stored = await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
-    );
-    expect(stored).toEqual(['ednb:record:b']);
+    // Polled: the deletion is what the press wrote, and the press is answered a
+    // moment after it returns.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
+        ),
+      )
+      .toEqual(['ednb:record:b']);
   });
 
   test('opens a stored build into the workspace', async ({ page }) => {
@@ -665,7 +690,7 @@ test.describe('the build library', () => {
     // there, swept before the listing was drawn and announced by nothing.
     await expect(page.locator('[data-record-id="fresh"]')).toContainText(/Deleted in/);
     await expect(page.locator('[data-record-id="stale"]')).toHaveCount(0);
-    expect(await recordCount(page)).toBe(1);
+    await expectRecords(page, 1);
   });
 
   test('lists an unsupported or unreadable record without opening or removing it', async ({
@@ -755,7 +780,7 @@ test.describe('the build library', () => {
     await manager.getByRole('checkbox').first().check();
     await page.getByRole('button', { name: 'Delete this build' }).click();
 
-    expect(await recordCount(page)).toBe(19);
+    await expectRecords(page, 19);
   });
 
   test('offers overwrite, keep both and cancel when two pages save one build', async ({
@@ -798,15 +823,18 @@ test.describe('the build library', () => {
 
     await conflict.getByRole('button', { name: 'Keep both versions' }).click();
 
-    const names = await first.evaluate(() =>
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith('ednb:record:'))
-        .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name)
-        .filter((name): name is string => name !== null),
-    );
-    // Neither version disappeared.
-    expect(names).toContain('From the other page');
-    expect(names).toContain('From this page');
+    const names = () =>
+      first.evaluate(() =>
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('ednb:record:'))
+          .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name)
+          .filter((name): name is string => name !== null),
+      );
+    // Neither version disappeared. Polled for this page's, which is what the
+    // press writes and is written behind a lock; the other page's was there
+    // before the press and is read once.
+    await expect.poll(names).toContain('From this page');
+    expect(await names()).toContain('From the other page');
 
     await context.close();
   });

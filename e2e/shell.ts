@@ -212,6 +212,27 @@ export async function savedToBrowser(page: Page | Locator): Promise<void> {
   );
 }
 
+/** How many records this browser is holding, whatever tool wrote them. */
+export async function recordCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
+  );
+}
+
+/**
+ * Waits until this browser holds exactly this many records.
+ *
+ * Polled rather than read once wherever the count answers something the journey
+ * has just pressed. Autosave coalesces its writes, so the store is written after
+ * the layer has closed and after the status line has changed, and a bare read is
+ * a verdict on whichever instant it landed in. A count that states that nothing
+ * changed is read once instead: it holds from the first attempt, so polling it
+ * proves nothing the read does not.
+ */
+export async function expectRecords(page: Page, count: number): Promise<void> {
+  await expect.poll(() => recordCount(page)).toBe(count);
+}
+
 /**
  * Opens a hull's detail from the manifest, however this device does it.
  *

@@ -260,8 +260,9 @@ test.describe('the first frame of a generated document', () => {
       // asked for, which is what makes the measurement below about the
       // application at all. Two things settle a page before any of this
       // application exists: a quarter-megabyte document paints while it is
-      // still being read, and the faces swap in under `font-display: swap` —
-      // Firefox at 1112px is ten pixels taller in the fallback than in Barlow.
+      // still being read, and a face that arrives after the paint it is wanted
+      // for swaps in under `font-display: swap` — Firefox at 1112px is ten
+      // pixels taller in the fallback than in Barlow.
       // Neither is the takeover, both happen to a page whose bundle never
       // arrives, and holding the bundle until after them is simpler and more
       // honest than trying to tell their frames apart afterwards.
@@ -610,5 +611,179 @@ test.describe('a document with no rendered body', () => {
       await page.getByRole('heading', { name: 'No such hull' }).count(),
       'the application had drawn the screen when the takeover wait was over',
     ).toBe(1);
+  });
+});
+
+/**
+ * The typefaces a document is drawn in, from the frame it first paints.
+ *
+ * A document that paints in a system face and re-paints in Barlow changes shape
+ * in front of the Commander, and the two families do not measure the same, so it
+ * changes height as well. Two things keep the faces in front of that paint, and
+ * both live in the emitted files rather than in a screen: the stylesheet that
+ * declares them is applied before the document paints, and the faces the
+ * document draws with are asked for beside the document (019/FR-001).
+ *
+ * `check-interface-foundations.mjs` holds the same two facts over the whole
+ * output. This reads them from a served address, which is the side a Commander
+ * is on, and it reads the faces back out of the stylesheet the document itself
+ * links rather than from a list written down here.
+ */
+test.describe('the faces a generated document is drawn in', () => {
+  /**
+   * One attribute of a tag, or null where the tag does not carry it.
+   *
+   * The name is anchored on whitespace, not a word boundary: a word boundary
+   * also falls after the dot in `onload="this.media='all'"`, so a tag deferring
+   * itself that way would have the deferral read as its own `media`.
+   */
+  function attribute(tag: string, name: string): string | null {
+    return new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i').exec(tag)?.[2] ?? null;
+  }
+
+  /**
+   * Every `<link>` a document carries with the given relationship.
+   *
+   * Read as whole tags and sorted by each tag's own `rel`, not matched by a
+   * pattern per relationship. The deferral this journey exists to catch spells
+   * the word it would look for inside `onload="this.rel='stylesheet'"`, so a
+   * pattern would read a preloaded sheet as an applied one and pass the
+   * document it is meant to fail.
+   */
+  function links(document: string, rel: string): readonly string[] {
+    return (document.match(/<link\b[^>]*>/gi) ?? []).filter(
+      (tag) => attribute(tag, 'rel')?.trim().toLowerCase() === rel,
+    );
+  }
+
+  /** A face file's family and weight, as the stylesheet that declares it states them. */
+  function faceOf(styles: string, source: string): readonly string[] {
+    const rule = (styles.match(/@font-face\s*\{[^}]*\}/g) ?? []).find((block) =>
+      block.includes(source),
+    );
+    const bare = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+    const family = rule === undefined ? null : /font-family\s*:\s*([^;}]+)/.exec(rule);
+    const weight = rule === undefined ? null : /font-weight\s*:\s*([^;}]+)/.exec(rule);
+    return family === null || weight === null ? [] : [`${bare(family[1])} ${bare(weight[1])}`];
+  }
+
+  test('asks for them beside the document, ahead of the stylesheet that declares them', async ({
+    page,
+  }) => {
+    for (const { path } of SCREENS) {
+      const document = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+      // Applied, not deferred. `all` and `screen` are the two values that leave
+      // a stylesheet applied to the screen a Commander reads; behind anything
+      // else — `print`, and a width query as much as a type — it lands after
+      // the paint on some viewport or all of them, and the faces it declares
+      // land with it.
+      for (const sheet of links(document, 'stylesheet')) {
+        const media = attribute(sheet, 'media');
+        expect(
+          media === null || /^(all|screen)$/i.test(media.trim()),
+          `${path} defers a stylesheet`,
+        ).toBe(true);
+      }
+
+      // Every family that stylesheet declares, read from the sheet the document
+      // links rather than from a list kept here, which would go stale the first
+      // time a face is added.
+      const sheet = links(document, 'stylesheet')
+        .map((link) => attribute(link, 'href'))
+        .find((href): href is string => href !== null);
+      expect(sheet, `${path} links no stylesheet`).toBeDefined();
+      const styles = await (await page.request.get(`${PRODUCT_URL}/${sheet}`)).text();
+      const declared = new Map(
+        (styles.match(/@font-face\s*\{[^}]*\}/g) ?? []).flatMap((rule) => {
+          const source = /url\(([^)]+)\)/.exec(rule);
+          const family = /font-family\s*:\s*([^;}]+)/.exec(rule);
+          const bare = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+          return source === null || family === null ? [] : [[bare(source[1]), bare(family[1])]];
+        }),
+      );
+      expect(declared.size, `${path} applies a stylesheet declaring no face`).toBeGreaterThan(0);
+
+      const asked = new Set<string>();
+      for (const preload of links(document, 'preload')) {
+        const href = attribute(preload, 'href');
+        if (attribute(preload, 'as') !== 'font' || href === null) {
+          continue;
+        }
+        // Relative, so a deployment under a sub-path reaches its own fonts, and
+        // in anonymous mode, which is the only way a face is fetched at all.
+        expect(href.startsWith('/'), `${path} asks for ${href} past the deployment base`).toBe(
+          false,
+        );
+        const mode = attribute(preload, 'crossorigin');
+        expect(
+          /(^|\s)crossorigin([\s=>/]|$)/i.test(preload) && /^(|anonymous)$/i.test(mode ?? ''),
+          `${path} does not ask for ${href} in anonymous mode`,
+        ).toBe(true);
+        expect(
+          (await page.request.get(`${PRODUCT_URL}/${href}`)).status(),
+          `${path} asks for ${href}, which the deployment does not serve`,
+        ).toBe(200);
+
+        const family = declared.get(href);
+        expect(
+          family,
+          `${path} asks for ${href}, which its stylesheet declares no face for`,
+        ).toBeDefined();
+        asked.add(family as string);
+      }
+
+      for (const family of new Set(declared.values())) {
+        expect([...asked], `${path} draws with ${family} and asks for no face of it`).toContain(
+          family,
+        );
+      }
+    }
+  });
+
+  test('is drawn in no face it did not ask for', async ({ page }) => {
+    // The other half of the same promise, and the half a list in the head
+    // cannot be trusted for: what the document is actually drawn in. The bundle
+    // never arrives, so every face the browser loads is one the served markup
+    // asked the browser to draw, and each one has to be a face the document
+    // asked for beside itself.
+    //
+    // Compared by family and weight rather than by file. The two subsets of one
+    // face differ only in the characters they carry, and which of them a hull's
+    // name needs is a property of the name; what this holds is that the weight
+    // the document draws was asked for early.
+    for (const { path } of SCREENS) {
+      await openWithoutTheBundle(page, path);
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+
+      // The family is unquoted on both sides before they are compared. The
+      // stylesheet writes `"Barlow Condensed"` and a browser is free to report
+      // the descriptor back as it was written, so a multi-word family would
+      // otherwise match on one engine and not on the other.
+      const drawn = await page.evaluate(() =>
+        [...document.fonts]
+          .filter((face) => face.status === 'loaded')
+          .map((face) => `${face.family.trim().replace(/^["']|["']$/g, '')} ${face.weight}`),
+      );
+      expect(drawn.length, `${path} is drawn in no declared face at all`).toBeGreaterThan(0);
+
+      const document_ = await (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+      const sheet = links(document_, 'stylesheet')
+        .map((link) => attribute(link, 'href'))
+        .find((href): href is string => href !== null);
+      expect(sheet, `${path} links no stylesheet`).toBeDefined();
+      const styles = await (await page.request.get(`${PRODUCT_URL}/${sheet}`)).text();
+      const asked = new Set(
+        links(document_, 'preload')
+          .map((link) => attribute(link, 'href'))
+          .flatMap((href) => (href === null ? [] : faceOf(styles, href))),
+      );
+
+      for (const face of new Set(drawn)) {
+        expect([...asked], `${path} is drawn in ${face}, which it does not ask for`).toContain(
+          face,
+        );
+      }
+    }
   });
 });
