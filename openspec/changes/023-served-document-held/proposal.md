@@ -99,6 +99,12 @@ None.
 - `e2e/prerendered-first-frame.spec.ts:496` already holds the failing first navigation in the
   production lane and records at line 575 which half of FR-007 it does not read, and why. This
   change adds that assertion and removes the note.
+- A gap this change found and does not close: 011/FR-024 requires the automated check to reject a
+  component state with no preview, and the check is written per component. A component already
+  declared in the preview manifest passes with a state it does not preview, so the held state's
+  fixture is read by the preview journey rather than by that check. The checker is the defect
+  rather than the requirement, and closing it belongs to `platform/design-system`, which owns
+  both. It is recorded here rather than worked around silently (constitution IX).
 - `openspec/changes/archive/018-navigation-loading-overlay/` is read and not written to. Its task
   6.3 stands unticked with the reason it carries, which is the record of why the work was deferred;
   this change is where the work is done and where it is recorded.

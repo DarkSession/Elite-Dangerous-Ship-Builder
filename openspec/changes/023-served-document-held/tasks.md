@@ -5,9 +5,10 @@
       English (015/FR-010, 015/FR-019, 015/FR-011). Holding the same nodes adds no composition, no
       touch target and no string. What is new is one state of the application frame, and it is
       carried rather than waved past: task 4.1 previews it at the three widths and task 4.2 scans
-      it where it stands, before the change is read end to end. Verify the rest by holding the
-      change to it: no new catalogue key, no new design-system component, and the existing
-      responsive and touch journeys pass unchanged (011/FR-004, 011/FR-022).
+      it where it stands, before the change is read end to end (011/FR-004, 011/FR-022). Verify
+      the rest by holding the change to it: no new catalogue key (011/FR-016), no reusable pattern
+      entering the design system (011/FR-005), and the existing responsive and touch journeys pass
+      unchanged (011/FR-021, 011/FR-006).
 - [ ] 1.2 Add to `e2e/prerendered-first-frame.spec.ts`, in the journey at line 496 that already
       holds the failing first navigation in the production lane, the assertion the note at line 575
       says is missing: the served document's own `main` is still standing, with the ship list in it
@@ -45,8 +46,10 @@
       fills it — that is where the copy was taken from, and anywhere else moves it out of its
       landmark. The container is part of the frame's first render rather than written in from an
       effect afterwards, so the copy lands in the render that removes the served nodes and nothing
-      is painted between the two. Verify tasks 1.2 and 1.3 now pass, and that the failure statement
-      still stands over the content rather than instead of it (023/FR-001, 018/FR-007).
+      is painted between the two. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the failure
+      statement still stands over the content rather than instead of it. Tasks 1.2 and 1.3 drive
+      `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
+      that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
 - [ ] 2.4 Release the copy at the first `NavigationEnd`. Verify nothing is held after a screen has
       been presented, and that the held container is not drawn once a screen stands in the outlet
       (023/FR-001).
@@ -57,7 +60,7 @@
       rendering the screen, and the screen is what did not arrive, so there is nothing that can
       apply it and nothing the application may write in its place. The absent disclosure is the
       delta's own rule rather than an omission: 015/FR-011a says a document read in bundled English
-      has nothing to disclose (015/FR-011, 015/FR-011a, constitution IV and VI).
+      has nothing to disclose (015/FR-011, 015/FR-011a, constitution VI).
 - [ ] 2.6 Verify the held content carries the language it was served in, while the application
       around it carries the committed locale as the root language (011/FR-027). English standing
       inside a German page is a part in another language, and WCAG 2.2 AA 3.1.2 is in scope —
@@ -87,6 +90,14 @@
       carried before bootstrap, so a later rewrite into a re-rendering fails here. The figures in
       it come from the pinned package and are not recomputed on the way back
       (023/FR-001, 015/FR-004).
+- [ ] 3.5 Verify a first navigation cancelled with nothing taking over leaves the Commander on what
+      the address served. Nothing is stated over it, because a cancellation is not a failure
+      (018/FR-007, "A navigation that is cancelled, and one that is redirected to another address,
+      are not failures and MUST be stated as nothing"), and the waiting statement is removed
+      (018/FR-005, scenario "The navigation is cancelled with nothing taking over"), so what the
+      Commander is left on is the served content and nothing else. This is the case that separates
+      counting screens presented from counting errors raised: an implementation restoring only on
+      `NavigationError` passes every other test in this change and fails this one (023/FR-001).
 
 ## 4. The state the frame gains
 
@@ -95,9 +106,10 @@
       tablet and mobile widths like every other state the frame supports. Verify with
       `pnpm run e2e` over `e2e/ui-preview.spec.ts`, which renders every registered state at its
       own address across the layout profiles and scans each one: a state that is declared is read,
-      and one that is not declared is read nowhere. Do not verify this with `pnpm run policy`. Its
-      preview rule is written per component rather than per state, and `AppFrame` is already
-      declared, so it passes whether or not this fixture exists (011/FR-004, 011/FR-024).
+      and one that is not declared is read nowhere. Do not verify this with `pnpm run policy`: its
+      preview rule is written per component rather than per state, `AppFrame` is already declared,
+      and it therefore passes whether or not this fixture exists. Task 4.4 is where that gap is
+      recorded (011/FR-004, 011/FR-024).
 - [ ] 4.2 Scan the held state where it stands, in the production lane, across the layout profiles
       the journey in task 1.2 already runs: the held content and the failure statement together,
       asserted to report no in-scope violation. The existing scans reach the generated first frame
@@ -111,6 +123,16 @@
       none of them, so a visible removal and return is a failure rather than a cost. Verify with
       `pnpm run e2e` in the production lane, beside the journey task 1.2 adds (023/FR-001,
       015/FR-009).
+- [ ] 4.4 Record the mismatch task 4.1 found, rather than routing around it. 011/FR-024 requires
+      the automated check to reject "a component state that has no preview"; the check is written
+      per component, so a component already declared passes with a state it does not preview. Of
+      the two, the checker is the defect: the accepted requirement is what the project wants, and
+      widening the rule needs a way to read which states a component supports, which the source
+      does not state. That is its own change against `platform/design-system` and is not this one —
+      widening a checker here would put a second capability's contract inside a change that owns
+      the takeover. Write the finding into proposal.md, Impact, naming the requirement, the gap and
+      the capability it belongs to, so it is resolved deliberately and not left standing
+      (constitution IX; 011/FR-024).
 
 ## 5. Reading it end to end
 
@@ -128,10 +150,15 @@
       `COVERED_FEATURES`, add `023/FR-001` to the `requirements` array of the
       `prerendered/first-frame` entry, whose journey is `product/prerendered-first-frame`, and add
       the journey's assertion to that entry's `assertions` array beside "a Commander whose bundle
-      never arrives is left with the readable document". Verify with `pnpm run policy:specs`, which
-      fails naming any declared id that is not registered. It reads `openspec/specs/` alone, so it
-      accepts the registration now and starts requiring it when the delta is archived into the
-      capability specification.
+      never arrives is left with the readable document". Verify by reading the entry back against
+      the journey task 1.2 extends: the surface's journey name is the one that now carries the
+      assertion, and the assertion text names what that journey reads. `pnpm run policy` is the
+      command that can fail here — it reconciles each ledger surface and journey against the routes,
+      the previews and the configured Playwright projects. `pnpm run policy:specs` cannot: it
+      requires every id declared in `openspec/specs/` to be registered, `023/FR-001` is declared
+      only in this change's delta until the change is archived, and the check would pass with the
+      registration missing. It is a regression guard for what is already accepted, and the reason
+      to make the entry now is that archiving turns it into a requirement rather than a courtesy.
 - [ ] 5.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.

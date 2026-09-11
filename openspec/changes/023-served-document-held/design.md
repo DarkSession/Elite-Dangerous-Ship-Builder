@@ -122,8 +122,9 @@ what the Commander is left on. The shapes agree, which is why the rule is writte
 018/FR-005 does not carry it.
 
 Not `NavigationError` either, which is narrower again. `platform/navigation-waiting` names a third
-outcome: a navigation cancelled with nothing taking over (018/FR-005, "The navigation is cancelled
-with nothing taking over"). Nothing is said about that one, because there is nothing to state. If
+outcome: a navigation cancelled with nothing taking over, which is a scenario of 018/FR-005, "The
+statement ends with the navigation". Nothing is said about that one, because there is nothing to
+state. If
 the copy went back only on an error, that Commander would be left on an empty shell with no
 statement on it, which is worse than either outcome this change is written for. So the rule is
 stated once, positively: the hold ends where a screen is presented, and nowhere else.
@@ -155,7 +156,9 @@ so 015/FR-011 is modified rather than left to be read around.
 The replacement cannot be done for held content, and this is the reason rather than an excuse. The
 catalogue is applied by rendering the screen in it, and the screen's code is exactly what did not
 arrive. Translating the served markup without it would mean writing sentences the application does
-not have, which constitution IV forbids.
+not have. Constitution VI carries that: the application keeps no private translation of game text,
+and a missing translation falls back to a language the Commander can read rather than being
+invented.
 
 So a Commander reading in German keeps the English document they were served, and reads the failure
 in German because that sentence is the shell's own. Nothing is reordered and nothing is removed,
