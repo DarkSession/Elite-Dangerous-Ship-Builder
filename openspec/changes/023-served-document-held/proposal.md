@@ -40,7 +40,7 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
   frame is emptier than the one before it and the invisible takeover keeps its three exceptions
   and no more.
 - The application frame draws one composition it does not draw today: its `main` holding content
-  the address served, with the failure statement above it. It is scanned, measured, and read at
+  the address served, with the failure statement beside it. It is scanned, measured, and read at
   200% text and 400% zoom where it stands, in the product lane. It is not a new component state:
   011/FR-004 enumerates five and the frame already accounts for all five.
 
@@ -97,10 +97,9 @@ None.
 - `src/app/ui/components/app-frame/` receives the held content where the outlet stands. It draws
   the same banner, tool links and standing notices it draws today, and the failure statement is one
   of those notices. Where that statement stands relative to the held content decides whether the
-  restore moves anything the Commander can see, which design.md, "The failure statement stands
-  above the content, and that is a move", settles: the statement does not take space above the
-  held content, because reserving that space in the build is ruled out by 015/FR-010. Task 2.3
-  builds to that and task 4.3 measures it.
+  restore moves anything the Commander can see, which design.md, "The failure statement does not
+  take space above the content", settles: it does not, because reserving that space in the build is
+  ruled out by 015/FR-010. Task 2.3 builds to that and task 4.3 measures it.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
   fixes; what changes is the takeover it describes.
 - `src/app/ui/previews/preview-manifest.ts` is unchanged. A frame whose `main` holds content is

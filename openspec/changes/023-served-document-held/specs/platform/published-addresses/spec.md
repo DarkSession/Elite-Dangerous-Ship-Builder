@@ -60,6 +60,12 @@ Source: 023/FR-001.
 - **AND** the navigation that replaces it ends without presenting a screen
 - **THEN** the Commander is left on the content the address they opened served
 
+#### Scenario: What takes over is the address already open
+
+- **WHEN** a navigation is cancelled before any screen has been presented in the session, and what
+  takes over is the address already open, which the application answers without navigating
+- **THEN** the Commander is left on the content the address served
+
 #### Scenario: Held content is put back without a visible change
 
 - **WHEN** content the address served is put back
@@ -122,8 +128,12 @@ Source: 015/FR-011.
 
 - **WHEN** a Commander whose committed locale is German opens a content-bearing address
 - **THEN** the document paints English content immediately
-- **AND** where the takeover presents a screen, that screen carries the committed locale's text
-  once that catalogue arrives
+
+#### Scenario: The takeover presents a screen to carry the replacement
+
+- **WHEN** a Commander whose committed locale is German opens a content-bearing address
+- **AND** the takeover presents a screen
+- **THEN** that screen carries the committed locale's text once that catalogue arrives
 
 #### Scenario: The replacement lands
 

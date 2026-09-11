@@ -49,8 +49,8 @@
       landmark. The container is part of the frame's first render rather than written in from an
       effect afterwards, so the copy lands in the render that removes the served nodes and nothing
       is painted between the two. The failure statement does not take space above the held
-      content, which is design.md, "The failure statement stands above the content, and that is a
-      move": 015/FR-009 admits three exceptions and this claims none of them, and reserving the
+      content, which is design.md, "The failure statement does not take space above the content":
+      015/FR-009 admits three exceptions and this claims none of them, and reserving the
       space in the build is ruled out by 015/FR-010. Drawing it out of the flow over the content or
       after it both meet that, and this task picks one. Verify tasks 1.2, 1.3 and 3.5 now pass,
       and that the failure
@@ -122,9 +122,13 @@
       covered by it", and this is that presentation. So what the Commander is left on is the served
       content and nothing else. This is the case that separates
       counting screens presented from counting errors raised: an implementation restoring only on
-      `NavigationError` passes every other test in this change and fails this one. Read it in the
-      unit sequence task 1.3 establishes: no route carries a guard, so a browser lane cannot cancel
-      a navigation with nothing taking over (023/FR-001).
+      `NavigationError` passes every other test in this change and fails this one. Read beside it
+      the outcome 018/FR-005 names as its own, "What takes over is not a navigation": a cancellation
+      handed over to the address already open, which the application answers without navigating. No
+      screen is presented there either, and an implementation counting navigations rather than
+      screens would end the hold on it. Read both in the unit sequence task 1.3 establishes: no
+      route carries a guard, so a browser lane cannot cancel a navigation at all (023/FR-001,
+      018/FR-005).
 
 ## 4. Where the held frame is read
 
@@ -190,7 +194,8 @@
       what an implementation that holds the English too long would break, and task 2.5 reads only
       the held branch. Read it in the production lane, which is the only lane with a generated
       document to replace. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
-- [ ] 5.3 Remove the note at the end of that journey in `e2e/prerendered-first-frame.spec.ts`,
+- [ ] 5.3 Remove the note at the end of the journey task 1.2 extends, in
+      `e2e/prerendered-first-frame.spec.ts`,
       which records FR-007's second half as unread, because task 1.2 adds the assertion it asks
       for. Leave
       `openspec/changes/archive/018-navigation-loading-overlay/` alone: the archive is read and not

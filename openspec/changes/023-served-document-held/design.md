@@ -127,8 +127,10 @@ a screen, no screen has been presented and the Commander is owed what the addres
 navigation that ended is not the first one.
 
 No address the build generates a document for reaches that shape today. The routes configure one
-redirect, the wildcard to the entry point, and an address the wildcard catches is one the build
-generates no document for (015/FR-016), so it served the shell and holds nothing
+redirect, the wildcard to the entry point, and an address the wildcard catches is outside the set
+the build generates a document for — the root, the catalogue and the 48 hulls (015/FR-018), and a
+hull-shaped address that resolves to no hull is refused a document besides (015/FR-016) — so it
+served the shell and holds nothing
 (`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"). No route
 carries a guard either, so a cancellation with nothing taking over has no browser-reachable
 instance at such an address. Both shapes are therefore read in the unit sequence rather than in a
@@ -160,7 +162,7 @@ leaves them on "a screen they can use", and putting a document they left behind 
 take a screen away from them to answer a failure. That it is the screen they are on, rather than any
 usable screen, is `023/FR-001`'s own addition.
 
-### The failure statement stands above the content, and that is a move
+### The failure statement does not take space above the content
 
 The shell draws its standing notices in a block of their own, above the `main` the outlet sits in.
 The failure statement is one of those notices. So on the path this change creates, the statement
