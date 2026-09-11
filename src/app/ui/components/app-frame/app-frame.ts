@@ -257,6 +257,33 @@ export class AppFrame {
    */
   readonly status = input<readonly ShellStatus[]>([]);
 
+  /**
+   * What the address served, where no screen has replaced it.
+   *
+   * The nodes the document carried in this `main` before the application took
+   * over, handed back so the Commander is left on what they were given rather
+   * than on an empty shell. `null` whenever a screen is presented, which is
+   * every ordinary frame.
+   *
+   * Nodes rather than markup, because they are the served document's own and
+   * not a second reading of it. Presentation only: when they are held and when
+   * they are released is
+   * `src/app/application/navigation/served-document.store.ts` (023/FR-001,
+   * constitution III).
+   */
+  readonly held = input<readonly Node[] | null>(null);
+
+  /**
+   * The language the held content is in, where the served document declared
+   * one.
+   *
+   * Stated on the container, not on the page: the application declares the
+   * committed locale as the document's own language, so held content served in
+   * bundled English is a part in another language and has to say which
+   * (011/FR-017, WCAG 3.1.2).
+   */
+  readonly heldLanguage = input<string | null>(null);
+
   readonly actionSelected = output<string>();
 
   /** The identity block asked to open, close or confirm one of its fields. */
@@ -328,6 +355,9 @@ export class AppFrame {
   readonly actionsOpen = signal(false);
 
   protected readonly banner = viewChild<ElementRef<HTMLElement>>('banner');
+
+  /** The box the held content goes into, which exists only while it is held. */
+  private readonly heldContainer = viewChild<ElementRef<HTMLElement>>('heldContent');
 
   /**
    * Whether the banner has released the top of the screen.
@@ -442,6 +472,19 @@ export class AppFrame {
           params: { locale: snapshot.requestedLocale },
         }),
       );
+    });
+
+    // The served nodes into the container the template drew for them, in the
+    // same pass: the container is part of the render that removes the served
+    // document's own nodes, and this runs before that render is painted, so
+    // nothing is painted between the two (015/FR-009, 015/FR-009a).
+    effect(() => {
+      const held = this.held();
+      const container = this.heldContainer();
+      if (!container) {
+        return;
+      }
+      container.nativeElement.replaceChildren(...(held ?? []));
     });
   }
 

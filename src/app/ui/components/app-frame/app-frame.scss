@@ -483,6 +483,21 @@
   padding-inline: var(--ednb-space-region);
 }
 
+// While content the address served is standing, the statement takes its box
+// after that content instead of before it.
+//
+// The shell is a column of flex items, so this moves the box and nothing else:
+// the notice keeps its place in the document, and a reader still meets the
+// statement before what it is about. What it must not do is take space above
+// content a Commander is already reading — that is content moving position,
+// and 015/FR-009 admits three exceptions to it, none of them this one. The
+// space cannot be reserved ahead of the statement either: the build knows
+// neither that the takeover will fail nor how tall the sentence would be, and
+// 015/FR-010 forbids it deciding the first frame on what it cannot know.
+.frame__status--below {
+  order: 1;
+}
+
 // No centred measure. Every canvas runs its regions to the edge of the artboard
 // — canvas 1c's `392px 1fr 306px` grid and canvas 1a's `1fr 340px` both give
 // the slack to a region rather than to a margin — so the screen takes the width
@@ -531,4 +546,21 @@
   @include layout.compact {
     padding-inline: var(--ednb-space-inline-loose);
   }
+}
+
+// The box the held content goes into, which lays its children out the way the
+// `main` around it would have.
+//
+// The same column this `main` is, so the content that was laid out as its
+// direct children is laid out the same way one level in: a box between them
+// and it that composed differently would lay them out a second way, and what
+// the Commander is reading has to stand exactly where it stood — which is the
+// whole of what putting it back means (023/FR-001, 015/FR-009).
+//
+// Nothing is lost by it. The container carries no role and says nothing; it
+// exists so the frame has somewhere of its own to place nodes it was handed,
+// and the language it carries is an attribute rather than a box.
+.frame__held {
+  display: flex;
+  flex-direction: column;
 }

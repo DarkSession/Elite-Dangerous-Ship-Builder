@@ -298,17 +298,29 @@ export async function openBeforeTheBundleArrives(page: Page, path: string): Prom
  */
 export async function openOnceTheTypefaceHasArrived(page: Page, path: string): Promise<void> {
   await page.route(/\.js(\?.*)?$/, async (route) => {
-    await page
-      .waitForFunction(
-        () =>
-          document.readyState !== 'loading' &&
-          document.fonts.status === 'loaded' &&
-          [...document.fonts].some((face) => face.status === 'loaded'),
-        undefined,
-        { timeout: 10_000 },
-      )
-      .catch(() => undefined);
+    await theTypefaceHasArrived(page);
     await route.continue();
   });
   await page.goto(`${PRODUCT_URL}${path}`);
+}
+
+/**
+ * Returns once the page has read its document and is wearing the faces it asked
+ * for, or once the wait has run out.
+ *
+ * The condition `openOnceTheTypefaceHasArrived` holds the bundle on, on its own
+ * so a journey that builds its own route can hold the bundle on the same
+ * condition. Its reasoning is that function's.
+ */
+export async function theTypefaceHasArrived(page: Page): Promise<void> {
+  await page
+    .waitForFunction(
+      () =>
+        document.readyState !== 'loading' &&
+        document.fonts.status === 'loaded' &&
+        [...document.fonts].some((face) => face.status === 'loaded'),
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => undefined);
 }
