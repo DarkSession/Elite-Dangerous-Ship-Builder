@@ -950,6 +950,81 @@ describe('announcements', () => {
     assert.equal(found[0].line, 3);
   });
 
+  it('rejects a quoted revision key', () => {
+    // A string is blanked before any rule reads the source, so a quoted key is
+    // invisible to the shape the other fixtures use. It is the same key.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'this.#announcements.announce({',
+        '  kind: "x",',
+        '  urgency: "polite",',
+        '  messageKey: "k",',
+        "  'revision': 1,",
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('rejects a formatter read declared with a type annotation', () => {
+    // `readonly #formatters: Formatters = inject(Formatters)` is the same
+    // field as the unannotated form, and formatting a number in the open takes
+    // the same locale dependency resolving a message does.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'class Probe {',
+        '  readonly #formatters: Formatters = inject(Formatters);',
+        '  constructor() {',
+        '    effect(() => {',
+        '      const count = this.#formatters.integer(this.total());',
+        '      untracked(() =>',
+        '        this.#announcements.announce({',
+        '          kind: "x",',
+        '          urgency: "polite",',
+        '          messageKey: "k",',
+        '          params: { count },',
+        '        }),',
+        '      );',
+        '    });',
+        '  }',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 5);
+  });
+
+  it('rejects a formatter read taken through a constructor parameter', () => {
+    // The other way a field is declared. Nothing about the dependency changes.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'class Probe {',
+        '  constructor(private readonly formatters: Formatters) {',
+        '    effect(() => {',
+        '      const count = this.formatters.integer(this.total());',
+        '      untracked(() =>',
+        '        this.#announcements.announce({',
+        '          kind: "x",',
+        '          urgency: "polite",',
+        '          messageKey: "k",',
+        '          params: { count },',
+        '        }),',
+        '      );',
+        '    });',
+        '  }',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
   it('reads an effect below a regular expression a keyword introduces', () => {
     // `return /…/` is a pattern, not a division. Read as a division, the quote
     // inside it opens a string that runs to the next quote and blanks the

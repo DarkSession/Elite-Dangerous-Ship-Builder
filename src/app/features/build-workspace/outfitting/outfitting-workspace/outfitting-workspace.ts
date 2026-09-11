@@ -21,6 +21,7 @@ import type { IdentityCommit, IdentityField } from '../../../../ui/outfitting/sh
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
+import { LibraryPresence } from '../../../build-library/library-presence';
 import { EditRefusalNotice } from '../../../../ui/outfitting/edit-refusal-notice';
 import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
@@ -119,6 +120,7 @@ export class OutfittingWorkspace {
   readonly store = inject(OutfittingStore);
   readonly active = inject(ActiveBuildStore);
   readonly #chrome = inject(ScreenChrome);
+  readonly #libraryLayer = inject(LibraryPresence);
 
   /**
    * The category a Commander asked for, or none — nobody has asked yet.
@@ -348,8 +350,18 @@ export class OutfittingWorkspace {
    * report and this passes on its answer, so a refusal the Commander has just
    * caused is spoken and one they were told about last visit is not
    * (011/FR-009).
+   *
+   * Not while the saved builds stand over this screen. The other way into this
+   * refusal is opening a record from that layer, and this screen stays mounted
+   * underneath it — so the notice would speak into an outlet the modal has made
+   * inert and spend the mark on a sentence nobody heard. Held until the layer
+   * goes, the refusal is spoken by the screen that draws every affected mount,
+   * at the moment that screen is the one a reader is on. The layer says its own
+   * piece meanwhile, in its own alert, over the record it could not open.
    */
-  readonly ingressRefusalUnannounced = this.active.ingressRefusalUnannounced;
+  readonly ingressRefusalUnannounced = computed(
+    () => this.active.ingressRefusalUnannounced() && !this.#libraryLayer.open(),
+  );
 
   /** Says the refusal has been spoken, so returning to it says nothing more. */
   markIngressRefusalAnnounced(): void {

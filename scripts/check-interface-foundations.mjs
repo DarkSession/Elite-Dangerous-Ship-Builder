@@ -1200,9 +1200,11 @@ function callSpan(masked, open) {
  *
  * A shorthand key counts. `{ kind, urgency, messageKey, revision }` states the
  * same four keys as the spelled-out form, and it is the spelling someone
- * re-adding the field would reach for.
+ * re-adding the field would reach for. So does a quoted one: a string is
+ * blanked before the rules read anything, so `'revision':` is read from the
+ * unmasked source at the same offset.
  */
-function topLevelKeys(literal) {
+function topLevelKeys(literal, raw = literal) {
   const keys = [];
   let depth = 0;
   for (let index = 0; index < literal.length; index += 1) {
@@ -1216,6 +1218,12 @@ function topLevelKeys(literal) {
       continue;
     }
     if (depth !== 1) {
+      continue;
+    }
+    const quoted = /^(['"])([A-Za-z_$][\w$]*)\1\s*:/.exec(raw.slice(index));
+    if (quoted !== null) {
+      keys.push(quoted[2]);
+      index += quoted[0].length - 1;
       continue;
     }
     const key = /^([A-Za-z_$][\w$]*)\s*(?::|,|\}|$)/.exec(literal.slice(index));
@@ -1262,8 +1270,15 @@ const ANNOUNCE_CALL = /\.announce\s*\(/g;
 const EFFECT_CALL = /\b(?:effect|afterRenderEffect|afterNextRender|afterEveryRender)\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
 const CATALOGUE_READ = /\.message(?:Signal)?\s*\(/g;
-const LOCALE_SERVICE =
-  /(?:readonly\s+)?(#?[A-Za-z_$][\w$]*)\s*=\s*inject\(\s*(?:MessageService|Formatters|GameTextPresenter)\s*\)/g;
+const LOCALE_SERVICES = '(?:MessageService|Formatters|GameTextPresenter)';
+const LOCALE_SERVICE = new RegExp(
+  `(?:readonly\\s+)?(#?[A-Za-z_$][\\w$]*)\\s*(?::[^=;\\n]+)?=\\s*inject\\(\\s*${LOCALE_SERVICES}\\s*\\)`,
+  'g',
+);
+const LOCALE_PARAMETER = new RegExp(
+  `(?:public|protected|private)\\s+(?:readonly\\s+)?([A-Za-z_$][\\w$]*)\\s*:\\s*${LOCALE_SERVICES}\\b`,
+  'g',
+);
 const MEMBER_DECLARATION =
   /^[ \t]*(?:(?:public|protected|private|static|override|readonly)\s+)*(#?[A-Za-z_$][\w$]*)\s*(?::[^=;\n]+)?=/gm;
 const MEMBER_READ = /\bthis\.(#?[A-Za-z_$][\w$]*)\s*\(/g;
@@ -1301,11 +1316,19 @@ function statementEnd(masked, from) {
  * language, so reading one is never the event — but the language settling is
  * itself an event, and `app-frame.ts` announces it with the locale snapshot as
  * its trigger, tracked on purpose.
+ *
+ * A field is seen however it is declared — `inject()` with or without a type
+ * annotation, or a constructor parameter property — and read through `this.`.
+ * A local alias (`const formatters = this.#formatters`) is not followed;
+ * design.md records it with the other shapes syntax cannot see.
  */
 function localeServices(masked) {
   const fields = new Set();
   for (const declaration of masked.matchAll(LOCALE_SERVICE)) {
     fields.add(declaration[1]);
+  }
+  for (const parameter of masked.matchAll(LOCALE_PARAMETER)) {
+    fields.add(parameter[1]);
   }
   return fields;
 }
@@ -1382,6 +1405,7 @@ function announcementViolations(file, source) {
       continue;
     }
     const literal = masked.slice(span.start, span.end).trim();
+    const raw = source.slice(span.start, span.end).trim();
     if (!literal.startsWith('{')) {
       add(
         call.index,
@@ -1399,7 +1423,7 @@ function announcementViolations(file, source) {
           'and neither the compiler nor the rule below sees a surplus key that arrives that way.',
       );
     }
-    if (topLevelKeys(literal).includes('revision')) {
+    if (topLevelKeys(literal, raw).includes('revision')) {
       add(
         call.index,
         'announcement-request',

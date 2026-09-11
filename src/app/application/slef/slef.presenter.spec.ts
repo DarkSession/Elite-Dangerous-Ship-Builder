@@ -619,6 +619,7 @@ describe('what a journal source adds to the words', () => {
 describe('what an import and a delivery say out loud', () => {
   let presenter: SlefPresenter;
   let store: SlefStore;
+  let active: ActiveBuildStore;
   let announcements: AnnouncementService;
 
   /** A clipboard that can be made to fail, so both outcomes can be read. */
@@ -664,8 +665,26 @@ describe('what an import and a delivery say out loud', () => {
     });
     presenter = TestBed.inject(SlefPresenter);
     store = TestBed.inject(SlefStore);
+    active = TestBed.inject(ActiveBuildStore);
     announcements = TestBed.inject(AnnouncementService);
   });
+
+  /**
+   * Works on the open build, spending build revisions and no request token.
+   *
+   * This is what puts the build ahead of the import counter, and it is the only
+   * arrangement in which the policy this change replaced fell silent here: it
+   * compared one number across all three `slef.import` outcomes, a commit
+   * supplied the build's revision and a batch supplied the request token, and a
+   * Commander who had been editing had a build revision far above any token the
+   * layer had reached. Without the edits the token is the larger of the two,
+   * the old policy publishes, and a test written here proves nothing.
+   */
+  function workOnIt(times: number): void {
+    for (let index = 0; index < times; index += 1) {
+      active.touch();
+    }
+  }
 
   /** Pastes one build and submits it, which commits and opens the workspace. */
   async function commitOne(): Promise<void> {
@@ -683,16 +702,24 @@ describe('what an import and a delivery say out loud', () => {
 
   it('states a stored batch after a committed import', async () => {
     await commitOne();
+    workOnIt(5);
+    await commitOne();
     const committed = announcements.politeEvent();
     expect(committed?.text).toContain('imported');
 
     // The batch spends no build revision, because nothing it stores is opened.
-    // Under the old policy that made it the same event as the commit before it
-    // and left it silent.
+    // It carries a request token instead, and the commit before it carried a
+    // build revision that five edits had pushed well past it — so under the old
+    // policy the batch was the smaller number of the two and went unsaid.
     await chooseAll([
       loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
       loadoutLine({ ShipName: 'Second', timestamp: '2026-09-03T09:00:00Z' }),
     ]);
+    // The arrangement the old policy fell silent in, stated rather than assumed:
+    // the build is ahead of the token, so the number the batch would have
+    // carried is behind the number the commit already published.
+    expect(active.revision()).toBeGreaterThan(store.requestToken);
+
     expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
 
     const stored = announcements.politeEvent();
@@ -702,9 +729,16 @@ describe('what an import and a delivery say out loud', () => {
 
   it('states a refused payload after a committed import', async () => {
     await commitOne();
+    workOnIt(5);
+    await commitOne();
     const committed = announcements.politeEvent();
+    expect(committed?.text).toContain('imported');
 
+    // Same shape as the batch above: the refusal carries a request token, the
+    // commit carried a build revision the edits had raised past it, and one
+    // number for both is what silenced the second.
     store.setDraft('not a payload');
+    expect(active.revision()).toBeGreaterThan(store.requestToken);
     expect(await presenter.submit()).toEqual({ kind: 'failed' });
 
     const failed = announcements.politeEvent();

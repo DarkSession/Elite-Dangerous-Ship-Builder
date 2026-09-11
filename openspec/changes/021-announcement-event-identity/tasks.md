@@ -38,7 +38,11 @@
       before the notice exists and a guard would silence it. Verify two refusals with no
       committed edit between them publish twice, that a notice arriving with a refusal nobody
       has been told about publishes once, and that one arriving with a refusal already
-      announced publishes nothing (011/FR-009).
+      announced publishes nothing. The workspace withholds the mark while the saved builds
+      layer stands over it, because the outlet is inert under an open modal and the mark would
+      be spent on a sentence nobody heard; verify a refusal reported under the layer is spoken
+      when the layer goes, and that one reported with no layer over it is spoken at once
+      (011/FR-009).
 - [x] 3.5 Verify in the same specs that a committed locale publishes nothing, and that a batch
       refusing four entries publishes one message rather than four (011/FR-009).
 - [x] 3.6 Remove the `revision` and `announcementKind` inputs, the `announce` call and the

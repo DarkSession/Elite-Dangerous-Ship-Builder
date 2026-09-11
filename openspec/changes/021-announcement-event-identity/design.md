@@ -10,12 +10,14 @@ One number answers three questions. Two are stated on the type: is this a replay
 late answer to a withdrawn question. The third is not stated anywhere. None of the three is a
 question the policy can answer from a number a caller hands it.
 
-Seven announcements are published from an Angular effect. An effect re-runs when anything it
+Eight announcements are published from an Angular effect. An effect re-runs when anything it
 read changes, and resolving a message reads the message catalogue, so a reading language
-re-runs the effect and publishes the event a second time. Three of the seven resolve the
-message in `untracked`: two in `app.ts` and one in `app-frame.ts`. Four do not — the ship
-catalogue's count, the saved builds' count, the outfitting notice and the unresolvable address
-— and each supplies a number that stays still instead.
+re-runs the effect and publishes the event a second time. Four of the eight announce inside
+`untracked`: two in `app.ts`, one in `app-frame.ts`, and the schematic's in `hull-anatomy.ts`,
+which reaches its announcement through a private method and is the one present caller in the
+shape the gate's third rule cannot see. Four do not — the ship catalogue's count, the saved
+builds' count, the outfitting notice and the unresolvable address — and each supplies a number
+that stays still instead.
 
 That third job is why five of the seven defective sites supply what they supply.
 
@@ -236,6 +238,16 @@ counts the lines because that is a rule about what is drawn; the store remembers
 memory has to outlive a component the next visit rebuilds. It is the same shape `app.ts` uses
 for the update notice: the caller keeps what it announced, because the policy no longer can.
 
+Not while a layer stands over the workspace. The saved builds are a layer over the screen a
+Commander is on rather than a replacement for it, so where the workspace already holds a build
+it is mounted and running underneath while the refusal is reported. Its notice would speak
+straight away, into an outlet the open modal has made inert — the limitation recorded above —
+and it would spend the one mark the store holds on a sentence nobody heard. So the workspace
+withholds the mark while `LibraryPresence.open()` stands and passes it on when the layer goes,
+which is the moment the workspace is the surface a reader is on. The layer is not silent
+meanwhile: it draws its own alert over the record it could not open, naming the reason. The
+link path has no layer and is unaffected.
+
 Only the surface that speaks a refusal clears its mark. `RecordOpenService.open` has a second
 caller — the saved builds layer, which draws its own alert over the record that was refused —
 and clearing the mark from there looks tempting: the Commander has been told, and arriving at
@@ -330,14 +342,15 @@ rather than a preference.
 
 ## Risks / Trade-offs
 
-- **Rule 3 reads syntax, and four shapes are outside what syntax can see.** An announcement
+- **Rule 3 reads syntax, and five shapes are outside what syntax can see.** An announcement
   reached through a helper is not inside a visible `effect`; a member that reaches the
   catalogue through a private method it calls, rather than in its own initialiser, is not read
-  as a resolved one; a component that announces nothing makes no catalogue read to judge; and
-  neither does one that announces over an input already holding resolved text, although a
-  committed locale re-runs it exactly as it would a member. The two shapes syntax _can_ see, a
+  as a resolved one; a locale service read through a local alias rather than through `this.`
+  walks past the field the rule watches; a component that announces nothing makes no catalogue
+  read to judge; and neither does one that announces over an input already holding resolved
+  text, although a committed locale re-runs it exactly as it would a member. The two shapes syntax _can_ see, a
   read for another purpose and a read with nothing bound to it, are both rejected. Any of the
-  four could publish one occurrence twice, against the requirement. → The unit suite beside
+  five could publish one occurrence twice, against the requirement. → The unit suite beside
   each announcing file reads what it publishes, and the manual screen-reader protocol reads
   both journeys. A caller added later without either is the residual gap, and rule 3 catches
   the shape that produced all four of the present ones.
