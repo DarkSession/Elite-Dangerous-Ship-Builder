@@ -4,7 +4,8 @@
 
 While a build's link is published, the address MUST carry it. An address that carries no fragment
 at all MUST have the published link stated again in place, whatever moved the fragment away. The
-address bar then shows the build that is open, and a reload opens that build.
+address bar then carries the link to the build that is open, so the address opens that build
+wherever it is taken.
 
 Restoring MUST NOT add a history entry. A restoration puts back what the address already claimed
 to hold, so it is not an edit and does not lengthen a Commander's history.
@@ -34,7 +35,7 @@ Source: 022/FR-001.
 - **WHEN** the address of the document a published build belongs to carries no fragment
 - **THEN** the published link is stated again in the address
 - **AND** no history entry is added
-- **AND** reloading that address opens the same build
+- **AND** opening that address where no build is stored opens the same build
 
 #### Scenario: A link is published onto a later history entry
 

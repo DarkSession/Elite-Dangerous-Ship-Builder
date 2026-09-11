@@ -156,7 +156,9 @@ injectable `encode`, so no coverage depends on the timing of a browser.
   left alone.
 - **A Commander who deletes the fragment from the address bar by hand gets it back.** → That is
   the requirement rather than a side effect: while a build is open and its link is published, the
-  address describes it. Anyone who wants an address without a build closes the build.
+  address describes it. The ship builder has no action that closes a build, so there is no way to
+  hold an empty address on the workspace, and this change does not add one. Leaving the workspace
+  does it, and the document bound keeps the link off the screen a Commander leaves for.
 - **The window stays open; this closes its consequence.** → A publication landing on a layer's
   entry is still a publication on the wrong entry, and a Commander who copies the address _while_
   the layer is up gets a link to the build, which is the address that entry was pushed to carry

@@ -68,8 +68,11 @@
 
 - [ ] 4.1 Add a journey to `e2e/build-link.spec.ts`, beside the other journeys the
       `build/share-link` ledger entry covers: open a build, open the saved builds before the
-      address carries the link, close the layer, and read that the address carries the build link
-      and that reloading it opens the same build. Hold the window open by delaying the lazily
+      address carries the link, close the layer, and read that the address carries the build link.
+      Then open that address in a fresh browser context, which holds no stored build, and read
+      that it opens the same build. A reload in the same context would not discriminate: the
+      active build is autosaved and restored under 001/FR-008 whether the fragment came back or
+      not. Hold the window open by delaying the lazily
       imported codec chunk, as design.md sets out under "The journey holds the window open by
       delaying the codec chunk". The two existing library journeys stay as they are: they read the
       two ways out of the layer rather than this race, and they wait for the address deliberately

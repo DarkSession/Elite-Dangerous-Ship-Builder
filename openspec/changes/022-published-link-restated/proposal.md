@@ -2,10 +2,13 @@
 
 A Commander who opens the saved builds while the build's link is still being published loses that
 link from the address. The workspace comes back with `/outfitting` and no build on it, and stays
-that way until the next edit. The address bar shows no build, and a reload opens an empty
-workspace. The in-app control that copies a link is unaffected, because it hands over the
-published URL rather than reading the address bar. That is why this goes unnoticed until somebody
-copies from the bar or reloads.
+that way until the next edit. The Commander loses nothing on the screen in front of them, and
+nothing on a reload either: the active build is autosaved and restored under
+`ship-builder/build-lifecycle`, "Autosave of the active build" (001/FR-008). What is lost is the
+address. Copied from the bar, opened in another tab or handed to somebody else, it carries no
+build. The in-app control that copies a link is unaffected, because it hands over the published
+URL rather than reading the address bar. That is why this goes unnoticed until somebody copies
+from the bar.
 
 `LibraryPresence.raise` pushes a history entry at the address as it stands. `FragmentPublisher`
 reaches its `replaceFragment` only after a dynamic import of the codec and its table and an
