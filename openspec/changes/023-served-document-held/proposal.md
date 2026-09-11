@@ -12,6 +12,10 @@ stated, so the first half holds. The second half does not. The scenario below it
 the build generates no document for, describes what a Commander gets today at an address that has
 one — and the shell is the right answer only where there is nothing else.
 
+`platform/published-addresses` is not met either. "A takeover that does not complete" (015/FR-012)
+requires the Commander to be left with the readable document, and its scenario is "The bundle is
+blocked or a chunk never arrives" — which is this.
+
 The takeover is what is wrong. It discards what the address served before any navigation has
 presented a screen to replace it, so a navigation that never presents one leaves nothing behind.
 That is the contract of `platform/published-addresses`, which owns the generated documents, and
@@ -22,14 +26,18 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
 - The served document is held across the takeover until a navigation presents a screen. Today the
   application adopts the document's content only where a navigation activates a screen over it.
   Where the navigation fails instead, what the address served is kept and stays readable.
-- The boundary is the first screen presented, not the first navigation. A first navigation that is
-  cancelled or redirected and replaced is one presentation, and a replacement that fails leaves
-  the Commander owed the same content.
+- The boundary is the first screen presented, not the first navigation and not a failure. A
+  navigation that ends any other way — cancelled with nothing taking over, or replaced by one that
+  ends without a screen — leaves the Commander owed the same content.
 - At an address the build generates no document for, nothing changes: the shell is what that
   address served, and the shell is what the Commander keeps.
-- Held content is the application's own markup, kept as it stands. Nothing is re-rendered, no
-  figure is recomputed and no sentence is written for it — including into the committed locale,
-  which the application cannot reach without the screen's code.
+- Held content is the application's own markup, kept as it stands, carrying the language it was
+  served in. Nothing is re-rendered, no figure is recomputed and no sentence is written for it —
+  including into the committed locale, which the application cannot reach without the screen's
+  code.
+- Putting it back is invisible. It lands in the render that would otherwise have removed it, so no
+  frame is emptier than the one before it and the invisible takeover keeps its three exceptions
+  and no more.
 - The application frame gains one state: its `main` holding content the address served. It takes a
   preview and a scan like any other state the frame supports.
 
@@ -57,17 +65,20 @@ None.
 ### Modified Capabilities
 
 - `platform/published-addresses`: gains a requirement that what an address served is held until a
-  navigation presents a screen — that a navigation failing before one is presented leaves the
-  Commander on the served content rather than on the shell, that the hold ends when a screen is
-  presented, that held content is kept as it stands rather than rebuilt, and that an address with
-  no generated document holds nothing. In the same delta, "Bundled English, replaced by the
-  committed locale" (015/FR-011) is modified to say that the replacement is carried by the screen
-  the application presents, so held content stays in the English it was served in.
+  navigation presents a screen — that a navigation ending any other way leaves the Commander on
+  the served content rather than on the shell, that held content is kept as it stands and carries
+  the language it was served in, that putting it back is invisible on the same terms as the
+  takeover, and that an address that served the shell holds nothing. This is also what makes
+  015/FR-012 true at an address with a generated document. In the same delta, "Bundled English,
+  replaced by the committed locale" (015/FR-011) is modified to say that the replacement is
+  carried by the screen the application presents, so held content stays in the English it was
+  served in.
 
 ## Impact
 
-- `src/app/app.config.ts` and a new platform service under `src/app/platform/` gain the hold. It
-  belongs beside the takeover it is part of, not inside a screen.
+- `src/app/app.config.ts` and a new adapter under `src/app/platform/browser/` gain the hold, beside
+  the other adapters that own a piece of the document. It belongs with the takeover it is part of,
+  not inside a screen.
 - `src/app/ui/components/app-frame/` receives the held content where the outlet stands. Nothing it
   draws changes otherwise.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right; what changes is

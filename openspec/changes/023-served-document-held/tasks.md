@@ -33,24 +33,35 @@
       from one of them. Verify with a test asserting the copy is taken before the first
       `NavigationStart`, so an initialiser added later cannot silently move it after the takeover
       (023/FR-001).
-- [ ] 2.3 Put the copy back when a navigation ends in `NavigationError` and no screen has been
-      presented in this session. Count screens presented rather than navigations run, so a first
-      navigation that is cancelled or redirected and replaced does not spend the hold: the
-      replacement failing is the same case (design.md, "The boundary is the first screen presented,
-      not the first navigation"). The frame renders a container inside the
+- [ ] 2.3 Put the copy back when a navigation ends without presenting a screen and none has been
+      presented in this session — a failure, a cancellation with nothing taking over, or a
+      replacement that ends the same way. Count screens presented rather than navigations run or
+      errors raised: a rule written about `NavigationError` alone would leave the cancelled-with-
+      nothing-taking-over Commander on an empty shell with no statement on it, which is worse than
+      either outcome this change is for (design.md, "The boundary is the first screen presented,
+      not the first navigation"; 018/FR-005). The frame renders a container inside the
       `<main class="frame__main">` it already draws, where the outlet stands, in
       `src/app/ui/components/app-frame/app-frame.html`, and the adapter
       fills it — that is where the copy was taken from, and anywhere else moves it out of its
-      landmark. Verify tasks 1.2 and 1.3 now pass, and that the failure statement still stands over
-      the content rather than instead of it (023/FR-001, 018/FR-007).
+      landmark. The container is part of the frame's first render rather than written in from an
+      effect afterwards, so the copy lands in the render that removes the served nodes and nothing
+      is painted between the two. Verify tasks 1.2 and 1.3 now pass, and that the failure statement
+      still stands over the content rather than instead of it (023/FR-001, 018/FR-007).
 - [ ] 2.4 Release the copy at the first `NavigationEnd`. Verify nothing is held after a screen has
       been presented, and that the held container is not drawn once a screen stands in the outlet
       (023/FR-001).
 - [ ] 2.5 Verify the held content stays in the bundled English it was served in, for a Commander
-      whose committed locale is German, and that the failure statement beside it is in German
-      because that sentence is the shell's own. The catalogue is applied by rendering the screen,
-      and the screen is what did not arrive, so there is nothing that can apply it and nothing the
-      application may write in its place (015/FR-011, constitution IV and VI).
+      whose committed locale is German: assert the held words are the served ones, that no
+      translated text and no disclosure has been written into them, and that the failure statement
+      beside it is in German because that sentence is the shell's own. The catalogue is applied by
+      rendering the screen, and the screen is what did not arrive, so there is nothing that can
+      apply it and nothing the application may write in its place (015/FR-011, constitution IV
+      and VI).
+- [ ] 2.6 Verify the held content carries the language it was served in, while the application
+      around it carries the committed locale as the root language (011/FR-027). English standing
+      inside a German page is a part in another language, and WCAG 2.2 AA 3.1.2 is in scope —
+      constitution V excludes eight success criteria and that is not one of them. Assert the
+      language on the container rather than on the page (023/FR-001).
 
 ## 3. The boundaries
 
@@ -85,6 +96,13 @@
       and the screens the application presents, and this state is neither
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.5 scans its own
       standing overlay for the same reason). Verify with `pnpm run e2e` (011/FR-022, 011/SC-002).
+
+- [ ] 4.3 Measure the restore, not only the takeover that succeeds: read that no frame between the
+      document arriving and the held content standing is emptier than the frame before it, and that
+      the content does not blank and return. 015/FR-009 admits three exceptions and this claims
+      none of them, so a visible removal and return is a failure rather than a cost. Verify with
+      `pnpm run e2e` in the production lane, beside the journey task 1.2 adds (023/FR-001,
+      015/FR-009).
 
 ## 5. Reading it end to end
 

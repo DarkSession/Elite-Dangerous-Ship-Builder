@@ -40,9 +40,15 @@ to stand over.
 
 No new screen, and nothing new composed from the design system. The application frame gains one
 state, and it is a state no screen inventory has recorded: its `main` holding content the address
-served, inside a running application, with the failure statement over it. It is not "A takeover
-that does not complete" (015/FR-012), which is the opposite case — there the application never
-runs.
+served, inside a running application, with the failure statement over it.
+
+"A takeover that does not complete" (015/FR-012) already reads on this case. Its scenario is "The
+bundle is blocked or a chunk never arrives", which is what happens here, and it requires the
+Commander to be left with the readable document. The application does not meet it at an address
+with a generated document, so this change makes that requirement true as well as 018/FR-007's
+second half. `023/FR-001` is not a second answer to the same question: FR-012 states the outcome of
+a takeover that fails, and FR-001 states when the application may discard what an address served —
+which also governs a navigation that ends without a screen long after bootstrap succeeded.
 
 The state reaches the three content-bearing screens, which are the addresses the build generates a
 document for (015/FR-018, "Which addresses get a document"): the start page, the hull catalogue
@@ -69,6 +75,18 @@ takeover is `platform/published-addresses`.
 Stating it there also covers more than the one doorway. Any first navigation that fails at a
 generated address loses the same content, whatever the reason the chunk did not arrive.
 
+### Putting the copy back is invisible, in one frame
+
+015/FR-009 admits exactly three exceptions and says nothing else may claim one, so the restore
+cannot be a removal the Commander sees followed by a return. The copy goes back in the render that
+removes the served nodes: the application renders once, after the navigation has resolved, and the
+frame draws the held container in that same render. Nothing is painted between the two.
+
+This is the same shape the stored catalogue view already has — applied "in the takeover frame
+itself rather than a frame later" (015/FR-009a) — and it is why the container is part of the
+frame's first render rather than something written in afterwards from an effect. A restore that
+waited for a second pass would be the blank this feature exists to prevent.
+
 ### The served nodes are copied before bootstrap, and the copy is what is put back
 
 The copy is taken in a browser-only application initialiser registered before `provideRouter`,
@@ -85,17 +103,24 @@ and what is put back has to be what the address served rather than a second read
 
 ### The boundary is the first screen presented, not the first navigation
 
-The copy is dropped when a navigation presents a screen, and it is put back whenever one fails
-before that has happened. The router's first `NavigationEnd` is the end of the hold; a
-`NavigationError` before it is what puts the copy back.
+The copy is dropped when a navigation presents a screen, and it is put back whenever a navigation
+ends without presenting one. The router's first `NavigationEnd` is the end of the hold; every other
+ending leaves the copy standing.
 
 Not "the session's first navigation", which is narrower than the rule and would miss a case. A
 first navigation can be cancelled and handed over to a replacement — a redirect, or an address
 that resolves elsewhere and lands at the entry point
 (`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve") — and
-018/FR-005 treats the pair as one presentation. If the replacement fails, no screen has been
-presented and the Commander is owed what the address served, but the navigation that failed is not
-the first one. Counting screens rather than navigations covers that without a second rule.
+018/FR-005 treats the pair as one presentation. If the replacement ends without a screen, no screen
+has been presented and the Commander is owed what the address served, but the navigation that
+ended is not the first one.
+
+Not `NavigationError` either, which is narrower again. `platform/navigation-waiting` names a third
+outcome: a navigation cancelled with nothing taking over (018/FR-005, "The navigation is cancelled
+with nothing taking over"). Nothing is said about that one, because there is nothing to state. If
+the copy went back only on an error, that Commander would be left on an empty shell with no
+statement on it, which is worse than either outcome this change is written for. So the rule is
+stated once, positively: the hold ends where a screen is presented, and nowhere else.
 
 Alternative considered: keeping the copy for the session, so any later failure could restore it.
 Rejected because it is not what a Commander wants. After they have opened a screen, a failed
@@ -129,6 +154,12 @@ not have, which constitution IV forbids.
 So a Commander reading in German keeps the English document they were served, and reads the failure
 in German because that sentence is the shell's own. Nothing is reordered and nothing is removed,
 which is what FR-011 protects.
+
+The held content states the language it is in. The running application publishes the committed
+locale as the root language (011/FR-027), so English content standing inside it is a part in
+another language, and WCAG 2.2 AA 3.1.2 is in scope — constitution V excludes eight success
+criteria and that is not among them. The container carries the served document's language, which
+is a fact the application has rather than a sentence it writes.
 
 Alternative considered: telling them the content is in English, the way 015/FR-011a discloses an
 untranslated game name. Rejected because a document is served in bundled English to every
