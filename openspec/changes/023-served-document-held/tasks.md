@@ -1,6 +1,6 @@
 ## 1. Scope and the failing test
 
-- [ ] 1.1 The held content is the generated document's own markup, already laid out for its
+- [x] 1.1 The held content is the generated document's own markup, already laid out for its
       viewport, already scanned for accessibility as a first frame, and already written in bundled
       English (015/FR-010, 015/FR-019, 015/FR-011). Holding the same nodes adds no composition, no
       touch target and no string. What is new is one composition of the application frame, and it
@@ -178,7 +178,7 @@
 
 ## 5. Reading it end to end
 
-- [ ] 5.1 Re-read the takeover that succeeds, which this change must not disturb: run the existing
+- [x] 5.1 Re-read the takeover that succeeds, which this change must not disturb: run the existing
       015/SC-003 measurement and confirm the cumulative layout shift from first paint to
       interactive is still 0 on all five layout profiles in both orientations, and that no frame is
       emptier than the frame before it. This is also where the delta's scenario "A navigation
@@ -230,6 +230,6 @@
       journey too. Do not register it against the development-lane reading in
       `e2e/navigation-waiting.spec.ts`: that reading passes however the adapter behaves, as task
       3.3 says, and registering it would enter evidence that cannot fail.
-- [ ] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
+- [x] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.
