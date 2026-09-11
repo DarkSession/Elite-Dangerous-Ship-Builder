@@ -9,8 +9,8 @@ before there is something to put in its place.
 The hold MUST end only where a screen is presented, and it ends there. While it stands, a
 navigation that ends any other way — it failed, it was cancelled with nothing taking over, or it
 was cancelled and replaced by one that then ended without presenting a screen — MUST leave the
-Commander on the content the address served. A redirect, or an address that resolves elsewhere, is
-one presentation with whatever replaces it, so the hold does not end there. What is said about any
+Commander on the content the address served. A redirect, or an address that resolves elsewhere,
+counts once with whatever replaces it, so the hold does not end there. What is said about any
 of those outcomes is `openspec/specs/platform/navigation-waiting/`, "A screen that never arrives is
 stated, not silently abandoned" and
 "The statement ends with the navigation", and this requirement adds nothing to either.
@@ -43,14 +43,16 @@ Source: 023/FR-001.
   that served a generated document
 - **THEN** the Commander is left on the content that address served
 
-#### Scenario: The first navigation is cancelled with nothing taking over
+#### Scenario: A navigation is cancelled with nothing taking over
 
-- **WHEN** the session's first navigation is cancelled and nothing takes over from it
+- **WHEN** a navigation is cancelled before any screen has been presented in the session, and
+  nothing takes over from it
 - **THEN** the Commander is left on the content the address served
 
-#### Scenario: The first navigation is replaced, and the replacement presents no screen
+#### Scenario: A navigation is replaced, and the replacement presents no screen
 
-- **WHEN** the session's first navigation is cancelled or redirected to another address
+- **WHEN** a navigation is cancelled or redirected to another address before any screen has been
+  presented in the session
 - **AND** the navigation that replaces it ends without presenting a screen
 - **THEN** the Commander is left on the content the address served
 
@@ -136,9 +138,8 @@ The one thing the replacement MAY add is the disclosure that accompanies a game 
 original language. A Commander reading in a language the game's own nouns are not published in is
 told so beside each one, and in bundled English there is nothing to disclose because English is the
 original. So a document read in another language gains one such note per untranslated name and gains
-nothing else. A value the application presents in a language the Commander did not ask for MUST say
-so, so the disclosure MUST NOT be suppressed. This exception covers that disclosure and nothing
-else.
+nothing else. A value shown in a language the Commander did not ask for MUST say so, so the
+disclosure MUST NOT be suppressed. This exception covers that disclosure and nothing else.
 
 The disclosure belongs to a replacement that lands, which is where the application presents the
 value. Content held because no screen was presented is a document standing in bundled English,

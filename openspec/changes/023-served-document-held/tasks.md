@@ -47,7 +47,13 @@
       fills it — that is where the copy was taken from, and anywhere else moves it out of its
       landmark. The container is part of the frame's first render rather than written in from an
       effect afterwards, so the copy lands in the render that removes the served nodes and nothing
-      is painted between the two. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the failure
+      is painted between the two. Where the failure statement stands is settled here rather than
+      later, because this is the task that first renders the two together and the one that would
+      otherwise be built on a guess (AGENTS.md, "answer it before building the tasks that depend on
+      it"): either the space the statement occupies exists before the statement does, or the
+      statement stands where it does not displace the content. 015/FR-009 admits three exceptions
+      and this claims none of them, so a fourth is not available. Task 4.3 reads the answer back
+      rather than choosing it. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the failure
       statement still stands over the content rather than instead of it. Tasks 1.2 and 1.3 drive
       `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
       that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
@@ -118,52 +124,40 @@
       production lane, or in the unit sequence task 1.3 establishes where a browser cannot produce
       a cancellation with nothing taking over (023/FR-001).
 
-## 4. The state the frame gains
+## 4. Where the held frame is read
 
-- [ ] 4.1 Declare the frame's held state in `src/app/ui/previews/preview-manifest.ts`, with a
-      fixture standing in for the content an address served, so the state previews at desktop,
-      tablet and mobile widths like every other state the frame supports. Verify with
-      `pnpm run e2e` over `e2e/ui-preview.spec.ts`, opening the new state at its own preview
-      address by name and asserting the fixture's content stands in the frame's `main`: a suite
-      that only sweeps what is registered goes green on a state that was never declared, so the
-      address is named in the test rather than left to the sweep. The sweep then scans it across
-      the layout profiles like every other state. Do not verify this with `pnpm run policy`: its
-      preview rule is written per component rather than per state, `AppFrame` is already declared,
-      and it therefore passes whether or not this fixture exists. Task 4.4 is where that gap is
-      recorded (011/FR-004, 011/FR-024).
+- [ ] 4.1 Verify the preview manifest needs nothing added, rather than adding a state to it.
+      `ComponentState` is closed over the five states 011/FR-004 enumerates — `default`, `empty`,
+      `loading`, `error` and `disabled` (`src/app/ui/component-contract.ts`) — and `app-frame`
+      already accounts for all five, with a fixture for three and a stated reason for the two its
+      contract cannot represent. A `main` with content in it is none of the five: it is the frame
+      in a state it is already previewed in. No fixture could show it in any case, because `main`
+      is `<ng-content />` and the catalogue renders each cell through `NgComponentOutlet` with
+      inputs alone (`projects/ui-preview/src/app/preview-app.ts`), so no component preview puts
+      anything in the frame's `main`. Verify by running `pnpm run policy` with this change's code
+      in place and reading that it reports nothing about `app-frame`. The composition is read
+      where it occurs instead, in the product lane, which is tasks 4.2, 4.3 and 4.4 (011/FR-004,
+      constitution IX).
 - [ ] 4.2 Scan the held state where it stands, in the production lane, across the layout profiles
       the journey in task 1.2 already runs: the held content and the failure statement together,
       asserted to report no in-scope violation. The existing scans reach the generated first frame
       and the screens the application presents, and this state is neither
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.5 scans its own
       standing overlay for the same reason). Verify with `pnpm run e2e` (011/FR-022, 011/SC-002).
-
 - [ ] 4.3 Measure the restore, not only the takeover that succeeds: read that no content the
       Commander can see moves position, that no frame between the document arriving and the held
       content standing is emptier than the frame before it, and that the content does not blank and
       return. Read the movement against the failure statement landing beside the content, which is
       what this change stands in the same place for the first time: a statement that pushes the
       content down the page is a move. The frame draws its standing notices above the `main` the
-      outlet sits in, so this is the likely reading to fail, and answering it is part of this task:
-      either the space the statement occupies exists before the statement does, or the statement
-      stands where it does not displace the content. 015/FR-009 admits three exceptions and this
-      claims none of them, so a fourth is not available and a visible move, removal or return is a
-      failure rather than a cost. Verify with `pnpm run e2e` in the production lane, beside the
-      journey task 1.2 extends (023/FR-001, 015/FR-009).
-- [ ] 4.4 Re-read the gap recorded in proposal.md, Impact, so that record is still true when the
-      change lands rather than only when it was written. 011/FR-024's scenario is "A component
-      state has no preview", whose WHEN is "a component supports a state that has no preview" and
-      whose THEN
-      is that the automated check rejects it; the check is written per component, so a component
-      already declared passes with a state it does not preview. Of the two the checker is the
-      defect — the accepted requirement is what the project wants — and widening it needs a way to
-      read which states a component supports, which the source does not state. That is its own
-      change against `platform/design-system`, not this one, which owns the takeover. Verify by
-      running `pnpm run policy` with task 4.1's fixture removed and seeing it pass: that is the gap,
-      and it can fail. If it now fails, the checker has been fixed since, and the Impact bullet is
-      stale and comes out (constitution IX; 011/FR-024).
-
-- [ ] 4.5 Read the held state at 200% text size and at 400% zoom, in the profiles the journey in
+      outlet sits in, so this is the reading that a wrong answer in task 2.3 fails. Read the answer
+      that task chose rather than choosing one here: either the space the statement occupies exists
+      before the statement does, or the statement stands where it does not displace the content.
+      015/FR-009 admits three exceptions and this claims none of them, so a fourth is not available
+      and a visible move, removal or return is a failure rather than a cost. Verify with
+      `pnpm run e2e` in the production lane, beside the journey task 1.2 extends (023/FR-001,
+      015/FR-009).
+- [ ] 4.4 Read the held state at 200% text size and at 400% zoom, in the profiles the journey in
       task 1.2 already runs: the held content and the failure statement together, with the content
       complete and no horizontal page scrolling. 011/FR-011 requires it of every capability, and
       neither existing reading reaches this composition — 015/FR-019 scans the generated first
@@ -201,8 +195,13 @@
 - [ ] 5.4 Register the change in `e2e/coverage-ledger.ts`: add `023-served-document-held` to
       `COVERED_FEATURES`, add `023/FR-001` to the `requirements` array of the
       `prerendered/first-frame` entry, whose journey is `product/prerendered-first-frame`, and add
-      the journey's assertion to that entry's `assertions` array beside "a Commander whose bundle
-      never arrives is left with the readable document". Verify by reading the entry back against
+      the new readings to that entry's `assertions` array beside "a Commander whose bundle never
+      arrives is left with the readable document" — which reads a different case and stays as it
+      is: it blocks the bundle so the application never boots, where this change is about a chunk
+      that never arrives after it has. One assertion for task 1.2's reading, and one each for tasks
+      2.5 and 2.6, which are the new readings of `015/FR-011` and `015/FR-011a`. Those two ids are
+      already in that entry's `requirements` array and stay there; what the modification adds is
+      evidence, not a registration. Verify by reading the entry back against
       the journey task 1.2 extends: the surface's journey name is the one that now carries the
       assertion, and the assertion text names what that journey reads. `pnpm run policy` is the
       command that can fail here — it reconciles each ledger surface and journey against the routes,

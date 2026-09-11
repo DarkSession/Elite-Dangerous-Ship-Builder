@@ -5,15 +5,14 @@ decisions working together rather than a fault in any one of them.
 
 `provideClientHydration(withEventReplay())` makes the application adopt the rendered document
 rather than replace it. `withEnabledBlockingInitialNavigation()` holds bootstrap until the first
-navigation resolves, so the router reaches the outlet with the screen's code already in hand and
+navigation resolves, so the router reaches the outlet with the screen's code already loaded and
 adopts the document's copy of the screen instead of drawing its own a frame later. Both exist for
 015/FR-009, and `src/app/app.config.ts` records what each was measured to prevent.
 
 They assume the navigation resolves into a screen. Where the screen's chunk never arrives, the
 navigation ends in `NavigationError`, bootstrap is released, and the application renders a shell
 with an empty outlet. Hydration then removes the served nodes under it, because nothing claimed
-them. The document's `main` is emptied by hydration doing its job, not by anything going wrong
-in it.
+them. The document's `main` is emptied by hydration behaving as specified, not by a fault in it.
 
 Hydration is the part that succeeds here. It claims the nodes a screen renders, and where no screen
 renders, nothing claims them and they go. The takeover as a whole — the handover from the served
@@ -66,9 +65,14 @@ satisfies `023/FR-001`.
 What stands in that state is the generated document's own markup. It is already laid out for its
 viewport (015/FR-010), already scanned as a generated first frame (015/FR-019) and already written
 in bundled English (015/FR-011), so it adds no composition and no string. What is new is the frame
-holding it, and that is a supported state of `app-frame` like any other: it takes a preview
-fixture at desktop, tablet and mobile widths (011/FR-004), and it is scanned where it stands
-(011/FR-022). The failure statement over it is the shell's own, drawn exactly as it is today.
+holding it, and that is not a new state of `app-frame`. 011/FR-004 enumerates five states,
+`ComponentState` is closed over those five, `app-frame` already accounts for all of them, and a
+`main` with content in it is the frame in a state it is already previewed in. No fixture could
+show it in any case: `main` is `<ng-content />` and the catalogue renders each cell through
+`NgComponentOutlet` with inputs alone, so no component preview puts anything there. So the
+composition is scanned where it stands, in the product lane (011/FR-022), which is where a
+composition the application renders belongs. The failure statement over it is the shell's own,
+drawn exactly as it is today.
 
 ## Decisions
 
@@ -123,6 +127,12 @@ that resolves elsewhere and lands at the entry point
 replacement ends without a screen, no screen has been presented and the Commander is owed what the
 address served, but the navigation that ended is not the first one.
 
+One consequence is worth stating so a later reader does not read it as a defect: where a
+navigation is redirected, the content standing is what the first address served while the address
+bar carries the second. The Commander was given that content and no screen has replaced it, so it
+is what they keep; the address states where the application was going, which is what it states on
+every redirect.
+
 That the pair counts once is this change's own rule, stated in `023/FR-001` and nowhere else. The
 nearest accepted requirement, 018/FR-005, reaches the same pair for a different purpose — one
 waiting statement stands across the two rather than blinking out and back — and says nothing about
@@ -158,7 +168,8 @@ A fourth exception is not available; 015/FR-009 says three exist and nothing els
 So the content must not move, and the way it does not is a question for the implementation: the
 space the statement occupies has to exist before the statement does, or the statement has to stand
 somewhere that does not displace the content. Which of the two is right needs the rendered frame,
-and it is answered in task 4.3 rather than guessed here. What is settled is the constraint: the
+which task 2.3 is what produces, so it is answered there as the container is built rather than
+guessed here or left for task 4.3 to discover. What is settled before either is the constraint: the
 restore is measured against the served document's own layout, and a shift is a failure rather than
 a cost.
 

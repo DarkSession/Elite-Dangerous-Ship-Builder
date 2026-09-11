@@ -39,8 +39,10 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
 - Putting it back is invisible. It lands in the render that would otherwise have removed it, so no
   frame is emptier than the one before it and the invisible takeover keeps its three exceptions
   and no more.
-- The application frame gains one state: its `main` holding content the address served. It takes a
-  preview and a scan like any other state the frame supports.
+- The application frame draws one composition it does not draw today: its `main` holding content
+  the address served, with the failure statement above it. It is scanned, measured, and read at
+  200% text and 400% zoom where it stands, in the product lane. It is not a new component state:
+  011/FR-004 enumerates five and the frame already accounts for all five.
 
 The change declares requirement `023/FR-001`:
 
@@ -56,7 +58,12 @@ which is the half of that requirement the application does not meet.
 
 `015/FR-011`, "Bundled English, replaced by the committed locale", is modified in the same delta.
 Read as accepted it requires the committed locale to replace the text of held content, which the
-application cannot do without the screen's code — the thing that failed to arrive.
+application cannot do without the screen's code — the thing that failed to arrive. Its accepted
+scenario "A Commander whose committed locale is not English" is narrowed to the takeover that
+presents a screen, because that is the only takeover that can carry the replacement. Nothing is
+lost by the narrowing: the document painting English immediately is required by the requirement's
+own first sentence and by 015/FR-008, and the case the scenario no longer reaches is the one a new
+scenario beside it reads.
 
 `015/FR-011a`, "The disclosure beside an untranslated game name", is modified beside it, for the
 same reason. It already says a document read in bundled English has nothing to disclose, which is
@@ -92,11 +99,14 @@ None.
   the same banner, tool links and standing notices it draws today, and the failure statement is one
   of those notices. Where that statement stands relative to the held content decides whether the
   restore moves anything the Commander can see, which design.md, "The failure statement stands
-  above the content, and that is a move", records and task 4.3 answers.
+  above the content, and that is a move", records, task 2.3 answers as it builds the container, and
+  task 4.3 reads back.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
   fixes; what changes is the takeover it describes.
-- `src/app/ui/previews/preview-manifest.ts` gains the frame's held state, which is what keeps the
-  state previewed at the three widths (011/FR-004).
+- `src/app/ui/previews/preview-manifest.ts` is unchanged. A frame whose `main` holds content is
+  none of the five states 011/FR-004 enumerates, the frame already accounts for all five, and the
+  preview catalogue renders each cell with inputs alone — so nothing it could hold would fill a
+  `main` that content is projected into. The composition is read in the product lane instead.
 - `e2e/coverage-ledger.ts` gains the change and the new requirement id, which is what keeps the
   behaviour's coverage checked rather than merely tested.
 - `e2e/navigation-waiting.spec.ts` reads the address with no generated document, where that reading
@@ -117,12 +127,6 @@ None.
   that requirement, and its scenario, both key on what the address served, which is what this
   change states — so nothing here contradicts it, and tightening the enumeration belongs to
   `platform/navigation-waiting`. Recorded in design.md, "Development has nothing to hold".
-- A gap this change found and does not close: 011/FR-024 requires the automated check to reject a
-  component state with no preview, and the check is written per component. A component already
-  declared in the preview manifest passes with a state it does not preview, so the held state's
-  fixture is read by the preview journey rather than by that check. The checker is the defect
-  rather than the requirement, and closing it belongs to `platform/design-system`, which owns
-  both. It is recorded here rather than worked around silently (constitution IX).
 - `openspec/changes/archive/018-navigation-loading-overlay/` is read and not written to. Its task
   6.3 stands unticked with the reason it carries, which is the record of why the work was deferred;
   this change is where the work is done and where it is recorded.
