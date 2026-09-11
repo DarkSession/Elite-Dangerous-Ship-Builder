@@ -100,8 +100,10 @@ export class AnnouncementService {
    * region announces a change to what it holds — so the outlet rebuilds by this
    * number and a reader hears the second one.
    *
-   * It never goes backwards, including across `clearOutlets()`. A number reused
-   * after a locale switch would hand the outlet an event it has already drawn.
+   * It never goes backwards while the application runs, `clearOutlets()`
+   * included: a number reused after a locale switch would hand the outlet an
+   * event it has already drawn. Only `reset()` puts it back to nothing, and a
+   * reset is the whole policy starting again.
    */
   #sequence = 0;
 

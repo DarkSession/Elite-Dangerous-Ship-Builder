@@ -424,7 +424,7 @@ describe('the workspace and a refused record', () => {
     expect(announcements.assertive()).toBe('');
     expect(active.ingressRefusalUnannounced()).toBe(true);
 
-    library.lowerForNavigation();
+    library.lower();
     fixture.detectChanges();
 
     expect(announcements.assertive()).not.toBe('');

@@ -40,8 +40,11 @@ That third job is why five of the seven defective sites supply what they supply.
 
 ## Screens
 
-None. This change introduces no screen and alters no layout. `OutfittingNotice` loses an input
-and an effect and draws what it drew, and its two wrappers gain an effect that draws nothing.
+None. This change introduces no screen and alters no layout. `OutfittingNotice` loses both its
+`revision` and `announcementKind` inputs and its effect, and draws what it drew. Each of its two
+wrappers loses the `revision` it passed down and gains an effect that draws nothing, and
+`IngressRefusalNotice` gains an `unannounced` input and an `announced` output, bound in
+`outfitting-workspace.html`, because the refusal it speaks is standing before it is built.
 
 ## Decisions
 
