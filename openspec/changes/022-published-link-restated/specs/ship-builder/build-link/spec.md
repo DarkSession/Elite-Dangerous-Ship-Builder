@@ -2,9 +2,9 @@
 
 ### Requirement: The address keeps the published link
 
-While a build's link is published, the address MUST carry it. An address that comes back carrying
-no fragment at all MUST have the published link stated again in place. The address bar then shows
-the build that is open, and a reload opens that build.
+While a build's link is published, the address MUST carry it. An address that carries no fragment
+at all MUST have the published link stated again in place, whatever moved the fragment away. The
+address bar then shows the build that is open, and a reload opens that build.
 
 Restoring MUST NOT add a history entry. A restoration puts back what the address already claimed
 to hold, so it is not an edit and does not lengthen a Commander's history.
@@ -29,12 +29,12 @@ MUST be stated into the address.
 
 Source: 001/FR-020.
 
-#### Scenario: The address comes back without a fragment
+#### Scenario: The address carries no fragment
 
-- **WHEN** the address of the document a published build belongs to comes back carrying no
-  fragment
+- **WHEN** the address of the document a published build belongs to carries no fragment
 - **THEN** the published link is stated again in the address
 - **AND** no history entry is added
+- **AND** reloading that address opens the same build
 
 #### Scenario: A link is published onto a later history entry
 

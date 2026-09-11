@@ -21,10 +21,11 @@
 ## 2. Restoring a lost link
 
 - [ ] 2.1 Add the watcher to `FragmentPublisher`, inside `start()` so it lives exactly as long as
-      the publication effect does. It records the document a fragment was published onto in a
-      private field beside `#token`, and not on `link()`: that model is what the application says
-      about the build, and where the fragment was written is bookkeeping. It states the published
-      link again when the address comes back empty at that same document. `markPublished` comes
+      the publication effect does. Publication records the document a fragment was written onto in
+      a private field beside `#token`, and not on `link()`: that model is what the application says
+      about the build, and where the fragment was written is bookkeeping. The watcher reads that
+      record and states the published link again when the address comes back empty at the same
+      document. `markPublished` comes
       before `replaceFragment`, as publication does. Verify tasks 1.2 and 1.3 now pass, that a
       refusal leaves nothing to restore, and that the restoration adds no history entry
       (001/FR-020).
@@ -49,9 +50,9 @@
       an address with no build link on it, and that no restoration follows them there. Drive it by
       moving `currentDocument()` between the encode and its resolution (001/FR-020).
 - [ ] 3.3 Verify nothing is stated where no link is published, for both reasons there can be none:
-      no build, and a refused encode. A refusal clears the fragment under the standing requirement
-      "Refusal of a build the codec cannot represent", and the watcher must not undo that
-      (001/FR-020).
+      no build, and a refused encode. A refusal removes a stale fragment with `replaceState`, under
+      `openspec/changes/archive/001-ship-selection-and-loading/contracts/build-link.md`,
+      "Active-edit synchronization", and the watcher must not undo that (001/FR-020).
 
 ## 4. Reading it end to end
 
@@ -65,7 +66,10 @@
       (001/FR-020).
 - [ ] 4.2 Add the journey's assertion to the `assertions` array of the same `build/share-link`
       entry in `e2e/coverage-ledger.ts`. That entry already registers `001/FR-020`, so no
-      requirement id is added. Verify with `pnpm run policy:specs`.
+      requirement id is added: the new requirement extends the same source as "Link validation and
+      history" rather than introducing one. The ledger keys evidence by id, so the assertion is
+      added on its own account rather than to satisfy a counter. Verify with
+      `pnpm run policy:specs`.
 - [ ] 4.3 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.

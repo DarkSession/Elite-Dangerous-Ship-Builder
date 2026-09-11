@@ -14,10 +14,10 @@ lands: the fragment is written onto the layer's address, and the workspace's own
 receives it. `lower()` returns to that entry with `back()`, and the publisher republishes only
 from its effect on the revision and the loadout, so nothing states the fragment again.
 
-The window is one lazy chunk plus one encode. It is short, and a cold or slow connection is long
-enough to fall inside it. The build itself is safe, because an absent fragment is ignored on
-ingest. The address is wrong, and the application states that a published link describes the build
-that is open.
+The window is one lazy chunk plus one encode. It is short, but a cold or slow connection makes it
+long enough for a Commander to open the saved builds inside it. The build itself is safe, because
+an absent fragment is ignored on ingest. The address is wrong, and the application states that a
+published link describes the build that is open.
 
 ## What Changes
 

@@ -47,7 +47,7 @@ fragment is on the address before any layer can be raised over it.
 None. This change introduces no screen and alters nothing drawn. The only visible surface it
 touches is the address bar, which is not composed from the design system. The feedback a
 Commander already gets about their link — published, encoding, refused — is unchanged, because
-`link()` is not what was wrong: it said `published` throughout, and the address disagreed with it.
+`link()` is not what is wrong: it says `published` throughout, and the address disagrees with it.
 
 ## Decisions
 
