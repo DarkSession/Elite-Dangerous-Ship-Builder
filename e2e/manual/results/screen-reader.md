@@ -209,7 +209,7 @@ reading of one element's own markup belongs.
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 21   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 21   | As stated in the protocol | —      | not run |
 
-## The second time something happens (change 020)
+## The second time something happens (change 021)
 
 Step 22 covers the reading no capture can take: a second event spoken in the
 same words as the first. Both halves of it — a filter narrowed twice and then

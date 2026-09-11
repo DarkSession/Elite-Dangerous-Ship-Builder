@@ -20,6 +20,28 @@ import { BuildLibraryPage } from './build-library.page';
  * be silence (011/FR-009).
  */
 
+/**
+ * `<dialog>` without the modal methods, which jsdom does not implement.
+ *
+ * The library is a layer, and a layer calls them the moment it is raised.
+ * Restored afterwards: the prototype is shared with every other suite in the
+ * run, and a stub left behind is one of them silently testing against this one.
+ */
+function stubNativeDialog(): () => void {
+  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+  const original = { showModal: prototype['showModal'], close: prototype['close'] };
+  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  };
+  prototype['close'] = function close(this: HTMLDialogElement) {
+    this.removeAttribute('open');
+  };
+  return () => {
+    prototype['showModal'] = original.showModal;
+    prototype['close'] = original.close;
+  };
+}
+
 class SilentChannel {
   readonly available = false;
   post(): void {}
@@ -64,7 +86,7 @@ describe('BuildLibraryPage announcements', () => {
   let released: (() => void)[] = [];
 
   function render(): { page: BuildLibraryPage; detect: () => void } {
-    released = [declareResizeObserver(), declareMeasurement({ width: 1440 })];
+    released = [stubNativeDialog(), declareResizeObserver(), declareMeasurement({ width: 1440 })];
 
     const storage = new MemoryStorage();
     seedNamed(storage, 'one', 'Alpha');
