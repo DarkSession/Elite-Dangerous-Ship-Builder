@@ -24,10 +24,10 @@ A restored link MUST NOT be read back as an arriving link. The build that is ope
 the restored link describes, and restoring it MUST leave that build untouched — not replaced, and
 not offered for replacement.
 
-Where no link is published, because there is no build or because the link was refused, nothing
-MUST be stated into the address.
+Where no link is published, because there is no build or because the link was refused, the
+application MUST NOT state anything into the address.
 
-Source: 001/FR-020.
+Source: 022/FR-001.
 
 #### Scenario: The address carries no fragment
 

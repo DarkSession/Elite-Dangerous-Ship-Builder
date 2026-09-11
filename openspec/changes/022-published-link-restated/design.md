@@ -130,8 +130,8 @@ reads the restored fragment as an arrival and offers to replace the build with i
 
 ### A restoration adds no history entry
 
-`replaceFragment` writes with `replaceState`. FR-020 forbids an entry per edit, and a restoration
-is less than an edit: it puts back what the address already claimed to hold.
+`replaceFragment` writes with `replaceState`. `001/FR-020` forbids an entry per edit, and a
+restoration is less than an edit: it puts back what the address already claimed to hold.
 
 ### The journey holds the window open by delaying the codec chunk
 

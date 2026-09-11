@@ -32,10 +32,21 @@ published link describes the build that is open.
   or clear a fragment that is not a build link. So only an address carrying nothing at all is
   restored.
 - Restoration is bounded to the document the link was published onto, exactly as publication
-  already is. A Commander who leaves the workspace while a publication is in flight does not
-  arrive at another screen carrying a build link.
+  already is. A Commander who publishes a link and then leaves the workspace does not have that
+  link restored onto whatever screen they went to.
 - Neither the saved-builds layer nor any other feature asks for the restoration. It belongs to
   the capability that owns the address.
+
+The change declares requirement `022/FR-001`:
+
+- **FR-001** While a build's link is published, the address carries it. An address carrying no
+  fragment has the published link stated again in place, at the document it was published onto,
+  without a history entry and without disturbing the build.
+
+One thing this change does is not a requirement of its own, because a standing requirement
+already carries it: a restoration writes with `replaceState` and adds no history entry, which is
+`ship-builder/build-link`, "Link validation and history" (001/FR-020). The new requirement states
+it again because a restoration is not an edit, and the standing requirement speaks about edits.
 
 ## Capabilities
 
@@ -46,10 +57,10 @@ None.
 ### Modified Capabilities
 
 - `ship-builder/build-link`: gains a requirement that the address keeps the published link — that
-  a published link is stated again where the address comes back empty, that a fragment of any
+  a published link is stated again where the address carries no fragment, that a fragment of any
   kind already on the address is left as it stands, that restoring adds no history entry and is
-  bounded
-  to the document the link belongs to, and that a restored link is not read back as an arrival.
+  bounded to the document the link belongs to, that a restored link is not read back as an
+  arrival, and that nothing is stated where no link is published.
 
 ## Impact
 
