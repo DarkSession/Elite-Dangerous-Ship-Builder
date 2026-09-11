@@ -255,7 +255,8 @@ for the update notice: the caller keeps what it announced, because the policy no
 Not while a layer stands over the workspace. The saved builds are a layer over the screen a
 Commander is on rather than a replacement for it, so where the workspace already holds a build
 it is mounted and running underneath while the refusal is reported. Its notice would speak
-straight away, into an outlet the open modal has made inert — the limitation recorded above —
+straight away, into an outlet the open modal has made inert — the limitation recorded below, under "An
+announcement made under a layer" —
 and it would spend the one mark the store holds on a sentence nobody heard. So the workspace
 withholds the mark while `LibraryPresence.open()` stands and passes it on when the layer goes,
 which is the moment the workspace is the surface a reader is on. The layer is not silent
@@ -292,20 +293,29 @@ reported to the Commander").
 
 ### An announcement made under a layer
 
-Four of the seven sites publish while a modal layer stands: the saved builds' match count, the
-two import outcomes and the export delivery. `Layer` opens with `showModal()`, and the outlets
-are mounted in the shell outside every dialog, so everything outside the open layer is inert —
-the outlets included. The application already states this where it matters:
-`src/app/app.ts` explains that the restart overlay is the announcement because an announcement
-published behind it reaches no reader, and the feedback contract says the same of the update
-overlay.
+Three of the seven sites publish while a modal layer stands: the saved builds' match count,
+whose screen is itself the layer; the accepted import, along with the other outcomes the import
+layer reports; and the export delivery. `Layer` opens with `showModal()`, and the outlets are
+mounted in the shell outside every dialog, so everything outside the open layer is inert — the
+outlets included. The application already states this where it matters: `src/app/app.ts`
+explains that the restart overlay is the announcement because an announcement published behind
+it reaches no reader, and the feedback contract says the same of the update overlay.
 
-So for those four, this change makes the event reach the outlet. Whether a reader hears it is a
-question about where the outlets are mounted, which is 011's architecture and not this change's
-to move: a second pair of live regions inside each layer is a design decision with its own
-consequences — the application's "exactly two live regions" rule among them — and it belongs to
-its own proposal. What is fixed here is the silence that existed at every distance: before this,
-the second refusal did not reach the outlet at all, so no placement could have helped it.
+A fourth was the refused import, and it is the one site this change takes out from under a
+layer rather than leaving where it is. The refusal is reported from the saved builds while the
+workspace stands underneath, so the workspace withholds its mark until the layer goes and
+speaks on the screen that draws every affected mount — stated above, under "Not while a layer
+stands over the workspace". It is the exception because the surface that names the mounts is
+outside the layer and stays after it; the other three have no surface but the one the layer
+covers.
+
+So for those three, this change makes the event reach the outlet and no further. Whether a
+reader hears it is a question about where the outlets are mounted, which is 011's architecture
+and not this change's to move: a second pair of live regions inside each layer is a design
+decision with its own consequences — the application's "exactly two live regions" rule among
+them — and it belongs to its own proposal. What is fixed here is the silence that existed at
+every distance: before this, the second refusal did not reach the outlet at all, so no
+placement could have helped it.
 
 The e2e journey and step 22 are worded against what each can judge. The journey reads that the
 region takes a node per event; the manual step is where a reader with a screen reader finds out
@@ -390,11 +400,13 @@ rather than a preference.
   `OutfittingNotice` could reasonably expect it to announce, and stay silent. → The generic
   component says so at the top of the file, and each wrapper's own effect names the input that
   is its event, with its unit suite reading what it says. Gate rule 3 does not help here and is
-  not claimed to: both shapes are among the four listed above that syntax cannot see.
-- **Four of the seven sites publish under a modal layer, where the outlet is inert.** A reader
-  may not hear an import refusal even now. → Out of this change's reach and stated above. The
-  event reaching the outlet is the half that was broken; where the outlets are mounted is 011's
-  and wants its own proposal. The manual protocol is what will find it.
+  not claimed to: both shapes are among the five listed above that syntax cannot see.
+- **Three of the seven sites publish under a modal layer, where the outlet is inert.** A reader
+  may not hear an accepted import or a delivered export even now. → Out of this change's reach
+  and stated above. The event reaching the outlet is the half that was broken; where the outlets
+  are mounted is 011's and wants its own proposal. The manual protocol is what will find it.
+  The refused import was a fourth and is not one any more: its notice is outside the layer, so
+  the workspace holds the mark until the layer goes.
 - **Every announcing caller changes in one commit.** The field leaves the type, so the compiler
   names every site. → Each caller's unit suite reads its announcement, the narrowing that was
   silent is read end to end, and both journeys are read by hand.
