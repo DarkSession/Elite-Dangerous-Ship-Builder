@@ -20,14 +20,14 @@ Commander keeps, because the shell is what they were given. That is every addres
 generates no document for, and it is the same answer wherever else the shell is what arrived.
 
 Content is kept from the moment the address served it until the hold ends, and it stands in front
-of the Commander only where the hold ends without a screen. Kept content MUST be kept as the
-address served it: it MUST NOT be rebuilt, recomputed or written again. Content that stands MUST
+of the Commander only where a navigation ends without presenting a screen. Kept content MUST be
+kept as the address served it: it MUST NOT be rebuilt, recomputed or written again. Content that
+stands MUST
 carry the language it was served in.
 
 Putting held content back MUST be invisible, on the same terms as the takeover itself: no content
 the Commander can see may move position, no frame may be emptier than the frame before it, and the
-content MUST NOT blank and return. A statement standing beside held content and pushing it down the
-page is a move the Commander can see. This requirement claims none of
+content MUST NOT blank and return. This requirement claims none of
 the three exceptions the invisible takeover names, so a removal and a restore that a Commander
 could see would breach it.
 
@@ -131,7 +131,6 @@ Source: 015/FR-011.
   because no screen was presented
 - **THEN** that content holds the English words it was served with, untranslated and with no
   disclosure written into it
-- **AND** it states that it is in English, while the application around it states German
 
 ### Requirement: The disclosure beside an untranslated game name
 

@@ -202,12 +202,13 @@ So a Commander reading in German keeps the English document they were served, an
 in German because that sentence is the shell's own. Nothing is reordered and nothing is removed,
 which is what FR-011 protects.
 
-The held content states the language it is in. The running application declares its own language
-on the document, and for a Commander reading in German that is German (011/FR-017, "Language
-selection from the browser setting"), so English content standing inside it is a part in another
-language. No accepted requirement states the document's root language in those words — "Per-address
-metadata" mentions publishing it without saying which it is — so confirm the declared language when
-the reading in task 2.6 is written rather than assume it. Success criterion 3.1.2 is in scope: the
+The held content states the language it is in. The running application declares its own language on
+the document — for a Commander reading in German, German — so English content standing inside it is
+a part in another language. No single accepted requirement says that in those words: 011/FR-017
+settles which language the application presents in, and "Per-address metadata" (011/FR-027) has the
+root language published in the same commit as a description and a canonical "both resolved in the
+committed locale". Between them the fact holds, and the reading in task 2.6 asserts the declared
+language rather than assuming it. Success criterion 3.1.2 is in scope: the
 target is WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, and 3.1.2
 is not among the eight. The
 container carries the served document's language, which is a fact the application has rather than

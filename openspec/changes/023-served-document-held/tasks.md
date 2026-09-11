@@ -58,28 +58,34 @@
       translated text and no disclosure has been written into them, and that the failure statement
       beside it is in German because that sentence is the shell's own. The catalogue is applied by
       rendering the screen, and the screen is what did not arrive, so there is nothing that can
-      apply it and nothing the application may write in its place. The absent disclosure is the
+      apply it and nothing the application may write in its place. Read it in the production lane,
+      which is the only lane that serves a document to be left on. The absent disclosure is the
       delta's own rule rather than an omission: 015/FR-011a says a document read in bundled English
       has nothing to disclose (015/FR-011, 015/FR-011a, constitution VI).
 - [ ] 2.6 Verify the held content carries the language it was served in, while the application
-      around it carries the committed locale as the root language (011/FR-027). English standing
+      around it declares the committed locale as its own language (011/FR-017). English standing
       inside a German page is a part in another language, so success criterion 3.1.2 is in scope:
       the target is WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
       and 3.1.2 is not among the eight. Assert the language on the container rather than on the
-      page (023/FR-001, 011/FR-015).
+      page, and assert the language the running application declares rather than assuming it. Read
+      it in the production lane, which is the only lane that serves a document to be left on
+      (023/FR-001, 011/FR-015, 011/FR-017).
 
 ## 3. The boundaries
 
 - [ ] 3.1 Verify a navigation that fails after a screen has been presented leaves the Commander on
       that screen, with nothing put back over it. This is the case that would take a screen away to
-      answer a failure, so it is stated as its own test rather than folded into 2.4 (023/FR-001,
-      018/FR-007).
+      answer a failure, so it is stated as its own test rather than folded into 2.4. Read it in the
+      production lane: in the development lane nothing is ever held, so "nothing put back" passes
+      against the standing takeover (023/FR-001, 018/FR-007).
 - [ ] 3.2 Verify a first navigation that is cancelled or redirected, and whose replacement then
       fails, still leaves the Commander on what the address served: the pair counts as one
       presentation, so the cancellation does not spend the hold. That rule is `023/FR-001`'s own —
       018/FR-005 reaches the same pair only to keep one waiting statement standing across it, and
       says nothing about what the Commander is left on. This is the case a rule written about the
-      session's first navigation would miss (023/FR-001).
+      session's first navigation would miss. Read it in the production lane, or in the unit sequence
+      task 1.3 establishes where a browser cannot produce the pairing; either way not in a lane with
+      no document to hold (023/FR-001).
 - [ ] 3.3 Verify an address the build generates no document for is unaffected: nothing is held, and
       a failed first navigation leaves the Commander on the shell, which is what that address
       served and what 018/FR-007's scenario "The first navigation fails at an address with no
@@ -92,9 +98,10 @@
       extends. Assert no held container is drawn (023/FR-001, 018/FR-007, 015/FR-018).
 - [ ] 3.4 Verify held content is kept as the address served it: the same nodes, with no figure
       recomputed and no sentence written for it. Assert the held markup matches what the document
-      carried before bootstrap, so a later rewrite into a re-rendering fails here. The figures in
-      it come from the pinned package and are not recomputed on the way back
-      (023/FR-001, 015/FR-004).
+      carried before bootstrap, so a later rewrite into a re-rendering fails here. Read it in the
+      production lane: with no document served there is no held markup, and the assertion is
+      satisfied by an adapter that does nothing. The figures in it come from the pinned package and
+      are not recomputed on the way back (023/FR-001, 015/FR-004).
 - [ ] 3.5 Verify a first navigation cancelled with nothing taking over leaves the Commander on what
       the address served. Nothing is stated over it, because a cancellation is not a failure
       (018/FR-007, "A navigation that is cancelled, and one that is redirected to another address,
@@ -103,7 +110,9 @@
       covered by it", and this is that presentation. So what the Commander is left on is the served
       content and nothing else. This is the case that separates
       counting screens presented from counting errors raised: an implementation restoring only on
-      `NavigationError` passes every other test in this change and fails this one (023/FR-001).
+      `NavigationError` passes every other test in this change and fails this one. Read it in the
+      production lane, or in the unit sequence task 1.3 establishes where a browser cannot produce
+      a cancellation with nothing taking over (023/FR-001).
 
 ## 4. The state the frame gains
 
@@ -137,9 +146,10 @@
       claims none of them, so a fourth is not available and a visible move, removal or return is a
       failure rather than a cost. Verify with `pnpm run e2e` in the production lane, beside the
       journey task 1.2 extends (023/FR-001, 015/FR-009).
-- [ ] 4.4 Re-read the gap proposal.md, Impact, records, so the record is true when the change
-      lands rather than only when it was written. 011/FR-024's scenario is "A component state has
-      no preview", whose WHEN is "a component supports a state that has no preview" and whose THEN
+- [ ] 4.4 Re-read the gap recorded in proposal.md, Impact, so that record is still true when the
+      change lands rather than only when it was written. 011/FR-024's scenario is "A component
+      state has no preview", whose WHEN is "a component supports a state that has no preview" and
+      whose THEN
       is that the automated check rejects it; the check is written per component, so a component
       already declared passes with a state it does not preview. Of the two the checker is the
       defect — the accepted requirement is what the project wants — and widening it needs a way to
@@ -176,7 +186,8 @@
       (015/FR-011a). The reorder-and-removal assertion is the one that would expose a held copy
       standing where the screen should be, so read it here rather than assume it elsewhere. This is
       what an implementation that holds the English too long would break, and task 2.5 reads only
-      the held branch. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
+      the held branch. Read it in the production lane, which is the only lane with a generated
+      document to replace. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
 - [ ] 5.3 Remove the note at `e2e/prerendered-first-frame.spec.ts:575` that records FR-007's second
       half as unread, because task 1.2 adds the assertion it asks for. Leave
       `openspec/changes/archive/018-navigation-loading-overlay/` alone: the archive is read and not
@@ -195,10 +206,10 @@
       only in this change's delta until the change is archived, and the check would pass with the
       registration missing. It is a regression guard for what is already accepted, and the reason
       to make the entry now is that archiving turns it into a requirement rather than a courtesy.
-      Register `023/FR-001` on the surface task 3.3 reads as well, because the shell scenario is
-      evidenced there rather than in the production journey. An id tied to one surface leaves the
-      other surface's evidence unregistered, which is the coverage AGENTS.md says stops being
-      checked.
+      One surface carries the id, because task 3.3 now reads the shell scenario on the production
+      journey too. Do not register it against the development-lane reading in
+      `e2e/navigation-waiting.spec.ts`: that reading passes however the adapter behaves, as task
+      3.3 says, and registering it would enter evidence that cannot fail.
 - [ ] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.
