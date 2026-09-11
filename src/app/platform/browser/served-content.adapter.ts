@@ -79,9 +79,28 @@ export class ServedContentAdapter {
    */
   readonly #language: string | null = this.#read();
 
+  /**
+   * The height of the box the served content stood in, or `null` where nothing
+   * was served.
+   *
+   * Read at the same moment as the nodes, and for a reason the nodes alone do
+   * not carry. A screen shorter than the window is stretched to the rest of the
+   * shell, and the copy put back into a box that is not stretched the same way
+   * closes higher up the page than it was served — the start page's attribution
+   * band moved 102 pixels on `/`. The box the content stood in is a measurement
+   * of the served document, taken from the served document while it is the only
+   * thing on the page (023/FR-001, 015/FR-009).
+   */
+  readonly #box: number | null = this.#measure();
+
   /** The language the address served its content in, where it declared one. */
   get language(): string | null {
     return this.#language;
+  }
+
+  /** The height of the box the served content stood in, in pixels. */
+  get height(): number | null {
+    return this.#box;
   }
 
   /** Whether anything was served that a screen would replace. */
@@ -97,6 +116,11 @@ export class ServedContentAdapter {
    */
   get content(): readonly Node[] | null {
     return this.#copy;
+  }
+
+  #measure(): number | null {
+    const served = this.#document.querySelector('main');
+    return served ? served.getBoundingClientRect().height : null;
   }
 
   #read(): string | null {

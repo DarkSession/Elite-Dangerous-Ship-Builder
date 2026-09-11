@@ -589,19 +589,6 @@ test.describe('the waiting statement and a generated document', () => {
 });
 
 /**
- * Held content, read by a Commander whose committed locale is German.
- *
- * The document is bundled English and the application around it is German, so
- * this is the one composition where the two stand together. 015/FR-011 has the
- * committed locale replace a document's words once the catalogue arrives, and
- * this change bounds it: the replacement is applied by rendering the screen in
- * the catalogue, and the screen's code is exactly what did not arrive. There is
- * nothing that can apply it and nothing the application may write in its place
- * (015/FR-011, 015/FR-011a, constitution VI).
- *
- * Only this lane has a document to be left on, so both readings are here.
- */
-/**
  * A Commander opening `path` in a context of its own, whose screen never
  * arrives.
  *
@@ -702,6 +689,19 @@ async function reachTheEntryPoint(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
 }
 
+/**
+ * Held content, read by a Commander whose committed locale is German.
+ *
+ * The document is bundled English and the application around it is German, so
+ * this is the one composition where the two stand together. 015/FR-011 has the
+ * committed locale replace a document's words once the catalogue arrives, and
+ * this change bounds it: the replacement is applied by rendering the screen in
+ * the catalogue, and the screen's code is exactly what did not arrive. There is
+ * nothing that can apply it and nothing the application may write in its place
+ * (015/FR-011, 015/FR-011a, constitution VI).
+ *
+ * Only this lane has a document to be left on, so both readings are here.
+ */
 test.describe('held content and a Commander reading in German', () => {
   const leftOnTheDocument = (browser: Browser, page: Page) =>
     whereTheScreenNeverArrives(browser, page, {
@@ -769,13 +769,6 @@ test.describe('held content and a Commander reading in German', () => {
 });
 
 /**
- * The boundaries of the hold, read where it actually happens.
- *
- * What is held, what is not, and that what goes back is what was served rather
- * than a second rendering of it. Only this lane has a generated document to be
- * left on (023/FR-001).
- */
-/**
  * Asserts that every frame holds what the first one held, where it held it.
  *
  * Three of the four boxes compared as they stand: the bar, the landmark and the
@@ -813,6 +806,13 @@ function nothingTheCommanderIsReadingMoved(window: readonly Frame[]): void {
   }
 }
 
+/**
+ * The boundaries of the hold, read where it actually happens.
+ *
+ * What is held, what is not, and that what goes back is what was served rather
+ * than a second rendering of it. Only this lane has a generated document to be
+ * left on (023/FR-001).
+ */
 test.describe('what a takeover that presents no screen leaves standing', () => {
   test('is what the address served, node for node (023/FR-001, 015/FR-004)', async ({
     browser,
@@ -926,9 +926,9 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
     // stretch. The catalogue overflows every profile, so `main` is its content
     // there and takes nothing from anything: the reading above cannot fail on a
     // statement that takes space out of the box the content stands in, and this
-    // one can. Measured before the statement was taken out of the flow: the
-    // band stood 102 pixels above where it was served, on a page that never
-    // scrolled.
+    // one can. With the copy standing in a box measured from its own content,
+    // the band stands 102 pixels above where it was served, on a page that
+    // never scrolls.
     const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
       open: '/ships',
       path: '/',
@@ -941,6 +941,61 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
 
     expect(held.length, '/ was never recorded settled').toBeGreaterThan(1);
     nothingTheCommanderIsReadingMoved(held);
+    await context.close();
+  });
+
+  test('states the failure where it can be read, over nothing the Commander is reading', async ({
+    browser,
+    page,
+  }) => {
+    // Two readings a scan cannot make, at the address that makes both hardest:
+    // the entry point's screen fills the window, so the statement and the
+    // content it stands beside want the same pixels.
+    //
+    // Neither `toBeVisible` nor `innerText` can fail on what this is about.
+    // Playwright reads a box and a style, and `innerText` reports text that is
+    // covered as readily as text that is not — so a statement painted behind
+    // the page and content standing under a statement both pass them. What
+    // fails here is the document's own answer to "what is at this point", and
+    // the boxes at the end of the page.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      open: '/ships',
+      path: '/',
+      reach: reachTheEntryPoint,
+    });
+
+    // Read at the end of the scroll range, which is where both questions are
+    // decided: the page is as long as the content and the statement together,
+    // so this is where the statement stands and where a statement that stood
+    // over the content would hold the last of it down for good.
+    const [covering, held, stated] = await fresh.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      const notice = document.querySelector('.frame__status');
+      const last = document.querySelector('.frame__held')?.lastElementChild ?? null;
+      if (!notice) {
+        return [-1, null, null] as const;
+      }
+
+      const box = notice.getBoundingClientRect();
+      const across = [0.2, 0.5, 0.8].map((part) => box.x + box.width * part);
+      const down = [0.25, 0.5, 0.75].map((part) => box.y + box.height * part);
+      const blocked = across
+        .flatMap((x) => down.map((y) => document.elementFromPoint(x, y)))
+        .filter((found) => found === null || !found.closest('.frame__status')).length;
+      const rect = (node: Element | null) =>
+        node
+          ? ([node.getBoundingClientRect().top, node.getBoundingClientRect().bottom] as const)
+          : null;
+      return [blocked, rect(last), rect(notice)] as const;
+    });
+
+    expect(stated, 'the failure was never stated').not.toBeNull();
+    expect(held, 'nothing was held to read').not.toBeNull();
+    expect(covering, 'the statement cannot be read where it stands').toBe(0);
+    expect(
+      held![0] < stated![1] && stated![0] < held![1],
+      'the statement stands over the end of the held content',
+    ).toBe(false);
     await context.close();
   });
 

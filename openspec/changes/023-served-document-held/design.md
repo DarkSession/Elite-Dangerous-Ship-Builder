@@ -193,10 +193,30 @@ laying out a block for a statement that may never arrive, and 015/FR-010 forbids
 that the build cannot know MUST NOT decide the first frame". The build knows neither whether the
 takeover will fail nor how tall the statement would be.
 
-So the statement does not take space above the held content. How the frame draws it so — out of
-the flow over the content, or after it — is the implementation's, because both meet the constraint
-and task 4.3 measures the constraint rather than the mechanism. The restore is measured against the
-served document's own layout, and a shift is a failure rather than a cost.
+So the statement does not take space above the held content. Of the two ways to draw it so, only one
+survives measurement.
+
+Out of the flow, over the content, keeps everything still and hides the end of what the Commander is
+reading for the life of the page. On an address whose screen fills the window there is no scrolling
+that can move it off: the start page's attribution band sits under the statement and stays there. At
+400% zoom the statement is nearly half the window. Constitution V asks for the whole of a capability
+at 200% text and at 400% zoom, so this is loss of content rather than a cost to weigh.
+
+After the content, in the flow, takes its height out of the box the content stands in wherever
+the shell stretched that box — which moves the content by exactly the height of the statement.
+On `/` at 1440x900 the attribution band stands 102 pixels above where it was served.
+
+So the statement stays in the flow and the content is put back into the box it was served in. The
+frame is handed that box as a measurement of the served document, taken when the copy is taken
+and before anything has moved, and stands the container in it. The page is then taller than the
+window by the height of the statement, which is the page growing at its end rather than anything
+moving.
+
+What that costs is the statement's place: on an address whose screen fills the window it stands
+below the fold, and the Commander scrolls to read it. It is on the page to be re-read, which is what
+018/FR-007 asks, and the announcement outlet states it as well. The alternative costs content the
+Commander was given, and between a sentence they have to scroll to and content they cannot reach at
+all, the sentence is the lesser loss.
 
 ### The shell draws the held content in the outlet's place
 

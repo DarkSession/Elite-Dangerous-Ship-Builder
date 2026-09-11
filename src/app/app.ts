@@ -320,6 +320,11 @@ export class App {
   readonly heldLanguage = this.#servedDocument.language;
 
   /**
+   * The box that content was served in, which is the box it goes back into.
+   */
+  readonly heldHeight = this.#servedDocument.height;
+
+  /**
    * Everything the session has to say on the page, in reading order.
    *
    * The version outcome first, then a navigation that could not open its

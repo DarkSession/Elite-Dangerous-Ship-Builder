@@ -51,10 +51,15 @@ function takeoverRouting(): RouterFeatures[] {
  * document still holds what the address served, with nothing claimed and
  * nothing removed, is here (023/FR-001).
  *
- * Not in the build's renderer, and this is the same ruling the other
+ * Not run in the build's renderer, and this is the same ruling the other
  * browser-only initializers carry: there is nothing served to a Commander at
  * build time, and the document the renderer is writing is not one anybody is
  * reading (015/FR-001).
+ *
+ * What the guard leaves out is this initializer, not the store: the shell
+ * injects it wherever it is built, so the renderer constructs it too. There it
+ * copies a `main` with nothing in it yet and holds nothing — the renderer runs
+ * one navigation, and it presents a screen (015/FR-001).
  */
 export const SERVED_DOCUMENT_INITIALIZER = provideAppInitializer(() => {
   if (inject(RenderingTarget).isBrowser) {

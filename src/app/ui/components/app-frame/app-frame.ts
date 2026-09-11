@@ -284,6 +284,20 @@ export class AppFrame {
    */
   readonly heldLanguage = input<string | null>(null);
 
+  /**
+   * The height of the box that content was served in, where content is held.
+   *
+   * Stood in the same box rather than in one measured from the content itself.
+   * The shell is at least as tall as the window and stretches a screen shorter
+   * than that to the rest of it, so a screen that closes at the foot of its box
+   * — the start page and its attribution band — closes higher up the page when
+   * the box is smaller. A measurement of the served document rather than a
+   * figure the build decided, and it is only ever a floor: where the content is
+   * taller than the box it was served in, nothing here applies (023/FR-001,
+   * 015/FR-009, 015/FR-010).
+   */
+  readonly heldHeight = input<number | null>(null);
+
   readonly actionSelected = output<string>();
 
   /** The identity block asked to open, close or confirm one of its fields. */

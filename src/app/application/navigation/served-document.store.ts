@@ -104,6 +104,16 @@ export class ServedDocumentStore {
   readonly language = this.#served.language;
 
   /**
+   * The height of the box the content was served in.
+   *
+   * Handed on for the frame to stand the copy in the same box. The shell
+   * stretches a screen shorter than the window to the rest of it, so a copy put
+   * back into a box measured from its own content stands where its content ends
+   * rather than where it was served (023/FR-001, 015/FR-009).
+   */
+  readonly height = this.#served.height;
+
+  /**
    * Whether a screen has been presented in this session.
    *
    * What ends the hold, once and for the life of the page. Not a count and not

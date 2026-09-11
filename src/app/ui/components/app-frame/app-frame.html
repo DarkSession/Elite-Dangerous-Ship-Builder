@@ -210,18 +210,17 @@
 -->
 @if (notices().length > 0) {
   <!--
-    Drawn over the `main` below rather than above it while content is held, and
+    Drawn after the `main` below rather than above it while content is held, and
     in the same place as ever otherwise. A statement arriving above content a
-    Commander is already reading pushes that content down the page, and one
-    arriving under it takes the same space out of the box that content stands
-    in — both are content that moves, and 015/FR-009 admits three exceptions to
-    that, none of them this one. It keeps its place in the document, so a reader
-    still meets the statement before what it is about; only the box it occupies
-    moves (`app-frame.scss`).
+    Commander is already reading pushes that content down the page, which is
+    content that moves — and 015/FR-009 admits three exceptions to that, none of
+    them this one. It keeps its place in the document, so a reader still meets
+    the statement before what it is about; only the box it occupies moves
+    (`app-frame.scss`).
   -->
   <div
     class="frame__status"
-    [class.frame__status--over]="held() !== null"
+    [class.frame__status--below]="held() !== null"
     [attr.aria-label]="statusLabel()"
   >
     @for (notice of notices(); track notice.message) {
@@ -251,7 +250,12 @@
     document had.
   -->
   @if (held() !== null) {
-    <div class="frame__held" [attr.lang]="heldLanguage()" #heldContent></div>
+    <div
+      class="frame__held"
+      [attr.lang]="heldLanguage()"
+      [style.min-block-size.px]="heldHeight()"
+      #heldContent
+    ></div>
   }
 </main>
 

@@ -56,9 +56,13 @@
       not take space above the held content, which is design.md, "The failure statement does not
       take space above the content": 015/FR-009 admits three exceptions and this claims none of
       them, and reserving the space in the build is ruled out by 015/FR-010. Drawing it out of the
-      flow over the content or after it both meet that, and this task picks one. Verify tasks 1.2,
-      1.3 and 3.5 now pass, and that the failure statement still stands over the content rather
-      than instead of it. Tasks 1.2 and 1.3 drive
+      flow over the content is ruled out by measurement rather than by preference — it hides the
+      end of the content for the life of the page and cannot be scrolled off where the screen
+      fills the window (design.md) — so it stands after the content, and the content is put back
+      into the box it was served in. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the
+      statement can be read where it stands and stands over nothing the Commander is reading: hit
+      test its own box at the end of the scroll range, which `toBeVisible` and `innerText` cannot
+      fail on. Tasks 1.2 and 1.3 drive
       `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
       that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
 - [x] 2.4 Release the copy at the first `NavigationEnd`. Verify nothing is held after a screen has
@@ -177,8 +181,10 @@
       generated first
       frame, where no statement stands beside the content, and the responsive journeys never reach
       it. Change 018 read its own standing state the same way for the same reason
-      (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Verify with
-      `pnpm run e2e:offline` (011/FR-011, 011/SC-003).
+      (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Read completeness
+      as boxes rather than as text: `innerText` reports content that is covered as readily as
+      content that is not, so the reading task 2.3 adds is what fails on content held under the
+      statement. Verify with `pnpm run e2e:offline` (011/FR-011, 011/SC-003).
 
 ## 5. Reading it end to end
 
