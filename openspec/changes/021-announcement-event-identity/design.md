@@ -94,6 +94,12 @@ A submit already reports a withdrawn one as its own outcome kind, which no branc
 scan reported nothing, so its coordinator now answers whether it settled and its presenter
 announces the outcome only when it did.
 
+What it announces then is the outcome and not a guess at it. A scan that settled on a refusal
+says what refused it, in the sentence the panel states it in. Reading the entry list instead
+reports every refusal as "Nothing was found to import.", and a file over the size limit was
+never opened — saying nothing was found in it states an outcome nobody reached
+(constitution IV).
+
 This closes a defect the token hid. `SlefPresenter.scanFiles` announced its outcome after the
 await without asking, and read the store's token at that moment rather than the token its own
 scan carried. Two scans in flight therefore announced the abandoned outcome and dropped the
@@ -238,6 +244,27 @@ than four announcements. What the package completed on a build it accepted is no
 here and is not announced at all (`ship-builder/slef-exchange`, "the normalisation MUST NOT be
 reported to the Commander").
 
+### An announcement made under a layer
+
+Four of the seven sites publish while a modal layer stands: the saved builds' match count, the
+two import outcomes and the export delivery. `Layer` opens with `showModal()`, and the outlets
+are mounted in the shell outside every dialog, so everything outside the open layer is inert —
+the outlets included. The application already states this where it matters:
+`src/app/app.ts` explains that the restart overlay is the announcement because an announcement
+published behind it reaches no reader, and the feedback contract says the same of the update
+overlay.
+
+So for those four, this change makes the event reach the outlet. Whether a reader hears it is a
+question about where the outlets are mounted, which is 011's architecture and not this change's
+to move: a second pair of live regions inside each layer is a design decision with its own
+consequences — the application's "exactly two live regions" rule among them — and it belongs to
+its own proposal. What is fixed here is the silence that existed at every distance: before this,
+the second refusal did not reach the outlet at all, so no placement could have helped it.
+
+The e2e journey and step 22 are worded against what each can judge. The journey reads that the
+region takes a node per event; the manual step is where a reader with a screen reader finds out
+whether the layer lets them hear it.
+
 ### What the archived feedback contract states
 
 `openspec/changes/archive/011-interface-foundations/contracts/feedback-and-semantics.md` names a
@@ -299,6 +326,10 @@ rather than a preference.
   `OutfittingNotice` could reasonably expect it to announce, and stay silent. → The generic
   component says so at the top of the file, and each wrapper's own effect names the input that
   is its event. Gate rule 3 catches the shape that would go wrong.
+- **Four of the seven sites publish under a modal layer, where the outlet is inert.** A reader
+  may not hear an import refusal even now. → Out of this change's reach and stated above. The
+  event reaching the outlet is the half that was broken; where the outlets are mounted is 011's
+  and wants its own proposal. The manual protocol is what will find it.
 - **Every announcing caller changes in one commit.** The field leaves the type, so the compiler
   names every site. → Each caller's unit suite reads its announcement, and the two journeys
   that were silent are read end to end and by hand.

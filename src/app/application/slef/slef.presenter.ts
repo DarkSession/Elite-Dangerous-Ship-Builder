@@ -270,6 +270,22 @@ export class SlefPresenter {
    * (016/FR-004, FR-006).
    */
   #announceScan(): void {
+    // A scan that settled on a refusal says what refused it, in the sentence
+    // the panel states it in. It found nothing because it could not read the
+    // files, and "Nothing was found to import." would state an outcome that
+    // did not happen — a file over the size limit was not read, which is not
+    // the same as holding nothing (constitution IV, 016/FR-004).
+    const failure = this.#store.importFailure();
+    if (failure !== null) {
+      this.#announcements.announce({
+        kind: 'slef.import.scan',
+        urgency: 'polite',
+        messageKey: 'slef.import.announce.scanFailed',
+        params: { reason: this.#failureMessage(failure) },
+      });
+      return;
+    }
+
     const found = this.#store.journalEntries().length;
     this.#announcements.announce({
       kind: 'slef.import.scan',

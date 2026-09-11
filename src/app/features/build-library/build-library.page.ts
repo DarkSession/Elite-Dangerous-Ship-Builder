@@ -452,6 +452,13 @@ export class BuildLibraryPage {
           this.#failure.set(
             this.#messages.message('library.open.failed', { reason: result.reason }),
           );
+          // A refusal here is answered here, in the alert this layer draws over
+          // the record that was refused. The workspace draws the package's own
+          // reasons as well, and the Commander reaches them by going there —
+          // but arriving at a screen already carrying a refusal they have been
+          // told about is initial content, so the workspace says nothing more
+          // about it (011/FR-009).
+          this.#active.markIngressRefusalAnnounced();
           return;
         }
         if (result.kind === 'committed') {

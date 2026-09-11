@@ -1169,6 +1169,8 @@ const ANNOUNCE_CALL = /\.announce\s*\(/g;
 const EFFECT_CALL = /\b(?:effect|afterRenderEffect|afterNextRender|afterEveryRender)\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
 const CATALOGUE_READ = /\.message(?:Signal)?\s*\(/g;
+const LOCALE_SERVICE =
+  /(?:readonly\s+)?(#?[A-Za-z_$][\w$]*)\s*=\s*inject\(\s*(?:MessageService|Formatters|GameTextPresenter)\s*\)/g;
 const MEMBER_DECLARATION =
   /^[ \t]*(?:(?:public|protected|private|static|override|readonly)\s+)*(#?[A-Za-z_$][\w$]*)\s*(?::[^=;\n]+)?=/gm;
 const MEMBER_READ = /\bthis\.(#?[A-Za-z_$][\w$]*)\s*\(/g;
@@ -1205,6 +1207,29 @@ function statementEnd(masked, from) {
  * a private method it calls is not found here; design.md records that with the
  * other shape no scan can see.
  */
+/**
+ * The fields holding a service whose answers move with the reading language.
+ *
+ * The catalogue is not reached only through `message()`. `Formatters.integer()`
+ * reads the effective locale to know how to spell a number, and
+ * `GameTextPresenter` reads it to know which of the package's languages it is
+ * answering in. A tracked call to either takes the same dependency a `message()`
+ * call does, and every announcement here formats a number, so this is the
+ * nearest way to get the dependency back by accident.
+ *
+ * `LocaleStore` is not one of these. Everything above derives from the reading
+ * language, so reading one is never the event — but the language settling is
+ * itself an event, and `app-frame.ts` announces it with the locale snapshot as
+ * its trigger, tracked on purpose.
+ */
+function localeServices(masked) {
+  const fields = new Set();
+  for (const declaration of masked.matchAll(LOCALE_SERVICE)) {
+    fields.add(declaration[1]);
+  }
+  return fields;
+}
+
 function messageMembers(masked) {
   const members = new Set();
   for (const declaration of masked.matchAll(MEMBER_DECLARATION)) {
@@ -1247,6 +1272,14 @@ function announcementViolations(file, source) {
   const found = [];
   const masked = maskedSource(source);
   const resolvers = messageMembers(masked);
+  const locales = localeServices(masked);
+  const localeReads =
+    locales.size === 0
+      ? null
+      : new RegExp(
+          `\\bthis\\.(?:${[...locales].map((field) => field.replace('$', '\\$')).join('|')})\\s*\\.[A-Za-z_$][\\w$]*\\s*\\(`,
+          'g',
+        );
   const add = (offset, rule, message) =>
     found.push({ file, line: lineOf(source, offset), rule, message });
 
@@ -1335,6 +1368,11 @@ function announcementViolations(file, source) {
     for (const read of occurrences(region, MEMBER_READ)) {
       const member = /this\.(#?[A-Za-z_$][\w$]*)/.exec(read.text)?.[1];
       if (member !== undefined && resolvers.has(member)) {
+        reads.set(read.index, read);
+      }
+    }
+    if (localeReads !== null) {
+      for (const read of occurrences(region, localeReads)) {
         reads.set(read.index, read);
       }
     }
@@ -3091,6 +3129,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: a Commander\u2019s own ship name and ident, which no language translates, either side of a language-neutral separator.',
     'slef.import.failure.refused':
       'A composition pattern: the record\u2019s own title and the package\u2019s reason, either side of a language-neutral separator.',
+    'slef.import.announce.scanFailed':
+      'The variable alone: the sentence the import panel states the refusal in, which is translated where it is written.',
+    'equipment.import.announce.scanFailed':
+      'The same refusal sentence, on the bench\u2019s own import layer.',
     'slef.import.announce.batch':
       'A composition pattern: two whole sentences, each translated on its own, with a space between them. A language wanting another separator changes it here.',
     'equipment.import.announce.batch':

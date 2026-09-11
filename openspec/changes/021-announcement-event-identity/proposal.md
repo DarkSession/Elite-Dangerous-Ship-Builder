@@ -107,12 +107,18 @@ None.
 - The unit suite beside each of those files reads what was silent.
   `announcement.service.spec.ts` reads the policy directly.
 - `e2e/coverage-ledger.ts` keeps both rows carrying 011/FR-009. The `shell/announcements` row
-  is the one that moves: its locale assertion is restated against a policy that publishes
-  nothing on a committed locale, and it gains the second narrowing and the second refusal.
+  is the one that moves: it gains the second narrowing and the second refusal, its settled-change
+  line is restated as what the journey reads, and its locale line goes, because a Commander
+  reaches a language by asking their browser and no journey can change that mid-session. The
+  unit suite beside each announcing file reads the locale silence instead.
 - `e2e/manual/screen-reader.protocol.md` gains the two journeys no scan can judge, and
   `e2e/manual/results/` gains their record.
 - `src/app/i18n/locales/en.json` and `de.json` gain three keys per import layer: the "was not
   saved" sentence in its two counted forms, and the joiner that puts it after the stored count.
   A batch reporting two outcomes states both, and the announcement had no words for the second.
 - No screen changes, and nothing already drawn changes its words. What changes is which events
-  reach a reader, and the one sentence a batch says out loud.
+  reach the outlet, and the one sentence a batch says out loud.
+- Four of the seven sites publish while a modal layer stands, and the outlets are mounted in the
+  shell outside it. The event now reaches the outlet where it did not before; whether a reader
+  hears it through the layer is about where the outlets are mounted, which is 011's architecture
+  and wants a proposal of its own. design.md, "An announcement made under a layer".

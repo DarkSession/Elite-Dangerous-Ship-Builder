@@ -143,7 +143,10 @@ disagrees or where the announcement is correct but unusable.
     expect the payload field to be announced as read-only rather than
     unavailable, and expect the entry count and size to be reachable. Activate
     `COPY` and expect one polite announcement of the result — never the payload
-    — and expect the same result not to be announced twice. Activate
+    — and expect a second press to be answered in its own right: the same
+    sentence again, because a Commander who was unsure of the first press has
+    no other way to learn it was received (step 22 reads that judgment).
+    Activate
     `DOWNLOAD` and expect it to be announced as handed to the browser, never as
     saved. Where the platform offers `SHARE`, expect a cancelled share to be
     announced as nothing sent. In every one of these states expect the payload

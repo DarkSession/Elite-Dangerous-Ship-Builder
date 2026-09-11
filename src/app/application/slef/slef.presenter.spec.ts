@@ -552,10 +552,31 @@ describe('what a journal source adds to the words', () => {
     expect(announcements.polite()).toBe('2 builds found. Choose one or more.');
   });
 
-  it('says so out loud when a scan found nothing', async () => {
+  it('says what refused a scan, in the sentence the panel states it in', async () => {
     await presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
 
-    expect(announcements.polite()).toBe('Nothing was found to import.');
+    // Not "Nothing was found to import.", which is an outcome that did not
+    // happen for every refusal but this one: a file over the size limit was
+    // never read, and saying nothing was found in it would be untrue
+    // (constitution IV).
+    expect(announcements.polite()).toBe('No loadout event was found in Journal.01.log.');
+  });
+
+  it('never says a file held nothing when it was never read', async () => {
+    // A file over the size limit is refused before it is opened. The panel
+    // says it was not read; an outlet saying nothing was found in it states an
+    // outcome nobody reached (constitution IV).
+    const enormous = {
+      name: 'Journal.big.log',
+      size: 64 * 1024 * 1024,
+      text: () => Promise.resolve(''),
+    };
+
+    await presenter.scanFiles([enormous]);
+
+    const spoken = announcements.polite();
+    expect(spoken).toContain('Journal.big.log');
+    expect(spoken).not.toContain('Nothing was found');
   });
 
   it('says nothing about the outcome of a scan a newer one replaced', async () => {

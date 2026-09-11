@@ -175,7 +175,7 @@ test.describe('the second time something happens', () => {
     expect(new Set(totals).size, 'the manifest itself changed between narrowings').toBe(1);
   });
 
-  test('states a refusal each time, even in the same words', async ({ page }) => {
+  test('takes a new node for each refusal, in the same words', async ({ page }) => {
     await page.goto('/outfitting');
     await expect(page.getByRole('main')).toBeVisible();
     await watchOutlet(page, 'polite');
@@ -197,6 +197,12 @@ test.describe('the second time something happens', () => {
     // no way of knowing the first press did anything. Nothing about the build
     // moved between the two — that is the point: they are owed an answer both
     // times, and the answer is the same sentence.
+    //
+    // What is read here is the region taking a node for each, which is what
+    // separates a second event from silence. Whether a reader hears it through
+    // the open layer is a separate question and not one a scan can answer: the
+    // layer is modal and the outlet is mounted in the shell outside it. See
+    // design.md, "An announcement made under a layer".
     await load.click();
     await expect(layer).toContainText(refused);
     await expect.poll(async () => (await spoken(page)).length).toBe(2);

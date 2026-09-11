@@ -126,6 +126,18 @@ export class LoadoutImportPresenter {
 
   /** Says how a scan ended, not only that one started (016/FR-004, FR-006). */
   #announceScan(): void {
+    // A scan that settled on a refusal says what refused it, in the sentence
+    // the panel states it in, rather than reporting the empty list the refusal
+    // left behind. See the twin in `slef.presenter.ts`
+    // (constitution IV, 016/FR-004).
+    const failure = this.#store.failure();
+    if (failure !== null) {
+      this.#announce('equipment.import.announce.scanFailed', {
+        reason: this.#failureMessage(failure),
+      });
+      return;
+    }
+
     const found = this.#store.entries().length;
     this.#announcements.announce({
       kind: 'equipment.import.scan',

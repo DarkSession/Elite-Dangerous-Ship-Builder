@@ -540,6 +540,88 @@ describe('announcements', () => {
     assert.equal(found[0].line, 3);
   });
 
+  it('rejects a number formatted in the open and announced in there', () => {
+    // `Formatters.integer` reads the effective locale to know how to spell a
+    // number, so a tracked call to it is the catalogue dependency under
+    // another name — and every announcement in the application formats one.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  const count = this.#formatters.integer(shown);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('rejects game text resolved in the open and announced in there', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #gameText = inject(GameTextPresenter);',
+        'effect(() => {',
+        '  const name = this.#gameText.shipName(symbol);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
+  it('accepts the locale settling as an announcing effect\u2019s own trigger', () => {
+    // Everything else derives from the reading language, so reading one of
+    // those is never the event. The language settling is one, and the shell
+    // announces it with the snapshot tracked on purpose.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #locale = inject(LocaleStore);',
+        'effect(() => {',
+        '  const snapshot = this.#locale.snapshot();',
+        '  if (snapshot.status !== "fallback") { return; }',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "locale.fallback", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a number formatted inside the untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "polite",',
+        '      messageKey: "k",',
+        '      params: { count: this.#formatters.integer(shown) },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('accepts the same member read inside the untracked call', () => {
     const found = rules.announcementViolations(
       'a.ts',

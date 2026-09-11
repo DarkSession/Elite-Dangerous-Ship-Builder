@@ -64,10 +64,13 @@
 ## 4. The remaining sites
 
 - [x] 4.1 Answer from `SlefImportCoordinator.scanFiles` whether the scan settled, and announce
-      the outcome only then. Verify two scans in flight announce the second scan's outcome and
-      not the abandoned one (011/FR-009).
-- [x] 4.2 Do the same in `loadout-import.coordinator.ts`, and drop the tokens from
-      `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said
+      the outcome only then. A scan that settled on a refusal says what refused it, in the
+      sentence the panel states it in: a file over the size limit was never read, and "Nothing
+      was found to import." states an outcome nobody reached. Verify two scans in flight
+      announce the second scan's outcome and not the abandoned one, and that an oversized file
+      is never reported as holding nothing (011/FR-009, constitution IV).
+- [x] 4.2 Do the same in `loadout-import.coordinator.ts`, including the refused scan's own
+      sentence, and drop the tokens from `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said
       only the stored count and never the refusal. Verify its spec reads that a superseded scan
       announces nothing, that a batch saving one loadout and refusing another states both, and
       that a batch saving none never says the rest were saved (011/FR-009, constitution IV).
@@ -117,7 +120,7 @@
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
 - [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters — 93.76% statements, 86.58% branches, 94.66% functions, 93.67% lines. Everything
+      counters — above 93% of statements, 86% of branches, 94% of functions and 93% of lines. Everything
       up to and including `test` passes. Of the three e2e scripts, the five chromium projects
       pass (3714 of 3715; the one is a control in the saved-builds suite timing out on a click
       under load in this container, on a screen that announces nothing, and its whole project
