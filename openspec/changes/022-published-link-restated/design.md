@@ -10,15 +10,15 @@ on a screen the Commander walked to. `BuildLinkCoordinator.listen` watches the s
 signal and turns an incoming build link into a build, with `markPublished` telling it which
 fragment is the application's own output rather than something to ingest.
 
-The defect slips between them because `LibraryPresence.raise` pushes a history entry at the same
-document. The publication's document guard sees no change — path and query are identical — so the
+The defect appears because `LibraryPresence.raise` pushes a history entry at the same document.
+The publication's document guard sees no change, because path and query are identical, so the
 fragment is written, correctly, onto whichever entry is current. That is the layer's. `lower()`
 goes `back()` to the workspace's entry, which never received it, and the fragment signal drops to
 empty. Nothing republishes: the publisher's effect watches the revision and the loadout, and
 neither moved.
 
-The equipment bench's twin is not affected and needs nothing. `LoadoutLinkCoordinator.publish` is
-synchronous — it encodes in the calling frame, with no dynamic import and no `await` — so its
+The equipment bench is not affected and needs nothing. `LoadoutLinkCoordinator.publish` is
+synchronous. It encodes in the calling frame, with no dynamic import and no `await`, so its
 fragment is on the address before any layer can be raised over it.
 
 ## Goals / Non-Goals
@@ -35,7 +35,8 @@ fragment is on the address before any layer can be raised over it.
 - Changing how `LibraryPresence` raises or lowers the layer. It behaves correctly; the address it
   pushes is the one a Commander would copy while the layer is up.
 - Closing the window itself by making the codec load eagerly. That would trade a rare wrong
-  address for a slower first frame on every visit, and the first frame is 015's.
+  address for a slower first frame on every visit, and the first frame belongs to
+  `openspec/changes/archive/015-prerendered-documents/`.
 - Any change to the equipment bench's link. `LoadoutLinkCoordinator.publish` encodes in the
   calling frame, so there is no window for a history move to land in and nothing to restore. If
   that bench ever gains an asynchronous encode, `equipment-builder` needs this requirement of
@@ -66,9 +67,9 @@ address before it returns — the fragment arrives with the event. A library ask
 state the link "after `back()`" would be asking it to wait on an event the library would have to
 learn to recognise, and to get the order right every time.
 
-And it fixes one doorway. The address can lose a publication any way history moves; the saved
-builds are the one path a Commander walks today. Stating the invariant where the address is owned
-covers the next one without being told about it.
+It would also fix one caller. The address can lose a publication whenever history moves, and the
+saved builds are one of several surfaces that move it. Stating the rule where the address is owned
+covers any other surface without that surface being changed.
 
 So: the publisher watches the fragment, and states its published link again when the address comes
 back without it.
@@ -96,20 +97,25 @@ A different build link is an arrival. A pasted link moves the fragment to anothe
 and a watcher that restored on any mismatch would write the open build back over it, so a build
 link could never be opened from a running workspace. The ingress owns that fragment.
 
-A fragment this application does not own is left alone, and this is where the first draft of this
-design was wrong. It folded "empty" and "not ours" together, because `recognizeBuildLinkFragment`
-returns `unrelated` for both — an empty string is not a build link, so it recognises as unrelated
-like any other foreign fragment. But the codebase's posture on a foreign fragment is settled:
-`FragmentPublisher.#clearBuildFragment` returns early rather than clear one, on the stated ground
-that the fragment is shared space and what belongs to something else is left uninterpreted.
-Restoring over it would break that in the one direction clearing was careful not to. So the
-watcher tests emptiness itself, and asks the recognizer only to tell a build link from everything
-else.
+Any other fragment is left as it stands. `FragmentPublisher.#clearBuildFragment` already holds
+that line: it returns early rather than clear a fragment that is not a build link, because the
+address is shared with whatever else uses it and this application neither interprets nor removes
+what it did not write. Restoring over such a fragment would remove it just as clearing would.
+
+The watcher therefore tests emptiness itself. `recognizeBuildLinkFragment` answers `unrelated` for
+an empty fragment and for a foreign one alike, so it can say whether a fragment is a build link but
+not whether there is a fragment at all. The recogniser is asked the first question and the watcher
+answers the second.
+
+Alternative considered: telling the two apart by ownership rather than by emptiness — restoring
+over anything this application wrote and leaving anything it did not. Rejected because a loadout
+link is a fragment this application owns and is not a build link, so ownership would put the
+equipment bench's published link at risk of being overwritten by the ship builder.
 
 ### Restoration is bounded to the document the link was published onto
 
 The same bound publication already keeps, for the same reason: a Commander who leaves the
-workspace must not arrive at another screen with a build link stamped on it.
+workspace must not arrive at another screen carrying a build link.
 
 The publisher records the document alongside the fragment it published, in a private field beside
 `#token`. It does not go on `link()`: that model is what the application says about the build, and
@@ -127,12 +133,25 @@ reads the restored fragment as an arrival and offers to replace the build with i
 `replaceFragment` writes with `replaceState`. FR-020 forbids an entry per edit, and a restoration
 is less than an edit: it puts back what the address already claimed to hold.
 
+### The journey holds the window open by delaying the codec chunk
+
+The race needs the layer raised between the lazy import and the fragment write, and a journey that
+waits for neither reproduces it only by luck. The codec arrives as a lazily imported chunk, so a
+`page.route` installed once the workspace has loaded catches that request and holds it while the
+layer goes up. The suite already delays JavaScript this way in `e2e/first-frame.ts`.
+
+Where that chunk cannot be told from another lazy request, the journey asserts the post-condition
+only — the address carries the build link after the layer closes — and says so where it is read.
+The race itself is held open deterministically in the unit tests, through the publisher's
+injectable `encode`, so no coverage depends on the timing of a browser.
+
 ## Risks / Trade-offs
 
-- **The watcher and the ingress could fight.** → They cannot meet: the watcher acts only where the
-  address is empty, and the ingress only where it carries a build link. The narrowing is the
-  mitigation and is tested in all three directions — an empty address restored, a different build
-  link left alone, a foreign fragment left alone.
+- **The watcher and the ingress could both write the fragment.** → They cannot both act on one
+  address: the watcher acts only on an empty address, and the ingress only on an address carrying
+  a build link. The narrowing is the mitigation, and it is tested in all three directions — an
+  empty address restored, a different build link left alone, a fragment that is not a build link
+  left alone.
 - **A Commander who deletes the fragment from the address bar by hand gets it back.** → That is
   the requirement rather than a side effect: while a build is open and its link is published, the
   address describes it. Anyone who wants an address without a build closes the build.
@@ -142,17 +161,16 @@ is less than an edit: it puts back what the address already claimed to hold.
   anyway. What is fixed is that the workspace's own entry no longer stays wrong afterwards.
 - **Back to an earlier workspace entry that had no link puts the link straight back.** → A
   Commander who walks back past the point where their build was published arrives at an empty
-  address and the watcher states the link again. It is the same rule the requirement asks for —
-  while a build is open and its link is published, the address describes it — and the build on the
-  screen has not changed, so the address is still true. What history cannot do is make the address
-  disagree with the build.
+  address and the watcher states the link again. This is the rule the requirement asks for: while
+  a build is open and its link is published, the address describes it. The build on the screen has
+  not changed, so the address is still true.
 - **One more effect over the fragment signal.** → It reads two signals and returns without writing
   in every case but the defect's. The publication effect it sits beside runs on every keystroke;
   this one cannot.
-- **Coverage was lost when #81 was fixed.** → The two library journeys now wait for the address to
-  carry the build, which is right for what they read. This change brings its own reproducing unit
-  coverage, driven through the publisher's injectable `encode` so the window can be held open
-  deliberately rather than raced against.
+- **No journey in the suite holds this race open.** → The two library journeys wait for the
+  address to carry the build before opening the layer, which is right for what they read. This
+  change brings its own reproducing unit coverage, driven through the publisher's injectable
+  `encode` so the window is held open deliberately rather than raced against.
 
 ## Migration Plan
 
