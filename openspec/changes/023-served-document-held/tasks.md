@@ -76,8 +76,10 @@
 - [ ] 3.1 Verify a navigation that fails after a screen has been presented leaves the Commander on
       that screen, with nothing put back over it. This is the case that would take a screen away to
       answer a failure, so it is stated as its own test rather than folded into 2.4. Read it in the
-      production lane: in the development lane nothing is ever held, so "nothing put back" passes
-      against the standing takeover (023/FR-001, 018/FR-007).
+      production lane. This reading passes against the standing takeover in either lane, because
+      nothing is held today; what the production lane buys is that only there can a wrong
+      implementation have something to put back, so only there can the test fail
+      (023/FR-001, 018/FR-007).
 - [ ] 3.2 Verify a first navigation that is cancelled or redirected, and whose replacement then
       fails, still leaves the Commander on what the address served: the pair counts as one
       presentation, so the cancellation does not spend the hold. That rule is `023/FR-001`'s own —
@@ -95,13 +97,14 @@
       development lane generates no document anywhere, so its copy is empty at every address and
       the same assertion passes however the adapter behaves; keep that reading where it already
       stands in `e2e/navigation-waiting.spec.ts`, and add the bench one beside the journey task 1.2
-      extends. Assert no held container is drawn (023/FR-001, 018/FR-007, 015/FR-018).
+      extends. Assert the Commander is left on that shell and that no content is put back over it
+      (023/FR-001, 018/FR-007, 015/FR-018).
 - [ ] 3.4 Verify held content is kept as the address served it: the same nodes, with no figure
       recomputed and no sentence written for it. Assert the held markup matches what the document
       carried before bootstrap, so a later rewrite into a re-rendering fails here. Read it in the
-      production lane: with no document served there is no held markup, and the assertion is
-      satisfied by an adapter that does nothing. The figures in it come from the pinned package and
-      are not recomputed on the way back (023/FR-001, 015/FR-004).
+      production lane. In the development lane no document is served, so there is no held markup
+      and the assertion is satisfied by an adapter that does nothing. The figures in it come from
+      the pinned package and are not recomputed on the way back (023/FR-001, 015/FR-004).
 - [ ] 3.5 Verify a first navigation cancelled with nothing taking over leaves the Commander on what
       the address served. Nothing is stated over it, because a cancellation is not a failure
       (018/FR-007, "A navigation that is cancelled, and one that is redirected to another address,

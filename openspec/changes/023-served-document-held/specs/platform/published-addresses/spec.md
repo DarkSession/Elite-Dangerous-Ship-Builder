@@ -19,11 +19,10 @@ Where an address served the application's own shell, nothing is held: the shell 
 Commander keeps, because the shell is what they were given. That is every address the build
 generates no document for, and it is the same answer wherever else the shell is what arrived.
 
-Content is kept from the moment the address served it until the hold ends, and it stands in front
-of the Commander only where a navigation ends without presenting a screen. Kept content MUST be
-kept as the address served it: it MUST NOT be rebuilt, recomputed or written again. Content that
-stands MUST
-carry the language it was served in.
+What the address served MUST be kept, from the moment it arrives until the hold ends. It MUST be
+kept as the address served it: not rebuilt, not recomputed, not written again. Where a navigation
+ends without presenting a screen, it is what the Commander is left on, and it MUST carry the
+language it was served in.
 
 Putting held content back MUST be invisible, on the same terms as the takeover itself: no content
 the Commander can see may move position, no frame may be emptier than the frame before it, and the
@@ -72,8 +71,8 @@ Source: 023/FR-001.
 
 - **WHEN** a navigation fails before any screen has been presented in the session, at an address
   that served the application's own shell
-- **THEN** nothing is held
-- **AND** the Commander is left on that shell
+- **THEN** the Commander is left on that shell
+- **AND** no content is put back over it
 
 #### Scenario: Held content is not rebuilt
 
@@ -129,8 +128,7 @@ Source: 015/FR-011.
 
 - **WHEN** a Commander whose committed locale is German is left on content the address served,
   because no screen was presented
-- **THEN** that content holds the English words it was served with, untranslated and with no
-  disclosure written into it
+- **THEN** that content holds the English words it was served with, untranslated
 
 ### Requirement: The disclosure beside an untranslated game name
 
@@ -138,13 +136,15 @@ The one thing the replacement MAY add is the disclosure that accompanies a game 
 original language. A Commander reading in a language the game's own nouns are not published in is
 told so beside each one, and in bundled English there is nothing to disclose because English is the
 original. So a document read in another language gains one such note per untranslated name and gains
-nothing else. A value shown in a language the Commander did not ask for MUST say so, so the
-disclosure MUST NOT be suppressed. This exception covers that disclosure and nothing else.
+nothing else. A value the application presents in a language the Commander did not ask for MUST say
+so, so the disclosure MUST NOT be suppressed. This exception covers that disclosure and nothing
+else.
 
-The disclosure belongs to a replacement that lands. Content held because no screen was presented is
-a document standing in bundled English, where this requirement already says there is nothing to
-disclose, so the application MUST NOT write a disclosure into it. Nothing is suppressed: each name
-stands in the language of the document around it, and that document carries its language.
+The disclosure belongs to a replacement that lands, which is where the application presents the
+value. Content held because no screen was presented is a document standing in bundled English,
+where this requirement already says there is nothing to disclose, so the application MUST NOT write
+a disclosure into it. Nothing is suppressed: each name stands in the language of the document
+around it, and that document carries its language.
 
 Source: 015/FR-011a.
 
