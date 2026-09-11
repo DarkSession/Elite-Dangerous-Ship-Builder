@@ -44,17 +44,18 @@
       either outcome this change is for (design.md, "The boundary is the first screen presented,
       not the first navigation"; 018/FR-005). The frame renders a container inside the
       `<main class="frame__main">` it already draws, where the outlet stands, in
-      `src/app/ui/components/app-frame/app-frame.html`, and the adapter
-      fills it — that is where the copy was taken from, and anywhere else moves it out of its
-      landmark. The container is part of the frame's first render rather than written in from an
-      effect afterwards, so the copy lands in the render that removes the served nodes and nothing
-      is painted between the two. The failure statement does not take space above the held
-      content, which is design.md, "The failure statement does not take space above the content":
-      015/FR-009 admits three exceptions and this claims none of them, and reserving the
-      space in the build is ruled out by 015/FR-010. Drawing it out of the flow over the content or
-      after it both meet that, and this task picks one. Verify tasks 1.2, 1.3 and 3.5 now pass,
-      and that the failure
-      statement still stands over the content rather than instead of it. Tasks 1.2 and 1.3 drive
+      `src/app/ui/components/app-frame/app-frame.html`, and takes the nodes as an input rather
+      than having the adapter write into its template (design.md, "The shell draws the held content
+      in the outlet's place"; constitution III) — that is where the copy was taken from, and
+      anywhere else moves it out of its landmark. The container is part of the frame's first render
+      rather than written in from an effect afterwards, so the copy lands in the render that
+      removes the served nodes and nothing is painted between the two. The failure statement does
+      not take space above the held content, which is design.md, "The failure statement does not
+      take space above the content": 015/FR-009 admits three exceptions and this claims none of
+      them, and reserving the space in the build is ruled out by 015/FR-010. Drawing it out of the
+      flow over the content or after it both meet that, and this task picks one. Verify tasks 1.2,
+      1.3 and 3.5 now pass, and that the failure statement still stands over the content rather
+      than instead of it. Tasks 1.2 and 1.3 drive
       `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
       that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
 - [ ] 2.4 Release the copy at the first `NavigationEnd`. Verify nothing is held after a screen has

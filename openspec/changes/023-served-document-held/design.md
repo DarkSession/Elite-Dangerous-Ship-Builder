@@ -196,6 +196,13 @@ and heading structure").
 The container is in the frame's template rather than written into it from outside, because the
 shell owns its own structure. The nodes are the adapter's, because it is the one that took them.
 
+The frame takes them as an input and places them in its own container, rather than the adapter
+reaching into the frame's DOM. Nodes handed to a component are state it is handed, which is what
+constitution III leaves a component free to render; a platform adapter writing inside another
+component's template is what that principle and the design system's presentation-only rule both
+refuse. The frame therefore stays the only thing that writes its own structure, and the adapter
+stays the only thing that owns the copy.
+
 Nothing about the container claims the content is a screen the application opened, and that stays
 here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands over
 the content and says so. Where one is cancelled, the same requirement says a cancellation is stated
