@@ -133,12 +133,22 @@
       the rows in `e2e/manual/results/screen-reader.md`. They stand as `not run`, the way every
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
-- [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters — above 93% of statements, 86% of branches, 94% of functions and 93% of lines. Everything
-      up to and including `test` passes. Of the three e2e scripts, the five chromium projects
-      pass (3714 of 3715; the one is a control in the saved-builds suite timing out on a click
-      under load in this container, on a screen that announces nothing, and its whole project
-      passes on a re-run) and so does the offline suite. Two things this container cannot
-      answer, and neither is this change's: Firefox is not installed and cannot be fetched, so
-      the five Firefox projects do not run; and the throttled candidate search settles at
-      105.8 ms against a 100 ms budget, which reproduces identically on `origin/main`.
+- [x] 6.4 Run `pnpm run check`. Everything up to and including `test` passes — 593 script tests,
+      3209 unit tests, and coverage at 93.42% of statements, 86.37% of branches, 94.41% of
+      functions and 93.29% of lines, every counter above the 80% floor. `e2e:timing` passes both
+      cases, the throttled candidate search among them. What is left is timeouts rather than
+      assertions: a click that did not take, or an axe scan that ran out of time while the
+      container carried every project at once. Seven chromium tests time out under the full
+      `e2e` run, and six pass when their specs are re-run without the rest of the suite —
+      `hull-detail.spec.ts:541`'s unshowable hull, the only one of the seven beside an
+      announcing site, among them. Which of them times out moves with the load rather than with
+      the code, which is the tell: a lighter re-run lost one of the seven and gained a
+      neighbour in the same sweep. The seventh, `ui-preview.spec.ts:98` at desktop, does not
+      move and is not this change's: the same two specs over the same two projects give 81
+      passed and that one failed on this branch and on `origin/main` alike, the same axe scan
+      timing out in the heaviest sweep the suite has. `e2e:offline` times out once, on
+      `prerendered-first-frame.spec.ts:507` at tablet portrait, where a click on the Ship
+      Builder link did not navigate; the other four chromium projects pass that case, and the
+      spec passes 30 of 30 run alone. One thing this container cannot answer, and it is not this
+      change's: Firefox is not installed and cannot be fetched, so the five Firefox projects do
+      not run.
