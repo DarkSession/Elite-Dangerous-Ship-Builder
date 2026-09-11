@@ -59,10 +59,17 @@
       empty the fragment, and assert nothing is stated. The watcher reads the document it recorded
       in task 2.1 and does nothing where it differs, so a Commander who published a link and then
       walked away does not find it on the screen they walked to (022/FR-001).
-- [ ] 3.4 Verify nothing is stated where no link is published, for both reasons there can be none:
-      no build, and a refused encode. A refusal removes a stale fragment with `replaceState`, under
+- [ ] 3.4 Verify nothing is stated where no link is published, for all three ways there can be no
+      link: no build has been opened, a build was opened and then cleared, and a refused encode.
+      Drive the second by publishing a link and then deleting the record the workspace autosaves
+      into, which clears the active build to the no-build state under
+      `ship-builder/build-lifecycle`, "Naming, saving and removing a record" (001/FR-009). The
+      publisher clears the fragment, the address goes empty at the same document, and the watcher
+      must not put the stale link back: an address naming a build the workspace no longer holds is
+      the failure this case guards. For the third, a refusal removes a stale fragment with
+      `replaceState`, under
       `openspec/changes/archive/001-ship-selection-and-loading/contracts/build-link.md`,
-      "Active-edit synchronization", and the watcher must not undo that (022/FR-001).
+      "Active-edit synchronization", and the watcher must not undo that either (022/FR-001).
 
 ## 4. Reading it end to end
 

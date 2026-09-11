@@ -156,9 +156,12 @@ injectable `encode`, so no coverage depends on the timing of a browser.
   left alone.
 - **A Commander who deletes the fragment from the address bar by hand gets it back.** → That is
   the requirement rather than a side effect: while a build is open and its link is published, the
-  address describes it. The ship builder has no action that closes a build, so there is no way to
-  hold an empty address on the workspace, and this change does not add one. Leaving the workspace
-  does it, and the document bound keeps the link off the screen a Commander leaves for.
+  address describes it. Two things give an empty address without fighting the watcher, and
+  neither is deleting the fragment: leaving the workspace, where the document bound keeps the link
+  off the screen a Commander goes to, and deleting the record the workspace autosaves into, which
+  clears the active build to the no-build state under `ship-builder/build-lifecycle`, "Naming,
+  saving and removing a record" (001/FR-009). After the second there is no build and so no
+  published link, and the watcher has nothing to state.
 - **The window stays open; this closes its consequence.** → A publication landing on a layer's
   entry is still a publication on the wrong entry, and a Commander who copies the address _while_
   the layer is up gets a link to the build, which is the address that entry was pushed to carry
