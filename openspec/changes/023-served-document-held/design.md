@@ -92,9 +92,15 @@ generated address loses the same content, whatever the reason the chunk did not 
 ### Putting the copy back is invisible, in one frame
 
 015/FR-009 admits exactly three exceptions and says nothing else may claim one, so the restore
-cannot be a removal the Commander sees followed by a return. The copy goes back in the render that
-removes the served nodes: the application renders once, after the navigation has resolved, and the
-frame draws the held container in that same render. Nothing is painted between the two.
+cannot be a removal the Commander sees followed by a return. The copy goes back in the frame's own
+render, after the navigation has resolved, and the container is part of that render rather than
+something written in from a later pass.
+
+What removes the served nodes is separate from it: Angular clears the views hydration did not claim
+from a bootstrap listener once the application is stable. So the restore adds and the cleanup
+removes, and neither waits for the other. The reading that holds this is a frame measurement rather
+than an argument about order — task 4.3 compares every frame from the last one the document had to
+itself, and a page that blanked or moved between them fails it.
 
 This is the same shape the stored catalogue view already has — applied "in the takeover frame
 itself rather than a frame later" (015/FR-009a) — and it is why the container is part of the

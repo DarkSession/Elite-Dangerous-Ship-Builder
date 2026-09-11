@@ -624,6 +624,8 @@ async function whereTheScreenNeverArrives(
   options: {
     readonly path: string;
     readonly reach: (page: Page) => Promise<void>;
+    /** The address the learning pass opens. The entry point unless given. */
+    readonly open?: string;
     readonly context?: Parameters<Browser['newContext']>[0];
     readonly prepare?: (page: Page) => Promise<void>;
     /**
@@ -639,7 +641,10 @@ async function whereTheScreenNeverArrives(
 ): Promise<{ context: BrowserContext; fresh: Page }> {
   const { path, reach, prepare } = options;
   const screenChunks = new Set<string>();
-  await page.goto('/');
+  // Opened somewhere other than the address under test where that address is
+  // the entry point: the chunks are learnt from the presses after this one, and
+  // a screen already fetched to draw this page is not asked for again.
+  await page.goto(options.open ?? '/');
   await waitForTakeover(page);
   page.on('request', (request) => {
     if (request.resourceType() === 'script') {
@@ -689,6 +694,12 @@ async function reachTheCatalogue(page: Page): Promise<void> {
   // what it is waiting for is the screen's chunk over a server several of these
   // readings are asking for a build from at once.
   await expect(page).toHaveURL(/\/ships$/, { timeout: 30_000 });
+}
+
+/** The press that asks for the entry point, from anywhere the flag is drawn. */
+async function reachTheEntryPoint(page: Page): Promise<void> {
+  await page.locator('.frame__flag-home').click();
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
 }
 
 test.describe('held content and a Commander reading in German', () => {
@@ -901,6 +912,35 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       );
       tallest = Math.max(tallest, frame.length);
     });
+    await context.close();
+  });
+
+  test('moves nothing at the entry point, where the screen fills the shell (015/FR-009)', async ({
+    browser,
+    page,
+  }) => {
+    // The same measurement as above, at the one address whose screen is shorter
+    // than the window it is drawn in. The shell is at least as tall as the
+    // window, so a screen that does not fill it is stretched to the rest — and
+    // the start page closes with its attribution band at the foot of that
+    // stretch. The catalogue overflows every profile, so `main` is its content
+    // there and takes nothing from anything: the reading above cannot fail on a
+    // statement that takes space out of the box the content stands in, and this
+    // one can. Measured before the statement was taken out of the flow: the
+    // band stood 102 pixels above where it was served, on a page that never
+    // scrolled.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      open: '/ships',
+      path: '/',
+      reach: reachTheEntryPoint,
+      prepare: (fresh) => recordFrames(fresh, 'Ship Builder'),
+      settled: true,
+    });
+
+    const held = (await frames(fresh)).filter((frame) => frame.parsed && frame.dressed);
+
+    expect(held.length, '/ was never recorded settled').toBeGreaterThan(1);
+    nothingTheCommanderIsReadingMoved(held);
     await context.close();
   });
 

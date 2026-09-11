@@ -33,9 +33,12 @@
 - [x] 2.2 Register it as a browser-only application initialiser in `src/app/app.config.ts`, before
       `provideRouter`, where `NavigationWaitingStore` already sits and for the same stated reason:
       initialisers run in the order they are provided, and the blocking initial navigation starts
-      from one of them. Verify with a test asserting the copy is taken before the first
-      `NavigationStart`, so an initialiser added later cannot silently move it after the takeover
-      (023/FR-001).
+      from one of them. Verify with a test asserting that position, so an initialiser added later
+      cannot silently move the copy after the takeover, and by the production journey, where a copy
+      taken after the takeover is an empty container rather than the served document. Not by a unit
+      reading of the first `NavigationStart`: the blocking initial navigation is production-only and
+      starts in a microtask after every initialiser has run, so such a reading passes with the
+      initialiser moved (023/FR-001).
 - [x] 2.3 Put the copy back when a navigation ends without presenting a screen and none has been
       presented in this session — a failure, a cancellation with nothing taking over, or a
       replacement that ends the same way. Count screens presented rather than navigations run or
@@ -153,7 +156,8 @@
       together, asserted to report no in-scope violation. The existing scans reach the generated
       first frame and the screens the application presents, and this composition is neither
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.5 scans its own
-      standing overlay for the same reason). Verify with `pnpm run e2e` (011/FR-022, 011/SC-002).
+      standing overlay for the same reason).
+      Verify with `pnpm run e2e:offline` (011/FR-022, 011/SC-002).
 - [x] 4.3 Measure the restore, not only the takeover that succeeds: read that no content the
       Commander can see moves position, that no frame between the document arriving and the held
       content standing is emptier than the frame before it, and that the content does not blank and
@@ -164,7 +168,7 @@
       fails. Measure the constraint rather than the mechanism task 2.3 chose. 015/FR-009 admits
       three exceptions and this claims none of them, so a fourth is not available and a visible
       move, removal or return is a failure rather than a cost. Verify with
-      `pnpm run e2e` in the production lane, beside the journey task 1.2 extends (023/FR-001,
+      `pnpm run e2e:offline`, beside the journey task 1.2 extends (023/FR-001,
       015/FR-009).
 - [x] 4.4 Read the held composition at 200% text size and at 400% zoom, in the profiles the
       journey in task 1.2 already runs: the held content and the failure statement together, with
@@ -174,7 +178,7 @@
       frame, where no statement stands beside the content, and the responsive journeys never reach
       it. Change 018 read its own standing state the same way for the same reason
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Verify with
-      `pnpm run e2e` (011/FR-011, 011/SC-003).
+      `pnpm run e2e:offline` (011/FR-011, 011/SC-003).
 
 ## 5. Reading it end to end
 
@@ -184,7 +188,8 @@
       emptier than the frame before it. This is also where the delta's scenario "A navigation
       presents a screen" is read: the copy is taken on every takeover, including the one that
       succeeds, so the measurement that proves keeping it costs nothing is this one. Verify with
-      `pnpm run e2e` over `e2e/prerendered-first-frame.spec.ts` (023/FR-001, 015/FR-009,
+      `pnpm run e2e:offline`, the run that loads
+      `e2e/prerendered-first-frame.spec.ts` (023/FR-001, 015/FR-009,
       015/SC-003).
 - [x] 5.2 Re-read the locale replacement this change must not disturb, which is the other branch
       the modified 015/FR-011 creates. For a Commander whose committed locale is German at an
@@ -195,7 +200,7 @@
       standing where the screen should be, so read it here rather than assume it elsewhere. This is
       what an implementation that holds the English too long would break, and task 2.5 reads only
       the held branch. Read it in the production lane, which is the only lane with a generated
-      document to replace. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
+      document to replace. Verify with `pnpm run e2e:offline` (015/FR-011, 015/FR-011a).
 - [x] 5.3 Remove the note at the end of the journey task 1.2 extends, in
       `e2e/prerendered-first-frame.spec.ts`,
       which records FR-007's second half as unread, because task 1.2 adds the assertion it asks

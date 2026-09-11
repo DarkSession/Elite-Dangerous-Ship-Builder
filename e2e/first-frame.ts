@@ -308,9 +308,9 @@ export async function openOnceTheTypefaceHasArrived(page: Page, path: string): P
  * Returns once the page has read its document and is wearing the faces it asked
  * for, or once the wait has run out.
  *
- * The condition `openOnceTheTypefaceHasArrived` holds the bundle on, on its own
- * so a journey that builds its own route can hold the bundle on the same
- * condition. Its reasoning is that function's.
+ * This is the condition `openOnceTheTypefaceHasArrived` holds the bundle on,
+ * exported on its own so a journey that builds its own route can hold the
+ * bundle on the same condition. Its reasoning is that function's.
  */
 export async function theTypefaceHasArrived(page: Page): Promise<void> {
   await page

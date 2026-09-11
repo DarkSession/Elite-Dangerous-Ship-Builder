@@ -6,7 +6,7 @@ import { ServedContentAdapter } from './served-content.adapter';
  *
  * Every case here is about the moment before the application exists, so the
  * document is arranged first and the adapter injected second — which is the
- * order the initialiser gives it in `app.config.ts`.
+ * order the initializer gives it in `app.config.ts`.
  */
 describe('ServedContentAdapter', () => {
   let planted: HTMLElement | null = null;

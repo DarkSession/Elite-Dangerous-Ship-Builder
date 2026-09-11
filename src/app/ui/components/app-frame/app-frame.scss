@@ -483,19 +483,32 @@
   padding-inline: var(--ednb-space-region);
 }
 
-// While content the address served is standing, the statement takes its box
-// after that content instead of before it.
+// While content the address served is standing, the statement stands over that
+// content instead of above it.
 //
-// The shell is a column of flex items, so this moves the box and nothing else:
-// the notice keeps its place in the document, and a reader still meets the
-// statement before what it is about. What it must not do is take space above
-// content a Commander is already reading — that is content moving position,
-// and 015/FR-009 admits three exceptions to it, none of them this one. The
-// space cannot be reserved ahead of the statement either: the build knows
-// neither that the takeover will fail nor how tall the sentence would be, and
-// 015/FR-010 forbids it deciding the first frame on what it cannot know.
-.frame__status--below {
-  order: 1;
+// It must not take space above content a Commander is already reading — that is
+// content moving position, and 015/FR-009 admits three exceptions to it, none
+// of them this one. The space cannot be reserved ahead of the statement either:
+// the build knows neither that the takeover will fail nor how tall the sentence
+// would be, and 015/FR-010 forbids it deciding the first frame on what it
+// cannot know.
+//
+// Out of the flow rather than after the content in it, and this is measured
+// rather than preferred. The shell is at least as tall as the window, so where
+// a screen does not fill it the box holding the screen is stretched to the
+// rest — and a statement added under that box takes its height out of the
+// stretch. Measured on `/` at 1440x900: the start page's attribution band was
+// served at y=848 and stood at y=746 with the statement in the flow below it.
+// Out of the flow nothing is taken, and the band stands where it was served.
+//
+// It keeps its place in the document, so a reader meets the statement in the
+// same order either way; only the box moves. Each notice inside carries its
+// own raised ground, so the content it stands over reads as covered rather
+// than as mixed into it.
+.frame__status--over {
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
 }
 
 // No centred measure. Every canvas runs its regions to the edge of the artboard
@@ -557,10 +570,25 @@
 // the Commander is reading has to stand exactly where it stood — which is the
 // whole of what putting it back means (023/FR-001, 015/FR-009).
 //
+// It takes the box a screen took, too. A screen root is a flex item of this
+// column and several of them ask to fill it — the start page is a column that
+// closes with its attribution band at the foot of the shell — so a
+// content-height container would stand that band wherever the copy ended
+// instead. Measured on `/` at 1440x900: the band was served at y=848 and stood
+// at y=469 once the copy was put back, which is content the Commander can see
+// moving.
+//
 // Nothing is lost by it. The container carries no role and says nothing; it
 // exists so the frame has somewhere of its own to place nodes it was handed,
 // and the language it carries is an attribute rather than a box.
 .frame__held {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+
+  // The floor a flex item is given by default is its content, and a screen
+  // that scrolls inside itself needs that floor removed to be given the box
+  // rather than to grow past it. The same declaration the start page's own
+  // host carries.
+  min-block-size: 0;
 }

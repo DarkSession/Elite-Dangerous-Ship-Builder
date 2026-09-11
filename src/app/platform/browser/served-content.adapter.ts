@@ -33,7 +33,7 @@ function readable(node: Node): boolean {
  * time a navigation has failed, hydration has already removed the nodes it
  * found nothing to claim them with.
  *
- * So the copy is taken first, in a browser-only application initialiser
+ * So the copy is taken first, in a browser-only application initializer
  * registered before `provideRouter`, where the DOM is still the served document
  * and nothing has been claimed (`app.config.ts`).
  *

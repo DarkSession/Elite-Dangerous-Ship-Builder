@@ -1,6 +1,5 @@
 import { ApplicationInitStatus } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { ROUTING_PROVIDERS, SERVED_DOCUMENT_INITIALIZER, appConfig } from './app.config';
 import { ServedContentAdapter } from './platform/browser/served-content.adapter';
 
@@ -12,10 +11,21 @@ describe('appConfig', () => {
   /**
    * The copy of what the address served, taken before the takeover.
    *
-   * Two readings, because the property has two halves and each can break on
-   * its own: the copy is taken while the application starts rather than
-   * whenever something first asks for it, and it is registered ahead of the
-   * router, whose initial navigation is the takeover itself.
+   * Two readings, because the property has two halves and each can break on its
+   * own: the copy is taken while the application starts rather than whenever
+   * something first asks for it, and it is registered ahead of the router,
+   * whose initial navigation is the takeover itself.
+   *
+   * That the copy is taken before that navigation begins is not read here, and
+   * cannot be: the blocking initial navigation is production-only, and even
+   * provided by hand it starts in a microtask after every initializer function
+   * has run — so the copy is taken first whatever the order, and a reading of
+   * it here would pass with the initializer moved. Where it can fail is the
+   * production journey, which asks what the container holds after a takeover
+   * that presented no screen: a copy taken after hydration had removed the
+   * served nodes is an empty container, and
+   * `e2e/prerendered-first-frame.spec.ts` compares that container's markup with
+   * the document the address served, node for node.
    */
   describe('and what the address served', () => {
     let planted: HTMLElement | null = null;
@@ -24,6 +34,13 @@ describe('appConfig', () => {
       planted?.remove();
       planted = null;
     });
+
+    function plantAServedDocument(): void {
+      const served = document.createElement('main');
+      served.innerHTML = '<h1>Ships</h1><ul><li>Anaconda</li></ul>';
+      document.body.prepend(served);
+      planted = served;
+    }
 
     it('is registered before the router takes the document over', () => {
       // Positions rather than a comment about positions. Initializers run in
@@ -40,11 +57,8 @@ describe('appConfig', () => {
       );
     });
 
-    it('is copied while the application starts, before any navigation begins', () => {
-      const served = document.createElement('main');
-      served.innerHTML = '<h1>Ships</h1><ul><li>Anaconda</li></ul>';
-      document.body.prepend(served);
-      planted = served;
+    it('is copied while the application starts, not when something first asks', () => {
+      plantAServedDocument();
 
       let copies = 0;
 
@@ -52,10 +66,6 @@ describe('appConfig', () => {
       TestBed.configureTestingModule({
         providers: [
           ...appConfig.providers,
-          // The adapter takes the copy as it is constructed, so when it was
-          // constructed is what this reads. Injecting it at the end would
-          // answer the same either way: the document is still standing, so a
-          // copy taken too late would look like a copy taken in time.
           {
             provide: ServedContentAdapter,
             useFactory: () => {
@@ -66,14 +76,12 @@ describe('appConfig', () => {
         ],
       });
 
-      // Instantiating the testing module is what runs the initializers, so
-      // everything below is read after they have all finished.
+      // Instantiating the testing module is what runs the initializers, so the
+      // count below is read after they have all finished and before anything
+      // else in this test has asked for the adapter.
       TestBed.inject(ApplicationInitStatus);
-      const router = TestBed.inject(Router);
 
-      expect(copies, 'nothing took the copy while the application started').toBe(1);
-      expect(router.getCurrentNavigation(), 'a navigation was already running').toBeNull();
-      expect(router.navigated, 'a navigation had already ended').toBe(false);
+      expect(copies, 'the copy waited for something to ask for it').toBe(1);
       expect(TestBed.inject(ServedContentAdapter).held).toBe(true);
     });
   });

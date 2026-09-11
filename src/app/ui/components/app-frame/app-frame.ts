@@ -475,9 +475,18 @@ export class AppFrame {
     });
 
     // The served nodes into the container the template drew for them, in the
-    // same pass: the container is part of the render that removes the served
-    // document's own nodes, and this runs before that render is painted, so
-    // nothing is painted between the two (015/FR-009, 015/FR-009a).
+    // same pass, so the copy is standing in the render that draws the container
+    // rather than in one after it. A restore that waited for a second pass
+    // would show the box empty first.
+    //
+    // What removes the served document's own nodes is not this render. Angular
+    // clears the views hydration did not claim from a bootstrap listener, once
+    // the application is stable, so this render only adds. That nothing a
+    // Commander is reading moves or disappears across the two is measured
+    // rather than reasoned about: the frame readings in
+    // `e2e/prerendered-first-frame.spec.ts` compare every frame from the last
+    // one the document had to itself, at the catalogue and at the entry point
+    // (015/FR-009, 015/FR-009a).
     effect(() => {
       const held = this.held();
       const container = this.heldContainer();

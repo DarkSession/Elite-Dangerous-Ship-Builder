@@ -75,7 +75,7 @@ export class ServedDocumentStore {
    *
    * Injected here rather than where it is read, because the only moment the
    * copy can be taken is before the router reaches the outlet: this store is
-   * created by an application initialiser registered ahead of `provideRouter`,
+   * created by an application initializer registered ahead of `provideRouter`,
    * and constructing it is what takes the copy (`src/app/app.config.ts`).
    */
   readonly #served = inject(ServedContentAdapter);
