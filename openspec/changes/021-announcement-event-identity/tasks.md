@@ -112,9 +112,9 @@
 - [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
       counters — 93.76% statements, 86.61% branches, 94.66% functions, 93.68% lines. Everything
       up to and including `test` passes. Of the three e2e scripts, the five chromium projects
-      pass (3682 of 3695; the thirteen are axe sweeps timing out under eight workers in this
-      container, and all pass again at two) and so does the offline suite. Two things this
-      container cannot answer, and neither is this change's: Firefox is not installed and
-      cannot be fetched, so the five Firefox projects do not run; and the throttled candidate
-      search settles at 105.8 ms against a 100 ms budget, which reproduces identically on
-      `origin/main`.
+      pass (3714 of 3715; the one is a control in the saved-builds suite timing out on a click
+      under load in this container, on a screen that announces nothing, and its whole project
+      passes on a re-run) and so does the offline suite. Two things this container cannot
+      answer, and neither is this change's: Firefox is not installed and cannot be fetched, so
+      the five Firefox projects do not run; and the throttled candidate search settles at
+      105.8 ms against a 100 ms budget, which reproduces identically on `origin/main`.
