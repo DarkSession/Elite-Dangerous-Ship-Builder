@@ -125,11 +125,15 @@ describe('AnnouncementOutlet', () => {
     expect(nodeIn(region(fixture, 'polite'))).toBe(first);
   });
 
-  it('empties the region on a locale switch rather than leaving the old words', () => {
+  it('takes the node out of the region when the outlets are emptied', () => {
     const { fixture, announcements } = render();
 
     announcements.announce(failure());
     fixture.detectChanges();
+
+    // `clearOutlets()` is the policy's own operation and no screen calls it,
+    // which its doc records. What is read here is that the outlet follows it —
+    // an emptied outlet leaves no words behind for a reader to meet again.
     announcements.clearOutlets();
     fixture.detectChanges();
 

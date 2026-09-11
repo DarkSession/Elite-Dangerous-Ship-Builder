@@ -57,11 +57,15 @@ export interface AnnouncementState {
  *
  *   * **A replay.** One occurrence is announced once. An announcement published
  *     from an effect resolves its message inside `untracked`, and that effect
- *     reads the message catalogue nowhere else, so it depends on the state its
- *     event is about and a committed locale does not re-run it. Where an effect
- *     must watch more than its own event, the caller remembers what it
- *     announced — `src/app/app.ts` and the restart overlay.
- *     `scripts/check-interface-foundations.mjs` holds the shape.
+ *     reads the message catalogue nowhere else, so a committed locale does not
+ *     re-run it. What the effect does depend on is the caller's to choose, and
+ *     it has to be the event: a trigger rebuilt on every recompute re-runs the
+ *     effect whether or not a word moved, so the ship catalogue reads its count
+ *     as a number. Where an effect must watch more than its own event, the
+ *     caller remembers what it announced — `src/app/app.ts` and the restart
+ *     overlay. `scripts/check-interface-foundations.mjs` holds the half of this
+ *     that is visible in the text of a call; the trigger's own identity is not,
+ *     and is held by each caller's unit suite.
  *   * **An outcome to a withdrawn question.** Whether the request an outcome
  *     belongs to is still the one a Commander is waiting for is a fact its store
  *     holds — `SlefStore.isCurrent`, `LoadoutImportStore.isCurrent` — and not

@@ -95,7 +95,9 @@
       spec reads that one anatomy region failing, recovering and failing again at one build
       revision publishes three times (011/FR-009).
 - [x] 4.6 Keep `NavigationWaitingStore.failures` as the effect's trigger. Verify the standing
-      two-failure case in `app.spec.ts` passes unchanged (018/FR-007).
+      two-failure case in `app-navigation-waiting.spec.ts` still reads two announcements. It is
+      restated rather than untouched: `announce` no longer answers whether it published, so
+      what the case counts is calls (018/FR-007).
 
 ## 5. The gate
 

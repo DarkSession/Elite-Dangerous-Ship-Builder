@@ -110,22 +110,22 @@ the fact the presenter needed and the number never carried.
 
 ### Where each site lands
 
-| Site                                                    | Declares                                            | Why                                                                                            |
-| ------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `ship-catalogue.page.ts`                                | nothing                                             | Tracks the count as a number, so only a count that moved runs the effect.                      |
-| `build-library.page.ts`                                 | nothing                                             | Its count is already a number. The effect runs when it moves, which is the event.              |
-| `outfitting-notice.ts`                                  | announces nothing                                   | Its `lines` input is resolved text, so an effect over it is not an event.                      |
-| `edit-refusal-notice.ts`, `ingress-refusal-notice.ts`   | nothing                                             | Each holds the refusal itself, which changes once per refusal.                                 |
-| `hull-detail.page.ts`                                   | nothing                                             | With the message resolved in `untracked`, the effect runs when an address resolves to no hull. |
-| `hull-anatomy.ts`                                       | nothing                                             | Announces at the transition. `#transition` goes with the field.                                |
-| `app.ts` navigation failure                             | nothing                                             | The effect runs once per failure.                                                              |
-| `app.ts` update notice                                  | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.           |
-| `app-frame.ts` locale fallback                          | nothing                                             | The locale snapshot is the event, and the effect reads nothing else.                           |
-| `slef.presenter.ts` delivery                            | nothing                                             | Every delivery is an outcome a Commander asked for.                                            |
-| `slef.presenter.ts` accepted, stored and refused import | nothing                                             | A withdrawn submit is its own outcome kind, and no branch announces it.                        |
-| `slef.presenter.ts` scan                                | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                            |
-| `loadout-import.presenter.ts` scan                      | announces a scan outcome only when the scan settled | The same two shapes as above.                                                                  |
-| `loadout-import.presenter.ts` stored batch              | nothing                                             | The same batch sentence, which said the stored count and never the refusal.                    |
+| Site                                                    | Declares                                            | Why                                                                                                                                         |
+| ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ship-catalogue.page.ts`                                | nothing                                             | Tracks the count as a number, so only a count that moved runs the effect.                                                                   |
+| `build-library.page.ts`                                 | nothing                                             | Its count is already a number. The effect runs when it moves, which is the event.                                                           |
+| `outfitting-notice.ts`                                  | announces nothing                                   | Its `lines` input is resolved text, so an effect over it is not an event.                                                                   |
+| `edit-refusal-notice.ts`, `ingress-refusal-notice.ts`   | nothing                                             | Each holds the refusal itself, which changes once per refusal.                                                                              |
+| `hull-detail.page.ts`                                   | nothing                                             | With the message resolved in `untracked`, the effect runs when an address resolves to no hull.                                              |
+| `hull-anatomy.ts`                                       | nothing                                             | Announces at the transition. `#transition` goes with the field.                                                                             |
+| `app.ts` navigation failure                             | nothing                                             | The effect runs once per failure.                                                                                                           |
+| `app.ts` update notice                                  | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.                                                        |
+| `app-frame.ts` locale fallback                          | nothing                                             | The locale snapshot is the event, and the effect reads nothing else.                                                                        |
+| `slef.presenter.ts` delivery                            | nothing                                             | Every delivery is an outcome a Commander asked for.                                                                                         |
+| `slef.presenter.ts` accepted, stored and refused import | nothing                                             | A withdrawn submit is its own outcome kind for the two that open a build. A batch is the stated exception: its records are written by then. |
+| `slef.presenter.ts` scan                                | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                                                                         |
+| `loadout-import.presenter.ts` scan                      | announces a scan outcome only when the scan settled | The same two shapes as above.                                                                                                               |
+| `loadout-import.presenter.ts` stored batch              | nothing                                             | The same batch sentence, which said the stored count and never the refusal.                                                                 |
 
 No declaration. Two files ask a question they already hold the answer to, and one remembers what
 it said.
@@ -353,18 +353,32 @@ rather than a preference.
 
 ## Risks / Trade-offs
 
-- **Rule 3 reads syntax, and five shapes are outside what syntax can see.** An announcement
-  reached through a helper is not inside a visible `effect`; a member that reaches the
-  catalogue through a private method it calls, rather than in its own initialiser, is not read
-  as a resolved one; a locale service read through a local alias rather than through `this.`
-  walks past the field the rule watches; a component that announces nothing makes no catalogue
-  read to judge; and neither does one that announces over an input already holding resolved
-  text, although a committed locale re-runs it exactly as it would a member. The two shapes syntax _can_ see, a
-  read for another purpose and a read with nothing bound to it, are both rejected. Any of the
-  five could publish one occurrence twice, against the requirement. → The unit suite beside
-  each announcing file reads what it publishes, and the manual screen-reader protocol reads
-  both journeys. A caller added later without either is the residual gap, and rule 3 catches
-  the shape that produced all four of the present ones.
+- **Rule 3 reads syntax, and what syntax can see is the smaller half.** It rejects the two
+  shapes it can: a catalogue read taken for another purpose, and one with nothing bound to it.
+  Everything below passes it, and the list is what is known rather than all there is.
+
+  Five shapes hide the read itself. An announcement reached through a helper is not inside a
+  visible `effect`; a member that reaches the catalogue through a private method it calls,
+  rather than in its own initialiser, is not read as a resolved one; a locale service read
+  through a local alias rather than through `this.` walks past the field the rule watches; a
+  component that announces nothing makes no catalogue read to judge; and neither does one that
+  announces over an input already holding resolved text, although a committed locale re-runs it
+  exactly as it would a member.
+
+  Two more are not about the read at all, and no rule of this kind can reach them, because
+  both turn on what a call _returns_ rather than on how it is written. An effect whose trigger
+  is a freshly built object re-runs on every recompute however carefully it announces — which
+  is the other half of the ship catalogue's own defect, held by `#shown` reading a number and
+  by that file's unit suite, not by the gate. And an effect triggered by another service's
+  computed that resolves messages inside itself takes the catalogue dependency across a file
+  boundary the rule never opens; `SlefPresenter.importView` and `HullDetailFacade.view` are
+  both written that way, so this is the composition pattern here rather than a hypothetical.
+
+  Any of the seven could publish one occurrence twice, against the requirement. → The unit
+  suite beside each announcing file reads what it publishes, and the manual screen-reader
+  protocol reads both journeys. A caller added later without either is the residual gap, and
+  rule 3 catches the announce-in-the-open shape that produced four of the present ones.
+
 - **A Commander who copies one export twice hears two sentences.** → That is the requirement,
   and the second press is a question that deserves an answer. The manual protocol reads whether
   two identical sentences in a row are a nuisance. If they are, the message changes rather than

@@ -138,7 +138,7 @@ describe('AnnouncementService', () => {
     expect(announcements.politeEvent()?.identity).toContain('mass.updated');
   });
 
-  it('clears outlet text on a locale switch without replaying old events', () => {
+  it('empties both outlets when it is asked to, and replays nothing after', () => {
     const { announcements, store } = setup();
     announcements.announce({
       kind: 'build.updated',
@@ -162,8 +162,10 @@ describe('AnnouncementService', () => {
       'browser',
     );
 
-    // Both outlets, because the old language has to go from each of them and a
-    // reader is told about neither event again.
+    // Both outlets, and nothing comes back: committing a language behind an
+    // emptied outlet is the nearest thing to a replay there is, and it says
+    // nothing. Asked rather than triggered — no screen calls this, which the
+    // method's own doc records.
     expect(announcements.polite()).toBe('');
     expect(announcements.assertive()).toBe('');
   });

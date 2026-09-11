@@ -575,6 +575,16 @@ describe('outfitting notice', () => {
 
     expect(announcements.assertive()).toBe('');
     expect(announcements.polite()).toBe('');
+
+    // The other mode, because the mode is what would have chosen the outlet. A
+    // component that announces in one of them and not the other is the shape
+    // this is written to exclude.
+    fixture.componentRef.setInput('mode', 'status');
+    fixture.componentRef.setInput('lines', [{ id: 'b', messageKey: 'outfitting.refusal.blocked' }]);
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).toBe('');
+    expect(announcements.polite()).toBe('');
   });
 
   it('renders nothing when there is nothing to say', () => {

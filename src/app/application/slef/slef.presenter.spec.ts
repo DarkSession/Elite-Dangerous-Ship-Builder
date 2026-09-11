@@ -598,8 +598,11 @@ describe('what a journal source adds to the words', () => {
     expect(answered?.text).toBe('2 builds found. Choose one or more.');
 
     // The abandoned scan then settles, on nothing at all. Announced, it would
-    // talk over the answer to the question that replaced it — which is what a
-    // token read at the wrong moment used to allow.
+    // talk over the answer to the question that replaced it. This order was
+    // never the broken one — the current scan had already spent the number both
+    // outcomes were compared on, so the late one was dropped for free. It is
+    // read because the number is gone and nothing drops anything now; the order
+    // that went wrong is the test below.
     release('{"event":"Docked"}');
     await abandoned;
 
