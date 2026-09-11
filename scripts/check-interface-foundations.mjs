@@ -1339,12 +1339,16 @@ function localeServices(masked) {
  * A pattern carrying state is a pattern two callers cannot share, so each asks
  * for its own and says which flags it wants: the scan over an effect body needs
  * `g`, a single `test` over one initialiser does not.
+ *
+ * A field name goes in as a name rather than as a pattern of its own. `$` is
+ * legal in an identifier and means end of input in a pattern, so a field with
+ * two of them would match nothing at all.
  */
 function localeReadPattern(locales, flags) {
   if (locales.size === 0) {
     return null;
   }
-  const fields = [...locales].map((field) => field.replace('$', '\\$')).join('|');
+  const fields = [...locales].map(asLiteralPattern).join('|');
   return new RegExp(`\\bthis\\.(?:${fields})\\s*\\.[A-Za-z_$][\\w$]*\\s*\\(`, flags);
 }
 

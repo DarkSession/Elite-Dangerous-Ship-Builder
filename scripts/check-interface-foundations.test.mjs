@@ -603,6 +603,28 @@ describe('announcements', () => {
     assert.equal(found[0].line, 4);
   });
 
+  it('reads a locale field whose name carries more than one dollar', () => {
+    // `$` is legal in an identifier and means end of input in a pattern, so a
+    // field name goes into the pattern as a name rather than as a pattern of
+    // its own. Escaping only the first one leaves a pattern that matches
+    // nothing, and the read walks past the rule.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #a$b$c = inject(Formatters);',
+        'effect(() => {',
+        '  const count = this.#a$b$c.integer(this.#shown());',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
   it('rejects game text resolved in the open and announced in there', () => {
     const found = rules.announcementViolations(
       'a.ts',
