@@ -22,8 +22,10 @@ to stand over.
 
 **Goals:**
 
-- A first navigation that fails at an address with a generated document leaves the Commander on
-  what that address served.
+- A first navigation that ends without presenting a screen, at an address with a generated
+  document, leaves the Commander on what that address served. A failure is the case the issue was
+  opened for; a cancellation with nothing taking over and a replacement that ends the same way are
+  the same case.
 - A first navigation that presents a screen is unchanged, to zero pixels.
 - Held content is what the address served, not a second rendering of it.
 
@@ -143,7 +145,18 @@ and heading structure").
 
 The container is in the frame's template rather than written into it from outside, because the
 shell owns its own structure. The nodes are the adapter's, because it is the one that took them.
-Nothing about the container claims the content is a screen the application opened.
+
+Nothing about the container claims the content is a screen the application opened, and that stays
+here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands over
+the content and says so. Where one is cancelled, the same requirement says a cancellation is stated
+as nothing — so there is no sentence, and nothing a test could read that would distinguish held
+content from a screen presented over the same markup. An obligation no scenario can fail is
+reasoning, and it is recorded as reasoning.
+
+The same applies to delay. Holding costs one copy of one subtree, taken before bootstrap and
+outside the window 015/SC-003 measures, and the capability states no timing threshold anywhere that
+a requirement could be written against. What is observable is what the requirement keeps: nothing
+visible moves and no frame is emptier than the frame before it.
 
 ### Held content stays in bundled English, which 015/FR-011 has to say
 
@@ -166,9 +179,10 @@ which is what FR-011 protects.
 
 The held content states the language it is in. The running application publishes the committed
 locale as the root language (011/FR-027), so English content standing inside it is a part in
-another language, and WCAG 2.2 AA 3.1.2 is in scope — constitution V excludes eight success
-criteria and that is not among them. The container carries the served document's language, which
-is a fact the application has rather than a sentence it writes.
+another language. Success criterion 3.1.2 is in scope: the target is WCAG 2.2 AA except 2.1.1,
+2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, and 3.1.2 is not among the eight. The
+container carries the served document's language, which is a fact the application has rather than
+a sentence it writes.
 
 No disclosure is written beside the game names in held content, and 015/FR-011a is modified in the
 same delta to say so. Read as it stands it already does: its second scenario is "A document read in
@@ -211,8 +225,10 @@ second case.
   listener to them and claims nothing about them, and `withEventReplay()` is not involved because
   nothing is being adopted.
 - **The held copy could be put back over a screen.** → It cannot: it is released at the first
-  `NavigationEnd`, and the only thing that puts it back is the failure of the navigation it was
-  taken for. The boundary is stated as a requirement and tested from both sides.
+  `NavigationEnd`, and what puts it back is a navigation ending without presenting a screen while
+  none has been presented in the session — a failure, a cancellation with nothing taking over, or a
+  replacement that ends the same way. Once a screen stands there is nothing left to put back. The
+  boundary is stated as a requirement and tested from both sides.
 - **The takeover gains work on the path that succeeds.** → One copy of one subtree, taken before
   the navigation starts and dropped when it ends. It runs before bootstrap rather than inside the
   measured window, and 015/SC-003's zero-pixel outcome is re-read rather than assumed.

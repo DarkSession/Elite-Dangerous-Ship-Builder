@@ -20,18 +20,17 @@ every address the build generates no document for, and it is also how this rule 
 answered from the cache by the shell.
 
 Held content MUST be kept as the address served it. It MUST NOT be rebuilt, recomputed or written
-again, it MUST carry the language it was served in, and the application MUST NOT present it as a
-screen it has opened.
+again, and it MUST carry the language it was served in.
 
 Putting held content back MUST be invisible, on the same terms as the takeover itself: no frame may
 be emptier than the frame before it, and the content MUST NOT blank and return. This requirement
 claims none of the three exceptions the invisible takeover names, so a removal and a restore that a
 Commander could see would breach it.
 
-A screen that is presented replaces what the address served, and holding MUST NOT delay that, move
-anything visible, or blank the page. A navigation that fails after a screen has been presented MUST
-leave the Commander on the screen they are on, and nothing the address served may be put back over
-it.
+A screen that is presented replaces what the address served, and holding MUST NOT move anything
+visible or blank the page while it does. A navigation that fails after a screen has been presented
+MUST leave the Commander on the screen they are on, and nothing the address served may be put back
+over it.
 
 Source: 023/FR-001.
 
@@ -108,8 +107,9 @@ Source: 015/FR-011.
 #### Scenario: A Commander whose committed locale is not English
 
 - **WHEN** a Commander whose committed locale is German opens a content-bearing address
+- **AND** the takeover presents a screen
 - **THEN** the document paints English content immediately
-- **AND** the takeover replaces the text with the committed locale once that catalogue arrives
+- **AND** that screen carries the committed locale's text once that catalogue arrives
 
 #### Scenario: The replacement lands
 

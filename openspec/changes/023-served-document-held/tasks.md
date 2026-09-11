@@ -63,9 +63,10 @@
       has nothing to disclose (015/FR-011, 015/FR-011a, constitution VI).
 - [ ] 2.6 Verify the held content carries the language it was served in, while the application
       around it carries the committed locale as the root language (011/FR-027). English standing
-      inside a German page is a part in another language, and WCAG 2.2 AA 3.1.2 is in scope —
-      constitution V excludes eight success criteria and that is not one of them. Assert the
-      language on the container rather than on the page (023/FR-001).
+      inside a German page is a part in another language, so success criterion 3.1.2 is in scope:
+      the target is WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
+      and 3.1.2 is not among the eight. Assert the language on the container rather than on the
+      page (023/FR-001, 011/FR-015).
 
 ## 3. The boundaries
 
@@ -123,16 +124,17 @@
       none of them, so a visible removal and return is a failure rather than a cost. Verify with
       `pnpm run e2e` in the production lane, beside the journey task 1.2 adds (023/FR-001,
       015/FR-009).
-- [ ] 4.4 Record the mismatch task 4.1 found, rather than routing around it. 011/FR-024 requires
-      the automated check to reject "a component state that has no preview"; the check is written
-      per component, so a component already declared passes with a state it does not preview. Of
-      the two, the checker is the defect: the accepted requirement is what the project wants, and
-      widening the rule needs a way to read which states a component supports, which the source
-      does not state. That is its own change against `platform/design-system` and is not this one —
-      widening a checker here would put a second capability's contract inside a change that owns
-      the takeover. Write the finding into proposal.md, Impact, naming the requirement, the gap and
-      the capability it belongs to, so it is resolved deliberately and not left standing
-      (constitution IX; 011/FR-024).
+- [ ] 4.4 Re-read the gap proposal.md, Impact, records, so the record is true when the change
+      lands rather than only when it was written. 011/FR-024's scenario is "A component state has
+      no preview", whose WHEN is "a component supports a state that has no preview" and whose THEN
+      is that the automated check rejects it; the check is written per component, so a component
+      already declared passes with a state it does not preview. Of the two the checker is the
+      defect — the accepted requirement is what the project wants — and widening it needs a way to
+      read which states a component supports, which the source does not state. That is its own
+      change against `platform/design-system`, not this one, which owns the takeover. Verify by
+      running `pnpm run policy` with task 4.1's fixture removed and seeing it pass: that is the gap,
+      and it can fail. If it now fails, the checker has been fixed since, and the Impact bullet is
+      stale and comes out (constitution IX; 011/FR-024).
 
 ## 5. Reading it end to end
 
@@ -141,12 +143,19 @@
       interactive is still 0 on all five layout profiles in both orientations, and that no frame is
       emptier than the frame before it. Verify with `pnpm run e2e` over
       `e2e/prerendered-first-frame.spec.ts` (015/FR-009, 015/SC-003).
-- [ ] 5.2 Remove the note at `e2e/prerendered-first-frame.spec.ts:575` that records FR-007's second
+- [ ] 5.2 Re-read the locale replacement this change must not disturb, which is the other branch
+      the modified 015/FR-011 creates. For a Commander whose committed locale is German at an
+      address with a generated document, where the navigation presents the screen: the document
+      paints English, the screen carries German once the catalogue arrives, and each untranslated
+      game name carries its disclosure (015/FR-011a). This is what an implementation that holds the
+      English too long would break, and task 2.5 reads only the held branch. Verify with
+      `pnpm run e2e` (015/FR-011, 015/FR-011a).
+- [ ] 5.3 Remove the note at `e2e/prerendered-first-frame.spec.ts:575` that records FR-007's second
       half as unread, because task 1.2 adds the assertion it asks for. Leave
       `openspec/changes/archive/018-navigation-loading-overlay/` alone: the archive is read and not
       extended, and its task 6.3 stands with the reason it carries. Verify by reading the journey
       back, and by `git status` showing nothing changed under `openspec/changes/archive/`.
-- [ ] 5.3 Register the change in `e2e/coverage-ledger.ts`: add `023-served-document-held` to
+- [ ] 5.4 Register the change in `e2e/coverage-ledger.ts`: add `023-served-document-held` to
       `COVERED_FEATURES`, add `023/FR-001` to the `requirements` array of the
       `prerendered/first-frame` entry, whose journey is `product/prerendered-first-frame`, and add
       the journey's assertion to that entry's `assertions` array beside "a Commander whose bundle
@@ -159,6 +168,6 @@
       only in this change's delta until the change is archived, and the check would pass with the
       registration missing. It is a regression guard for what is already accepted, and the reason
       to make the entry now is that archiving turns it into a requirement rather than a courtesy.
-- [ ] 5.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
+- [ ] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.
