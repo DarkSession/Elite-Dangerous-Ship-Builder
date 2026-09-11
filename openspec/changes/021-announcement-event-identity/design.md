@@ -318,8 +318,9 @@ layer rather than leaving where it is. The refusal is reported from the saved bu
 workspace stands underneath, so the workspace withholds its mark until the layer goes and
 speaks on the screen that draws every affected mount — stated above, under "Not while a layer
 stands over the workspace". It is the exception because the surface that names the mounts is
-outside the layer and stays after it; the other three have no surface but the one the layer
-covers.
+outside the layer and stays after it. The match count, the import outcomes and the export
+delivery have no surface but the one the layer covers; the refused edit has one, but waiting
+for its layer to go would hold the reason back from the pick it is about.
 
 So for those four, this change makes the event reach the outlet and no further. Whether a
 reader hears it is a question about where the outlets are mounted, which is 011's architecture
