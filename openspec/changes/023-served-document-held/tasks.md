@@ -145,7 +145,8 @@
       inputs alone (`projects/ui-preview/src/app/preview-app.ts`), so no component preview puts
       anything in the frame's `main`. Verify by running `pnpm run policy` with this change's code
       in place and reading that it reports nothing about `app-frame`. The composition is read
-      where it occurs instead, in the product lane, which is tasks 4.2, 4.3 and 4.4 (011/FR-004,
+      where it occurs instead, in the application rather than in the catalogue, which is tasks
+      4.2, 4.3 and 4.4 (011/FR-004,
       constitution IX).
 - [ ] 4.2 Scan the held composition where it stands, in the production lane, across the layout
       profiles the journey in task 1.2 already runs: the held content and the failure statement
@@ -213,8 +214,10 @@
       already in that entry's `requirements` array and stay there; what the modification adds is
       evidence, not a registration. Three rather than one per task, because the entry's assertions
       summarise what the journey reads rather than transcribing each test: it carries nine for a
-      file of sixteen, and the readings tasks 3.1 to 3.5, 4.2 to 4.4 and 5.1 add are instances of
-      the one the first of the three names. Verify by reading the entry back against
+      file of sixteen, and the readings tasks 3.1, 3.3, 3.4, 4.2 to 4.4 and 5.1 add to that journey
+      are instances of the one the first of the three names. Tasks 3.2 and 3.5 read in the unit
+      sequence rather than on the journey, so the ledger records nothing for them. Verify by
+      reading the entry back against
       the journey task 1.2 extends: the surface's journey name is the one that now carries the
       assertion, and the assertion text names what that journey reads. `pnpm run policy` is the
       command that can fail here — it reconciles each ledger surface and journey against the routes,

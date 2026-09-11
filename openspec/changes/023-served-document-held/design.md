@@ -71,9 +71,9 @@ holding it, and that is not a new state of `app-frame`. 011/FR-004 enumerates fi
 `main` with content in it is the frame in a state it is already previewed in. No fixture could
 show it in any case: `main` is `<ng-content />` and the catalogue renders each cell through
 `NgComponentOutlet` with inputs alone, so no component preview puts anything there. So the
-composition is scanned where it stands, in the product lane (011/FR-022), which is where a
-composition the application renders belongs. The failure statement over it is the shell's own,
-drawn exactly as it is today.
+composition is scanned where it stands, in the application rather than in the preview catalogue
+(011/FR-022), which is where a composition the application renders belongs. The failure statement
+over it is the shell's own, drawn exactly as it is today.
 
 ## Decisions
 
@@ -101,7 +101,7 @@ itself rather than a frame later" (015/FR-009a) — and it is why the container 
 frame's first render rather than something written in afterwards from an effect. A restore that
 waited for a second pass would blank the page.
 
-### The served nodes are copied before bootstrap, and the copy is what is put back
+### The served nodes are copied before the first navigation, and the copy is what is put back
 
 The copy is taken in a browser-only application initialiser registered before `provideRouter`,
 which is the position and the reason `NavigationWaitingStore` already uses: initialisers run in the
@@ -120,6 +120,12 @@ and what is put back has to be what the address served rather than a second read
 The copy is dropped when a navigation presents a screen, and it is put back whenever a navigation
 ends without presenting one. The router's first `NavigationEnd` is the end of the hold; every other
 ending leaves the copy standing.
+
+`NavigationEnd` stands for "a screen is presented" because every route in `src/app/app.routes.ts`
+carries a component to load, the wildcard included by way of the entry point it redirects to. A
+route added later that completes without activating one would end the hold with nothing presented,
+which is the requirement's words rather than the implementation's, and is where the two would part.
+The requirement is written about the screen so that such a route reads as the defect it would be.
 
 Not "the session's first navigation", which is narrower than the rule and would miss a case. A
 first navigation can be cancelled and handed over to a replacement. If the replacement ends without
@@ -210,9 +216,10 @@ as nothing — so there is no sentence, and nothing a test could read that would
 content from a screen presented over the same markup. No scenario can test it, so it is recorded
 here rather than written into the requirement.
 
-The same applies to delay. Holding costs one copy of one subtree, taken before bootstrap and
-outside the window 015/SC-003 measures, and the capability states no timing threshold anywhere that
-a requirement could be written against. What is observable is what the requirement keeps: nothing
+The same applies to delay. Holding costs one copy of one subtree, taken before the first
+navigation and painting nothing, so it adds nothing to the shift 015/SC-003 measures from first
+paint to interactive, and the capability states no timing threshold anywhere that a requirement
+could be written against. What is observable is what the requirement keeps: nothing
 visible moves and no frame is emptier than the frame before it.
 
 ### Held content stays in bundled English, which 015/FR-011 has to say
@@ -299,9 +306,10 @@ case.
 
 ## Risks / Trade-offs
 
-- **A copy of the document's content is kept in memory for the length of one navigation.** → One
-  screen's markup, released at the first `NavigationEnd`. The document it copies was already in the
-  page when the copy was taken.
+- **A copy of the document's content is kept in memory until a screen is presented.** → One
+  screen's markup, released at the first `NavigationEnd`. Where no screen is ever presented it
+  stands for the life of the page, which is the outcome the change is for: it is on screen then,
+  not merely held. The document it copies was already in the page when the copy was taken.
 - **Held content's controls are not the application's.** → They are the served document's own
   anchors, which carry addresses and navigate by loading them. That is what they did before any
   script ran, and it is what the Commander pressed a moment earlier. The application adds no
@@ -313,8 +321,8 @@ case.
   replacement that ends the same way. Once a screen stands there is nothing left to put back. The
   boundary is stated as a requirement and tested from both sides.
 - **The takeover gains work on the path that succeeds.** → One copy of one subtree, taken before
-  the navigation starts and dropped when it ends. It runs before bootstrap rather than inside the
-  measured window, and 015/SC-003's zero-pixel outcome is re-read rather than assumed.
+  the navigation starts and dropped when it ends. It paints nothing, so it moves nothing in the
+  window 015/SC-003 measures, and that zero-pixel outcome is re-read rather than assumed.
 - **Only the production lane can read this.** → It is the only lane with a generated document to
   be left on, which `e2e/prerendered-first-frame.spec.ts` already records. The development lane's
   reading of the same failure stays where it is, in `e2e/navigation-waiting.spec.ts`.

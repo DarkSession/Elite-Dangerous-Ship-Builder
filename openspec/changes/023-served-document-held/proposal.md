@@ -41,13 +41,14 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
   and no more.
 - The application frame draws one composition it does not draw today: its `main` holding content
   the address served, with the failure statement beside it. It is scanned, measured, and read at
-  200% text and 400% zoom where it stands, in the product lane. It is not a new component state:
+  200% text and 400% zoom where it stands, in the production lane. It is not a new component
+  state:
   011/FR-004 enumerates five and the frame already accounts for all five.
 
 The change declares requirement `023/FR-001`:
 
 - **FR-001** What an address served is held until a navigation presents a screen to replace it,
-  and is kept where a navigation fails before one is presented.
+  and is kept wherever a navigation ends without presenting one.
 
 One thing this change does is not a requirement of its own, because a standing requirement already
 carries it: the failure is stated on whatever the Commander is left with. That is
@@ -105,7 +106,8 @@ None.
 - `src/app/ui/previews/preview-manifest.ts` is unchanged. A frame whose `main` holds content is
   none of the five states 011/FR-004 enumerates, the frame already accounts for all five, and the
   preview catalogue renders each cell with inputs alone — so nothing it could hold would fill a
-  `main` that content is projected into. The composition is read in the product lane instead.
+  `main` that content is projected into. The composition is read in the application instead, where
+  it occurs.
 - `e2e/coverage-ledger.ts` gains the change and the new requirement id, which is what keeps the
   behaviour's coverage checked rather than merely tested.
 - `e2e/navigation-waiting.spec.ts` reads the address with no generated document, where that reading
