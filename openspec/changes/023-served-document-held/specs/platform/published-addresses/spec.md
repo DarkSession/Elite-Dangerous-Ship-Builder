@@ -11,8 +11,8 @@ failed, it was cancelled with nothing taking over, or it was cancelled and repla
 then ended without presenting a screen — MUST leave the Commander on the content the address
 served. A redirect, or an address that resolves elsewhere, is one presentation with whatever
 replaces it, so it does not spend the hold. What is said about any of those outcomes is
-`platform/navigation-waiting`, "A navigation that fails" and "The statement ends with the
-navigation", and this requirement adds nothing to either.
+`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned" and
+"The statement ends with the navigation", and this requirement adds nothing to either.
 
 Where the address served the application's own shell rather than a generated document, nothing is
 held: the shell is what the Commander keeps, because the shell is what they were given. That is
@@ -124,3 +124,36 @@ Source: 015/FR-011.
 - **THEN** that content holds the English words it was served with, untranslated and with no
   disclosure written into it
 - **AND** it states that it is in English, while the application around it states German
+
+### Requirement: The disclosure beside an untranslated game name
+
+The one thing the replacement MAY add is the disclosure that accompanies a game name shown in its
+original language. A Commander reading in a language the game's own nouns are not published in is
+told so beside each one, and in bundled English there is nothing to disclose because English is the
+original. So a document read in another language gains one such note per untranslated name and gains
+nothing else. A value shown in a language the Commander did not ask for MUST say so, so the
+disclosure MUST NOT be suppressed. This exception covers that disclosure and nothing else.
+
+The disclosure belongs to a replacement that lands. Content held because no screen was presented is
+a document standing in bundled English, where this requirement already says there is nothing to
+disclose, so the application MUST NOT write a disclosure into it. Nothing is suppressed: each name
+stands in the language of the document around it, and that document carries its language.
+
+Source: 015/FR-011a.
+
+#### Scenario: A document read in another language
+
+- **WHEN** the replacement lands in a language the game's own nouns are not published in
+- **THEN** the page gains one disclosure beside each untranslated name
+- **AND** it gains nothing else
+
+#### Scenario: A document read in English
+
+- **WHEN** a document is read in bundled English
+- **THEN** there is nothing to disclose, because English is the original
+
+#### Scenario: No replacement lands, so there is nothing to disclose
+
+- **WHEN** a Commander whose committed locale is German is left on content the address served
+- **THEN** no disclosure is written beside the game names in that content
+- **AND** the names stand in the language the held content carries

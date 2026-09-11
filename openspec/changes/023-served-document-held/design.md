@@ -50,9 +50,10 @@ second half. `023/FR-001` is not a second answer to the same question: FR-012 st
 a takeover that fails, and FR-001 states when the application may discard what an address served —
 which also governs a navigation that ends without a screen long after bootstrap succeeded.
 
-The state reaches the three content-bearing screens, which are the addresses the build generates a
-document for (015/FR-018, "Which addresses get a document"): the start page, the hull catalogue
-and a hull's own page. It satisfies `023/FR-001`.
+The state reaches the three content-bearing screens: the start page, the hull catalogue and a
+hull's own page. Those three stand at the 50 addresses the build generates a document for — the
+root, the catalogue and each of the 48 hulls (015/FR-018, "Which addresses get a document"). It
+satisfies `023/FR-001`.
 
 What stands in that state is the generated document's own markup. It is already laid out for its
 viewport (015/FR-010), already scanned as a generated first frame (015/FR-019) and already written
@@ -110,10 +111,15 @@ ending leaves the copy standing.
 Not "the session's first navigation", which is narrower than the rule and would miss a case. A
 first navigation can be cancelled and handed over to a replacement — a redirect, or an address
 that resolves elsewhere and lands at the entry point
-(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve") — and
-018/FR-005 treats the pair as one presentation. If the replacement ends without a screen, no screen
-has been presented and the Commander is owed what the address served, but the navigation that
-ended is not the first one.
+(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"). If the
+replacement ends without a screen, no screen has been presented and the Commander is owed what the
+address served, but the navigation that ended is not the first one.
+
+That the pair counts once is this change's own rule, stated in `023/FR-001` and nowhere else. The
+nearest accepted requirement, 018/FR-005, reaches the same pair for a different purpose — one
+waiting statement stands across the two rather than blinking out and back — and says nothing about
+what the Commander is left on. The shapes agree, which is why the rule is written this way, but
+018/FR-005 does not carry it.
 
 Not `NavigationError` either, which is narrower again. `platform/navigation-waiting` names a third
 outcome: a navigation cancelled with nothing taking over (018/FR-005, "The navigation is cancelled
@@ -161,17 +167,35 @@ another language, and WCAG 2.2 AA 3.1.2 is in scope — constitution V excludes 
 criteria and that is not among them. The container carries the served document's language, which
 is a fact the application has rather than a sentence it writes.
 
-Alternative considered: telling them the content is in English, the way 015/FR-011a discloses an
-untranslated game name. Rejected because a document is served in bundled English to every
-Commander by design, and this one has been reading it since before any script ran. FR-011a covers
-names inside a replacement that lands; here none lands, and a note about it would be a new sentence
-in a change that adds no words.
+No disclosure is written beside the game names in held content, and 015/FR-011a is modified in the
+same delta to say so. Read as it stands it already does: its second scenario is "A document read in
+bundled English", where "there is nothing to disclose, because English is the original", and held
+content is exactly that. But the same requirement says the disclosure "MUST NOT be suppressed", and
+a reader who reaches that sentence first would find two rules in one file pointing opposite ways —
+the condition this change already refuses to leave standing for 015/FR-011. So the boundary is
+written into the requirement rather than left in a design note: the disclosure belongs to a
+replacement that lands, and where none lands nothing is suppressed, because each name stands in the
+language of the document around it and that document carries its language.
+
+`platform/localisation`, "Game text from the Almanac" (011/FR-020), is not touched. It governs game
+text the application requests from the package and shows; for held content the application requests
+none. What the Commander is reading is the document the address served, whose disclosure story
+`platform/published-addresses` already owns — as it does for the head (011/FR-027).
 
 ### Development has nothing to hold
 
 No document is generated on a development server, so the copy is empty and the Commander is left on
-the shell — which is what that address served, and what "An address with no generated document"
-(015/FR-015) already says they get. The behaviour is one rule, not two: hold what was served.
+the shell — which is what that address served, and what 018/FR-007's scenario "The first navigation
+fails at an address with no generated document" already says they get: "the Commander is left on
+the application's own shell rather than on nothing". The behaviour is one rule, not two: hold
+what was served.
+
+015/FR-015, "An address with no generated document", is the neighbouring requirement and is not the
+one that settles this. It says such an address still works when the navigation succeeds; it says
+nothing about one that fails. It is also written for the two bench addresses in a production build,
+where the development server has no generated document at any address at all — the same conclusion
+over a wider set, which is why the rule is stated as holding what was served rather than as a
+second case.
 
 ## Risks / Trade-offs
 

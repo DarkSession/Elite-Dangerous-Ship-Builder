@@ -6,8 +6,9 @@ browser paints a readable ship list before any script runs. The application boot
 the first navigation fails. The list is gone, and what is left is the shell — the banner, the tool
 links and a notice saying the screen could not be opened.
 
-`platform/navigation-waiting`, "A navigation that fails" (018/FR-007) already states what should
-happen: "the Commander is left on the readable document that address served". The failure is
+`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned"
+(018/FR-007), already states what should happen: "the Commander is left on the readable document
+that address served". The failure is
 stated, so the first half holds. The second half does not. The scenario below it, for an address
 the build generates no document for, describes what a Commander gets today at an address that has
 one — and the shell is the right answer only where there is nothing else.
@@ -48,13 +49,19 @@ The change declares requirement `023/FR-001`:
 
 One thing this change does is not a requirement of its own, because a standing requirement already
 carries it: the failure is stated on whatever the Commander is left with. That is
-`platform/navigation-waiting`, "A navigation that fails" (018/FR-007). The delta says nothing about
+`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned"
+(018/FR-007). The delta says nothing about
 the statement, so the two cannot drift; what this change alters is what the Commander is left with,
 which is the half of that requirement the application does not meet.
 
 `015/FR-011`, "Bundled English, replaced by the committed locale", is modified in the same delta.
 Read as accepted it requires the committed locale to replace the text of held content, which the
 application cannot do without the screen's code — the thing that failed to arrive.
+
+`015/FR-011a`, "The disclosure beside an untranslated game name", is modified beside it, for the
+same reason. It already says a document read in bundled English has nothing to disclose, which is
+what held content is, but it also says the disclosure "MUST NOT be suppressed". The boundary
+between the two is written into the requirement rather than left for a reader to draw.
 
 ## Capabilities
 
@@ -72,7 +79,9 @@ None.
   015/FR-012 true at an address with a generated document. In the same delta, "Bundled English,
   replaced by the committed locale" (015/FR-011) is modified to say that the replacement is
   carried by the screen the application presents, so held content stays in the English it was
-  served in.
+  served in, and "The disclosure beside an untranslated game name" (015/FR-011a) is modified to
+  say that the disclosure belongs to a replacement that lands, so none is written into held
+  content.
 
 ## Impact
 

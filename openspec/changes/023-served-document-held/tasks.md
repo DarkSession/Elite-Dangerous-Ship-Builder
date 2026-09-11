@@ -55,8 +55,9 @@
       translated text and no disclosure has been written into them, and that the failure statement
       beside it is in German because that sentence is the shell's own. The catalogue is applied by
       rendering the screen, and the screen is what did not arrive, so there is nothing that can
-      apply it and nothing the application may write in its place (015/FR-011, constitution IV
-      and VI).
+      apply it and nothing the application may write in its place. The absent disclosure is the
+      delta's own rule rather than an omission: 015/FR-011a says a document read in bundled English
+      has nothing to disclose (015/FR-011, 015/FR-011a, constitution IV and VI).
 - [ ] 2.6 Verify the held content carries the language it was served in, while the application
       around it carries the committed locale as the root language (011/FR-027). English standing
       inside a German page is a part in another language, and WCAG 2.2 AA 3.1.2 is in scope —
@@ -70,13 +71,17 @@
       answer a failure, so it is stated as its own test rather than folded into 2.4 (023/FR-001,
       018/FR-007).
 - [ ] 3.2 Verify a first navigation that is cancelled or redirected, and whose replacement then
-      fails, still leaves the Commander on what the address served. The pair is one presentation
-      (018/FR-005), so the hold is not spent by the cancellation. This is the case a rule written
-      about the session's first navigation would miss (023/FR-001).
+      fails, still leaves the Commander on what the address served: the pair counts as one
+      presentation, so the cancellation does not spend the hold. That rule is `023/FR-001`'s own —
+      018/FR-005 reaches the same pair only to keep one waiting statement standing across it, and
+      says nothing about what the Commander is left on. This is the case a rule written about the
+      session's first navigation would miss (023/FR-001).
 - [ ] 3.3 Verify an address the build generates no document for is unaffected: nothing is held, and
       a failed first navigation leaves the Commander on the shell, which is what that address
-      served. Read it where it already reads, in `e2e/navigation-waiting.spec.ts` on the
-      development lane, and assert no held container is drawn (023/FR-001, 015/FR-015).
+      served and what 018/FR-007's scenario "The first navigation fails at an address with no
+      generated document" already requires. Read it where it already reads, in
+      `e2e/navigation-waiting.spec.ts` on the development lane, and assert no held container is
+      drawn (023/FR-001, 018/FR-007).
 - [ ] 3.4 Verify held content is kept as the address served it: the same nodes, with no figure
       recomputed and no sentence written for it. Assert the held markup matches what the document
       carried before bootstrap, so a later rewrite into a re-rendering fails here. The figures in
@@ -88,8 +93,11 @@
 - [ ] 4.1 Declare the frame's held state in `src/app/ui/previews/preview-manifest.ts`, with a
       fixture standing in for the content an address served, so the state previews at desktop,
       tablet and mobile widths like every other state the frame supports. Verify with
-      `pnpm run policy`, which rejects a component state with no preview and no stated reason
-      (011/FR-004, 011/FR-024).
+      `pnpm run e2e` over `e2e/ui-preview.spec.ts`, which renders every registered state at its
+      own address across the layout profiles and scans each one: a state that is declared is read,
+      and one that is not declared is read nowhere. Do not verify this with `pnpm run policy`. Its
+      preview rule is written per component rather than per state, and `AppFrame` is already
+      declared, so it passes whether or not this fixture exists (011/FR-004, 011/FR-024).
 - [ ] 4.2 Scan the held state where it stands, in the production lane, across the layout profiles
       the journey in task 1.2 already runs: the held content and the failure statement together,
       asserted to report no in-scope violation. The existing scans reach the generated first frame
