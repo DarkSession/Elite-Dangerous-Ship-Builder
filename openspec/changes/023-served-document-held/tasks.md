@@ -182,9 +182,11 @@
       frame, where no statement stands beside the content, and the responsive journeys never reach
       it. Change 018 read its own standing state the same way for the same reason
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Read completeness
-      as boxes rather than as text: `innerText` reports content that is covered as readily as
-      content that is not, so the reading task 2.3 adds is what fails on content held under the
-      statement. Verify with `pnpm run e2e:offline` (011/FR-011, 011/SC-003).
+      as boxes as well as as text, at both conditions: `innerText` reports content that is covered
+      as readily as content that is not, so the reading task 2.3 adds is what fails on content held
+      under the statement — and a statement is a larger share of the window the larger the words in
+      it are, so the condition it is worst at is one of these two. Verify with
+      `pnpm run e2e:offline` (011/FR-011, 011/SC-003).
 
 ## 5. Reading it end to end
 
@@ -218,29 +220,30 @@
       `COVERED_FEATURES`, add `023/FR-001` to the `requirements` array of the
       `prerendered/first-frame` entry, whose journey is `product/prerendered-first-frame`, and add
       the new readings to that entry's `assertions` array beside "a Commander whose bundle never
-      arrives is left with the readable document" — which reads a different case and stays as it
-      is: it blocks the bundle so the application never boots, where this change is about a chunk
-      that never arrives after it has. One assertion for task 1.2's reading, and one each for tasks
-      2.5 and 2.6, which are the new readings of `015/FR-011` and `015/FR-011a`. Those two ids are
+      arrives is left with the readable document" — which reads a different case and stays as it is:
+      it blocks the bundle so the application never boots, where this change is about a chunk that
+      never arrives after it has. One assertion for task 1.2's reading, and one each for tasks 2.5
+      and 2.6, which are the new readings of `015/FR-011` and `015/FR-011a`. Those two ids are
       already in that entry's `requirements` array and stay there; what the modification adds is
-      evidence, not a registration. Three rather than one per task, because the entry's assertions
+      evidence, not a registration. Two more for the readings that hold the composition itself: the
+      box the content is put back into, and the statement standing where it can be read over nothing
+      the Commander was given. Five rather than one per task, because the entry's assertions
       summarise what the journey reads rather than transcribing each test: it carries nine for a
       file of sixteen, and the readings tasks 3.1, 3.3, 3.4, 4.2 to 4.4 and 5.1 add to that journey
-      are instances of the one the first of the three names. Tasks 3.2 and 3.5 read in the unit
-      sequence rather than on the journey, so the ledger records nothing for them. Verify by
-      reading the entry back against
-      the journey task 1.2 extends: the surface's journey name is the one that now carries the
-      assertion, and the assertion text names what that journey reads. `pnpm run policy` is the
-      command that can fail here — it reconciles each ledger surface and journey against the routes,
-      the previews and the configured Playwright projects. `pnpm run policy:specs` cannot: it
-      requires every id declared in `openspec/specs/` to be registered, `023/FR-001` is declared
-      only in this change's delta until the change is archived, and the check would pass with the
-      registration missing. It is a regression guard for what is already accepted, and the reason
-      to make the entry now is that archiving turns it into a requirement rather than a courtesy.
-      One surface carries the id, because task 3.3 now reads the shell scenario on the production
-      journey too. Do not register it against the development-lane reading in
-      `e2e/navigation-waiting.spec.ts`: that reading passes however the adapter behaves, as task
-      3.3 says, and registering it would enter evidence that cannot fail.
+      are instances of the reading the first of those five names. Tasks 3.2 and 3.5 read in the unit
+      sequence rather than on the journey, so the ledger records nothing for them. Verify by reading
+      the entry back against the journey task 1.2 extends: the surface's journey name is the one
+      that now carries the assertion, and the assertion text names what that journey reads.
+      `pnpm run policy` is the command that can fail here — it reconciles each ledger surface and
+      journey against the routes, the previews and the configured Playwright projects.
+      `pnpm run policy:specs` cannot: it requires every id declared in `openspec/specs/` to be
+      registered, `023/FR-001` is declared only in this change's delta until the change is archived,
+      and the check would pass with the registration missing. It is a regression guard for what is
+      already accepted, and the reason to make the entry now is that archiving turns it into a
+      requirement rather than a courtesy. One surface carries the id, because task 3.3 now reads the
+      shell scenario on the production journey too. Do not register it against the development-lane
+      reading in `e2e/navigation-waiting.spec.ts`: that reading passes however the adapter behaves,
+      as task 3.3 says, and registering it would enter evidence that cannot fail.
 - [x] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.

@@ -54,7 +54,7 @@ describe('ServedDocumentStore', () => {
         { provide: Router, useValue: { events } as unknown as Router },
         {
           provide: ServedContentAdapter,
-          useValue: { held: true, content: served, language: 'en' },
+          useValue: { held: true, content: served, language: 'en', height: 512 },
         },
       ],
     });

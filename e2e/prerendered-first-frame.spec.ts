@@ -807,6 +807,53 @@ function nothingTheCommanderIsReadingMoved(window: readonly Frame[]): void {
 }
 
 /**
+ * Asserts the failure statement can be read where it stands, and stands over
+ * nothing the Commander was given.
+ *
+ * Read at the end of the scroll range, which is where both questions are
+ * decided: the page is as long as the content and the statement together, so
+ * this is where the statement stands, and a statement standing over the content
+ * holds the last of it down there for good — there is no further scrolling that
+ * could move it off.
+ *
+ * Read as boxes and as the document's own answer to "what is at this point",
+ * because nothing else can fail on it. Playwright's visibility is geometry and a
+ * style, and `innerText` reports text that is covered as readily as text that is
+ * not — so a statement painted behind the page, and content standing under a
+ * statement, both pass those (011/FR-011, 018/FR-007, constitution V).
+ */
+async function nothingStandsOverAnythingElse(page: Page, at: string): Promise<void> {
+  const [covering, held, stated] = await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    const notice = document.querySelector('.frame__status');
+    const last = document.querySelector('.frame__held')?.lastElementChild ?? null;
+    if (!notice) {
+      return [-1, null, null] as const;
+    }
+
+    const box = notice.getBoundingClientRect();
+    const across = [0.2, 0.5, 0.8].map((part) => box.x + box.width * part);
+    const down = [0.25, 0.5, 0.75].map((part) => box.y + box.height * part);
+    const blocked = across
+      .flatMap((x) => down.map((y) => document.elementFromPoint(x, y)))
+      .filter((found) => found === null || !found.closest('.frame__status')).length;
+    const rect = (node: Element | null) =>
+      node
+        ? ([node.getBoundingClientRect().top, node.getBoundingClientRect().bottom] as const)
+        : null;
+    return [blocked, rect(last), rect(notice)] as const;
+  });
+
+  expect(stated, `the failure was never stated at ${at}`).not.toBeNull();
+  expect(held, `nothing was held to read at ${at}`).not.toBeNull();
+  expect(covering, `the statement cannot be read where it stands at ${at}`).toBe(0);
+  expect(
+    held![0] < stated![1] && stated![0] < held![1],
+    `the statement stands over the end of the held content at ${at}`,
+  ).toBe(false);
+}
+
+/**
  * The boundaries of the hold, read where it actually happens.
  *
  * What is held, what is not, and that what goes back is what was served rather
@@ -964,38 +1011,7 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       reach: reachTheEntryPoint,
     });
 
-    // Read at the end of the scroll range, which is where both questions are
-    // decided: the page is as long as the content and the statement together,
-    // so this is where the statement stands and where a statement that stood
-    // over the content would hold the last of it down for good.
-    const [covering, held, stated] = await fresh.evaluate(() => {
-      window.scrollTo(0, document.documentElement.scrollHeight);
-      const notice = document.querySelector('.frame__status');
-      const last = document.querySelector('.frame__held')?.lastElementChild ?? null;
-      if (!notice) {
-        return [-1, null, null] as const;
-      }
-
-      const box = notice.getBoundingClientRect();
-      const across = [0.2, 0.5, 0.8].map((part) => box.x + box.width * part);
-      const down = [0.25, 0.5, 0.75].map((part) => box.y + box.height * part);
-      const blocked = across
-        .flatMap((x) => down.map((y) => document.elementFromPoint(x, y)))
-        .filter((found) => found === null || !found.closest('.frame__status')).length;
-      const rect = (node: Element | null) =>
-        node
-          ? ([node.getBoundingClientRect().top, node.getBoundingClientRect().bottom] as const)
-          : null;
-      return [blocked, rect(last), rect(notice)] as const;
-    });
-
-    expect(stated, 'the failure was never stated').not.toBeNull();
-    expect(held, 'nothing was held to read').not.toBeNull();
-    expect(covering, 'the statement cannot be read where it stands').toBe(0);
-    expect(
-      held![0] < stated![1] && stated![0] < held![1],
-      'the statement stands over the end of the held content',
-    ).toBe(false);
+    await nothingStandsOverAnythingElse(fresh, 'the entry point');
     await context.close();
   });
 
@@ -1039,6 +1055,12 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
     ).toBeVisible();
     await expectNoDocumentOverflow(fresh);
+
+    // Completeness as boxes as well as as text, and at this size rather than
+    // only at the default one: a statement is a larger share of the window the
+    // larger the words in it are, so this condition is where content standing
+    // under one is worst.
+    await nothingStandsOverAnythingElse(fresh, 'a doubled text size');
     await context.close();
   });
 
@@ -1056,6 +1078,12 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
     ).toBeVisible();
     await expectNoDocumentOverflow(fresh);
+
+    // And the same reading at the condition that makes it hardest. The window
+    // is 320x256 here, where a statement is close to half of what a Commander
+    // can see at once — so content standing under one loses most of the page
+    // (constitution V).
+    await nothingStandsOverAnythingElse(fresh, '400% zoom');
     await context.close();
   });
 });

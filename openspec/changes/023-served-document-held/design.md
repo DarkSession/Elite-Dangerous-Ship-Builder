@@ -236,7 +236,7 @@ refuse. The frame therefore stays the only thing that writes its own structure, 
 stays the only thing that owns the copy.
 
 Nothing about the container claims the content is a screen the application opened, and that stays
-here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands over
+here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands beside
 the content and says so. Where one is cancelled, the same requirement says a cancellation is stated
 as nothing — so there is no sentence, and nothing a test could read that would distinguish held
 content from a screen presented over the same markup. No scenario can test it, so it is recorded

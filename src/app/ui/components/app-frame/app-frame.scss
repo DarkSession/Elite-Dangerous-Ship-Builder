@@ -495,6 +495,13 @@
 // neither that the takeover will fail nor how tall the sentence would be, and
 // 015/FR-010 forbids it deciding the first frame on what it cannot know.
 //
+// Safe to reorder because this block is text and nothing else. A reader meets
+// it in document order, and success criterion 1.3.2 is about that order rather
+// than about the boxes; 2.4.3 is one of the eight this project excludes, and
+// there is nothing in the block to reach anyway. A control added to a standing
+// notice — a dismissal, a retry — would be reached before the content it
+// visually follows, and would need this decided again.
+//
 // In the flow rather than over the content. A statement standing over it hides
 // the end of what the Commander is reading for as long as the page lasts, and
 // on a page that does not scroll it can never be moved off — the start page's
@@ -572,13 +579,15 @@
 // `/` at 1440x900 that is the band at y=469 against the y=848 it was served at,
 // which is content the Commander can see moving.
 //
-// The floor the frame is handed is the other half of it, and the `min-block-size`
-// here is only the default for a frame handed none: the statement below takes
-// its own height out of the shell, so the box this stretches to is shorter than
-// the box the content was served in by exactly that much. The served height is
-// measured from the served document and stood in directly (`app-frame.html`),
-// which makes the page taller than the window by the height of the statement —
-// the page growing at the end rather than anything moving.
+// Stretching is only half of it, because the statement below takes its own
+// height out of the shell: the box this stretches to is shorter than the box
+// the content was served in by exactly that much. The other half is the floor
+// the frame is handed — the height the served document's own `main` had,
+// measured before anything moved and set on the element (`app-frame.html`).
+// It arrives with the nodes and is never absent while this box exists, so the
+// box is the one the content was served in and the page is taller than the
+// window by the height of the statement — the page growing at its end rather
+// than anything moving.
 //
 // Nothing is lost by it. The container carries no role and says nothing; it
 // exists so the frame has somewhere of its own to place nodes it was handed,
@@ -587,10 +596,4 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-
-  // The floor a flex item is given by default is its content, and a screen
-  // that scrolls inside itself needs that floor removed to be given the box
-  // rather than to grow past it. The same declaration the start page's own
-  // host carries.
-  min-block-size: 0;
 }
