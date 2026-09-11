@@ -118,7 +118,7 @@ the fact the presenter needed and the number never carried.
 | `hull-anatomy.ts`                                       | nothing                                             | Announces at the transition. `#transition` goes with the field.                                |
 | `app.ts` navigation failure                             | nothing                                             | The effect runs once per failure.                                                              |
 | `app.ts` update notice                                  | remembers the version it announced                  | Its effect watches the overlay as well as the version, so one version can re-run it.           |
-| `app-frame.ts` locale fallback                          | nothing                                             | The same.                                                                                      |
+| `app-frame.ts` locale fallback                          | nothing                                             | The locale snapshot is the event, and the effect reads nothing else.                           |
 | `slef.presenter.ts` delivery                            | nothing                                             | Every delivery is an outcome a Commander asked for.                                            |
 | `slef.presenter.ts` accepted, stored and refused import | nothing                                             | A withdrawn submit is its own outcome kind, and no branch announces it.                        |
 | `slef.presenter.ts` scan                                | announces the outcome only when the scan settled    | Its outcome can arrive after a second scan started.                                            |
@@ -226,6 +226,17 @@ and the notice says `announced` once it has spoken so the store can clear the ma
 counts the lines because that is a rule about what is drawn; the store remembers because the
 memory has to outlive a component the next visit rebuilds. It is the same shape `app.ts` uses
 for the update notice: the caller keeps what it announced, because the policy no longer can.
+
+Only the surface that speaks a refusal clears its mark. `RecordOpenService.open` has a second
+caller — the saved builds layer, which draws its own alert over the record that was refused —
+and clearing the mark from there looks tempting: the Commander has been told, and arriving at
+the workspace afterwards would tell them again. It is wrong twice over. The layer runs while
+the workspace may be mounted underneath it, and it clears the mark in the same tick the refusal
+is reported, before the notice's effect has run — so the surface that draws every affected
+mount is silenced by the surface that named none of them. And a Commander who closes the layer
+and goes to the workspace is not meeting initial content there: it is the first thing that
+screen has said about a refusal they caused a moment ago. Two surfaces saying one refusal in
+their own words is the lesser fault, and the only one of the two that is not a silence.
 
 It also keeps one count in one place. `outfitting.notice.announced` says how many lines there
 are to read, and the wrapper that builds the lines is what counts them.

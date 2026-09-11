@@ -113,9 +113,12 @@ None.
   unit suite beside each announcing file reads the locale silence instead.
 - `e2e/manual/screen-reader.protocol.md` gains the two journeys no scan can judge, and
   `e2e/manual/results/` gains their record.
-- `src/app/i18n/locales/en.json` and `de.json` gain three keys per import layer: the "was not
-  saved" sentence in its two counted forms, and the joiner that puts it after the stored count.
-  A batch reporting two outcomes states both, and the announcement had no words for the second.
+- `src/app/i18n/locales/en.json` and `de.json` gain four keys per import layer and lose one. A
+  batch reporting two outcomes states both, and the announcement had no words for the second:
+  the "was not saved" sentence in its two counted forms, and the joiner that puts it after the
+  stored count. A scan that settled on a refusal says what refused it, which is the fourth. The
+  one that goes is "nothing was found", which no scan can reach: every empty scan comes back a
+  refusal.
 - No screen changes, and nothing already drawn changes its words. What changes is which events
   reach the outlet, and the one sentence a batch says out loud.
 - Four of the seven sites publish while a modal layer stands, and the outlets are mounted in the

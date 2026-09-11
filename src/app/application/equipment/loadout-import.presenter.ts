@@ -132,22 +132,25 @@ export class LoadoutImportPresenter {
     // (constitution IV, 016/FR-004).
     const failure = this.#store.failure();
     if (failure !== null) {
-      this.#announce('equipment.import.announce.scanFailed', {
-        reason: this.#failureMessage(failure),
+      this.#announcements.announce({
+        kind: 'equipment.import.scan',
+        urgency: 'polite',
+        messageKey: 'equipment.import.announce.scanFailed',
+        params: { reason: this.#failureMessage(failure) },
       });
       return;
     }
 
+    // The same as the ship tool's: a scan that came back with nothing came back
+    // with a refusal, which the branch above answered.
     const found = this.#store.entries().length;
     this.#announcements.announce({
       kind: 'equipment.import.scan',
       urgency: 'polite',
       messageKey:
-        found === 0
-          ? 'equipment.import.announce.scanned.none'
-          : found === 1
-            ? 'equipment.import.announce.scanned.one'
-            : 'equipment.import.announce.scanned.many',
+        found === 1
+          ? 'equipment.import.announce.scanned.one'
+          : 'equipment.import.announce.scanned.many',
       params: { count: this.#formatters.integer(found) },
     });
   }

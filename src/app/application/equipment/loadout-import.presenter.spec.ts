@@ -111,6 +111,29 @@ describe('LoadoutImportPresenter announcements', () => {
     expect(announcements.polite()).toBe('2 loadouts found. Choose one or more.');
   });
 
+  it('says what refused a scan, in the sentence the panel states it in', async () => {
+    await presenter.scanFiles([journalFile('Journal.01.log', ['{"event":"Docked"}'])]);
+
+    expect(announcements.polite()).toBe('No suit loadout event was found in Journal.01.log.');
+  });
+
+  it('never says a file held nothing when it was never read', async () => {
+    // A file over the size limit is refused before it is opened. Reporting the
+    // empty list it left behind would state an outcome nobody reached
+    // (constitution IV).
+    const enormous = {
+      name: 'Journal.big.log',
+      size: 64 * 1024 * 1024,
+      text: () => Promise.resolve(''),
+    };
+
+    await presenter.scanFiles([enormous]);
+
+    const spoken = announcements.polite();
+    expect(spoken).toContain('Journal.big.log');
+    expect(spoken).not.toContain('Nothing was found');
+  });
+
   it('says nothing about the outcome of a scan a newer one replaced', async () => {
     let release: (text: string) => void = () => {};
     const slow: JournalFile = {

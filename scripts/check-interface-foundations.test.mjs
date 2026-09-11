@@ -622,6 +622,43 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
+  it('rejects a message resolved inside a template interpolation', () => {
+    // A template's interpolations are code. Blanking them with the text would
+    // hide the same catalogue read behind two characters.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const label = `${this.#messages.message("x")} to read`;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { label } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('accepts a template whose text describes the rule', () => {
+    // The text around an interpolation is still text, and a sentence naming
+    // the thing the rule rejects must not be the thing that fails the build.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const label = `this.#messages.message("x") is what rule 3 rejects`;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { label } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('accepts the same member read inside the untracked call', () => {
     const found = rules.announcementViolations(
       'a.ts',

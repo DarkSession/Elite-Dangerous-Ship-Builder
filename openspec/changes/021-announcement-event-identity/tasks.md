@@ -66,13 +66,17 @@
 - [x] 4.1 Answer from `SlefImportCoordinator.scanFiles` whether the scan settled, and announce
       the outcome only then. A scan that settled on a refusal says what refused it, in the
       sentence the panel states it in: a file over the size limit was never read, and "Nothing
-      was found to import." states an outcome nobody reached. Verify two scans in flight
-      announce the second scan's outcome and not the abandoned one, and that an oversized file
-      is never reported as holding nothing (011/FR-009, constitution IV).
+      was found to import." states an outcome nobody reached. That sentence goes from both
+      catalogues with the branch that spoke it, which no scan can reach — `scanJournalFiles`
+      reports every empty outcome as a refusal. Verify two scans in flight announce the second
+      scan's outcome and not the abandoned one, and that an oversized file is never reported as
+      holding nothing (011/FR-009, constitution IV).
 - [x] 4.2 Do the same in `loadout-import.coordinator.ts`, including the refused scan's own
-      sentence, and drop the tokens from `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said
+      sentence under the scan's own event id, and drop the tokens from
+      `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said
       only the stored count and never the refusal. Verify its spec reads that a superseded scan
-      announces nothing, that a batch saving one loadout and refusing another states both, and
+      announces nothing, what a refused scan says, that an oversized file is never reported as
+      holding nothing, that a batch saving one loadout and refusing another states both, and
       that a batch saving none never says the rest were saved (011/FR-009, constitution IV).
 - [x] 4.3 `app-frame.ts` announces with no declaration. Verify its spec reads that a re-render
       publishes nothing and a new locale snapshot publishes once (011/FR-009).

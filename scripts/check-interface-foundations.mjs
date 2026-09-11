@@ -1035,10 +1035,34 @@ function maskedSource(source) {
       continue;
     }
     if (character === "'" || character === '"' || character === '`') {
+      // A template literal's interpolations are code, and the rules read them:
+      // a message resolved inside `${…}` is the same catalogue read as one
+      // resolved on its own line. Its text is blanked around them.
+      const template = character === '`';
       let end = index + 1;
+      let text = index + 1;
+      let nesting = 0;
       while (end < source.length) {
         if (source[end] === '\\') {
           end += 2;
+          continue;
+        }
+        if (template && nesting === 0 && source[end] === '$' && source[end + 1] === '{') {
+          blank(text, end);
+          nesting = 1;
+          end += 2;
+          continue;
+        }
+        if (template && nesting > 0) {
+          if (source[end] === '{') {
+            nesting += 1;
+          } else if (source[end] === '}') {
+            nesting -= 1;
+            if (nesting === 0) {
+              text = end + 1;
+            }
+          }
+          end += 1;
           continue;
         }
         if (source[end] === character) {
@@ -1046,8 +1070,9 @@ function maskedSource(source) {
         }
         end += 1;
       }
-      blank(index + 1, Math.min(end, source.length));
-      index = Math.min(end, source.length);
+      const stop = Math.min(end, source.length);
+      blank(nesting === 0 ? text : stop, stop);
+      index = stop;
       continue;
     }
     if (character === '/' && opensRegex(index)) {

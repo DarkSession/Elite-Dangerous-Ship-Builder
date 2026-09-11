@@ -286,16 +286,16 @@ export class SlefPresenter {
       return;
     }
 
+    // Every scan that came back with nothing came back with a refusal, which
+    // the branch above answered: `scanJournalFiles` reports no files, a file
+    // over the limit and no loadout event as refusals rather than as an empty
+    // list. So what is left here found something.
     const found = this.#store.journalEntries().length;
     this.#announcements.announce({
       kind: 'slef.import.scan',
       urgency: 'polite',
       messageKey:
-        found === 0
-          ? 'slef.import.announce.scanned.none'
-          : found === 1
-            ? 'slef.import.announce.scanned.one'
-            : 'slef.import.announce.scanned.many',
+        found === 1 ? 'slef.import.announce.scanned.one' : 'slef.import.announce.scanned.many',
       params: { count: this.#formatters.integer(found) },
     });
   }
