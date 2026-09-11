@@ -88,13 +88,13 @@ None.
 - `src/app/app.config.ts` and a new adapter under `src/app/platform/browser/` gain the hold, beside
   the other adapters that own a piece of the document. It belongs with the takeover it is part of,
   not inside a screen.
-- `src/app/ui/components/app-frame/` receives the held content where the outlet stands. Nothing it
-  draws changes otherwise.
+- `src/app/ui/components/app-frame/` receives the held content where the outlet stands. It draws
+  the same banner, tool links and standing notices it draws today, and the failure statement is one
+  of those notices. Where that statement stands relative to the held content decides whether the
+  restore moves anything the Commander can see, which design.md, "The failure statement stands
+  above the content, and that is a move", records and task 4.3 answers.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
-  fixes; what changes is the takeover it describes. One line of its prose reads the document the
-  build generates and the document the address served as the same thing, which 015/FR-014 already
-  separates for a returning Commander with no network. That is recorded in design.md,
-  "Development has nothing to hold", and is not this change's to close.
+  fixes; what changes is the takeover it describes.
 - `src/app/ui/previews/preview-manifest.ts` gains the frame's held state, which is what keeps the
   state previewed at the three widths (011/FR-004).
 - `e2e/coverage-ledger.ts` gains the change and the new requirement id, which is what keeps the

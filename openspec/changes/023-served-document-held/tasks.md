@@ -83,9 +83,13 @@
 - [ ] 3.3 Verify an address the build generates no document for is unaffected: nothing is held, and
       a failed first navigation leaves the Commander on the shell, which is what that address
       served and what 018/FR-007's scenario "The first navigation fails at an address with no
-      generated document" already requires. Read it where it already reads, in
-      `e2e/navigation-waiting.spec.ts` on the development lane, and assert no held container is
-      drawn (023/FR-001, 018/FR-007).
+      generated document" already requires. Read it on the production lane, at one of the two bench
+      addresses 015/FR-018 names — `/outfitting` or `/equipment` — because that is where a build
+      serves documents at other addresses and a shell at this one, so a reading there can fail. The
+      development lane generates no document anywhere, so its copy is empty at every address and
+      the same assertion passes however the adapter behaves; keep that reading where it already
+      stands in `e2e/navigation-waiting.spec.ts`, and add the bench one beside the journey task 1.2
+      extends. Assert no held container is drawn (023/FR-001, 018/FR-007, 015/FR-018).
 - [ ] 3.4 Verify held content is kept as the address served it: the same nodes, with no figure
       recomputed and no sentence written for it. Assert the held markup matches what the document
       carried before bootstrap, so a later rewrite into a re-rendering fails here. The figures in
@@ -94,9 +98,10 @@
 - [ ] 3.5 Verify a first navigation cancelled with nothing taking over leaves the Commander on what
       the address served. Nothing is stated over it, because a cancellation is not a failure
       (018/FR-007, "A navigation that is cancelled, and one that is redirected to another address,
-      are not failures and MUST be stated as nothing"), and the waiting statement is removed
-      (018/FR-005, scenario "The navigation is cancelled with nothing taking over"), so what the
-      Commander is left on is the served content and nothing else. This is the case that separates
+      are not failures and MUST be stated as nothing"). No waiting statement is removed either,
+      because none was drawn: 018/FR-008 says "the first presentation of a session MUST NOT be
+      covered by it", and this is that presentation. So what the Commander is left on is the served
+      content and nothing else. This is the case that separates
       counting screens presented from counting errors raised: an implementation restoring only on
       `NavigationError` passes every other test in this change and fails this one (023/FR-001).
 
@@ -125,10 +130,13 @@
       content standing is emptier than the frame before it, and that the content does not blank and
       return. Read the movement against the failure statement landing beside the content, which is
       what this change stands in the same place for the first time: a statement that pushes the
-      content down the page is a move. 015/FR-009 admits three exceptions and this claims none of
-      them, so a visible move, removal or return is a failure rather than a cost. Verify with
-      `pnpm run e2e` in the production lane, beside the journey task 1.2 adds (023/FR-001,
-      015/FR-009).
+      content down the page is a move. The frame draws its standing notices above the `main` the
+      outlet sits in, so this is the likely reading to fail, and answering it is part of this task:
+      either the space the statement occupies exists before the statement does, or the statement
+      stands where it does not displace the content. 015/FR-009 admits three exceptions and this
+      claims none of them, so a fourth is not available and a visible move, removal or return is a
+      failure rather than a cost. Verify with `pnpm run e2e` in the production lane, beside the
+      journey task 1.2 extends (023/FR-001, 015/FR-009).
 - [ ] 4.4 Re-read the gap proposal.md, Impact, records, so the record is true when the change
       lands rather than only when it was written. 011/FR-024's scenario is "A component state has
       no preview", whose WHEN is "a component supports a state that has no preview" and whose THEN
@@ -155,8 +163,11 @@
 - [ ] 5.1 Re-read the takeover that succeeds, which this change must not disturb: run the existing
       015/SC-003 measurement and confirm the cumulative layout shift from first paint to
       interactive is still 0 on all five layout profiles in both orientations, and that no frame is
-      emptier than the frame before it. Verify with `pnpm run e2e` over
-      `e2e/prerendered-first-frame.spec.ts` (015/FR-009, 015/SC-003).
+      emptier than the frame before it. This is also where the delta's scenario "A navigation
+      presents a screen" is read: the copy is taken on every takeover, including the one that
+      succeeds, so the measurement that proves keeping it costs nothing is this one. Verify with
+      `pnpm run e2e` over `e2e/prerendered-first-frame.spec.ts` (023/FR-001, 015/FR-009,
+      015/SC-003).
 - [ ] 5.2 Re-read the locale replacement this change must not disturb, which is the other branch
       the modified 015/FR-011 creates. For a Commander whose committed locale is German at an
       address with a generated document, where the navigation presents the screen: the document

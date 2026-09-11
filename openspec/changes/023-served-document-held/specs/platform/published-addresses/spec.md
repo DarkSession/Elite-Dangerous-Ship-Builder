@@ -6,20 +6,23 @@ The application MUST hold what an address served until a navigation presents a s
 it. A Commander arrives at what the address answered with, and the takeover MUST NOT discard that
 before there is something to put in its place.
 
-The hold MUST end only where a screen is presented. A navigation that ends any other way — it
-failed, it was cancelled with nothing taking over, or it was cancelled and replaced by one that
-then ended without presenting a screen — MUST leave the Commander on the content the address
-served. A redirect, or an address that resolves elsewhere, is one presentation with whatever
-replaces it, so it does not spend the hold. What is said about any of those outcomes is
-`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned" and
+The hold MUST end only where a screen is presented, and it ends there. While it stands, a
+navigation that ends any other way — it failed, it was cancelled with nothing taking over, or it
+was cancelled and replaced by one that then ended without presenting a screen — MUST leave the
+Commander on the content the address served. A redirect, or an address that resolves elsewhere, is
+one presentation with whatever replaces it, so it does not spend the hold. What is said about any
+of those outcomes is `platform/navigation-waiting`, "A screen that never arrives is stated, not
+silently abandoned" and
 "The statement ends with the navigation", and this requirement adds nothing to either.
 
 Where an address served the application's own shell, nothing is held: the shell is what the
 Commander keeps, because the shell is what they were given. That is every address the build
 generates no document for, and it is the same answer wherever else the shell is what arrived.
 
-Held content MUST be kept as the address served it. It MUST NOT be rebuilt, recomputed or written
-again, and it MUST carry the language it was served in.
+Content is kept from the moment the address served it until the hold ends, and it stands in front
+of the Commander only where the hold ends without a screen. Kept content MUST be kept as the
+address served it: it MUST NOT be rebuilt, recomputed or written again. Content that stands MUST
+carry the language it was served in.
 
 Putting held content back MUST be invisible, on the same terms as the takeover itself: no content
 the Commander can see may move position, no frame may be emptier than the frame before it, and the
@@ -61,9 +64,9 @@ Source: 023/FR-001.
 
 #### Scenario: A navigation presents a screen
 
-- **WHEN** a navigation presents a screen while content the address served is held
+- **WHEN** a navigation presents a screen while content the address served is kept
 - **THEN** the screen replaces that content
-- **AND** holding adds no movement and no emptier frame to what the takeover already does
+- **AND** keeping it adds no movement and no emptier frame to what the takeover already does
 
 #### Scenario: The address served the shell
 
@@ -100,8 +103,10 @@ anything from it. It MAY reflow, because a translation is not the same length as
 is a named exception to the invisible takeover and to the measured zero-pixel outcome.
 
 The replacement is carried by the screen the application presents. Content held from the served
-document because no screen was presented MUST stay in the bundled English it was served in, and
-MUST say so by carrying that language. The catalogue is applied by rendering the screen in it, so
+document because no screen was presented MUST stay in the bundled English it was served in. That it
+says so, by carrying the language it was served in, is "What an address served is held until a
+screen replaces it" — this requirement states the English and leaves the language to it. The
+catalogue is applied by rendering the screen in it, so
 where the screen's code is what failed to arrive there is nothing that can apply it, and a
 translation the application does not have is one it may not write.
 

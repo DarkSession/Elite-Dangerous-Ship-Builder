@@ -12,7 +12,13 @@ adopts the document's copy of the screen instead of drawing its own a frame late
 They assume the navigation resolves into a screen. Where the screen's chunk never arrives, the
 navigation ends in `NavigationError`, bootstrap is released, and the application renders a shell
 with an empty outlet. Hydration then removes the served nodes under it, because nothing claimed
-them. The document's `main` is emptied by the takeover succeeding, not by it failing.
+them. The document's `main` is emptied by hydration doing its job, not by anything going wrong
+in it.
+
+Hydration is the part that succeeds here. It claims the nodes a screen renders, and where no screen
+renders, nothing claims them and they go. The takeover as a whole — the handover from the served
+document to a screen the application presents — is what does not complete, which is the sense
+015/FR-012 uses and the sense this change keeps.
 
 `NavigationWaitingStore` already watches that error and states the failure. It is the other half
 of FR-007 that holds. What is missing is anything that kept the content the statement is supposed
@@ -136,6 +142,25 @@ Rejected because it is not what a Commander wants. After they have opened a scre
 navigation leaves them on the screen they are on (018/FR-007), and putting a document they left
 behind back over it would take a screen away from them to answer a failure.
 
+### The failure statement stands above the content, and that is a move
+
+The shell draws its standing notices in a block of their own, above the `main` the outlet sits in.
+The failure statement is one of those notices. So on the path this change creates, the statement
+arrives in the same render as the held content, above it, and pushes it down the page by the height
+of the block. That is content the Commander can see moving position, which 015/FR-009 forbids and
+for which it admits exactly three exceptions — none of them this.
+
+Nothing today reads on it: the statement arrives over an empty `main`, so there is nothing to push.
+This change is what puts the two in the same frame, so the question arrives with it.
+
+A fourth exception is not available; 015/FR-009 says three exist and nothing else may claim one.
+So the content must not move, and the way it does not is a question for the implementation: the
+space the statement occupies has to exist before the statement does, or the statement has to stand
+somewhere that does not displace the content. Which of the two is right needs the rendered frame,
+and it is answered in task 4.3 rather than guessed here. What is settled is the constraint: the
+restore is measured against the served document's own layout, and a shift is a failure rather than
+a cost.
+
 ### The shell draws the held content in the outlet's place
 
 The frame renders a container inside its `main`, where the outlet stands, while content is held.
@@ -177,10 +202,14 @@ So a Commander reading in German keeps the English document they were served, an
 in German because that sentence is the shell's own. Nothing is reordered and nothing is removed,
 which is what FR-011 protects.
 
-The held content states the language it is in. The running application publishes the committed
-locale as the root language (011/FR-027), so English content standing inside it is a part in
-another language. Success criterion 3.1.2 is in scope: the target is WCAG 2.2 AA except 2.1.1,
-2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, and 3.1.2 is not among the eight. The
+The held content states the language it is in. The running application declares its own language
+on the document, and for a Commander reading in German that is German (011/FR-017, "Language
+selection from the browser setting"), so English content standing inside it is a part in another
+language. No accepted requirement states the document's root language in those words — "Per-address
+metadata" mentions publishing it without saying which it is — so confirm the declared language when
+the reading in task 2.6 is written rather than assume it. Success criterion 3.1.2 is in scope: the
+target is WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, and 3.1.2
+is not among the eight. The
 container carries the served document's language, which is a fact the application has rather than
 a sentence it writes.
 
