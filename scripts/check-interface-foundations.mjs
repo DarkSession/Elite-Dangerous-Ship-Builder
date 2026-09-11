@@ -1334,6 +1334,21 @@ function localeServices(masked) {
 }
 
 /**
+ * Reads of a locale service's own methods, as a fresh pattern each call.
+ *
+ * A pattern carrying state is a pattern two callers cannot share, so each asks
+ * for its own and says which flags it wants: the scan over an effect body needs
+ * `g`, a single `test` over one initialiser does not.
+ */
+function localeReadPattern(locales, flags) {
+  if (locales.size === 0) {
+    return null;
+  }
+  const fields = [...locales].map((field) => field.replace('$', '\\$')).join('|');
+  return new RegExp(`\\bthis\\.(?:${fields})\\s*\\.[A-Za-z_$][\\w$]*\\s*\\(`, flags);
+}
+
+/**
  * The class's own members whose value is resolved from the message catalogue.
  *
  * A component keeps the sentence it draws as a member — `title` is a `computed`
@@ -1342,16 +1357,23 @@ function localeServices(masked) {
  * was written against, and one line hoisted out of the `untracked` call walks
  * past it.
  *
+ * A member is resolved whichever way it reaches the catalogue: by calling
+ * `message()`, or by asking a locale service for a word — `integer`, a hull's
+ * name — because a member spelling a number in the Commander's language is as
+ * much a catalogue read as a sentence is, and hoisting it out of the `untracked`
+ * call takes the same dependency.
+ *
  * One level deep, and deliberately so. A member reaching the catalogue through
  * a private method it calls is not found here; design.md records that with the
  * other shape no scan can see.
  */
-function messageMembers(masked) {
+function messageMembers(masked, locales) {
   const members = new Set();
+  const reads = localeReadPattern(locales, '');
   for (const declaration of masked.matchAll(MEMBER_DECLARATION)) {
     const at = declaration.index ?? 0;
     const initialiser = masked.slice(at, statementEnd(masked, at + declaration[0].length));
-    if (/\.message(?:Signal)?\s*\(/.test(initialiser)) {
+    if (/\.message(?:Signal)?\s*\(/.test(initialiser) || reads?.test(initialiser)) {
       members.add(declaration[1]);
     }
   }
@@ -1387,15 +1409,9 @@ function messageMembers(masked) {
 function announcementViolations(file, source) {
   const found = [];
   const masked = maskedSource(source);
-  const resolvers = messageMembers(masked);
   const locales = localeServices(masked);
-  const localeReads =
-    locales.size === 0
-      ? null
-      : new RegExp(
-          `\\bthis\\.(?:${[...locales].map((field) => field.replace('$', '\\$')).join('|')})\\s*\\.[A-Za-z_$][\\w$]*\\s*\\(`,
-          'g',
-        );
+  const resolvers = messageMembers(masked, locales);
+  const localeReads = localeReadPattern(locales, 'g');
   const add = (offset, rule, message) =>
     found.push({ file, line: lineOf(source, offset), rule, message });
 

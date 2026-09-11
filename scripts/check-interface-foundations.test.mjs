@@ -540,6 +540,47 @@ describe('announcements', () => {
     assert.equal(found[0].line, 3);
   });
 
+  it('rejects a member that spells a number, read in the open', () => {
+    // A member holding a formatted number reaches the reading language exactly
+    // as a member holding a sentence does. The catalogue read is one statement
+    // further away than `message()`, and so is the republished event.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'readonly countText = computed(() => this.#formatters.integer(this.count()));',
+        'effect(() => {',
+        '  const spelled = this.countText();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { spelled } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('rejects a member that asks the package for a name, read in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #gameText = inject(GameTextPresenter);',
+        'readonly hullName = computed(() => this.#gameText.shipName(this.hull()).text);',
+        'effect(() => {',
+        '  const hull = this.hullName();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "assertive", messageKey: "k", params: { hull } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
   it('rejects a number formatted in the open and announced in there', () => {
     // `Formatters.integer` reads the effective locale to know how to spell a
     // number, so a tracked call to it is the catalogue dependency under

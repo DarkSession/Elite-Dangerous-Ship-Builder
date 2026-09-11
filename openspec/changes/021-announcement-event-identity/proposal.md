@@ -123,9 +123,11 @@ None.
   refusal.
 - No screen changes, and nothing already drawn changes its words. What changes is which events
   reach the outlet, and the one sentence a batch says out loud.
-- Three of the seven sites publish while a modal layer stands, and the outlets are mounted in the
-  shell outside it. The event now reaches the outlet where it did not before; whether a reader
-  hears it through the layer is about where the outlets are mounted, which is 011's architecture
-  and wants a proposal of its own. The refused import was a fourth: its notice is drawn outside
-  the layer, so the workspace holds the refusal until the layer goes and speaks it there.
-  design.md, "An announcement made under a layer".
+- Four of the seven sites publish while a modal layer stands, and the outlets are mounted in the
+  shell outside it: the saved builds' match count, the import outcomes, the export delivery, and
+  — at compact composition, where the fitting bench and the engineering editor become layers of
+  their own and stay open on a refusal — the refused edit. The event now reaches the outlet where
+  it did not before; whether a reader hears it through the layer is about where the outlets are
+  mounted, which is 011's architecture and wants a proposal of its own. The refused import was a
+  fifth: its notice is drawn outside the layer, so the workspace holds the refusal until the
+  layer goes and speaks it there. design.md, "An announcement made under a layer".
