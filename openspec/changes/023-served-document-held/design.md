@@ -81,7 +81,7 @@ does not own is the document — it has no view of what the address served, and 
 deciding when the application may discard it. The discarding is part of the takeover, and the
 takeover is `platform/published-addresses`.
 
-Stating it there also covers more than the one doorway. Any first navigation that fails at a
+Stating it there also covers more than the one route in. Any first navigation that fails at a
 generated address loses the same content, whatever the reason the chunk did not arrive.
 
 ### Putting the copy back is invisible, in one frame
@@ -138,9 +138,10 @@ statement on it, which is worse than either outcome this change is written for. 
 stated once, positively: the hold ends where a screen is presented, and nowhere else.
 
 Alternative considered: keeping the copy for the session, so any later failure could restore it.
-Rejected because it is not what a Commander wants. After they have opened a screen, a failed
-navigation leaves them on the screen they are on (018/FR-007), and putting a document they left
-behind back over it would take a screen away from them to answer a failure.
+Rejected because it is not what a Commander wants. After they have opened a screen, 018/FR-007
+leaves them on "a screen they can use", and putting a document they left behind back over it would
+take a screen away from them to answer a failure. That it is the screen they are on, rather than any
+usable screen, is `023/FR-001`'s own addition.
 
 ### The failure statement stands above the content, and that is a move
 

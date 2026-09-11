@@ -10,9 +10,9 @@ The hold MUST end only where a screen is presented, and it ends there. While it 
 navigation that ends any other way — it failed, it was cancelled with nothing taking over, or it
 was cancelled and replaced by one that then ended without presenting a screen — MUST leave the
 Commander on the content the address served. A redirect, or an address that resolves elsewhere, is
-one presentation with whatever replaces it, so it does not spend the hold. What is said about any
-of those outcomes is `platform/navigation-waiting`, "A screen that never arrives is stated, not
-silently abandoned" and
+one presentation with whatever replaces it, so the hold does not end there. What is said about any
+of those outcomes is `openspec/specs/platform/navigation-waiting/`, "A screen that never arrives is
+stated, not silently abandoned" and
 "The statement ends with the navigation", and this requirement adds nothing to either.
 
 Where an address served the application's own shell, nothing is held: the shell is what the

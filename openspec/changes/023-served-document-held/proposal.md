@@ -104,9 +104,12 @@ None.
   the same sequence without a browser.
 - Nothing a Commander sees changes where a navigation presents a screen, which is every navigation
   that is not the defect. No new words, so no catalogue keys.
-- `e2e/prerendered-first-frame.spec.ts:496` already holds the failing first navigation in the
-  production lane and records at line 575 which half of FR-007 it does not read, and why. This
-  change adds that assertion and removes the note.
+- `e2e/prerendered-first-frame.spec.ts` already holds the failing first navigation in the
+  production lane, in the journey "states a first navigation that failed, over the document it was
+  served (018/FR-007, FR-008)". A note at the end of that journey records which half of FR-007 it
+  does not read and why, ending "What is missing here is an assertion that the served document's
+  own `main` is still standing, and it is added with that change." This change adds that assertion
+  and removes the note.
 - One line of prose this change reads and does not rewrite: 018/FR-007 enumerates the document a
   Commander is left on as "the readable document where the build generates one", which reads a
   generated address and a served document as the same thing. 015/FR-014 separates them for a

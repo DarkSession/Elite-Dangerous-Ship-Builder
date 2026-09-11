@@ -4,16 +4,17 @@
       viewport, already scanned for accessibility as a first frame, and already written in bundled
       English (015/FR-010, 015/FR-019, 015/FR-011). Holding the same nodes adds no composition, no
       touch target and no string. What is new is one state of the application frame, and it is
-      carried rather than waved past: task 4.1 previews it at the three widths and task 4.2 scans
+      carried: task 4.1 previews it at the three widths and task 4.2 scans
       it where it stands, before the change is read end to end (011/FR-004, 011/FR-022). Verify
       the rest by holding the change to it: no new catalogue key (011/FR-016), no reusable pattern
       entering the design system (011/FR-005), and the existing responsive and touch journeys pass
       unchanged (011/FR-021, 011/FR-006).
-- [ ] 1.2 Add to `e2e/prerendered-first-frame.spec.ts`, in the journey at line 496 that already
-      holds the failing first navigation in the production lane, the assertion the note at line 575
-      says is missing: the served document's own `main` is still standing, with the ship list in it
-      and not only the banner and the tool links. Verify it fails against the standing takeover,
-      which is what that note records (023/FR-001).
+- [ ] 1.2 Add to `e2e/prerendered-first-frame.spec.ts`, in the journey "states a first navigation
+      that failed, over the document it was served (018/FR-007, FR-008)" that already holds the
+      failing first navigation in the production lane, the assertion the note at the end of that
+      journey says is missing: the served document's own `main` is still standing, with the ship
+      list in it and not only the banner and the tool links. Verify it fails against the standing
+      takeover, which is what that note records (023/FR-001).
 - [ ] 1.3 Add a unit case beside `src/app/app-navigation-waiting.spec.ts` driving the same
       sequence without a browser: content in the frame's `main` before bootstrap, a first
       navigation that ends in `NavigationError`, and the content still there afterwards. Verify it
@@ -82,7 +83,7 @@
       (023/FR-001, 018/FR-007).
 - [ ] 3.2 Verify a first navigation that is cancelled or redirected, and whose replacement then
       fails, still leaves the Commander on what the address served: the pair counts as one
-      presentation, so the cancellation does not spend the hold. That rule is `023/FR-001`'s own —
+      presentation, so the cancellation does not end the hold. That rule is `023/FR-001`'s own —
       018/FR-005 reaches the same pair only to keep one waiting statement standing across it, and
       says nothing about what the Commander is left on. This is the case a rule written about the
       session's first navigation would miss. Read it in the production lane, or in the unit sequence
@@ -191,8 +192,9 @@
       what an implementation that holds the English too long would break, and task 2.5 reads only
       the held branch. Read it in the production lane, which is the only lane with a generated
       document to replace. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
-- [ ] 5.3 Remove the note at `e2e/prerendered-first-frame.spec.ts:575` that records FR-007's second
-      half as unread, because task 1.2 adds the assertion it asks for. Leave
+- [ ] 5.3 Remove the note at the end of that journey in `e2e/prerendered-first-frame.spec.ts`,
+      which records FR-007's second half as unread, because task 1.2 adds the assertion it asks
+      for. Leave
       `openspec/changes/archive/018-navigation-loading-overlay/` alone: the archive is read and not
       extended, and its task 6.3 stands with the reason it carries. Verify by reading the journey
       back, and by `git status` showing nothing changed under `openspec/changes/archive/`.
