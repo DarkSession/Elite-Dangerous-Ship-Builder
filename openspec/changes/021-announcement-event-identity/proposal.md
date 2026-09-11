@@ -69,7 +69,9 @@ None.
 - `platform/accessible-responsive-operation`: "Announcement of errors and changes" (011/FR-009)
   states that two distinct events must each be announced, and states no exception. One is
   needed and is added here: an outcome to a question the Commander has withdrawn is not
-  announced. The requirement also gains the cases the seven sites mute — a figure that changes
+  announced, unless the work it reports is already done and cannot be taken back. A batch
+  import is the one outcome of that kind — the records are in storage by the time it settles,
+  and silence would leave a Commander holding saved builds nobody told them about. The requirement also gains the cases the seven sites mute — a figure that changes
   in either direction, a condition that recurs, an action repeated on one subject, and one
   request reporting two outcomes. Its replay rule moves to what a Commander can observe,
   because the caller keeps a replay from being published rather than the policy dropping one.

@@ -359,7 +359,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a new blocking error publishes one assertive summary',
       'each outlet is declared with its own urgency and kept out of the visible layout',
       'initial and unaffected content produces no announcement',
-      'a filter narrowed, narrowed again and widened puts a new node in the outlet each time',
+      'a filter narrowed three times and then widened puts a new node in the outlet each time',
       'a refusal repeated in identical words puts a new node in the outlet each time',
     ],
     manualRecord: 'screen-reader',

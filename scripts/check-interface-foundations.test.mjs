@@ -949,6 +949,55 @@ describe('announcements', () => {
     assert.deepEqual(ruleIds(found), ['announcement-effect']);
     assert.equal(found[0].line, 3);
   });
+
+  it('reads an effect below a regular expression a keyword introduces', () => {
+    // `return /…/` is a pattern, not a division. Read as a division, the quote
+    // inside it opens a string that runs to the next quote and blanks the
+    // announcement between them — and the file passes while saying nothing.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'isApple(declared) {',
+        "  return /mac|o'brien/i.test(declared);",
+        '}',
+        'effect(() => {',
+        '  const name = this.#messages.message("k");',
+        '  this.#announcements.announce({ kind: name, urgency: "polite", messageKey: "k" });',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect', 'announcement-effect']);
+    assert.deepEqual(
+      found.map((violation) => violation.line).sort(),
+      [5, 6],
+      'the effect below the pattern was not read at all',
+    );
+  });
+
+  it('still reads a division whose left side ends in a keyword-like name', () => {
+    // `margin / 2` divides. Taken for a pattern, everything to the next `/`
+    // would be blanked, the announcement with it.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const half = this.margin / 2;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "polite",',
+        '      messageKey: "k",',
+        '      revision: half,',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 4);
+  });
 });
 
 describe('duplicated composition steps', () => {

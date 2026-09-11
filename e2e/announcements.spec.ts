@@ -74,6 +74,16 @@ function spoken(page: Page): Promise<readonly string[]> {
   return page.evaluate(() => (window as unknown as Record<string, string[]>)['__spoken'] ?? []);
 }
 
+/**
+ * A figure the manifest spoke, as a number.
+ *
+ * The count is formatted for the reading locale, so it can carry a grouping
+ * separator. Only the digits say which way the count moved.
+ */
+function figure(spelled: string): number {
+  return Number(spelled.replace(/\D/g, ''));
+}
+
 /** Reads what each hidden outlet currently holds. */
 async function outlets(page: Page): Promise<{ assertive: string; polite: string }> {
   return page.evaluate(() => ({
@@ -120,6 +130,22 @@ test.describe('announcement policy', () => {
     expect(initial.polite.trim()).toBe('');
   });
 
+  test('publishes one assertive summary for a blocking condition', async ({ page }) => {
+    // An address that resolves to no hull. The screen has nothing to show and
+    // nothing the Commander can read their way out of, which is what makes it
+    // assertive rather than polite — and the polite outlet stays empty, because
+    // one event is announced in one place.
+    await page.goto('/ships/Nonexistent_Hull');
+    await expect(
+      page.getByRole('heading', { name: englishMessages['hullDetail.unknown.title'] }),
+    ).toBeVisible();
+
+    await expect
+      .poll(async () => (await outlets(page)).assertive.trim())
+      .toBe(englishMessages['hullDetail.unknown.title']);
+    expect((await outlets(page)).polite.trim()).toBe('');
+  });
+
   test('never makes a whole region live', async ({ page }) => {
     // Only the two dedicated outlets are live. Marking a metrics panel live
     // would re-announce every unaffected value on every change.
@@ -132,11 +158,20 @@ test.describe('announcement policy', () => {
 /**
  * The same thing happening twice.
  *
- * Both journeys are a Commander doing one thing, then doing another thing that
- * a screen answers in the same words. Neither used to reach a reader: the
- * policy compared a number the caller supplied, and a second narrowing spends
- * no revision and a second refusal spends no build. The failure that produced
- * was silence, which reports nothing (011/FR-009).
+ * Two halves of 011/FR-009, one journey each.
+ *
+ * The first is the silence this change removes. The policy dropped a request
+ * whose number did not exceed the highest that kind had reached, the manifest
+ * supplied its own count as that number, and a Commander who narrowed twice
+ * heard the first narrowing and nothing after it. So the sizes below are
+ * chosen to make the count fall at every step: a sequence that rose would have
+ * been published by the old policy too and would report nothing.
+ *
+ * The second is what carries an event when the words cannot. Two refusals are
+ * one sentence, a live region that holds the same text is a region that did
+ * not change, and only a new node tells a reader the second one happened. That
+ * held before this change and has to keep holding after it, because what the
+ * outlet draws on is no longer a number the caller chose.
  */
 test.describe('the second time something happens', () => {
   test('states each narrowing of the manifest, and the widening after them', async ({ page }) => {
@@ -144,17 +179,23 @@ test.describe('the second time something happens', () => {
     await expect(page.getByRole('heading', { level: 1, name: /ship builder/i })).toBeVisible();
     await watchOutlet(page, 'polite');
 
-    await page.getByRole('radio', { name: 'Large' }).check();
+    // Medium, then small, then large. Each shows fewer hulls than the one
+    // before it, so each step is a narrowing rather than a move in some
+    // direction the Almanac happens to decide.
+    await page.getByRole('radio', { name: 'Medium' }).check();
     await expect.poll(async () => (await spoken(page)).length).toBe(1);
 
     // Narrowed again, without anything else on the screen being touched.
-    await page.getByRole('radio', { name: 'Medium' }).check();
+    await page.getByRole('radio', { name: 'Small' }).check();
     await expect.poll(async () => (await spoken(page)).length).toBe(2);
+
+    await page.getByRole('radio', { name: 'Large' }).check();
+    await expect.poll(async () => (await spoken(page)).length).toBe(3);
 
     // And widened back, which is a move in the other direction and equally
     // worth hearing.
     await page.getByRole('radio', { name: 'All', exact: true }).check();
-    await expect.poll(async () => (await spoken(page)).length).toBe(3);
+    await expect.poll(async () => (await spoken(page)).length).toBe(4);
 
     // Each sentence is the manifest's own count message, and every one of them
     // names the same manifest: what moved is the count, which is the event.
@@ -163,16 +204,26 @@ test.describe('the second time something happens', () => {
     const digits = String.raw`[\d\u00a0\u202f.,]+`;
     const shape = new RegExp(
       `^${englishMessages['catalogue.match-count']
-        .replace('{{count}}', digits)
+        .replace('{{count}}', `(${digits})`)
         .replace('{{total}}', `(${digits})`)}$`,
     );
 
     const heard = await spoken(page);
-    const totals = heard.map((sentence) => {
+    const read = heard.map((sentence) => {
       expect(sentence, 'a sentence the outlet took was not the match count').toMatch(shape);
-      return shape.exec(sentence)?.[1];
+      const parsed = shape.exec(sentence);
+      return { count: figure(parsed?.[1] ?? ''), total: parsed?.[2] };
     });
-    expect(new Set(totals).size, 'the manifest itself changed between narrowings').toBe(1);
+
+    expect(new Set(read.map((one) => one.total)).size, 'the manifest itself changed').toBe(1);
+
+    // The three narrowings, in order, then the widening. Read as figures
+    // because the point is the direction each step moved in, and a step that
+    // did not narrow would have been heard under the policy this replaced.
+    const [first, second, third, widened] = read.map((one) => one.count);
+    expect(second, 'the second step did not narrow').toBeLessThan(first as number);
+    expect(third, 'the third step did not narrow').toBeLessThan(second as number);
+    expect(widened, 'the last step did not widen').toBeGreaterThan(first as number);
   });
 
   test('takes a new node for each refusal, in the same words', async ({ page }) => {
@@ -199,10 +250,16 @@ test.describe('the second time something happens', () => {
     // times, and the answer is the same sentence.
     //
     // What is read here is the region taking a node for each, which is what
-    // separates a second event from silence. Whether a reader hears it through
-    // the open layer is a separate question and not one a scan can answer: the
-    // layer is modal and the outlet is mounted in the shell outside it. See
-    // design.md, "An announcement made under a layer".
+    // separates a second event from silence. This press was published before
+    // this change as well, because the number it happened to supply was a
+    // request token that rises on every submit; what it guards is that the
+    // sequence now minted in the policy keeps the two events apart where the
+    // words cannot.
+    //
+    // Whether a reader hears it through the open layer is a separate question
+    // and not one a scan can answer: the layer is modal and the outlet is
+    // mounted in the shell outside it. See design.md, "An announcement made
+    // under a layer".
     await load.click();
     await expect(layer).toContainText(refused);
     await expect.poll(async () => (await spoken(page)).length).toBe(2);

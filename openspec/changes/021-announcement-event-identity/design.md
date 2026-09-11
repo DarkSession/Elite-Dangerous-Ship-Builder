@@ -330,14 +330,17 @@ rather than a preference.
 
 ## Risks / Trade-offs
 
-- **Rule 3 reads syntax, and two shapes are outside what syntax can see.** An announcement
-  reached through a helper is not inside a visible `effect`; and a member that reaches the
+- **Rule 3 reads syntax, and four shapes are outside what syntax can see.** An announcement
+  reached through a helper is not inside a visible `effect`; a member that reaches the
   catalogue through a private method it calls, rather than in its own initialiser, is not read
-  as a resolved one. The two shapes syntax _can_ see, a read for another purpose and a read
-  with nothing bound to it, are both rejected. Either could publish one occurrence twice, against the requirement. → The
-  unit suite beside each announcing file reads what it publishes, and the manual screen-reader
-  protocol reads both journeys. A caller added later without either is the residual gap, and
-  rule 3 catches the shape that produced all four of the present ones.
+  as a resolved one; a component that announces nothing makes no catalogue read to judge; and
+  neither does one that announces over an input already holding resolved text, although a
+  committed locale re-runs it exactly as it would a member. The two shapes syntax _can_ see, a
+  read for another purpose and a read with nothing bound to it, are both rejected. Any of the
+  four could publish one occurrence twice, against the requirement. → The unit suite beside
+  each announcing file reads what it publishes, and the manual screen-reader protocol reads
+  both journeys. A caller added later without either is the residual gap, and rule 3 catches
+  the shape that produced all four of the present ones.
 - **A Commander who copies one export twice hears two sentences.** → That is the requirement,
   and the second press is a question that deserves an answer. The manual protocol reads whether
   two identical sentences in a row are a nuisance. If they are, the message changes rather than
@@ -345,11 +348,12 @@ rather than a preference.
 - **Two wrapper components announce, and a third does not.** A later notice built on
   `OutfittingNotice` could reasonably expect it to announce, and stay silent. → The generic
   component says so at the top of the file, and each wrapper's own effect names the input that
-  is its event. Gate rule 3 catches the shape that would go wrong.
+  is its event, with its unit suite reading what it says. Gate rule 3 does not help here and is
+  not claimed to: both shapes are among the four listed above that syntax cannot see.
 - **Four of the seven sites publish under a modal layer, where the outlet is inert.** A reader
   may not hear an import refusal even now. → Out of this change's reach and stated above. The
   event reaching the outlet is the half that was broken; where the outlets are mounted is 011's
   and wants its own proposal. The manual protocol is what will find it.
 - **Every announcing caller changes in one commit.** The field leaves the type, so the compiler
-  names every site. → Each caller's unit suite reads its announcement, and the two journeys
-  that were silent are read end to end and by hand.
+  names every site. → Each caller's unit suite reads its announcement, the narrowing that was
+  silent is read end to end, and both journeys are read by hand.

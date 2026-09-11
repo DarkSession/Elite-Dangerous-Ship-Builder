@@ -374,12 +374,9 @@ export class SlefPresenter {
       return;
     }
 
-    // A batch is at least two builds and each of them is either stored or
-    // refused, so at most one of the two halves is missing here.
-    const only = refused > 0 ? notSaved : stored > 0 ? saved : null;
-    if (only === null) {
-      return;
-    }
+    // A batch is at least two records and each of them is either stored or
+    // refused, so exactly one of the two halves is left here.
+    const only = refused > 0 ? notSaved : saved;
     this.#announcements.announce({
       kind: 'slef.import',
       urgency: 'polite',

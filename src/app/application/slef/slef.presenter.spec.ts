@@ -735,6 +735,27 @@ describe('what an import and a delivery say out loud', () => {
     expect(announcements.polite()).toBe('2 builds imported and saved. 1 build was not saved.');
   });
 
+  it('states what a batch saved even where the Commander closed the layer over it', async () => {
+    // Closing the layer withdraws the question, and a withdrawn question's
+    // answer is normally not announced — it would land on top of the answer to
+    // whatever replaced it. A batch is the exception, and the records are the
+    // reason: they are in storage by the time this settles and they stay
+    // there. Silence would leave a Commander holding saved builds nobody told
+    // them about (011/FR-009, 016/FR-010).
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({ ShipName: 'Second', timestamp: '2026-09-03T09:00:00Z' }),
+    ]);
+
+    const submitting = presenter.submit();
+    const inFlight = store.requestToken;
+    presenter.closeLayer();
+    expect(store.requestToken, 'closing the layer did not withdraw the request').not.toBe(inFlight);
+
+    expect(await submitting).toMatchObject({ kind: 'stored', stored: 2 });
+    expect(announcements.polite()).toBe('2 builds imported and saved.');
+  });
+
   it('never says the rest were saved where nothing was', async () => {
     // Every chosen build refused. The batch still reports, because the
     // Commander asked and is owed an answer — but the answer is that nothing

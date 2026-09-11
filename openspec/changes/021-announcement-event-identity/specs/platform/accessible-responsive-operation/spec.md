@@ -18,9 +18,15 @@ A figure a filter publishes is a distinct event each time it changes, whether it
 falls. A condition that arises a second time is a distinct event. An action a Commander
 repeats on one subject is a distinct event each time it reports an outcome.
 
-An outcome to a question the Commander has withdrawn MUST NOT be announced. It is the one case
-this requirement excepts from the rule above. The question was replaced or cancelled before the
-answer arrived.
+An outcome to a question the Commander has withdrawn MUST NOT be announced, unless the work it
+reports is already done and cannot be taken back. This is the one case this requirement excepts
+from the rule above. The question was replaced or cancelled before the answer arrived, so the
+answer lands on top of the answer to the question that replaced it.
+
+Work already done is the exception inside the exception. Records written to storage stay
+written whether or not anyone is still waiting to hear about them, and silence would leave a
+Commander holding saved records nobody told them about. An outcome of that kind MUST be
+announced.
 
 Source: 011/FR-009.
 
@@ -77,4 +83,11 @@ Source: 011/FR-009.
 #### Scenario: An answer arrives after the question is withdrawn
 
 - **WHEN** an outcome arrives for a request the Commander replaced or cancelled
+- **AND** the request changed nothing that outlives it
 - **THEN** it is not announced
+
+#### Scenario: A withdrawn request had already written records
+
+- **WHEN** a Commander withdraws a request that has already written records to storage
+- **THEN** the outcome is announced
+- **AND** it states how many records were written

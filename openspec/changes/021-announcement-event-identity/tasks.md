@@ -57,8 +57,9 @@
       needs — the refusal sentence in both counted forms, and the joiner that puts it after the
       stored count — in both catalogues. Verify a stored import and a refused import each
       publish after a committed one, that one batch reporting a count and a refusal publishes a
-      single sentence stating both counts, and that a batch where nothing was saved never says
-      the rest were (011/FR-009, 016/FR-010, 016/FR-011, constitution IV).
+      single sentence stating both counts, that a batch where nothing was saved never says
+      the rest were, and that a batch whose layer was closed over it still states what it saved
+      (011/FR-009, 016/FR-010, 016/FR-011, constitution IV).
 - [x] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
       publishes twice, and a copy that fails then succeeds publishes both outcomes
       (011/FR-009).

@@ -207,11 +207,9 @@ export class LoadoutImportPresenter {
     }
 
     // A batch is at least two loadouts and each of them is either stored or
-    // refused, so at most one of the two halves is missing here.
-    const only = refused > 0 ? notSaved : stored > 0 ? saved : null;
-    if (only !== null) {
-      this.#announce(only.messageKey, only.params);
-    }
+    // refused, so exactly one of the two halves is left here.
+    const only = refused > 0 ? notSaved : saved;
+    this.#announce(only.messageKey, only.params);
   }
 
   #announce(messageKey: MessageKey, params: Record<string, string> = {}): void {

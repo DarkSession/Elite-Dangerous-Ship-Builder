@@ -984,6 +984,29 @@ async function checkTestDiscipline() {
 // ---------------------------------------------------------------------------
 
 /**
+ * The keywords a value may follow, so a `/` after one opens a pattern.
+ *
+ * Every one of them is followed by an expression rather than by an operand, so
+ * nothing here can be the left side of a division.
+ */
+const VALUE_KEYWORDS = new Set([
+  'await',
+  'case',
+  'delete',
+  'do',
+  'else',
+  'in',
+  'instanceof',
+  'new',
+  'of',
+  'return',
+  'throw',
+  'typeof',
+  'void',
+  'yield',
+]);
+
+/**
  * The source with every comment, string, template and regular expression
  * blanked out, character for character.
  *
@@ -1005,16 +1028,35 @@ function maskedSource(source) {
     }
   };
 
-  /** Whether a `/` here opens a regular expression rather than divides. */
+  /**
+   * Whether a `/` here opens a regular expression rather than divides.
+   *
+   * An operator or an opening bracket before it means a value is expected, and
+   * a value starting with `/` is a pattern. So does a keyword: `return /…/` and
+   * `typeof /…/` are patterns, and reading them as division scans the pattern
+   * body as code — where a quote in it opens a string that runs to the next
+   * one and blanks whole calls on its way.
+   */
   const opensRegex = (index) => {
-    for (let back = index - 1; back >= 0; back -= 1) {
-      const character = source[back];
-      if (character === ' ' || character === '\t' || character === '\n' || character === '\r') {
-        continue;
-      }
-      return '(,=:[!&|?{};+-*%~^<>'.includes(character);
+    let back = index - 1;
+    while (back >= 0 && ' \t\n\r'.includes(source[back])) {
+      back -= 1;
     }
-    return true;
+    if (back < 0) {
+      return true;
+    }
+    if (!/[\w$]/.test(source[back])) {
+      return '(,=:[!&|?{};+-*%~^<>'.includes(source[back]);
+    }
+    let start = back;
+    while (start > 0 && /[\w$]/.test(source[start - 1])) {
+      start -= 1;
+    }
+    // `a.in / 2` is a property divided, not a keyword followed by a pattern.
+    if (start > 0 && source[start - 1] === '.') {
+      return false;
+    }
+    return VALUE_KEYWORDS.has(source.slice(start, back + 1));
   };
 
   for (let index = 0; index < source.length; index += 1) {
@@ -1246,19 +1288,6 @@ function statementEnd(masked, from) {
 }
 
 /**
- * The class's own members whose value is resolved from the message catalogue.
- *
- * A component keeps the sentence it draws as a member — `title` is a `computed`
- * over one message — and reading that member reads the catalogue exactly as
- * calling `message()` does. Without this the rule below sees only the shape it
- * was written against, and one line hoisted out of the `untracked` call walks
- * past it.
- *
- * One level deep, and deliberately so. A member reaching the catalogue through
- * a private method it calls is not found here; design.md records that with the
- * other shape no scan can see.
- */
-/**
  * The fields holding a service whose answers move with the reading language.
  *
  * The catalogue is not reached only through `message()`. `Formatters.integer()`
@@ -1281,6 +1310,19 @@ function localeServices(masked) {
   return fields;
 }
 
+/**
+ * The class's own members whose value is resolved from the message catalogue.
+ *
+ * A component keeps the sentence it draws as a member — `title` is a `computed`
+ * over one message — and reading that member reads the catalogue exactly as
+ * calling `message()` does. Without this the rule below sees only the shape it
+ * was written against, and one line hoisted out of the `untracked` call walks
+ * past it.
+ *
+ * One level deep, and deliberately so. A member reaching the catalogue through
+ * a private method it calls is not found here; design.md records that with the
+ * other shape no scan can see.
+ */
 function messageMembers(masked) {
   const members = new Set();
   for (const declaration of masked.matchAll(MEMBER_DECLARATION)) {

@@ -59,28 +59,50 @@ describe('ShipCataloguePage announcements', () => {
     const catalogue = TestBed.inject(CatalogueFacade);
     const announcements = TestBed.inject(AnnouncementService);
 
-    catalogue.changeSizes(['small']);
+    // The sizes are chosen so that each step shows fewer hulls than the one
+    // before it. Under the policy this change replaced, the count was the
+    // number the request carried and a request whose number did not rise was
+    // dropped — so a sequence that only rose would pass against the defect and
+    // report nothing. The counts are read rather than written down, because
+    // the Almanac decides them and a hull added to it must not fail this.
+    const shown = () => catalogue.count().shown;
+
+    catalogue.changeSizes(['medium']);
     detect();
     const first = announcements.politeEvent();
     expect(first, 'the first narrowing said nothing').not.toBeNull();
+    const afterFirst = shown();
 
     // Narrowed again, with nothing else on the screen touched. The effect runs
     // on the count, and the count moved, so this is a second event. Two
     // narrowings that land on one count are the case where the words do not
     // move either; `hull-detail.page.spec.ts` and the refusal notices read that
     // one, where two events are spoken in one sentence by construction.
-    catalogue.changeSizes(['medium']);
+    catalogue.changeSizes(['small']);
     detect();
     const second = announcements.politeEvent();
+    const afterSecond = shown();
+    expect(afterSecond, 'the second step did not narrow').toBeLessThan(afterFirst);
     expect(second?.identity, 'the second narrowing was published as the first').not.toBe(
       first?.identity,
+    );
+
+    // A third, to read that nothing accumulates: the count falls again and is
+    // stated again.
+    catalogue.changeSizes(['large']);
+    detect();
+    const third = announcements.politeEvent();
+    expect(shown(), 'the third step did not narrow').toBeLessThan(afterSecond);
+    expect(third?.identity, 'the third narrowing was published as the second').not.toBe(
+      second?.identity,
     );
 
     // And widening is a move in the other direction, which is equally worth
     // hearing: a Commander who clears a filter is told the list grew back.
     catalogue.changeSizes([]);
     detect();
-    expect(announcements.politeEvent()?.identity).not.toBe(second?.identity);
+    expect(shown()).toBeGreaterThan(afterFirst);
+    expect(announcements.politeEvent()?.identity).not.toBe(third?.identity);
   });
 
   it('says nothing more when a locale commits behind the count', () => {

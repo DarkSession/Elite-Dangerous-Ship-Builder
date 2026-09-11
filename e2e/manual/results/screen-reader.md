@@ -223,12 +223,16 @@ this build. The rows below are deliberately left without actual results rather
 than filled in from the automated suite, which cannot hear anything.
 
 The automated coverage that does exist for the same requirement is
-`e2e/announcements.spec.ts` — a filter narrowed, narrowed again and widened
+`e2e/announcements.spec.ts` — a filter narrowed three times and then widened
 asserted to put a new node in the polite outlet each time, and a refusal
 repeated in identical words asserted to do the same — together with the unit
 suite beside each announcing file, which reads what that file publishes, and the
-two rules in `scripts/check-interface-foundations.mjs` that hold the shape every
-announcing effect is built in.
+three rules in `scripts/check-interface-foundations.mjs` that hold the shape
+every announcing effect is built in.
+
+None of it is a reader hearing anything, which is the whole of what these rows
+are for. A scan reads the node the outlet took; whether a reader is told about
+it, through an open modal layer in particular, is what a person has to answer.
 
 | Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
 | ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |

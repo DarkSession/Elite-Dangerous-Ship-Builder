@@ -452,12 +452,14 @@ disagrees or where the announcement is correct but unusable.
     first. Nothing automated can judge whether hearing it again is an answer or
     a nuisance.
 
-    First, narrowing. On the shipyard, choose a landing-pad class, then choose
-    another, then clear the filter. Expect one polite announcement per press,
-    each naming how many hulls are shown out of how many, arriving without
-    cutting off what the reader was saying. Expect the third — the widening —
-    to be announced too: a list growing back is news in the same way a list
-    shrinking is.
+    First, narrowing. On the shipyard, choose Medium, then Small, then Large,
+    then clear the filter. The three pad classes are in that order because each
+    shows fewer hulls than the one before it, so each press is a narrowing
+    rather than a move in whichever direction the Almanac happens to decide.
+    Expect one polite announcement per press, each naming how many hulls are
+    shown out of how many, arriving without cutting off what the reader was
+    saying. Expect the fourth — the widening — to be announced too: a list
+    growing back is news in the same way a list shrinking is.
 
     Then a refusal. In the import layer, paste a payload the Almanac refuses
     and press the action. Expect one polite announcement saying the payload was
