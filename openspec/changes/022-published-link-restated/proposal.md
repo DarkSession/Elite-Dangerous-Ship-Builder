@@ -43,10 +43,10 @@ The change declares requirement `022/FR-001`:
   fragment has the published link stated again in place, at the document it was published onto,
   without a history entry and without disturbing the build.
 
-One thing this change does is not a requirement of its own, because a standing requirement
-already carries it: a restoration writes with `replaceState` and adds no history entry, which is
-`ship-builder/build-link`, "Link validation and history" (001/FR-020). The new requirement states
-it again because a restoration is not an edit, and the standing requirement speaks about edits.
+A restoration adds no history entry, and `022/FR-001` is what states that. The standing
+requirement `ship-builder/build-link`, "Link validation and history" (001/FR-020) does not carry
+it: that requirement speaks about build edits, and a restoration is not an edit. The two rules
+have the same mechanism, `replaceState`, and different occasions.
 
 ## Capabilities
 

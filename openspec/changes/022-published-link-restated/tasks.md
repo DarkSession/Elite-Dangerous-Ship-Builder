@@ -33,10 +33,12 @@
       replacement is offered for it. This is what `markPublished` is for, and it is the one part
       of task 2.1 the address does not show (022/FR-001).
 - [ ] 2.3 Verify the watcher leaves a fragment that is not a build link exactly as it stands:
-      neither restored over nor cleared. `recognizeBuildLinkFragment` answers `unrelated` for an
-      empty fragment and for a foreign one alike, so emptiness is tested here and the recogniser is
-      asked only to tell a build link from everything else. This is the line
-      `FragmentPublisher.#clearBuildFragment` already holds (022/FR-001).
+      neither restored over nor cleared. Use a loadout link as the fixture, so the case gates the
+      alternative design.md rejects — a fragment this application owns and did write, which
+      ownership would have licensed the ship builder to overwrite. `recognizeBuildLinkFragment`
+      answers `unrelated` for an empty fragment and for any other fragment alike, so emptiness is
+      tested here and the recogniser is asked only to tell a build link from everything else. This
+      is the line `FragmentPublisher.#clearBuildFragment` already holds (022/FR-001).
 
 ## 3. Leaving alone what is not ours to state
 
