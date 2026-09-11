@@ -33,9 +33,11 @@
       replacement is offered for it. This is what `markPublished` is for, and it is the one part
       of task 2.1 the address does not show (022/FR-001).
 - [ ] 2.3 Verify the watcher leaves a fragment that is not a build link exactly as it stands:
-      neither restored over nor cleared. Use a loadout link as the fixture, so the case gates the
-      alternative design.md rejects — a fragment this application owns and did write, which
-      ownership would have licensed the ship builder to overwrite. `recognizeBuildLinkFragment`
+      neither restored over nor cleared. Use a loadout link as the fixture, at the document the
+      build link was published onto, so the case gates the alternative design.md rejects — a
+      fragment this application owns and did write, which ownership would have licensed the ship
+      builder to overwrite. At any other document the document bound would carry the test and the
+      emptiness test would go unverified. `recognizeBuildLinkFragment`
       answers `unrelated` for an empty fragment and for any other fragment alike, so emptiness is
       tested here and the recogniser is asked only to tell a build link from everything else. This
       is the line `FragmentPublisher.#clearBuildFragment` already holds (022/FR-001).
@@ -77,7 +79,9 @@
       entry, and add the journey's assertion to that entry's `assertions` array. The ledger keys
       evidence by id, so the new requirement needs its own id there to be gated at all — sharing
       `001/FR-020` would let the standing requirement's assertions stand in for it. Verify with
-      `pnpm run policy:specs`, which fails naming any declared id that is not registered.
+      `pnpm run policy:specs`, which fails naming any declared id that is not registered. It reads
+      `openspec/specs/` alone, so it accepts the registration now and starts requiring it when the
+      delta is archived into the capability specification.
 - [ ] 4.3 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.
