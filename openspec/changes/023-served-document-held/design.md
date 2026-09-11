@@ -186,9 +186,10 @@ a sentence it writes.
 
 No disclosure is written beside the game names in held content, and 015/FR-011a is modified in the
 same delta to say so. Read as it stands it already does: its second scenario is "A document read in
-bundled English", where "there is nothing to disclose, because English is the original", and held
-content is exactly that. But the same requirement says the disclosure "MUST NOT be suppressed", and
-a reader who reaches that sentence first would find two rules in one file pointing opposite ways —
+English", whose WHEN is "a document is read in bundled English" and whose THEN is "there is nothing
+to disclose, because English is the original", and held content is exactly that. But the same
+requirement says the disclosure "MUST NOT be suppressed", and a reader who reaches that sentence
+first would find two rules in one file pointing opposite ways —
 the condition this change already refuses to leave standing for 015/FR-011. So the boundary is
 written into the requirement rather than left in a design note: the disclosure belongs to a
 replacement that lands, and where none lands nothing is suppressed, because each name stands in the
@@ -213,6 +214,17 @@ nothing about one that fails. It is also written for the two bench addresses in 
 where the development server has no generated document at any address at all — the same conclusion
 over a wider set, which is why the rule is stated as holding what was served rather than as a
 second case.
+
+One case the rule reaches and the delta does not enumerate: a returning Commander with no network
+is answered by the cached shell, at an address the build does generate a document for
+(015/FR-014, "The generated document or the cached shell"). Holding what was served gives them the
+shell, which is what they were given. 018/FR-007's scenario agrees — it leaves them "on the
+readable document that address served" — but the prose above it reads the two as the same thing,
+"the readable document where the build generates one". 015/FR-014 separates them, and does so
+independently of this change. The delta is written on what the address served, which is the half
+that holds either way, and the case is recorded here rather than enumerated in a requirement no
+task reads. Closing the prose is `platform/navigation-waiting`'s, and this change does not open
+it.
 
 ## Risks / Trade-offs
 

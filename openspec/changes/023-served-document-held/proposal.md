@@ -34,8 +34,8 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
   address served, and the shell is what the Commander keeps.
 - Held content is the application's own markup, kept as it stands, carrying the language it was
   served in. Nothing is re-rendered, no figure is recomputed and no sentence is written for it —
-  including into the committed locale, which the application cannot reach without the screen's
-  code.
+  including into the committed locale. The catalogue has arrived, because the application is
+  running; what is missing is the screen, and the catalogue is applied by rendering one.
 - Putting it back is invisible. It lands in the render that would otherwise have removed it, so no
   frame is emptier than the one before it and the invisible takeover keeps its three exceptions
   and no more.
@@ -90,8 +90,11 @@ None.
   not inside a screen.
 - `src/app/ui/components/app-frame/` receives the held content where the outlet stands. Nothing it
   draws changes otherwise.
-- `platform/navigation-waiting` is unchanged. Its requirement is already right; what changes is
-  the takeover it describes.
+- `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
+  fixes; what changes is the takeover it describes. One line of its prose reads the document the
+  build generates and the document the address served as the same thing, which 015/FR-014 already
+  separates for a returning Commander with no network. That is recorded in design.md,
+  "Development has nothing to hold", and is not this change's to close.
 - `src/app/ui/previews/preview-manifest.ts` gains the frame's held state, which is what keeps the
   state previewed at the three widths (011/FR-004).
 - Nothing a Commander sees changes where a navigation presents a screen, which is every navigation

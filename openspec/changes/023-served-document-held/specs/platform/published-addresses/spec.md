@@ -16,8 +16,7 @@ replaces it, so it does not spend the hold. What is said about any of those outc
 
 Where the address served the application's own shell rather than a generated document, nothing is
 held: the shell is what the Commander keeps, because the shell is what they were given. That is
-every address the build generates no document for, and it is also how this rule reads at an address
-answered from the cache by the shell.
+every address the build generates no document for.
 
 Held content MUST be kept as the address served it. It MUST NOT be rebuilt, recomputed or written
 again, and it MUST carry the language it was served in.
