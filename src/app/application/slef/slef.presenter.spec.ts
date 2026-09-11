@@ -605,6 +605,33 @@ describe('what a journal source adds to the words', () => {
 
     expect(announcements.politeEvent()).toBe(answered);
   });
+
+  it('lets the current scan answer when the one it replaced settles first', async () => {
+    let release: (text: string) => void = () => {};
+    const slow = {
+      name: 'Journal.slow.log',
+      size: 1,
+      text: () => new Promise<string>((resolve) => (release = resolve)),
+    };
+
+    // The other order, and the one that went wrong. The first drop holds
+    // nothing and is read at once; the second is still being read when it
+    // lands. Settling first is what made the abandoned scan the louder of the
+    // two under the policy this change replaced: it stated its own empty
+    // reading, spent the number both outcomes were compared on, and the answer
+    // the Commander was actually waiting for was dropped for being no further
+    // ahead (011/FR-009).
+    const abandoned = presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
+    const current = presenter.scanFiles([slow]);
+
+    await abandoned;
+    expect(announcements.polite()).toBe('Reading journal files.');
+
+    release([line({ ShipName: 'A' }), line({ ShipName: 'B' })].join('\n'));
+    await current;
+
+    expect(announcements.polite()).toBe('2 builds found. Choose one or more.');
+  });
 });
 
 /**

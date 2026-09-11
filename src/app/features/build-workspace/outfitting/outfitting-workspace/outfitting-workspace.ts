@@ -344,12 +344,13 @@ export class OutfittingWorkspace {
   /**
    * Whether a reader still has to be told about that refusal.
    *
-   * A record carrying a roll the package cannot complete is refused while this
-   * screen is still being built, so the notice is created with the refusal
-   * already on it and has no transition of its own to watch. The store saw the
-   * report and this passes on its answer, so a refusal the Commander has just
-   * caused is spoken and one they were told about last visit is not
-   * (011/FR-009).
+   * A record carrying a roll the package cannot complete is refused from the
+   * saved builds, which stand over whatever screen a Commander is on — so one
+   * opened from elsewhere leaves this screen to be built with the refusal
+   * already on it, and the notice has no transition of its own to watch. The
+   * store saw the report and this passes on its answer, so a refusal the
+   * Commander has just caused is spoken and one they were told about last visit
+   * is not (011/FR-009).
    *
    * Not while the saved builds stand over this screen. The other way into this
    * refusal is opening a record from that layer, and this screen stays mounted

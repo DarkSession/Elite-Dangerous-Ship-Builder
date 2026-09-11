@@ -431,9 +431,12 @@ describe('the workspace and a refused record', () => {
     expect(active.ingressRefusalUnannounced()).toBe(false);
   });
 
-  it('speaks a refusal that arrived with no layer over it', () => {
-    // The other caller is a shared link, which opens a screen rather than a
-    // layer. Nothing is in the way, so nothing is held back.
+  it('speaks a refusal that was standing before this screen was built', () => {
+    // The refusal reached the store while the Commander was somewhere else —
+    // from the layer they have since closed, or from a shared link, which opens
+    // a screen rather than a layer. Nothing stands over this screen now, so
+    // nothing is held back and the notice speaks on its first run: the case a
+    // first-run guard would silence.
     active.commit(candidateFor(defaultBuild()));
     active.reportIngressRefusal([failure()]);
 

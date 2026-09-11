@@ -44,13 +44,14 @@ import { slotName } from './slot-naming';
  * (011/FR-009).
  *
  * A refusal already standing when the screen opens is the one case a first-run
- * guard cannot judge, so this component does not try. A record whose roll the
- * package cannot complete is refused while the workspace is still being built,
- * so the notice is created with the refusal already there and has no
- * transition to watch — and that looks exactly like a Commander returning to a
- * refusal they were told about on their last visit. One is an event, the other
- * is initial content. `unannounced` is the store's answer, because the store
- * is what saw the report happen.
+ * guard cannot judge, so this component does not try. The refusal is reported
+ * from the saved builds, which stand over whatever screen a Commander is on
+ * rather than over this one in particular — so a Commander who opens a refused
+ * record from elsewhere and then comes to the workspace builds this notice with
+ * the refusal already there, and it has no transition to watch. That looks
+ * exactly like a Commander returning to a refusal they were told about on their
+ * last visit. One is an event, the other is initial content. `unannounced` is
+ * the store's answer, because the store is what saw the report happen.
  */
 @Component({
   selector: 'ednb-ingress-refusal-notice',

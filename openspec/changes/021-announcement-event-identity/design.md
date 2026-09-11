@@ -226,10 +226,21 @@ that is already up, so the only way this notice is created with a refusal standi
 re-visit, and the guard answers exactly that.
 
 `IngressRefusalNotice` cannot use one, because for it the two cases look identical. A record
-carrying a roll the package cannot complete is refused inside `RecordOpenService.open`, which
-`BuildWorkspacePage` calls from its own constructor and which reports synchronously — so the
-notice is created with the refusal already standing and never sees it arrive. A first-run guard
-there silences a refusal the Commander just caused, which is the event 011/FR-009 is about.
+carrying a roll the package cannot complete is refused inside `RecordOpenService.open`, and the
+saved builds that call it are a layer over whatever screen a Commander is on. A refused open
+neither navigates nor closes that layer, so a Commander holding a build who opens one from the
+shipyard, closes the layer and then goes to the workspace builds the notice with the refusal
+already standing, and it never sees it arrive. A first-run guard there silences a refusal the
+Commander just caused, which is the event 011/FR-009 is about.
+
+Where there is no build at all the refusal is drawn nowhere and said nowhere, and that is a
+defect this change does not reach. `BuildWorkspacePage` opens the held record only when the
+tab has no build, a refused candidate never becomes one, and the notice is mounted inside the
+page's has-a-build branch — so a tab restoring a record the Almanac cannot complete shows the
+empty workspace and says nothing about why. The build-link path refuses the same way and sets
+no link failure with it. Both are feature 001's page structure rather than this change's
+announcements, and both are on `main` unchanged; the surface has to exist before anything can
+announce from it.
 
 So the fact moves to where it exists. `ActiveBuildStore.reportIngressRefusal` marks the refusal
 unannounced, `ingressRefusalUnannounced` is what the notice watches beside the refusal itself,

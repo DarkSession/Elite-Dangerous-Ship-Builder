@@ -76,8 +76,9 @@
       was found to import." states an outcome nobody reached. That sentence goes from both
       catalogues with the branch that spoke it, which no scan can reach — `scanJournalFiles`
       reports every empty outcome as a refusal. Verify two scans in flight announce the second
-      scan's outcome and not the abandoned one, and that an oversized file is never reported as
-      holding nothing (011/FR-009, constitution IV).
+      scan's outcome and not the abandoned one — in both settling orders, because the abandoned
+      scan settling first is the one that used to speak over the answer — and that an oversized
+      file is never reported as holding nothing (011/FR-009, constitution IV).
 - [x] 4.2 Do the same in `loadout-import.coordinator.ts`, including the refused scan's own
       sentence under the scan's own event id, and drop the tokens from
       `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said

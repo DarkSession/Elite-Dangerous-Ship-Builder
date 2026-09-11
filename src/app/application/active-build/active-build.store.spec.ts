@@ -202,8 +202,9 @@ describe('ActiveBuildStore', () => {
     });
 
     it('has something to say from the moment a refusal is reported', () => {
-      // The notice that draws this is created after the report, whenever a
-      // record is opened as the workspace is built, so it never sees the
+      // The notice that draws this is created after the report, because the
+      // saved builds report it from a layer over whatever screen a Commander is
+      // on and the workspace is built when they get there. It never sees the
       // refusal arrive. This is the fact it asks for instead (011/FR-009).
       const active = store();
 

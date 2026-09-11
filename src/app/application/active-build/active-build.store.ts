@@ -70,13 +70,15 @@ export class ActiveBuildStore implements WorkingRecordSubject {
   /**
    * Whether the standing refusal is one no reader has been told about yet.
    *
-   * The refusal itself cannot answer this. A record whose roll the package
-   * cannot complete is refused while the workspace is still being built, so
-   * the notice that draws it is created with the refusal already standing and
-   * has no transition to watch — the same state a Commander returning to a
-   * refusal they were told about last visit arrives at. One is an event and
-   * the other is initial content, and only this store knows which, because
-   * only this store saw the report happen (011/FR-009).
+   * The refusal itself cannot answer this. It is reported from the saved
+   * builds, which are a layer over whatever screen a Commander is on — so a
+   * Commander holding a build who opens a refused record from some other
+   * screen, closes the layer and then goes to the workspace arrives with the
+   * refusal already standing. The notice that draws it is built with the
+   * refusal already there and has no transition to watch, which looks exactly
+   * like a Commander returning to a refusal they were told about last visit.
+   * One is an event and the other is initial content, and only this store
+   * knows which, because only this store saw the report happen (011/FR-009).
    */
   readonly ingressRefusalUnannounced = this.#ingressUnannounced.asReadonly();
 
