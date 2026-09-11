@@ -428,6 +428,87 @@ describe('announcements', () => {
     assert.equal(found[0].line, 2);
   });
 
+  it('rejects a resolved member read in the open and carried into the request', () => {
+    // The shape the two refusal notices are written in. `title` is a computed
+    // over one message, so reading it out here is the catalogue read, one
+    // statement earlier and under another name.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("outfitting.refusal.title"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "assertive", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('accepts the same member read inside the untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("outfitting.refusal.title"));',
+        'effect(() => {',
+        '  const failure = this.failure();',
+        '  if (failure === null) { return; }',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "assertive",',
+        '      messageKey: "k",',
+        '      params: { title: this.title() },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a member read in the open that resolves no message', () => {
+    // The trigger. An effect has to read its own event out here, or it depends
+    // on nothing and never runs again.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #shown = computed(() => this.#catalogue.count().shown);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count: shown } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a resolved member read in the open and never announced', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  this.#document.setTitle(title);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('accepts an effect that builds and announces inside one untracked call', () => {
     const found = rules.announcementViolations(
       'a.ts',

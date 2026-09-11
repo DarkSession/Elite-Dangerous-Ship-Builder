@@ -3,7 +3,12 @@ import { provideRouter } from '@angular/router';
 import type { JournalFile } from '../../domain/journal/journal-scan';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
-import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import {
+  MemoryStorage,
+  provideMemoryStorage,
+  quotaError,
+} from '../../platform/storage/storage.spec-helpers';
+import { LoadoutImportStore } from './loadout-import.store';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import { LoadoutImportPresenter } from './loadout-import.presenter';
 
@@ -37,22 +42,57 @@ function journalFile(name: string, lines: readonly string[]): JournalFile {
   return { name, size: text.length, text: () => Promise.resolve(text) };
 }
 
+/** A store that refuses to write any record naming this loadout. */
+class RefusesOne extends MemoryStorage {
+  constructor(readonly refuses: string) {
+    super();
+  }
+
+  override setItem(key: string, value: string): void {
+    if (value.includes(this.refuses)) {
+      throw quotaError();
+    }
+    super.setItem(key, value);
+  }
+}
+
 describe('LoadoutImportPresenter announcements', () => {
   let presenter: LoadoutImportPresenter;
   let announcements: AnnouncementService;
+  let storage: MemoryStorage;
 
-  beforeEach(() => {
+  function configure(store: MemoryStorage): void {
+    storage = store;
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
-        ...provideMemoryStorage(new MemoryStorage()),
+        ...provideMemoryStorage(storage),
       ],
     });
     presenter = TestBed.inject(LoadoutImportPresenter);
     announcements = TestBed.inject(AnnouncementService);
+  }
+
+  /** Scans two named loadouts and chooses both, which stores rather than opens. */
+  async function chooseBoth(): Promise<void> {
+    await presenter.scanFiles([
+      journalFile('Journal.01.log', [
+        event({ LoadoutName: 'Kept', timestamp: '2026-09-02T10:00:00Z' }),
+        event({ LoadoutName: 'Refused', timestamp: '2026-09-01T10:00:00Z' }),
+      ]),
+    ]);
+    presenter.choosePicks(
+      TestBed.inject(LoadoutImportStore)
+        .entries()
+        .map((entry) => entry.key),
+    );
+  }
+
+  beforeEach(() => {
+    configure(new MemoryStorage());
   });
 
   it('says that it is reading files, out loud', async () => {
@@ -95,5 +135,31 @@ describe('LoadoutImportPresenter announcements', () => {
     await abandoned;
 
     expect(announcements.politeEvent()).toBe(answered);
+  });
+
+  it('states both outcomes of a batch that saves one loadout and cannot save the other', async () => {
+    // One request, two outcomes, and the polite outlet holds one event: a
+    // second announcement in the same tick would write over the first and only
+    // the last of them would reach a reader (011/FR-009).
+    configure(new RefusesOne('Refused'));
+    await chooseBoth();
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 1 });
+
+    expect(announcements.polite()).toBe('1 loadout imported and saved. 1 loadout was not saved.');
+  });
+
+  it('never says the rest were saved where nothing was', async () => {
+    // A browser that has stopped accepting writes refuses every one of them.
+    // The Commander is still owed an answer, and the answer is that nothing was
+    // saved — saying the rest were would state an outcome that did not happen
+    // (constitution IV).
+    configure(new MemoryStorage());
+    await chooseBoth();
+    storage.writeError = quotaError();
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 0 });
+
+    expect(announcements.polite()).toBe('2 loadouts were not saved.');
   });
 });

@@ -69,10 +69,13 @@ disagrees or where the announcement is correct but unusable.
    expect its title to be announced, and expect content behind it to be
    unreachable — including by landmark and heading navigation. Dismiss it and
    expect to be returned to the control that opened it.
-7. **Urgency and deduplication.** Trigger a blocking error. Expect one assertive
+7. **Urgency and replay.** Trigger a blocking error. Expect one assertive
    announcement, promptly. Then trigger a settled change. Expect one polite
-   announcement that does not interrupt. Repeat the same change without altering
-   anything: expect **silence**. Expect unaffected values never to be announced.
+   announcement that does not interrupt. Then, without touching that change,
+   change the browser's language setting: expect **silence**, because the event
+   already happened and nothing about it moved. Expect unaffected values never
+   to be announced. An action the Commander takes a second time is a second
+   event and is not this step's silence — step 22 reads that one.
 8. **Text equivalents.** Find every status, tone, selected state and metric.
    Expect the meaning to be in words. Nothing may be carried by colour, shape,
    position or motion alone.

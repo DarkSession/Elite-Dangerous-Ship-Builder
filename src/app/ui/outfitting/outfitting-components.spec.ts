@@ -3,6 +3,7 @@ import germanCatalogue from '../../i18n/locales/de.json';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import type { MessageCatalogue } from '../../i18n/locale-registry';
 import { LocaleStore } from '../../i18n/locale.store';
+import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../announcements/announcement.service';
 import {
   accessibleName,
@@ -529,6 +530,51 @@ describe('outfitting notice', () => {
     expect(element(fixture).querySelectorAll('.notice__line')).toHaveLength(2);
     // The tone is a word beside the colour, never the colour alone.
     expect(textOf(query(fixture, '.status__tone')).length).toBeGreaterThan(0);
+  });
+
+  it('keeps the lines in the order it was handed them', () => {
+    // Reading order is the whole of what this component offers a reader: the
+    // lines are found and read one at a time, at the reader's own pace, rather
+    // than being spoken over the screen.
+    const fixture = renderComponent(OutfittingNotice, {
+      title: 'Imported build',
+      lines: [
+        { id: 'a', messageKey: 'outfitting.refusal.staleDraft' },
+        { id: 'b', messageKey: 'outfitting.refusal.blocked' },
+      ],
+    });
+
+    const messages = TestBed.inject(MessageService);
+    const read = [...element(fixture).querySelectorAll('.notice__line')].map((line) =>
+      textOf(line),
+    );
+
+    // Each line carries its own tone word ahead of the sentence, so the
+    // sentence is read within the line rather than as the whole of it.
+    expect(read).toHaveLength(2);
+    expect(read[0]).toContain(messages.message('outfitting.refusal.staleDraft'));
+    expect(read[1]).toContain(messages.message('outfitting.refusal.blocked'));
+  });
+
+  it('announces nothing, whatever it is given', () => {
+    // The lines are resolved text, so an effect over them would re-run for a
+    // committed locale and speak a refusal a reader was already told about.
+    // What holds the refusal announces it; this holds the reading of it
+    // (011/FR-009).
+    const fixture = renderComponent(OutfittingNotice, {
+      title: 'Imported build',
+      mode: 'alert',
+      lines: [],
+    });
+    const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('lines', [
+      { id: 'a', messageKey: 'outfitting.refusal.packageEdit' },
+    ]);
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).toBe('');
+    expect(announcements.polite()).toBe('');
   });
 
   it('renders nothing when there is nothing to say', () => {

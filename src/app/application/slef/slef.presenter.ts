@@ -2,7 +2,7 @@ import { Injectable, computed, inject } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import type { MessageKey } from '../../i18n/locale-registry';
+import type { MessageKey, MessageParams } from '../../i18n/locale-registry';
 import type { DiagnosticEntry } from '../../ui/technical/diagnostic-list';
 import type {
   JournalFailureView,
@@ -299,28 +299,7 @@ export class SlefPresenter {
         params: { hull: this.#active.hullName() ?? '' },
       });
     } else if (submission.kind === 'stored') {
-      // One sentence for a batch that reports two outcomes, not two. The
-      // polite outlet holds one event, so a second announcement published in
-      // the same tick writes over the first and the reader hears only what was
-      // said last. The batch refusal's own sentence states both — how many
-      // were not saved, and that the rest were — which is what a request with
-      // two outcomes owes a reader (011/FR-009, 016/FR-011).
-      const refused = submission.refused.length;
-      this.#announcements.announce({
-        kind: 'slef.import',
-        urgency: 'polite',
-        messageKey:
-          refused === 1
-            ? 'slef.import.failure.batch.one'
-            : refused > 1
-              ? 'slef.import.failure.batch.many'
-              : submission.stored === 1
-                ? 'slef.import.announce.stored.one'
-                : 'slef.import.announce.stored.many',
-        params: {
-          count: this.#formatters.integer(refused > 0 ? refused : submission.stored),
-        },
-      });
+      this.#announceBatch(submission.stored, submission.refused.length);
     } else if (submission.kind === 'failed') {
       // Bounded on purpose: never the draft, never a whole diagnostic list.
       // What a reader needs from an outlet is that something happened; the
@@ -332,6 +311,54 @@ export class SlefPresenter {
       });
     }
     return submission;
+  }
+
+  /**
+   * What a batch of several builds did, in one sentence.
+   *
+   * One sentence and not two, because the polite outlet holds one event: a
+   * second announcement published in the same tick writes over the first, and
+   * the reader hears only what was said last. A batch that stored some builds
+   * and refused others reports two outcomes, and both are owed
+   * (011/FR-009, "One request reports two outcomes").
+   *
+   * Both counts, and never a count and a word standing in for the other one.
+   * 016/FR-010 requires the outcome to say how many builds were imported, and
+   * a batch where every chosen build was refused must not say the rest were
+   * saved — nothing was.
+   */
+  #announceBatch(stored: number, refused: number): void {
+    const saved: { messageKey: MessageKey; params: MessageParams } = {
+      messageKey:
+        stored === 1 ? 'slef.import.announce.stored.one' : 'slef.import.announce.stored.many',
+      params: { count: this.#formatters.integer(stored) },
+    };
+    const notSaved: { messageKey: MessageKey; params: MessageParams } = {
+      messageKey:
+        refused === 1 ? 'slef.import.announce.notSaved.one' : 'slef.import.announce.notSaved.many',
+      params: { count: this.#formatters.integer(refused) },
+    };
+
+    if (stored > 0 && refused > 0) {
+      this.#announcements.announce({
+        kind: 'slef.import',
+        urgency: 'polite',
+        messageKey: 'slef.import.announce.batch',
+        params: {
+          saved: this.#messages.message(saved.messageKey, saved.params),
+          notSaved: this.#messages.message(notSaved.messageKey, notSaved.params),
+        },
+      });
+      return;
+    }
+
+    // A batch is at least two builds and each of them is either stored or
+    // refused, so at most one of the two halves is missing here.
+    const only = refused > 0 ? notSaved : stored > 0 ? saved : null;
+    if (only === null) {
+      return;
+    }
+    this.#announcements.announce({ kind: 'slef.import', urgency: 'polite', ...only });
   }
 
   selectMode(mode: SlefExportMode): void {

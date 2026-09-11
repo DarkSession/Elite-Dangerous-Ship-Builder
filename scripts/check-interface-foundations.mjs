@@ -1143,6 +1143,53 @@ const EFFECT_CALL = /\beffect\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
 const MESSAGE_BINDING =
   /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=[^;]*?\.message(?:Signal)?\s*\(/g;
+const MEMBER_DECLARATION = /^[ \t]*(?:readonly\s+)?(#?[A-Za-z_$][\w$]*)\s*=/gm;
+const MEMBER_BINDING =
+  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*this\.(#?[A-Za-z_$][\w$]*)\s*\(\s*\)/g;
+
+/** Where the statement beginning at `from` ends, ignoring nested brackets. */
+function statementEnd(masked, from) {
+  let depth = 0;
+  for (let index = from; index < masked.length; index += 1) {
+    const character = masked[index];
+    if (character === '(' || character === '[' || character === '{') {
+      depth += 1;
+    } else if (character === ')' || character === ']' || character === '}') {
+      depth -= 1;
+      if (depth < 0) {
+        return index;
+      }
+    } else if (character === ';' && depth === 0) {
+      return index;
+    }
+  }
+  return masked.length;
+}
+
+/**
+ * The class's own members whose value is resolved from the message catalogue.
+ *
+ * A component keeps the sentence it draws as a member — `title` is a `computed`
+ * over one message — and reading that member reads the catalogue exactly as
+ * calling `message()` does. Without this the rule below sees only the shape it
+ * was written against, and one line hoisted out of the `untracked` call walks
+ * past it.
+ *
+ * One level deep, and deliberately so. A member reaching the catalogue through
+ * a private method it calls is not found here; design.md records that with the
+ * other shape no scan can see.
+ */
+function messageMembers(masked) {
+  const members = new Set();
+  for (const declaration of masked.matchAll(MEMBER_DECLARATION)) {
+    const at = declaration.index ?? 0;
+    const initialiser = masked.slice(at, statementEnd(masked, at + declaration[0].length));
+    if (/\.message(?:Signal)?\s*\(/.test(initialiser)) {
+      members.add(declaration[1]);
+    }
+  }
+  return members;
+}
 
 /**
  * What an announcement may declare, and where an effect may build one.
@@ -1166,6 +1213,7 @@ const MESSAGE_BINDING =
 function announcementViolations(file, source) {
   const found = [];
   const masked = maskedSource(source);
+  const resolvers = messageMembers(masked);
   const add = (offset, rule, message) =>
     found.push({ file, line: lineOf(source, offset), rule, message });
 
@@ -1236,7 +1284,24 @@ function announcementViolations(file, source) {
     // A message resolved in the open and carried into the request is the same
     // read, one statement earlier. Only a value that reaches the announcement
     // is a violation: an effect may resolve a message for something else.
+    //
+    // Read through a member as well as through `message()` itself. `const title
+    // = this.title();` reaches the catalogue whenever `title` is one of the
+    // class's own resolved members, and it is the shape these components are
+    // written in. Gathered by offset, so a binding matching both forms is one
+    // violation rather than two.
+    const bindings = new Map();
     for (const binding of occurrences(region, MESSAGE_BINDING)) {
+      bindings.set(binding.index, binding);
+    }
+    for (const binding of occurrences(region, MEMBER_BINDING)) {
+      const member = /=\s*this\.(#?[A-Za-z_$][\w$]*)/.exec(binding.text)?.[1];
+      if (member !== undefined && resolvers.has(member)) {
+        bindings.set(binding.index, binding);
+      }
+    }
+
+    for (const binding of bindings.values()) {
       if (inside(binding.index)) {
         continue;
       }
@@ -2996,6 +3061,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: a Commander\u2019s own ship name and ident, which no language translates, either side of a language-neutral separator.',
     'slef.import.failure.refused':
       'A composition pattern: the record\u2019s own title and the package\u2019s reason, either side of a language-neutral separator.',
+    'slef.import.announce.batch':
+      'A composition pattern: two whole sentences, each translated on its own, with a space between them. A language wanting another separator changes it here.',
+    'equipment.import.announce.batch':
+      'The same pair of sentences, on the bench\u2019s own import layer.',
     'equipment.import.scanned': 'The same scan report, on the bench\u2019s own import layer.',
     'equipment.import.failure.refused':
       'The same refusal line, on the bench\u2019s own import layer.',

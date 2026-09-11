@@ -708,7 +708,33 @@ describe('what an import and a delivery say out loud', () => {
 
     expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
 
-    expect(announcements.polite()).toBe('1 of the chosen builds was not saved. The rest were.');
+    // Both counts. How many were imported is what 016/FR-010 asks the outcome
+    // to state, and a reader who hears only the refusal has to go and count
+    // the records to learn the rest of their own answer.
+    expect(announcements.polite()).toBe('2 builds imported and saved. 1 build was not saved.');
+  });
+
+  it('never says the rest were saved where nothing was', async () => {
+    // Every chosen build refused. The batch still reports, because the
+    // Commander asked and is owed an answer — but the answer is that nothing
+    // was saved. Saying "the rest were" here would state an outcome that did
+    // not happen (constitution IV).
+    await chooseAll([
+      loadoutLine({
+        ShipName: 'Refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-04T09:00:00Z',
+      }),
+      loadoutLine({
+        ShipName: 'Also refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-03T09:00:00Z',
+      }),
+    ]);
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 0 });
+
+    expect(announcements.polite()).toBe('2 builds were not saved.');
   });
 
   it('answers a second Copy, in the same words', async () => {

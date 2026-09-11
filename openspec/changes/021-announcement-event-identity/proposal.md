@@ -49,10 +49,14 @@ measurement, so each caller supplied a measurement.
 - Every delivery of an export is announced, including a second delivery of one export. A
   Commander who presses Copy again because they were unsure of the first press is answered
   both times.
-- The interface policy checker carries two rules. No announcement may carry a caller-supplied
-  revision, so the removed field cannot return one call at a time. No announcement published
-  from an effect resolves its message inside that effect, which is what keeps one occurrence
-  from being announced twice.
+- A batch import announces both of its outcomes. A submit that stored some builds and refused
+  others said only one of the two; it now says how many were saved and how many were not, in
+  one sentence, because the polite outlet holds one event.
+- The interface policy checker carries three rules. No announcement may carry a caller-supplied
+  revision, so the removed field cannot return one call at a time. Every request is written
+  where it is made, because a surplus key reaches the compiler on a literal and not on a
+  variable. And no announcement published from an effect resolves its message inside that
+  effect, which is what keeps one occurrence from being announced twice.
 
 ## Capabilities
 
@@ -76,7 +80,8 @@ None.
   and why every request it is given is announced. `SpokenEvent` and
   `announcement-outlet.ts` are unchanged.
 - `src/app/ui/outfitting/outfitting-notice.ts` draws the lines and announces nothing. It loses
-  its `revision` input, and three templates lose the binding that fed it:
+  its `revision` and `announcementKind` inputs, and three templates lose the bindings that fed
+  them:
   `src/app/ui/outfitting/edit-refusal-notice.html`,
   `src/app/ui/outfitting/ingress-refusal-notice.html` and
   `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.html`.
@@ -101,4 +106,8 @@ None.
   nothing on a committed locale, and it gains the second narrowing and the second refusal.
 - `e2e/manual/screen-reader.protocol.md` gains the two journeys no scan can judge, and
   `e2e/manual/results/` gains their record.
-- No screen changes and no message changes. What changes is which events reach a reader.
+- `src/app/i18n/locales/en.json` and `de.json` gain three keys per import layer: the "was not
+  saved" sentence in its two counted forms, and the joiner that puts it after the stored count.
+  A batch reporting two outcomes states both, and the announcement had no words for the second.
+- No screen changes, and nothing already drawn changes its words. What changes is which events
+  reach a reader, and the one sentence a batch says out loud.

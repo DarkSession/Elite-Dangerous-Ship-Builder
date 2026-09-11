@@ -359,7 +359,6 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a new blocking error publishes one assertive summary',
       'a batch of changes coalesces to one polite summary naming how many there are',
       'initial and unaffected content produces no announcement',
-      'a committed locale publishes nothing, so no prior event is replayed',
       'a filter narrowed, narrowed again and widened puts a new node in the outlet each time',
       'a refusal repeated in identical words puts a new node in the outlet each time',
     ],

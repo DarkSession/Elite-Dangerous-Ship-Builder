@@ -145,6 +145,11 @@ describe('AnnouncementService', () => {
       urgency: 'polite',
       messageKey: 'status.success',
     });
+    announcements.announce({
+      kind: 'build.refused',
+      urgency: 'assertive',
+      messageKey: 'status.success',
+    });
 
     announcements.clearOutlets();
     store.commitCandidate(
@@ -157,7 +162,10 @@ describe('AnnouncementService', () => {
       'browser',
     );
 
+    // Both outlets, because the old language has to go from each of them and a
+    // reader is told about neither event again.
     expect(announcements.polite()).toBe('');
+    expect(announcements.assertive()).toBe('');
   });
 
   it('keeps the sequence running across a locale switch', () => {

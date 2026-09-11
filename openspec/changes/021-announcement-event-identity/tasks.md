@@ -37,19 +37,22 @@
       and that a notice arriving with a standing refusal publishes nothing (011/FR-009).
 - [x] 3.5 Verify in the same specs that a committed locale publishes nothing, and that a batch
       refusing four entries publishes one message rather than four (011/FR-009).
-- [x] 3.6 Remove the `revision` input, the `announce` call and the effect from
-      `outfitting-notice.ts`, and the bindings from `edit-refusal-notice.html`,
+- [x] 3.6 Remove the `revision` and `announcementKind` inputs, the `announce` call and the
+      effect from `outfitting-notice.ts`, and the bindings from `edit-refusal-notice.html`,
       `ingress-refusal-notice.html` and `outfitting-workspace.html`. Verify the notice's spec
-      reads that the lines stay in reading order and that it publishes nothing (011/FR-009).
+      reads each line in the order it was handed them, and reads that a refusal arriving on its
+      `lines` input publishes nothing at either urgency (011/FR-009).
 - [x] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
       Verify two unresolvable addresses publish twice, and a browser language change publishes
       nothing (011/FR-009).
 - [x] 3.8 Drop the numbers from the three `slef.import` announcements in `submit()`. None of
       them asks `SlefStore.isCurrent`: a submit that was withdrawn comes back as its own
-      outcome kind, which no branch here announces. Verify a stored import and a refused import
-      each publish after a committed one, and that one batch reporting a count and a refusal
-      publishes a single sentence stating both, because the polite outlet holds one event
-      (011/FR-009, 016/FR-010, 016/FR-011).
+      outcome kind, which no branch here announces. Add the words a batch's second outcome
+      needs — the refusal sentence in both counted forms, and the joiner that puts it after the
+      stored count — in both catalogues. Verify a stored import and a refused import each
+      publish after a committed one, that one batch reporting a count and a refusal publishes a
+      single sentence stating both counts, and that a batch where nothing was saved never says
+      the rest were (011/FR-009, 016/FR-010, 016/FR-011, constitution IV).
 - [x] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
       publishes twice, and a copy that fails then succeeds publishes both outcomes
       (011/FR-009).
@@ -60,8 +63,10 @@
       the outcome only then. Verify two scans in flight announce the second scan's outcome and
       not the abandoned one (011/FR-009).
 - [x] 4.2 Do the same in `loadout-import.coordinator.ts`, and drop the tokens from
-      `loadout-import.presenter.ts`. Verify its spec reads that a superseded scan announces
-      nothing (011/FR-009).
+      `loadout-import.presenter.ts`. Give its batch the same two-outcome sentence, which said
+      only the stored count and never the refusal. Verify its spec reads that a superseded scan
+      announces nothing, that a batch saving one loadout and refusing another states both, and
+      that a batch saving none never says the rest were saved (011/FR-009, constitution IV).
 - [x] 4.3 `app-frame.ts` announces with no declaration. Verify its spec reads that a re-render
       publishes nothing and a new locale snapshot publishes once (011/FR-009).
 - [x] 4.4 `app.ts` announces the failed navigation with no declaration, and remembers the
@@ -75,13 +80,18 @@
 
 ## 5. The gate
 
-- [x] 5.1 Add two rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
-      `announce` call, and an announcement published from an effect built and called inside one
-      `untracked` call. Verify `pnpm run policy` passes over `src/`.
+- [x] 5.1 Add three rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
+      `announce` call, a request written as a literal at the call site, and an announcement
+      published from an effect built and called inside one `untracked` call. The third reads a
+      value hoisted out of that call as the catalogue read it is, whether it is a `message()`
+      call or one of the class's own members holding one. Verify `pnpm run policy` passes over
+      `src/`.
 - [x] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs`: one rejected by each
-      rule, and one that resolves a message parameter in the effect before an `untracked`
-      announce. Add two the rules must not reject: a `revision` key in an unrelated object, and
-      an `announce` called from a method. Verify each fixture's verdict.
+      rule, one that resolves a message parameter in the effect before an `untracked` announce,
+      and one that hoists a resolved member out of it. Add four the rules must not reject: a
+      `revision` key in an unrelated object, an `announce` called from a method, a trigger read
+      in the open, and a resolved member read in the open and never announced. Verify each
+      fixture's verdict.
 
 ## 6. Reading it end to end
 
@@ -91,14 +101,16 @@
       journey a Commander could walk to reach one; the two refusal notices are read by their
       own unit suites instead. Assert the outlet takes a new node for each event, since the
       words do not move (011/FR-009).
-- [x] 6.2 Add both assertions to the 011/FR-009 rows in `e2e/coverage-ledger.ts`. Verify with
-      `pnpm run policy:specs`.
+- [x] 6.2 Add both assertions to the `shell/announcements` row in `e2e/coverage-ledger.ts`, and
+      take out the locale line: no journey can read it, because a Commander reaches a language
+      by asking their browser for it and the suite cannot change that mid-session. The unit
+      suite beside each announcing file reads it instead. Verify with `pnpm run policy:specs`.
 - [x] 6.3 Add the two journeys to `e2e/manual/screen-reader.protocol.md` as step 22. Record
       the rows in `e2e/manual/results/screen-reader.md`. They stand as `not run`, the way every
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
 - [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters — 93.15% statements, 86.08% branches, 93.98% functions, 92.98% lines. Everything
+      counters — 93.76% statements, 86.61% branches, 94.66% functions, 93.68% lines. Everything
       up to and including `test` passes. Of the three e2e scripts, the five chromium projects
       pass (3682 of 3695; the thirteen are axe sweeps timing out under eight workers in this
       container, and all pass again at two) and so does the offline suite. Two things this

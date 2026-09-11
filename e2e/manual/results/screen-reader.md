@@ -19,7 +19,7 @@ The automated coverage that _does_ exist for the same requirements is the axe
 scan across every product and preview state in all ten projects, plus the named
 semantic assertions in `e2e/accessibility/assertions.ts` — accessible names
 matching visible text, exposed state, label/description/error relationships,
-landmark and heading structure, live-region urgency and deduplication, and text
+landmark and heading structure, live-region urgency and replay, and text
 equivalents for every visual carrier.
 
 | Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
