@@ -89,6 +89,11 @@ None.
   `src/app/ui/outfitting/ingress-refusal-notice.ts` announce instead. Each holds the refusal
   itself, which changes once per refusal, where the generic notice holds resolved text that a
   committed locale rewrites.
+- `src/app/application/active-build/active-build.store.ts` remembers whether a reader has been
+  told about the standing ingress refusal, and
+  `src/app/features/build-workspace/outfitting/outfitting-workspace/` passes that answer down
+  and clears it. A record refused as the workspace opens is reported before the notice exists,
+  so the notice has no arrival of its own to judge.
 - Eight files state their events without a revision:
   `src/app/features/ship-catalogue/ship-catalogue.page.ts`,
   `src/app/features/build-library/build-library.page.ts`,

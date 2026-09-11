@@ -1104,6 +1104,10 @@ function callSpan(masked, open) {
  * Depth is what makes this worth writing rather than matching: `params` is a
  * caller's own message data, and a key inside it is a word in a sentence rather
  * than something the policy is being handed.
+ *
+ * A shorthand key counts. `{ kind, urgency, messageKey, revision }` states the
+ * same four keys as the spelled-out form, and it is the spelling someone
+ * re-adding the field would reach for.
  */
 function topLevelKeys(literal) {
   const keys = [];
@@ -1121,7 +1125,7 @@ function topLevelKeys(literal) {
     if (depth !== 1) {
       continue;
     }
-    const key = /^([A-Za-z_$][\w$]*)\s*:/.exec(literal.slice(index));
+    const key = /^([A-Za-z_$][\w$]*)\s*(?::|,|\}|$)/.exec(literal.slice(index));
     if (key !== null && !/[\w$.]/.test(literal[index - 1] ?? '')) {
       keys.push(key[1]);
       index += key[0].length - 1;
@@ -1162,10 +1166,11 @@ function occurrences(masked, pattern) {
 }
 
 const ANNOUNCE_CALL = /\.announce\s*\(/g;
-const EFFECT_CALL = /\beffect\s*\(/g;
+const EFFECT_CALL = /\b(?:effect|afterRenderEffect|afterNextRender|afterEveryRender)\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
 const CATALOGUE_READ = /\.message(?:Signal)?\s*\(/g;
-const MEMBER_DECLARATION = /^[ \t]*(?:readonly\s+)?(#?[A-Za-z_$][\w$]*)\s*=/gm;
+const MEMBER_DECLARATION =
+  /^[ \t]*(?:(?:public|protected|private|static|override|readonly)\s+)*(#?[A-Za-z_$][\w$]*)\s*(?::[^=;\n]+)?=/gm;
 const MEMBER_READ = /\bthis\.(#?[A-Za-z_$][\w$]*)\s*\(/g;
 
 /** Where the statement beginning at `from` ends, ignoring nested brackets. */
@@ -1298,8 +1303,6 @@ function announcementViolations(file, source) {
     }
     const inside = (offset) => sheltered.some((span) => offset >= span.start && offset < span.end);
 
-    /** The request literals this effect announces from, as masked text. */
-    const requests = [];
     for (const call of announcing) {
       if (!inside(call.index)) {
         add(
@@ -1309,11 +1312,6 @@ function announcementViolations(file, source) {
             'call. Outside it, resolving the message reads the catalogue, and a committed ' +
             'locale republishes an event that already happened.',
         );
-        continue;
-      }
-      const span = callSpan(region, call.index + call.text.indexOf('('));
-      if (span !== null) {
-        requests.push(region.slice(span.start, span.end));
       }
     }
 

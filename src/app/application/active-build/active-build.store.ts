@@ -41,6 +41,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
   readonly #persistence = signal<PersistenceStatus>('ready');
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
   readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
+  readonly #ingressUnannounced = signal(false);
 
   /** Which tool's records this store's work is written into. */
   readonly tool = 'ship' as const;
@@ -65,6 +66,19 @@ export class ActiveBuildStore implements WorkingRecordSubject {
    * (contract, "Mandatory ingress normalization").
    */
   readonly ingressFailures = this.#ingressFailures.asReadonly();
+
+  /**
+   * Whether the standing refusal is one no reader has been told about yet.
+   *
+   * The refusal itself cannot answer this. A record whose roll the package
+   * cannot complete is refused while the workspace is still being built, so
+   * the notice that draws it is created with the refusal already standing and
+   * has no transition to watch — the same state a Commander returning to a
+   * refusal they were told about last visit arrives at. One is an event and
+   * the other is initial content, and only this store knows which, because
+   * only this store saw the report happen (011/FR-009).
+   */
+  readonly ingressRefusalUnannounced = this.#ingressUnannounced.asReadonly();
 
   /** Increments once per modelled edit or commit. Everything derived reads it. */
   readonly revision = this.#revision.asReadonly();
@@ -140,6 +154,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
     this.#sourceNamed.set(candidate.sourceNamed);
     this.#baseline.set(candidate.baseline);
     this.#ingressFailures.set([]);
+    this.#ingressUnannounced.set(false);
     this.#link.set({ kind: 'absent' });
     this.#persistence.set('ready');
     this.#revision.update((revision) => revision + 1);
@@ -207,6 +222,12 @@ export class ActiveBuildStore implements WorkingRecordSubject {
   /** Records a whole-candidate ingress refusal. Nothing about the build moves. */
   reportIngressRefusal(failures: readonly PartialEngineeringFailure[]): void {
     this.#ingressFailures.set(failures);
+    this.#ingressUnannounced.set(failures.length > 0);
+  }
+
+  /** Records that a reader has now been told about the standing refusal. */
+  markIngressRefusalAnnounced(): void {
+    this.#ingressUnannounced.set(false);
   }
 
   /**
@@ -240,6 +261,7 @@ export class ActiveBuildStore implements WorkingRecordSubject {
     this.#sourceNamed.set(null);
     this.#baseline.set(null);
     this.#ingressFailures.set([]);
+    this.#ingressUnannounced.set(false);
     this.#link.set({ kind: 'absent' });
     this.#revision.update((revision) => revision + 1);
   }

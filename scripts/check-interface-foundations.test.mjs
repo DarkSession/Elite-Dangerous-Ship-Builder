@@ -424,6 +424,37 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
+  it('rejects a number stated as a shorthand key', () => {
+    // The spelling someone re-adding the field would reach for, and the one
+    // the compiler is silent about once the field is back on the type.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind, urgency, messageKey, revision });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('accepts a request whose every key is shorthand and none of them a number', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind, urgency, messageKey, params });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects an announcement published in the open from a render effect', () => {
+    // `afterRenderEffect` tracks signals exactly as `effect` does, so an
+    // announcement built inside one takes the same catalogue dependency.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'afterRenderEffect(() => { this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }); });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
   it('rejects an announcement published from an effect in the open', () => {
     const found = rules.announcementViolations(
       'a.ts',
@@ -462,6 +493,44 @@ describe('announcements', () => {
         '  const title = this.title();',
         '  untracked(() =>',
         '    this.#announcements.announce({ kind: "x", urgency: "assertive", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member declared with an access modifier', () => {
+    // `protected readonly` is how nine of these are written. A member the
+    // template reads is no less a catalogue read than a private one.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'protected readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member declared with a type annotation', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title: Signal<string> = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { title } }),',
         '  );',
         '});',
       ].join('\n'),

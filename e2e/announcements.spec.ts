@@ -6,9 +6,14 @@ import { reachShellAction } from './shell';
  * The announcement policy journey (US1).
  *
  * The contract is as much about silence as about speech. Announcing initial
- * content, an unchanged value or a result that no longer owns the presented
- * revision is not helpfulness — it is noise that a screen-reader user has to
+ * content, an unaffected value or an outcome to a question the Commander has
+ * withdrawn is not helpfulness — it is noise that a screen-reader user has to
  * sit through before they can reach what they were doing.
+ *
+ * Every one of those silences is the caller's. The policy itself announces
+ * whatever it is given, and what is read here is the other half: the second of
+ * two things reaches a reader as reliably as the first, even where the two are
+ * spoken in one sentence (011/FR-009).
  */
 
 /**

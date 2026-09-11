@@ -37,7 +37,9 @@
   <ednb-ingress-refusal-notice
     class="outfitting__feedback"
     [failures]="ingressFailures()"
+    [unannounced]="ingressRefusalUnannounced()"
     [slotLabels]="slotLabels()"
+    (announced)="markIngressRefusalAnnounced()"
   />
 
   @if (!store.hasBuild()) {

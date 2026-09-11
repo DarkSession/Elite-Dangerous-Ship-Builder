@@ -853,6 +853,7 @@ describe('ingress refusal notice', () => {
     const announcements = TestBed.inject(AnnouncementService);
     const announce = vi.spyOn(announcements, 'announce');
 
+    fixture.componentRef.setInput('unannounced', true);
     fixture.componentRef.setInput('failures', [
       FAILURE,
       refused('SmallHardpoint1'),
@@ -866,19 +867,45 @@ describe('ingress refusal notice', () => {
     expect(announcements.assertive()).toContain('5 to read');
   });
 
-  it('says nothing about a refusal that is already on screen when it opens', () => {
+  it('says nothing about a refusal a reader has already been told about', () => {
     // The record holding the refusal is the application's and the workspace is
     // a route, so a refusal still standing when the screen is opened again
     // arrives with the screen. That is initial content (011/FR-009).
-    renderComponent(IngressRefusalNotice, { failures: [FAILURE] });
+    renderComponent(IngressRefusalNotice, { failures: [FAILURE], unannounced: false });
 
     expect(TestBed.inject(AnnouncementService).assertive()).toBe('');
+  });
+
+  it('states a refusal it is created with, where nobody has been told yet', () => {
+    // A record carrying a roll the package cannot complete is refused while the
+    // workspace is still being built, so this notice is created with the
+    // refusal already on it and never sees it arrive. Silence here would lose
+    // the event outright: the Commander asked for the build and it was refused
+    // (011/FR-009).
+    renderComponent(IngressRefusalNotice, { failures: [FAILURE], unannounced: true });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toContain('2 to read');
+  });
+
+  it('says it has spoken, so the screen it is on can remember', () => {
+    // The count is a rule about what is drawn and belongs here; the memory has
+    // to outlive a component the next visit rebuilds, and belongs to the store.
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
+    const spoken = vi.fn();
+    fixture.componentInstance.announced.subscribe(spoken);
+
+    fixture.componentRef.setInput('unannounced', true);
+    fixture.componentRef.setInput('failures', [FAILURE]);
+    fixture.detectChanges();
+
+    expect(spoken).toHaveBeenCalledTimes(1);
   });
 
   it('announces a second refusal, and says nothing more for a committed locale', () => {
     const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
     const announcements = TestBed.inject(AnnouncementService);
 
+    fixture.componentRef.setInput('unannounced', true);
     fixture.componentRef.setInput('failures', [FAILURE]);
     fixture.detectChanges();
     const first = announcements.assertiveEvent();

@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  output,
   untracked,
 } from '@angular/core';
 import type { PartialEngineeringFailure } from '../../domain/ships/build/build-ingress-result';
@@ -40,8 +41,16 @@ import { slotName } from './slot-naming';
  * notice it is drawn in. `failures` is the refusal itself and ingress hands
  * over a new set per refused candidate, so the effect runs once per event; an
  * effect over the drawn lines would run again for every committed locale
- * (011/FR-009). A refusal already standing when the screen opens is initial
- * content and stays silent, the way every other screen's arrival does.
+ * (011/FR-009).
+ *
+ * A refusal already standing when the screen opens is the one case a first-run
+ * guard cannot judge, so this component does not try. A record whose roll the
+ * package cannot complete is refused while the workspace is still being built,
+ * so the notice is created with the refusal already there and has no
+ * transition to watch — and that looks exactly like a Commander returning to a
+ * refusal they were told about on their last visit. One is an event, the other
+ * is initial content. `unannounced` is the store's answer, because the store
+ * is what saw the report happen.
  */
 @Component({
   selector: 'ednb-ingress-refusal-notice',
@@ -56,6 +65,9 @@ export class IngressRefusalNotice {
   readonly #announcements = inject(AnnouncementService);
 
   readonly failures = input.required<readonly PartialEngineeringFailure[]>();
+
+  /** Whether a reader still has to be told about the standing refusal. */
+  readonly unannounced = input(false);
 
   /** The mount labels, already localized, keyed by the package's slot key. */
   readonly slotLabels = input<Readonly<Record<string, string>>>({});
@@ -98,26 +110,27 @@ export class IngressRefusalNotice {
     return lines;
   });
 
+  /**
+   * Said once the refusal has been spoken, so it is not spoken again.
+   *
+   * The notice counts the lines, and the store remembers. Neither can do the
+   * other's half: the count is a rule about what is drawn, and the memory has
+   * to outlive a component that is rebuilt on every visit to the workspace.
+   */
+  readonly announced = output<void>();
+
   constructor() {
-    // The first run is silent, whatever it finds. The record holding the
-    // refusal is the application's and the workspace is a route, so a refusal
-    // still standing when the screen is opened again arrives with the screen.
-    // That is initial content — drawn at the top of the workspace, in reading
-    // order (announcement policy, "initial content").
-    let arrived = false;
     effect(() => {
       const failures = this.failures();
-      if (!arrived) {
-        arrived = true;
-        return;
-      }
-      if (failures.length === 0) {
+      const unannounced = this.unannounced();
+      if (failures.length === 0 || !unannounced) {
         return;
       }
       // Everything the sentence says is read in here, so the only thing this
-      // effect depends on is the refusal. One announcement for the whole batch:
-      // a reader is told how many modules there are, and the lines themselves
-      // stay on the page to be read one at a time.
+      // effect depends on is the refusal and whether it has been spoken. One
+      // announcement for the whole batch: a reader is told how many modules
+      // there are, and the lines themselves stay on the page to be read one at
+      // a time.
       untracked(() => {
         this.#announcements.announce({
           kind: 'outfitting.ingress-refused',
@@ -128,6 +141,7 @@ export class IngressRefusalNotice {
             count: this.#formatters.integer(this.lines().length),
           },
         });
+        this.announced.emit();
       });
     });
   }

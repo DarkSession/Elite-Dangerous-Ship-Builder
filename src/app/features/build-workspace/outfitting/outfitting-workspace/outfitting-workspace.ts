@@ -340,6 +340,23 @@ export class OutfittingWorkspace {
   readonly ingressFailures = this.active.ingressFailures;
 
   /**
+   * Whether a reader still has to be told about that refusal.
+   *
+   * A record carrying a roll the package cannot complete is refused while this
+   * screen is still being built, so the notice is created with the refusal
+   * already on it and has no transition of its own to watch. The store saw the
+   * report and this passes on its answer, so a refusal the Commander has just
+   * caused is spoken and one they were told about last visit is not
+   * (011/FR-009).
+   */
+  readonly ingressRefusalUnannounced = this.active.ingressRefusalUnannounced;
+
+  /** Says the refusal has been spoken, so returning to it says nothing more. */
+  markIngressRefusalAnnounced(): void {
+    this.active.markIngressRefusalAnnounced();
+  }
+
+  /**
    * The ledger's own labels, keyed by exact slot key.
    *
    * The ingress refusal names mounts, and it names them the way the ledger does

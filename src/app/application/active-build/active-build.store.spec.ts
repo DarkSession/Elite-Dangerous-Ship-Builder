@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
+import type { PartialEngineeringFailure } from '../../domain/ships/build/build-ingress-result';
 import { ActiveBuildStore } from './active-build.store';
 import type { BuildCandidate } from './active-build.models';
 
@@ -179,5 +180,68 @@ describe('ActiveBuildStore', () => {
     expect(active.clearIfHolding('someone-elses')).toBe(false);
     expect(active.loadout()).not.toBeNull();
     expect(active.autosaveRecordId()).toBe('held');
+  });
+  describe('the ingress refusal a reader still has to be told about', () => {
+    /** One refused roll, in the shape the package hands over. */
+    const failure = (): PartialEngineeringFailure => ({
+      source: {
+        slotKey: 'MainEngines',
+        moduleSymbol: 'Int_Engine_Size7_Class5',
+        blueprintFdname: 'Engine_Dirty',
+        effectFdname: null,
+        grade: 5,
+        quality: 0.42,
+      },
+      reason: 'packageResult',
+      code: 'unsupportedEngineering',
+      params: null,
+    });
+
+    it('starts with nothing to say', () => {
+      expect(store().ingressRefusalUnannounced()).toBe(false);
+    });
+
+    it('has something to say from the moment a refusal is reported', () => {
+      // The notice that draws this is created after the report, whenever a
+      // record is opened as the workspace is built, so it never sees the
+      // refusal arrive. This is the fact it asks for instead (011/FR-009).
+      const active = store();
+
+      active.reportIngressRefusal([failure()]);
+
+      expect(active.ingressRefusalUnannounced()).toBe(true);
+    });
+
+    it('has nothing more to say once it has been said', () => {
+      const active = store();
+      active.reportIngressRefusal([failure()]);
+
+      active.markIngressRefusalAnnounced();
+
+      // Which is what makes returning to a standing refusal silent: it is
+      // initial content, drawn where a reader meets it in reading order.
+      expect(active.ingressRefusalUnannounced()).toBe(false);
+      expect(active.ingressFailures()).toHaveLength(1);
+    });
+
+    it('has something to say again when the next candidate is refused', () => {
+      const active = store();
+      active.reportIngressRefusal([failure()]);
+      active.markIngressRefusalAnnounced();
+
+      active.reportIngressRefusal([failure()]);
+
+      expect(active.ingressRefusalUnannounced()).toBe(true);
+    });
+
+    it('says nothing about a build that arrived after all', () => {
+      const active = store();
+      active.reportIngressRefusal([failure()]);
+
+      active.commit(candidate());
+
+      expect(active.ingressFailures()).toEqual([]);
+      expect(active.ingressRefusalUnannounced()).toBe(false);
+    });
   });
 });

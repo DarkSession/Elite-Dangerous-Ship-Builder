@@ -32,9 +32,13 @@
       none, and a browser language behind an unchanged count as none (011/FR-009).
 - [x] 3.4 Announce the refusal from `edit-refusal-notice.ts` and `ingress-refusal-notice.ts`,
       with the refusal input as the trigger and everything the message says read in `untracked`.
-      Keep a first-run guard on each: a refusal already drawn when the workspace opens is
-      initial content. Verify two refusals with no committed edit between them publish twice,
-      and that a notice arriving with a standing refusal publishes nothing (011/FR-009).
+      A refusal already drawn when the workspace opens is initial content: `edit-refusal-notice`
+      keeps a first-run guard for it, and `ingress-refusal-notice` asks
+      `ActiveBuildStore.ingressRefusalUnannounced` instead, because a refused open reports
+      before the notice exists and a guard would silence it. Verify two refusals with no
+      committed edit between them publish twice, that a notice arriving with a refusal nobody
+      has been told about publishes once, and that one arriving with a refusal already
+      announced publishes nothing (011/FR-009).
 - [x] 3.5 Verify in the same specs that a committed locale publishes nothing, and that a batch
       refusing four entries publishes one message rather than four (011/FR-009).
 - [x] 3.6 Remove the `revision` and `announcementKind` inputs, the `announce` call and the
@@ -81,9 +85,10 @@
 ## 5. The gate
 
 - [x] 5.1 Add three rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
-      `announce` call, a request written as a whole literal at the call site that spreads
-      nothing into itself, and an announcement published from an effect built and called inside
-      one `untracked` call. The third reads any catalogue read the effect makes in the open as
+      `announce` call, spelled out or as shorthand; a request written as a whole literal at the
+      call site that spreads nothing into itself; and an announcement published from an effect —
+      `effect`, `afterRenderEffect` or `afterNextRender` — built and called inside one
+      `untracked` call. The third reads any catalogue read the effect makes in the open as
       the dependency it is, wherever the value goes, and whether it is a `message()` call or one
       of the class's own members holding one. Verify `pnpm run policy` passes over `src/`.
 - [x] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs`: one rejected by each
@@ -112,7 +117,7 @@
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
 - [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters — 93.76% statements, 86.58% branches, 94.69% functions, 93.67% lines. Everything
+      counters — 93.76% statements, 86.58% branches, 94.66% functions, 93.67% lines. Everything
       up to and including `test` passes. Of the three e2e scripts, the five chromium projects
       pass (3714 of 3715; the one is a control in the saved-builds suite timing out on a click
       under load in this container, on a screen that announces nothing, and its whole project

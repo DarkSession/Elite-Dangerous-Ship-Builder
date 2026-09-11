@@ -196,14 +196,30 @@ per refusal, and a committed locale touches neither. So each wrapper announces, 
 input as the trigger and everything the announcement says read inside `untracked`. That is gate
 rule 3's shape.
 
-Each wrapper keeps a first-run guard, the same one `ship-catalogue`, `build-library` and
-`hull-anatomy` hold. The store holding the refusal is the application's and the workspace is a
-route, so a Commander who is refused an edit, looks at the shipyard and comes back arrives at a
-screen with the refusal already drawn on it, at the top of the workspace and in reading order.
-That is initial content, and announcing it would speak to a reader about something they were
-told about on their last visit. Removing the high-water mark un-silenced the genuine second
-event and this re-mount alike; the guard is what separates them, and it is the caller's silence
-because only the caller knows which of its runs is an arrival.
+A refusal already standing when the screen opens is the case that needs care. The store holding
+it is the application's and the workspace is a route, so a Commander who is refused, looks at
+the shipyard and comes back arrives at a screen with the refusal already drawn on it, in
+reading order at the top of the workspace. That is initial content, and announcing it would
+speak to a reader about something they were told about on their last visit. Removing the
+high-water mark un-silenced the genuine second event and this re-mount alike.
+
+`EditRefusalNotice` keeps a first-run guard for it, the same one `ship-catalogue`,
+`build-library` and `hull-anatomy` hold. An edit is a Commander pressing a control on a screen
+that is already up, so the only way this notice is created with a refusal standing is a
+re-visit, and the guard answers exactly that.
+
+`IngressRefusalNotice` cannot use one, because for it the two cases look identical. A record
+carrying a roll the package cannot complete is refused inside `RecordOpenService.open`, which
+`BuildWorkspacePage` calls from its own constructor and which reports synchronously — so the
+notice is created with the refusal already standing and never sees it arrive. A first-run guard
+there silences a refusal the Commander just caused, which is the event 011/FR-009 is about.
+
+So the fact moves to where it exists. `ActiveBuildStore.reportIngressRefusal` marks the refusal
+unannounced, `ingressRefusalUnannounced` is what the notice watches beside the refusal itself,
+and the notice says `announced` once it has spoken so the store can clear the mark. The notice
+counts the lines because that is a rule about what is drawn; the store remembers because the
+memory has to outlive a component the next visit rebuilds. It is the same shape `app.ts` uses
+for the update notice: the caller keeps what it announced, because the policy no longer can.
 
 It also keeps one count in one place. `outfitting.notice.announced` says how many lines there
 are to read, and the wrapper that builds the lines is what counts them.
