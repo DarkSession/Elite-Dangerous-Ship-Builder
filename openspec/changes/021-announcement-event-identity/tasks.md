@@ -33,9 +33,10 @@
 - [x] 3.4 Announce the refusal from `edit-refusal-notice.ts` and `ingress-refusal-notice.ts`,
       with the refusal input as the trigger and everything the message says read in `untracked`.
       A refusal already drawn when the workspace opens is initial content: `edit-refusal-notice`
-      keeps a first-run guard for it, and `ingress-refusal-notice` asks
-      `ActiveBuildStore.ingressRefusalUnannounced` instead, because a refused open reports
-      before the notice exists and a guard would silence it. Verify two refusals with no
+      keeps a first-run guard for it, and `ingress-refusal-notice` takes an `unannounced` input
+      instead, which the workspace feeds from `ActiveBuildStore.ingressRefusalUnannounced` and
+      the notice answers with an `announced` output, because a refused open reports before the
+      notice exists and a guard would silence it. Verify two refusals with no
       committed edit between them publish twice, that a notice arriving with a refusal nobody
       has been told about publishes once, and that one arriving with a refusal already
       announced publishes nothing. The workspace withholds the mark while the saved builds

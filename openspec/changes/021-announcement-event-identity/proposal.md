@@ -109,10 +109,12 @@ None.
 - The unit suite beside each of those files reads what was silent.
   `announcement.service.spec.ts` reads the policy directly.
 - `e2e/coverage-ledger.ts` keeps both rows carrying 011/FR-009. The `shell/announcements` row
-  is the one that moves: it gains the second narrowing and the second refusal, its settled-change
-  line is restated as what the journey reads, and its locale line goes, because a Commander
-  reaches a language by asking their browser and no journey can change that mid-session. The
-  unit suite beside each announcing file reads the locale silence instead.
+  is the one that moves: it gains the second narrowing and the second refusal, its
+  settled-change line is restated as what the journey reads, its initial-content line loses
+  `unchanged` and `stale` because those were the old policy's silences and are silences no
+  longer, and its locale line goes, because a Commander reaches a
+  language by asking their browser and no journey can change that mid-session. The unit suite
+  beside each announcing file reads the locale silence instead.
 - `e2e/manual/screen-reader.protocol.md` gains the two journeys no scan can judge, and
   `e2e/manual/results/` gains their record.
 - `src/app/i18n/locales/en.json` and `de.json` gain four keys per import layer and lose one. A

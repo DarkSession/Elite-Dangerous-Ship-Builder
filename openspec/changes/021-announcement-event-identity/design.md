@@ -401,6 +401,16 @@ rather than a preference.
   computed that resolves messages inside itself takes the catalogue dependency across a file
   boundary the rule never opens; `SlefPresenter.importView` and `HullDetailFacade.view` are
   both written that way, so this is the composition pattern here rather than a hypothetical.
+  `HullDetailFacade.view` reaches the catalogue on its populated branch rather than on the
+  unknown one the announcement watches, which is why its locale case passes: the shape is the
+  risk, not that site today.
+
+  The rule errs the other way as well, and on purpose. A `message()` call is read as a
+  catalogue read wherever it is written, so a domain object answering `diag.message()` is
+  rejected although its words never move with the reading language. The remedy costs nothing —
+  the read goes inside the `untracked` call with the rest of the request — and a rule that
+  tried to tell the two apart would need to know what every `message()` in the repository
+  returns.
 
   Any of the seven could publish one occurrence twice, against the requirement. → The unit
   suite beside each announcing file reads what it publishes, and the manual screen-reader
