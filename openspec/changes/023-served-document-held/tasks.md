@@ -141,6 +141,15 @@
       and it can fail. If it now fails, the checker has been fixed since, and the Impact bullet is
       stale and comes out (constitution IX; 011/FR-024).
 
+- [ ] 4.5 Read the held state at 200% text size and at 400% zoom, in the profiles the journey in
+      task 1.2 already runs: the held content and the failure statement together, with the content
+      complete and no horizontal page scrolling. 011/FR-011 requires it of every capability, and
+      neither existing reading reaches this composition — 015/FR-019 scans the generated first
+      frame, where no statement stands beside the content, and the responsive journeys never reach
+      a held state. Change 018 read its own standing state the same way for the same reason
+      (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Verify with
+      `pnpm run e2e` (011/FR-011, 011/SC-003).
+
 ## 5. Reading it end to end
 
 - [ ] 5.1 Re-read the takeover that succeeds, which this change must not disturb: run the existing
@@ -175,6 +184,10 @@
       only in this change's delta until the change is archived, and the check would pass with the
       registration missing. It is a regression guard for what is already accepted, and the reason
       to make the entry now is that archiving turns it into a requirement rather than a courtesy.
+      Register `023/FR-001` on the surface task 3.3 reads as well, because the shell scenario is
+      evidenced there rather than in the production journey. An id tied to one surface leaves the
+      other surface's evidence unregistered, which is the coverage AGENTS.md says stops being
+      checked.
 - [ ] 5.5 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four counters,
       and report what passed, including which Playwright projects this container could run and
       which it could not.

@@ -215,28 +215,25 @@ where the development server has no generated document at any address at all —
 over a wider set, which is why the rule is stated as holding what was served rather than as a
 second case.
 
-**Open question, recorded and not answered here (constitution IX).** A returning Commander with no
-network is answered by the cached shell at an address the build does generate a document for
-(015/FR-014, "The generated document or the cached shell"). If their first navigation then fails
-because the screen's chunk is not cached, holding what was served gives them the shell. 018/FR-007
-reads that case the other way: its scenario's WHEN is "the first navigation of a session fails at
-an address the build generates a document for" and its THEN is "the Commander is left on the
-readable document that address served", and its sibling scenario sets the shell against the
-document as the two distinct outcomes rather than two names for one. So a test written from that
-scenario would expect the document and find the shell.
+One case worth reading before the rule is built. A returning Commander with no network is answered
+by the cached shell at an address the build does generate a document for (015/FR-014, "The
+generated document or the cached shell"). If their first navigation then fails because the screen's
+chunk is not cached, holding what was served gives them the shell.
 
-The question is which of the two is right, and it is not this change's to settle: 015/FR-014
-separates what the build generates from what the address served, and it did so before this change.
-So the delta does not answer it. Its shell clause and its shell scenario are both keyed on an
-address the build generates no document for, which is the case nothing disputes, and the requirement
-says in as many words that an address which served the shell despite having a generated document is
-not settled there. A clause reading "any other address that served the shell" would have settled it
-by the back door, against an accepted scenario, which is what an open question is recorded to
-prevent.
+018/FR-007 agrees, and the agreement is in the sentence that governs it: "what the Commander is
+left on is whatever that address served them". Its scenario keys on the same thing — "the Commander
+is left on the readable document that address served" — and a cached shell is both readable and
+what was served. What does not anticipate the case is the enumeration in between, "the readable
+document where the build generates one, and the application's own shell at an address it does not",
+which reads a generated address and a served document as the same thing. 015/FR-014 separates them,
+and did so before this change.
 
-No task here depends on the answer, because nothing in this change reads the offline case. Whether
-that case is reachable by any lane at all is the first thing to settle, and it belongs to
-`platform/navigation-waiting` with `platform/published-addresses` beside it.
+So there is nothing here to settle between two capabilities, and this change does not open one. The
+rule is stated once, on what the address served, which is what 018/FR-007's governing sentence and
+its scenario both key on. The enumeration is the only text that reads otherwise, it is prose rather
+than an obligation, and tightening it belongs to `platform/navigation-waiting` on a day that
+capability is opened. No task here depends on it, because nothing in this change reads the offline
+case.
 
 ## Risks / Trade-offs
 
