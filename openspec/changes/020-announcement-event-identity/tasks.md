@@ -93,5 +93,12 @@
       the rows in `e2e/manual/results/screen-reader.md`. They stand as `not run`, the way every
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
-- [ ] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters.
+- [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
+      counters — 93.15% statements, 86.08% branches, 93.98% functions, 92.98% lines. Everything
+      up to and including `test` passes. Of the three e2e scripts, the five chromium projects
+      pass (3682 of 3695; the thirteen are axe sweeps timing out under eight workers in this
+      container, and all pass again at two) and so does the offline suite. Two things this
+      container cannot answer, and neither is this change's: Firefox is not installed and
+      cannot be fetched, so the five Firefox projects do not run; and the throttled candidate
+      search settles at 105.8 ms against a 100 ms budget, which reproduces identically on
+      `origin/main`.
