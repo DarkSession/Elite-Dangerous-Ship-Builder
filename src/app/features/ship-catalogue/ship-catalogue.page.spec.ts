@@ -54,7 +54,7 @@ describe('ShipCataloguePage announcements', () => {
     expect(TestBed.inject(AnnouncementService).polite()).toBe('');
   });
 
-  it('states every narrowing, including a second that says the same words', () => {
+  it('states every narrowing, and the widening after them', () => {
     const { detect } = render();
     const catalogue = TestBed.inject(CatalogueFacade);
     const announcements = TestBed.inject(AnnouncementService);
@@ -64,9 +64,11 @@ describe('ShipCataloguePage announcements', () => {
     const first = announcements.politeEvent();
     expect(first, 'the first narrowing said nothing').not.toBeNull();
 
-    // Narrowed again, to a count that could be spoken in the same sentence.
-    // The effect runs on the count, and the count moved, so this is a second
-    // event whether or not its words differ from the first's.
+    // Narrowed again, with nothing else on the screen touched. The effect runs
+    // on the count, and the count moved, so this is a second event. Two
+    // narrowings that land on one count are the case where the words do not
+    // move either; `hull-detail.page.spec.ts` and the refusal notices read that
+    // one, where two events are spoken in one sentence by construction.
     catalogue.changeSizes(['medium']);
     detect();
     const second = announcements.politeEvent();

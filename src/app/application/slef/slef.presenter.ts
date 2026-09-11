@@ -358,7 +358,12 @@ export class SlefPresenter {
     if (only === null) {
       return;
     }
-    this.#announcements.announce({ kind: 'slef.import', urgency: 'polite', ...only });
+    this.#announcements.announce({
+      kind: 'slef.import',
+      urgency: 'polite',
+      messageKey: only.messageKey,
+      params: only.params,
+    });
   }
 
   selectMode(mode: SlefExportMode): void {

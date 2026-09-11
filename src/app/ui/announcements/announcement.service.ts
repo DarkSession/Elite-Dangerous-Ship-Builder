@@ -56,10 +56,11 @@ export interface AnnouncementState {
  * **The two silences are the caller's, because only the caller has the facts.**
  *
  *   * **A replay.** One occurrence is announced once. An announcement published
- *     from an effect resolves its message inside `untracked`, so the effect
- *     depends on the state its event is about and a committed locale does not
- *     re-run it. Where an effect must watch more than its own event, the caller
- *     remembers what it announced — `src/app/app.ts` and the restart overlay.
+ *     from an effect resolves its message inside `untracked`, and that effect
+ *     reads the message catalogue nowhere else, so it depends on the state its
+ *     event is about and a committed locale does not re-run it. Where an effect
+ *     must watch more than its own event, the caller remembers what it
+ *     announced — `src/app/app.ts` and the restart overlay.
  *     `scripts/check-interface-foundations.mjs` holds the shape.
  *   * **An outcome to a withdrawn question.** Whether the request an outcome
  *     belongs to is still the one a Commander is waiting for is a fact its store

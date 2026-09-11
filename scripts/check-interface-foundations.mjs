@@ -1130,6 +1130,29 @@ function topLevelKeys(literal) {
   return keys;
 }
 
+/**
+ * Whether an object literal spreads something into itself at the top level.
+ *
+ * The same route the literal rule closes, one character wider. TypeScript
+ * checks a surplus property on a literal and not on what a spread brings in, so
+ * a `revision` arriving through `...request` reaches neither the compiler nor
+ * the key rule below.
+ */
+function spreadsIntoItself(literal) {
+  let depth = 0;
+  for (let index = 0; index < literal.length; index += 1) {
+    const character = literal[index];
+    if (character === '{' || character === '[' || character === '(') {
+      depth += 1;
+    } else if (character === '}' || character === ']' || character === ')') {
+      depth -= 1;
+    } else if (depth === 1 && literal.startsWith('...', index)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Every offset at which `pattern` matches, with the match. */
 function occurrences(masked, pattern) {
   return [...masked.matchAll(pattern)].map((match) => ({
@@ -1141,11 +1164,9 @@ function occurrences(masked, pattern) {
 const ANNOUNCE_CALL = /\.announce\s*\(/g;
 const EFFECT_CALL = /\beffect\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
-const MESSAGE_BINDING =
-  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=[^;]*?\.message(?:Signal)?\s*\(/g;
+const CATALOGUE_READ = /\.message(?:Signal)?\s*\(/g;
 const MEMBER_DECLARATION = /^[ \t]*(?:readonly\s+)?(#?[A-Za-z_$][\w$]*)\s*=/gm;
-const MEMBER_BINDING =
-  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*this\.(#?[A-Za-z_$][\w$]*)\s*\(\s*\)/g;
+const MEMBER_READ = /\bthis\.(#?[A-Za-z_$][\w$]*)\s*\(/g;
 
 /** Where the statement beginning at `from` ends, ignoring nested brackets. */
 function statementEnd(masked, from) {
@@ -1209,6 +1230,13 @@ function messageMembers(masked) {
  * and calling `announce` inside one `untracked` call is what makes the effect
  * depend on its own event and nothing else. It is a requirement rather than a
  * preference: without it there is nothing left that keeps a replay silent.
+ *
+ * An announcing effect therefore reads the catalogue inside `untracked` or not
+ * at all — whatever the value was wanted for, and whether it is reached by
+ * calling `message()` or by reading one of the class's own members that holds
+ * a message. A tracked read for something else takes the same dependency and
+ * republishes the same event; a message wanted for something else belongs to
+ * an effect that announces nothing.
  */
 function announcementViolations(file, source) {
   const found = [];
@@ -1231,6 +1259,14 @@ function announcementViolations(file, source) {
           'over carries whatever it was given, and a surplus key on it reaches no compiler.',
       );
       continue;
+    }
+    if (spreadsIntoItself(literal)) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement is written where it is made. A spread carries whatever it was given, ' +
+          'and neither the compiler nor the rule below sees a surplus key that arrives that way.',
+      );
     }
     if (topLevelKeys(literal).includes('revision')) {
       add(
@@ -1282,43 +1318,39 @@ function announcementViolations(file, source) {
     }
 
     // A message resolved in the open and carried into the request is the same
-    // read, one statement earlier. Only a value that reaches the announcement
-    // is a violation: an effect may resolve a message for something else.
+    // read, one statement earlier — and so is a catalogue read this effect makes
+    // for anything else at all. An effect re-runs when anything it read
+    // changes, so one tracked read of the catalogue republishes the
+    // announcement whenever a Commander's reading language is committed,
+    // whatever the value was wanted for. An announcing effect reads the
+    // catalogue inside `untracked` or not at all; a message wanted for
+    // something else belongs to a second effect.
     //
-    // Read through a member as well as through `message()` itself. `const title
-    // = this.title();` reaches the catalogue whenever `title` is one of the
-    // class's own resolved members, and it is the shape these components are
-    // written in. Gathered by offset, so a binding matching both forms is one
-    // violation rather than two.
-    const bindings = new Map();
-    for (const binding of occurrences(region, MESSAGE_BINDING)) {
-      bindings.set(binding.index, binding);
+    // Read through a member as well as through `message()` itself. `this.title()`
+    // reaches the catalogue whenever `title` is one of the class's own resolved
+    // members, and it is the shape these components are written in. Gathered by
+    // offset, so a read matching both forms is one violation rather than two.
+    const reads = new Map();
+    for (const read of occurrences(region, CATALOGUE_READ)) {
+      reads.set(read.index, read);
     }
-    for (const binding of occurrences(region, MEMBER_BINDING)) {
-      const member = /=\s*this\.(#?[A-Za-z_$][\w$]*)/.exec(binding.text)?.[1];
+    for (const read of occurrences(region, MEMBER_READ)) {
+      const member = /this\.(#?[A-Za-z_$][\w$]*)/.exec(read.text)?.[1];
       if (member !== undefined && resolvers.has(member)) {
-        bindings.set(binding.index, binding);
+        reads.set(read.index, read);
       }
     }
 
-    for (const binding of bindings.values()) {
-      if (inside(binding.index)) {
-        continue;
-      }
-      const name = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)/.exec(binding.text)?.[1];
-      if (name === undefined) {
-        continue;
-      }
-      const named = new RegExp(`(?<![\\w$.])${name}(?![\\w$])`);
-      if (!requests.some((request) => named.test(request))) {
+    for (const read of [...reads.keys()].sort((one, other) => one - other)) {
+      if (inside(read)) {
         continue;
       }
       add(
-        body.start + binding.index,
+        body.start + read,
         'announcement-effect',
-        'This value is resolved from the message catalogue out here and announced in there. ' +
-          'Read it inside the `untracked` call with the rest of the request, or the effect ' +
-          'depends on the catalogue and a committed locale republishes the event.',
+        'This effect announces, and reads the message catalogue out here. Read it inside the ' +
+          '`untracked` call with the rest of the request, or move it to an effect that ' +
+          'announces nothing: a committed locale re-runs this one and republishes the event.',
       );
     }
   }

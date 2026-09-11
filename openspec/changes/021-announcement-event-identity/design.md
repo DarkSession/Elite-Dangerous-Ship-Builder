@@ -250,14 +250,16 @@ outlet, one polite outlet, and no other live region.
 `src/`:
 
 1. No `revision` key.
-2. The request is an object literal at the call site. A request built elsewhere and handed over
-   carries whatever it was given, and the compiler checks a surplus key on a literal rather
-   than on a variable — so rule 1 would see nothing.
+2. The request is a whole object literal at the call site, spreading nothing into itself. A
+   request built elsewhere and handed over carries whatever it was given, and the compiler
+   checks a surplus key on a literal rather than on a variable or on what a spread brings in —
+   so rule 1 would see nothing.
 3. An announcement published from an effect builds its request and calls `announce` inside one
-   `untracked` call. Resolving any part of the request outside that call reads the message
-   catalogue from the effect, which is the shape the rule exists to reject. A value hoisted out
-   of the `untracked` call and carried into the request is the same read one statement earlier,
-   whether it is a `message()` call or one of the class's own members that holds one.
+   `untracked` call, and that effect reads the message catalogue inside the same call or not at
+   all. A read hoisted out of it takes the catalogue dependency whatever the value was wanted
+   for, so the rule does not ask where the value goes: a message wanted for something else
+   belongs to an effect that announces nothing. The read is seen whether it is a `message()`
+   call or one of the class's own members that holds one.
 
 Rule 1 stops the field returning and rule 2 stops it arriving by another route. Rule 3 is what
 keeps a replay silent once the service stops recognising one, so it carries a requirement
@@ -268,7 +270,8 @@ rather than a preference.
 - **Rule 3 reads syntax, and two shapes are outside what syntax can see.** An announcement
   reached through a helper is not inside a visible `effect`; and a member that reaches the
   catalogue through a private method it calls, rather than in its own initialiser, is not read
-  as a resolved one. Either could publish one occurrence twice, against the requirement. → The
+  as a resolved one. The two shapes syntax _can_ see, a read for another purpose and a read
+  with nothing bound to it, are both rejected. Either could publish one occurrence twice, against the requirement. → The
   unit suite beside each announcing file reads what it publishes, and the manual screen-reader
   protocol reads both journeys. A caller added later without either is the residual gap, and
   rule 3 catches the shape that produced all four of the present ones.

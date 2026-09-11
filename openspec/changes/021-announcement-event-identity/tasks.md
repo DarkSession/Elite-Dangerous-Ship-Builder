@@ -81,16 +81,18 @@
 ## 5. The gate
 
 - [x] 5.1 Add three rules to `scripts/check-interface-foundations.mjs`: no `revision` key on an
-      `announce` call, a request written as a literal at the call site, and an announcement
-      published from an effect built and called inside one `untracked` call. The third reads a
-      value hoisted out of that call as the catalogue read it is, whether it is a `message()`
-      call or one of the class's own members holding one. Verify `pnpm run policy` passes over
-      `src/`.
+      `announce` call, a request written as a whole literal at the call site that spreads
+      nothing into itself, and an announcement published from an effect built and called inside
+      one `untracked` call. The third reads any catalogue read the effect makes in the open as
+      the dependency it is, wherever the value goes, and whether it is a `message()` call or one
+      of the class's own members holding one. Verify `pnpm run policy` passes over `src/`.
 - [x] 5.2 Add fixtures to `scripts/check-interface-foundations.test.mjs`: one rejected by each
       rule, one that resolves a message parameter in the effect before an `untracked` announce,
-      and one that hoists a resolved member out of it. Add four the rules must not reject: a
-      `revision` key in an unrelated object, an `announce` called from a method, a trigger read
-      in the open, and a resolved member read in the open and never announced. Verify each
+      one that hoists a resolved member out of it, one that hoists a read for another purpose,
+      one that hoists a read with nothing bound to it, and one that spreads into the request.
+      Add five the rules must not reject: a `revision` key in an unrelated object, a spread
+      inside `params`, an `announce` called from a method, a trigger read in the open, and an
+      effect that resolves a message for something else and announces nothing. Verify each
       fixture's verdict.
 
 ## 6. Reading it end to end
@@ -110,7 +112,7 @@
       other step's do: no screen reader runs in this container, and filling them in from the
       automated suite would be recording a reading nobody took.
 - [x] 6.4 Run `pnpm run check`. Verify unit coverage stays at or above 80% on all four
-      counters — 93.76% statements, 86.61% branches, 94.66% functions, 93.68% lines. Everything
+      counters — 93.76% statements, 86.58% branches, 94.69% functions, 93.67% lines. Everything
       up to and including `test` passes. Of the three e2e scripts, the five chromium projects
       pass (3714 of 3715; the one is a control in the saved-builds suite timing out on a click
       under load in this container, on a screen that announces nothing, and its whole project

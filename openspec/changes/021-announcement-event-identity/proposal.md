@@ -97,7 +97,7 @@ None.
   `src/app/application/equipment/loadout-import.presenter.ts`,
   `src/app/features/build-workspace/outfitting/hull-anatomy/hull-anatomy.ts`,
   `src/app/app.ts` and `src/app/ui/components/app-frame/app-frame.ts`.
-- `scripts/check-interface-foundations.mjs` gains both rules, with fixtures beside them in
+- `scripts/check-interface-foundations.mjs` gains all three rules, with fixtures beside them in
   `scripts/check-interface-foundations.test.mjs`.
 - The unit suite beside each of those files reads what was silent.
   `announcement.service.spec.ts` reads the policy directly.

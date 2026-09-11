@@ -402,6 +402,28 @@ describe('announcements', () => {
     assert.equal(found[0].line, 2);
   });
 
+  it('rejects a request that spreads something into itself', () => {
+    // The literal rule, one character wider: a spread carries whatever it was
+    // given, and the compiler checks a surplus key on the literal only.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", ...extra });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('accepts a spread inside a message\u2019s own parameters', () => {
+    // `params` is the caller's own message data. What it holds is words in a
+    // sentence, not keys the policy is being handed.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { ...counts } });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('rejects an announcement published from an effect in the open', () => {
     const found = rules.announcementViolations(
       'a.ts',
@@ -491,17 +513,15 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
-  it('accepts a resolved member read in the open and never announced', () => {
+  it('accepts an effect that resolves a message for something else and announces nothing', () => {
+    // The place a message wanted for something else belongs. This effect takes
+    // the catalogue dependency and has no announcement to republish.
     const found = rules.announcementViolations(
       'a.ts',
       [
         'readonly title = computed(() => this.#messages.message("k"));',
         'effect(() => {',
-        '  const title = this.title();',
-        '  this.#document.setTitle(title);',
-        '  untracked(() =>',
-        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
-        '  );',
+        '  this.#document.setTitle(this.title());',
         '});',
       ].join('\n'),
     );
@@ -530,9 +550,10 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
-  it('accepts an announcing effect that resolves a message for something else', () => {
-    // The rule is about what the announcement says, not about everything the
-    // effect touches. This read never reaches the request.
+  it('rejects an announcing effect that resolves a message for something else', () => {
+    // Where the value goes does not matter. The effect read the catalogue, so
+    // it depends on the catalogue, so a committed locale runs it again and the
+    // announcement is published a second time for one occurrence.
     const found = rules.announcementViolations(
       'a.ts',
       [
@@ -546,7 +567,45 @@ describe('announcements', () => {
       ].join('\n'),
     );
 
-    assert.deepEqual(found, []);
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('rejects a resolved member read in the open with nothing bound to it', () => {
+    // No binding to name, and the same dependency either way.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  this.#document.setTitle(this.title());',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member carried in through an object built in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const params = { title: this.title() };',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
   });
 
   it('accepts a revision on something that is not an announcement', () => {
