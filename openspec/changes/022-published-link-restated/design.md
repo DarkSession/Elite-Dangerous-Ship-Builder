@@ -36,7 +36,10 @@ fragment is on the address before any layer can be raised over it.
   pushes is the one a Commander would copy while the layer is up.
 - Closing the window itself by making the codec load eagerly. That would trade a rare wrong
   address for a slower first frame on every visit, and the first frame is 015's.
-- Any change to the equipment bench's link.
+- Any change to the equipment bench's link. `LoadoutLinkCoordinator.publish` encodes in the
+  calling frame, so there is no window for a history move to land in and nothing to restore. If
+  that bench ever gains an asynchronous encode, `equipment-builder` needs this requirement of
+  its own; it is not inherited.
 
 ## Screens
 
@@ -75,19 +78,33 @@ Rejected because that effect is the ingress — it exists to turn what arrives i
 writing the address from inside it would put egress and ingress in one place, where the guard
 separating them is `#settled`.
 
-### Only a lost link is restored, never a replaced one
+Alternative considered: closing the window by ordering — having `raise` wait until the address
+carries the build, or publishing before the entry is pushed. Rejected because it puts the
+obligation on every caller: each surface that pushes a history entry would have to know a
+publication might be in flight and wait for it. It cannot be made complete, since the window
+belongs to the publisher rather than to any one caller, and waiting would make a Commander opening
+their saved builds wait on an encode that has nothing to do with the list they asked for.
 
-The trigger is narrow on purpose: the published link is stated again when the address carries no
-build link — empty, or a fragment belonging to something else. When the address carries a
-_different_ build link, nothing is restored; that is an arrival, and the coordinator owns it.
+### Only an empty address is restored
 
-Without the narrowing the two would fight, and the Commander would lose. A pasted link moves the
-fragment to another build's value; a watcher that restored on any mismatch would write the open
-build back over it, and the pasted link could never be reached. The wide rule is not merely
-riskier — it makes navigation by link impossible.
+The address comes back in one of three states, and only one of them is the defect.
 
-`recognizeBuildLinkFragment` already draws exactly this line, so the watcher asks it rather than
-inventing a second answer.
+Empty is the defect: the workspace's own entry never received the publication, and nothing else
+put anything there. The link is stated again.
+
+A different build link is an arrival. A pasted link moves the fragment to another build's value,
+and a watcher that restored on any mismatch would write the open build back over it, so a build
+link could never be opened from a running workspace. The ingress owns that fragment.
+
+A fragment this application does not own is left alone, and this is where the first draft of this
+design was wrong. It folded "empty" and "not ours" together, because `recognizeBuildLinkFragment`
+returns `unrelated` for both — an empty string is not a build link, so it recognises as unrelated
+like any other foreign fragment. But the codebase's posture on a foreign fragment is settled:
+`FragmentPublisher.#clearBuildFragment` returns early rather than clear one, on the stated ground
+that the fragment is shared space and what belongs to something else is left uninterpreted.
+Restoring over it would break that in the one direction clearing was careful not to. So the
+watcher tests emptiness itself, and asks the recognizer only to tell a build link from everything
+else.
 
 ### Restoration is bounded to the document the link was published onto
 
@@ -113,8 +130,9 @@ is less than an edit: it puts back what the address already claimed to hold.
 ## Risks / Trade-offs
 
 - **The watcher and the ingress could fight.** → They cannot meet: the watcher acts only where the
-  address carries no build link, and the ingress only where it carries one. The narrowing is the
-  mitigation and is tested in both directions — a lost link restored, a different link left alone.
+  address is empty, and the ingress only where it carries a build link. The narrowing is the
+  mitigation and is tested in all three directions — an empty address restored, a different build
+  link left alone, a foreign fragment left alone.
 - **A Commander who deletes the fragment from the address bar by hand gets it back.** → That is
   the requirement rather than a side effect: while a build is open and its link is published, the
   address describes it. Anyone who wants an address without a build closes the build.
@@ -122,6 +140,12 @@ is less than an edit: it puts back what the address already claimed to hold.
   entry is still a publication on the wrong entry, and a Commander who copies the address _while_
   the layer is up gets a link to the build, which is the address that entry was pushed to carry
   anyway. What is fixed is that the workspace's own entry no longer stays wrong afterwards.
+- **Back to an earlier workspace entry that had no link puts the link straight back.** → A
+  Commander who walks back past the point where their build was published arrives at an empty
+  address and the watcher states the link again. It is the same rule the requirement asks for —
+  while a build is open and its link is published, the address describes it — and the build on the
+  screen has not changed, so the address is still true. What history cannot do is make the address
+  disagree with the build.
 - **One more effect over the fragment signal.** → It reads two signals and returns without writing
   in every case but the defect's. The publication effect it sits beside runs on every keystroke;
   this one cannot.
