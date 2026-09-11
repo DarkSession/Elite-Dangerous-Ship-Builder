@@ -12,6 +12,10 @@ import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/local
 import { ScreenChrome } from '../../../shared/screen-chrome';
 import { OutfittingWorkspace } from './outfitting-workspace';
 import { declareMeasurement, declareResizeObserver } from '../../../../ui/measurement.spec-helpers';
+import { provideRouter } from '@angular/router';
+import type { PartialEngineeringFailure } from '../../../../domain/ships/build/build-ingress-result';
+import { LibraryPresence } from '../../../build-library/library-presence';
+import { AnnouncementService } from '../../../../ui/announcements/announcement.service';
 
 /**
  * What the workspace publishes to the command bar.
@@ -364,3 +368,82 @@ function restoreAfterWideRegion(width: number): () => void {
     measured();
   };
 }
+
+/**
+ * What the screen says about a record it could not open.
+ *
+ * The refusal is reported from `RecordOpenService`, which the saved builds
+ * layer calls — and that layer stands over this screen rather than replacing
+ * it, so this screen is mounted and running while the refusal arrives. An
+ * announcement made then goes to an outlet the modal has made inert, and it
+ * would spend the one mark the store holds (011/FR-009, design.md "An
+ * announcement made under a layer").
+ */
+describe('the workspace and a refused record', () => {
+  function failure(): PartialEngineeringFailure {
+    return {
+      source: {
+        slotKey: 'MainEngines',
+        moduleSymbol: 'Int_Engine_Size7_Class5',
+        blueprintFdname: 'Engine_Dirty',
+        effectFdname: null,
+        grade: 5,
+        quality: 0.42,
+      },
+      reason: 'packageResult',
+      code: 'unsupportedEngineering',
+      params: null,
+    };
+  }
+
+  let active: ActiveBuildStore;
+  let library: LibraryPresence;
+  let announcements: AnnouncementService;
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideLocalization(), ...provideIsolatedLocaleEnvironment()],
+    });
+    active = TestBed.inject(ActiveBuildStore);
+    library = TestBed.inject(LibraryPresence);
+    announcements = TestBed.inject(AnnouncementService);
+  });
+
+  it('says nothing while the saved builds stand over it, and says it when they go', () => {
+    active.commit(candidateFor(defaultBuild()));
+    library.raise();
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+
+    active.reportIngressRefusal([failure()]);
+    fixture.detectChanges();
+
+    // Spoken here, the sentence reaches an outlet the open layer has made
+    // inert, and the mark it spends is the only one there is.
+    expect(announcements.assertive()).toBe('');
+    expect(active.ingressRefusalUnannounced()).toBe(true);
+
+    library.lower();
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).not.toBe('');
+    expect(active.ingressRefusalUnannounced()).toBe(false);
+  });
+
+  it('speaks a refusal that was standing before this screen was built', () => {
+    // The refusal reached the store while the Commander was somewhere else —
+    // from the layer they have since closed, or from a shared link, which opens
+    // a screen rather than a layer. Nothing stands over this screen now, so
+    // nothing is held back and the notice speaks on its first run: the case a
+    // first-run guard would silence.
+    active.commit(candidateFor(defaultBuild()));
+    active.reportIngressRefusal([failure()]);
+
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).not.toBe('');
+    expect(active.ingressRefusalUnannounced()).toBe(false);
+  });
+});

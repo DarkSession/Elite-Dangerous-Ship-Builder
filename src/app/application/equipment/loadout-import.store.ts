@@ -88,11 +88,6 @@ export class LoadoutImportStore {
     this.#entries().filter((entry) => this.#selected().includes(entry.key)),
   );
 
-  /** The token in force. */
-  get requestToken(): number {
-    return this.#token;
-  }
-
   /** Issues a new token, invalidating every result still in flight. */
   issueToken(): number {
     this.#token += 1;

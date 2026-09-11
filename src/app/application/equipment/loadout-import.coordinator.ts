@@ -77,23 +77,28 @@ export class LoadoutImportCoordinator {
    * listed. Without it the slower of two scans wins, which is the one the
    * Commander superseded.
    */
-  async scanFiles(files: readonly JournalFile[]): Promise<void> {
+  async scanFiles(files: readonly JournalFile[]): Promise<boolean> {
     this.#store.clearScan();
     const token = this.#store.issueToken();
     this.#store.setScanning(files.length);
 
     const result = await scanJournalFiles(files, SUIT_JOURNAL_READER);
 
+    // Whether this scan is still the one the Commander is waiting for. It is
+    // returned rather than kept here because the caller has something to say
+    // about the outcome, and an outcome nobody is waiting for is one a reader
+    // must not be told about (011/FR-009).
     if (!this.#store.isCurrent(token)) {
-      return;
+      return false;
     }
 
     this.#store.setScanning(0);
     if (!result.ok) {
       this.#store.setFailure(result.failure);
-      return;
+      return true;
     }
     this.#store.setScan(result.report, result.entries);
+    return true;
   }
 
   /**

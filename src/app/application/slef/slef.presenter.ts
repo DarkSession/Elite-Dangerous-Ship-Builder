@@ -2,7 +2,7 @@ import { Injectable, computed, inject } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import type { MessageKey } from '../../i18n/locale-registry';
+import type { MessageKey, MessageParams } from '../../i18n/locale-registry';
 import type { DiagnosticEntry } from '../../ui/technical/diagnostic-list';
 import type {
   JournalFailureView,
@@ -246,11 +246,17 @@ export class SlefPresenter {
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#announcements.announce({
       kind: 'slef.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey: 'slef.import.announce.scanning',
     });
-    await this.#import.scanFiles(files);
+
+    // Only the scan a Commander is still waiting for says how it ended. A scan
+    // replaced by a newer one is a question nobody is asking, and announcing it
+    // would state the abandoned reading and leave the current one unsaid
+    // (011/FR-009).
+    if (!(await this.#import.scanFiles(files))) {
+      return;
+    }
     this.#announceScan();
   }
 
@@ -264,17 +270,32 @@ export class SlefPresenter {
    * (016/FR-004, FR-006).
    */
   #announceScan(): void {
+    // A scan that settled on a refusal says what refused it, in the sentence
+    // the panel states it in. It found nothing because it could not read the
+    // files, and "Nothing was found to import." would state an outcome that
+    // did not happen — a file over the size limit was not read, which is not
+    // the same as holding nothing (constitution IV, 016/FR-004).
+    const failure = this.#store.importFailure();
+    if (failure !== null) {
+      this.#announcements.announce({
+        kind: 'slef.import.scan',
+        urgency: 'polite',
+        messageKey: 'slef.import.announce.scanFailed',
+        params: { reason: this.#failureMessage(failure) },
+      });
+      return;
+    }
+
+    // Every scan that came back with nothing came back with a refusal, which
+    // the branch above answered: `scanJournalFiles` reports no files, a file
+    // over the limit and no loadout event as refusals rather than as an empty
+    // list. So what is left here found something.
     const found = this.#store.journalEntries().length;
     this.#announcements.announce({
       kind: 'slef.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey:
-        found === 0
-          ? 'slef.import.announce.scanned.none'
-          : found === 1
-            ? 'slef.import.announce.scanned.one'
-            : 'slef.import.announce.scanned.many',
+        found === 1 ? 'slef.import.announce.scanned.one' : 'slef.import.announce.scanned.many',
       params: { count: this.#formatters.integer(found) },
     });
   }
@@ -289,34 +310,79 @@ export class SlefPresenter {
     if (submission.kind === 'committed') {
       this.#announcements.announce({
         kind: 'slef.import',
-        revision: this.#active.revision(),
         urgency: 'polite',
         messageKey: 'slef.import.announce.imported',
         params: { hull: this.#active.hullName() ?? '' },
       });
     } else if (submission.kind === 'stored') {
-      this.#announcements.announce({
-        kind: 'slef.import',
-        revision: this.#store.requestToken,
-        urgency: 'polite',
-        messageKey:
-          submission.stored === 1
-            ? 'slef.import.announce.stored.one'
-            : 'slef.import.announce.stored.many',
-        params: { count: this.#formatters.integer(submission.stored) },
-      });
+      this.#announceBatch(submission.stored, submission.refused.length);
     } else if (submission.kind === 'failed') {
       // Bounded on purpose: never the draft, never a whole diagnostic list.
       // What a reader needs from an outlet is that something happened; the
       // detail is on the screen, to be read at their own pace.
       this.#announcements.announce({
         kind: 'slef.import',
-        revision: this.#store.requestToken,
         urgency: 'polite',
         messageKey: 'slef.import.announce.failed',
       });
     }
     return submission;
+  }
+
+  /**
+   * What a batch of several builds did, in one sentence.
+   *
+   * One sentence and not two, because the polite outlet holds one event: a
+   * second announcement published in the same tick writes over the first, and
+   * the reader hears only what was said last. A batch that stored some builds
+   * and refused others reports two outcomes, and both are owed
+   * (011/FR-009, "One request reports two outcomes").
+   *
+   * Both counts, and never a count and a word standing in for the other one.
+   * 016/FR-010 requires the outcome to say how many builds were imported, and
+   * a batch where every chosen build was refused must not say the rest were
+   * saved — nothing was.
+   *
+   * Said even where the Commander closed the layer while it was being written.
+   * A withdrawn question is not announced, and this is the one place that rule
+   * does not reach: a token issued mid-batch supersedes a candidate nobody has
+   * seen, not rows already in storage. Saying nothing would leave a Commander
+   * with saved builds they were never told about (011/FR-009).
+   */
+  #announceBatch(stored: number, refused: number): void {
+    const saved: { messageKey: MessageKey; params: MessageParams } = {
+      messageKey:
+        stored === 1 ? 'slef.import.announce.stored.one' : 'slef.import.announce.stored.many',
+      params: { count: this.#formatters.integer(stored) },
+    };
+    const notSaved: { messageKey: MessageKey; params: MessageParams } = {
+      messageKey:
+        refused === 1 ? 'slef.import.announce.notSaved.one' : 'slef.import.announce.notSaved.many',
+      params: { count: this.#formatters.integer(refused) },
+    };
+
+    if (stored > 0 && refused > 0) {
+      this.#announcements.announce({
+        kind: 'slef.import',
+        urgency: 'polite',
+        messageKey: 'slef.import.announce.batch',
+        params: {
+          saved: this.#messages.message(saved.messageKey, saved.params),
+          notSaved: this.#messages.message(notSaved.messageKey, notSaved.params),
+        },
+      });
+      return;
+    }
+
+    // A batch is at least two records and each of them is either stored or
+    // refused, so exactly one of the two halves is left here.
+    const only = refused > 0 ? notSaved : saved;
+    this.#announcements.announce({
+      kind: 'slef.import',
+      urgency: 'polite',
+      messageKey: only.messageKey,
+      params: only.params,
+    });
   }
 
   selectMode(mode: SlefExportMode): void {
@@ -341,13 +407,16 @@ export class SlefPresenter {
   }
 
   /**
-   * Says what an action reported, once per artifact.
+   * Says what an action reported, every time one reports.
    *
-   * Deduplicated on the artifact's revision, so a Commander who copies the same
-   * payload twice is not told twice, and an outcome that arrives after the
-   * build moved on is not announced against the build that replaced it. Never
-   * the payload, never a filename taken from a Commander's own text, never a
-   * raw DOM exception.
+   * A Commander who presses Copy a second time does so because they were unsure
+   * of the first press, and the answer to that is the sentence — so two presses
+   * are two announcements, even when the export has not changed and the words
+   * are identical (011/FR-009). A press that fails and then succeeds says two
+   * different things, and both are heard.
+   *
+   * Bounded on purpose: never the payload, never a filename taken from a
+   * Commander's own text, never a raw DOM exception.
    */
   #announceDelivery(outcome: DeliveryOutcome): DeliveryOutcome {
     if (outcome.status === 'working') {
@@ -355,7 +424,6 @@ export class SlefPresenter {
     }
     this.#announcements.announce({
       kind: `slef.delivery.${outcome.action}`,
-      revision: this.#store.artifact()?.revision ?? 0,
       urgency: 'polite',
       messageKey: 'slef.announce.delivery',
       params: {

@@ -6,7 +6,11 @@ import {
   renderComponent,
   textOf,
 } from '../components/ui-component.spec-helpers';
-import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import germanCatalogue from '../../i18n/locales/de.json';
+import type { MessageCatalogue } from '../../i18n/locale-registry';
+import { LocaleStore } from '../../i18n/locale.store';
+import { AnnouncementService } from '../announcements/announcement.service';
 import { AttributeComparison } from './attribute-comparison';
 import { BlueprintChoiceList } from './blueprint-choice-list';
 import { ExperimentalEffectList } from './experimental-effect-list';
@@ -808,10 +812,15 @@ describe('ingress refusal notice', () => {
     params: null,
   };
 
+  /** The same refusal at another mount, for reading a batch as one event. */
+  const refused = (slotKey: string) => ({
+    ...FAILURE,
+    source: { ...FAILURE.source, slotKey },
+  });
+
   it('names every affected mount, module, roll and package reason', () => {
     const fixture = renderComponent(IngressRefusalNotice, {
       failures: [FAILURE],
-      revision: 3,
       slotLabels: { MainEngines: 'Thrusters' },
     });
 
@@ -824,15 +833,107 @@ describe('ingress refusal notice', () => {
   });
 
   it('says the build was never activated', () => {
-    const fixture = renderComponent(IngressRefusalNotice, { failures: [FAILURE], revision: 3 });
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [FAILURE] });
 
     expect(textOf(element(fixture)).toLowerCase()).toContain('exactly as it was');
   });
 
   it('renders nothing when nothing was refused', () => {
-    const fixture = renderComponent(IngressRefusalNotice, { failures: [], revision: 3 });
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
 
     expect(element(fixture).querySelector('.notice')).toBeNull();
+  });
+
+  it('announces a refused batch once, naming how much there is to read', () => {
+    // The lines stay on the page, one per module, where they can be found and
+    // read one at a time. What a reader is interrupted with is one sentence
+    // saying how many there are — four separate announcements would be a list
+    // read out over a screen that is still rendering (011/FR-009).
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
+    const announcements = TestBed.inject(AnnouncementService);
+    const announce = vi.spyOn(announcements, 'announce');
+
+    fixture.componentRef.setInput('unannounced', true);
+    fixture.componentRef.setInput('failures', [
+      FAILURE,
+      refused('SmallHardpoint1'),
+      refused('Slot01_Size6'),
+      refused('PowerPlant'),
+    ]);
+    fixture.detectChanges();
+
+    expect(announce).toHaveBeenCalledTimes(1);
+    // Four modules under one framing line, which is what there is to read.
+    expect(announcements.assertive()).toContain('5 to read');
+  });
+
+  it('says nothing about a refusal a reader has already been told about', () => {
+    // The record holding the refusal is the application's and the workspace is
+    // a route, so a refusal still standing when the screen is opened again
+    // arrives with the screen. That is initial content (011/FR-009).
+    renderComponent(IngressRefusalNotice, { failures: [FAILURE], unannounced: false });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toBe('');
+  });
+
+  it('states a refusal it is created with, where nobody has been told yet', () => {
+    // A record carrying a roll the package cannot complete is refused while the
+    // workspace is still being built, so this notice is created with the
+    // refusal already on it and never sees it arrive. Silence here would lose
+    // the event outright: the Commander asked for the build and it was refused
+    // (011/FR-009).
+    renderComponent(IngressRefusalNotice, { failures: [FAILURE], unannounced: true });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toContain('2 to read');
+  });
+
+  it('says it has spoken, so the screen it is on can remember', () => {
+    // The count is a rule about what is drawn and belongs here; the memory has
+    // to outlive a component the next visit rebuilds, and belongs to the store.
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
+    const spoken = vi.fn();
+    fixture.componentInstance.announced.subscribe(spoken);
+
+    fixture.componentRef.setInput('unannounced', true);
+    fixture.componentRef.setInput('failures', [FAILURE]);
+    fixture.detectChanges();
+
+    expect(spoken).toHaveBeenCalledTimes(1);
+  });
+
+  it('announces a second refusal, and says nothing more for a committed locale', () => {
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
+    const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('unannounced', true);
+    fixture.componentRef.setInput('failures', [FAILURE]);
+    fixture.detectChanges();
+    const first = announcements.assertiveEvent();
+    expect(first).not.toBeNull();
+
+    // A second link opened, refused for the same reason. The same sentence and
+    // a second event: ingress hands over a new set of failures per candidate.
+    fixture.componentRef.setInput('failures', [FAILURE]);
+    fixture.detectChanges();
+    const second = announcements.assertiveEvent();
+    expect(second?.identity, 'the second refusal was published as the first').not.toBe(
+      first?.identity,
+    );
+
+    // The sentence is resolved inside `untracked`, so the effect depends on the
+    // refusal and not on the catalogue behind it.
+    TestBed.inject(LocaleStore).commitCandidate(
+      {
+        requested: 'de',
+        catalogue: germanCatalogue as unknown as MessageCatalogue,
+        source: 'asset',
+        failure: null,
+      },
+      'browser',
+    );
+    fixture.detectChanges();
+
+    expect(announcements.assertiveEvent()).toBe(second);
   });
 });
 

@@ -396,10 +396,10 @@ describe('NavigationWaitingStore', () => {
   it('counts each failure, so a second one is a second event', () => {
     const store = running();
 
-    // The count is what the shell announces by. Announcing is deduped on
-    // `(kind, revision, urgency)`, and a boolean carries no revision — two
-    // separate failures would be one event, and the second would be the
-    // silence this requirement exists to remove (018/FR-007).
+    // The count is the shell's trigger. A boolean does not move when a second
+    // navigation fails, so the effect watching it would not run and the second
+    // failure would be the silence this requirement exists to remove
+    // (018/FR-007).
     start(2);
     fail(2);
     expect(store.failures()).toBe(1);

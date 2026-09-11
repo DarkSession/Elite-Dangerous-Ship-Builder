@@ -21,6 +21,7 @@ import type { IdentityCommit, IdentityField } from '../../../../ui/outfitting/sh
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
+import { LibraryPresence } from '../../../build-library/library-presence';
 import { EditRefusalNotice } from '../../../../ui/outfitting/edit-refusal-notice';
 import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
@@ -119,6 +120,7 @@ export class OutfittingWorkspace {
   readonly store = inject(OutfittingStore);
   readonly active = inject(ActiveBuildStore);
   readonly #chrome = inject(ScreenChrome);
+  readonly #libraryLayer = inject(LibraryPresence);
 
   /**
    * The category a Commander asked for, or none — nobody has asked yet.
@@ -335,10 +337,37 @@ export class OutfittingWorkspace {
 
   readonly selectedSlot = this.store.selectedSlot;
   readonly failure = this.store.lastEditFailure;
-  readonly revision = this.store.revision;
 
   /** Why a build the Commander tried to open never became this one. */
   readonly ingressFailures = this.active.ingressFailures;
+
+  /**
+   * Whether a reader still has to be told about that refusal.
+   *
+   * A record carrying a roll the package cannot complete is refused from the
+   * saved builds, which stand over whatever screen a Commander is on — so one
+   * opened from elsewhere leaves this screen to be built with the refusal
+   * already on it, and the notice has no transition of its own to watch. The
+   * store saw the report and this passes on its answer, so a refusal the
+   * Commander has just caused is spoken and one they were told about last visit
+   * is not (011/FR-009).
+   *
+   * Not while the saved builds stand over this screen. The other way into this
+   * refusal is opening a record from that layer, and this screen stays mounted
+   * underneath it — so the notice would speak into an outlet the modal has made
+   * inert and spend the mark on a sentence nobody heard. Held until the layer
+   * goes, the refusal is spoken by the screen that draws every affected mount,
+   * at the moment that screen is the one a reader is on. The layer says its own
+   * piece meanwhile, in its own alert, over the record it could not open.
+   */
+  readonly ingressRefusalUnannounced = computed(
+    () => this.active.ingressRefusalUnannounced() && !this.#libraryLayer.open(),
+  );
+
+  /** Says the refusal has been spoken, so returning to it says nothing more. */
+  markIngressRefusalAnnounced(): void {
+    this.active.markIngressRefusalAnnounced();
+  }
 
   /**
    * The ledger's own labels, keyed by exact slot key.

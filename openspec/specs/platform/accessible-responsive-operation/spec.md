@@ -55,6 +55,23 @@ over itself is not a change: a second screen that could not be opened says exact
 first one said, and without this it would be the silence this requirement exists to
 prevent. A replay of one event is still one event and MUST stay silent.
 
+One occurrence MUST be announced once. Re-resolving what an announcement says is not a second
+occurrence.
+
+A figure a filter publishes is a distinct event each time it changes, whether it rises or
+falls. A condition that arises a second time is a distinct event. An action a Commander
+repeats on one subject is a distinct event each time it reports an outcome.
+
+An outcome to a question the Commander has withdrawn MUST NOT be announced, unless the work it
+reports is already done and cannot be taken back. This is the one case this requirement excepts
+from the rule above. The question was replaced or cancelled before the answer arrived, so the
+answer lands on top of the answer to the question that replaced it.
+
+Work already done is the exception inside the exception. Records written to storage stay
+written whether or not anyone is still waiting to hear about them, and silence would leave a
+Commander holding saved records nobody told them about. An outcome of that kind MUST be
+announced.
+
 Source: 011/FR-009.
 
 #### Scenario: A blocking error occurs
@@ -76,9 +93,48 @@ Source: 011/FR-009.
 
 #### Scenario: One event is published twice
 
-- **WHEN** the same event is published again, describing nothing that has happened since
-- **THEN** the live region carrying it does not change
-- **AND** a reader is not told anything a second time
+- **WHEN** a Commander changes the browser language setting, and nothing has happened since the
+  last announcement
+- **THEN** nothing further is announced
+- **AND** the live region carrying the last event does not change
+
+#### Scenario: A filter is narrowed twice
+
+- **WHEN** a Commander narrows a filter twice, and each narrowing lowers the figure it
+  publishes
+- **THEN** each figure is announced
+
+#### Scenario: A filter is widened
+
+- **WHEN** a Commander widens a filter, and the figure it publishes rises
+- **THEN** the figure is announced
+
+#### Scenario: A blocking condition arises a second time
+
+- **WHEN** a condition that blocks a Commander arises, is left, and arises again
+- **THEN** it is announced each time it arises
+
+#### Scenario: One action is repeated on one subject
+
+- **WHEN** a Commander repeats an action on one subject
+- **THEN** each outcome is announced
+
+#### Scenario: One request reports two outcomes
+
+- **WHEN** one request the Commander made reports two outcomes
+- **THEN** both are announced
+
+#### Scenario: An answer arrives after the question is withdrawn
+
+- **WHEN** an outcome arrives for a request the Commander replaced or cancelled
+- **AND** the request changed nothing that outlives it
+- **THEN** it is not announced
+
+#### Scenario: A withdrawn request had already written records
+
+- **WHEN** a Commander withdraws a request that has already written records to storage
+- **THEN** the outcome is announced
+- **AND** it states how many records were written
 
 ### Requirement: Text equivalents for visual information
 

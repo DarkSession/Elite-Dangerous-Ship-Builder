@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LibraryPresence } from './library-presence';
@@ -346,8 +347,13 @@ export class BuildLibraryPage {
     // number in two places is one number that can disagree with itself (T158).
     //
     // The narrowed count is the one thing that changes without a Commander
-    // looking at it, so it is the one thing announced — politely, and never on
-    // the first run, where it is initial content already in reading order.
+    // looking at it, so it is the one thing announced — politely, each time
+    // their search moves it in either direction, and never on the first run,
+    // where it is initial content already in reading order (011/FR-009).
+    //
+    // The count is the effect's only dependency, and announcing is read in
+    // `untracked` because resolving a message reads the catalogue. Tracked, a
+    // committed locale would republish a narrowing that already happened.
     let opened = false;
     effect(() => {
       const shown = this.matchCount();
@@ -355,16 +361,17 @@ export class BuildLibraryPage {
         opened = true;
         return;
       }
-      this.#announcements.announce({
-        kind: 'library.match-count',
-        revision: shown,
-        urgency: 'polite',
-        messageKey: 'library.count.matching',
-        params: {
-          count: this.#formatters.integer(shown),
-          total: this.#formatters.integer(this.#library.total()),
-        },
-      });
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'library.match-count',
+          urgency: 'polite',
+          messageKey: 'library.count.matching',
+          params: {
+            count: this.#formatters.integer(shown),
+            total: this.#formatters.integer(this.#library.total()),
+          },
+        }),
+      );
     });
 
     // Any change made by another page invalidates the listing, and the answer

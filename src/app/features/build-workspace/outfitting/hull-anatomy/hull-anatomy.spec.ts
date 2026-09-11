@@ -463,7 +463,7 @@ describe('HullAnatomy', () => {
     expect(TestBed.inject(OutfittingStore).selectedSlotKey()).toBe(FIXTURE_SLOTS.hardpoint);
   });
 
-  it('announces a side that stops working once, and its recovery once', async () => {
+  it('announces a side failing, recovering and failing again, at one revision', async () => {
     TestBed.inject(ActiveBuildStore).commit(candidate());
     TestBed.tick();
     render();
@@ -489,6 +489,21 @@ describe('HullAnatomy', () => {
       'anatomy.announce.recovered',
     ]);
     expect(announced.every((event) => event.kind === 'anatomy.side.top')).toBe(true);
+
+    // And failing again. Nothing about the build moved through any of the
+    // three, so a policy comparing the build's revision heard one event and
+    // the Commander was left with a region that had stopped working and no
+    // word about it (011/FR-009).
+    TestBed.inject(AnatomyStore).retry('top');
+    TestBed.tick();
+    await loader.settle('top', { kind: 'temporarilyUnavailable' });
+    TestBed.tick();
+
+    expect(announced.map((event) => event.messageKey)).toEqual([
+      'anatomy.announce.unavailable',
+      'anatomy.announce.recovered',
+      'anatomy.announce.unavailable',
+    ]);
   });
 
   it('asks a plate for its side again when a Commander presses retry', async () => {

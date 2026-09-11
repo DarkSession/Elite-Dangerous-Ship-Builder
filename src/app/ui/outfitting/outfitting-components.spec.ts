@@ -1,4 +1,10 @@
+import { TestBed } from '@angular/core/testing';
+import germanCatalogue from '../../i18n/locales/de.json';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
+import type { MessageCatalogue } from '../../i18n/locale-registry';
+import { LocaleStore } from '../../i18n/locale.store';
+import { MessageService } from '../../i18n/message.service';
+import { AnnouncementService } from '../announcements/announcement.service';
 import {
   accessibleName,
   describedText,
@@ -515,7 +521,6 @@ describe('outfitting notice', () => {
   it('renders each line and names its tone in words', () => {
     const fixture = renderComponent(OutfittingNotice, {
       title: 'Imported build',
-      revision: 1,
       lines: [
         { id: 'a', messageKey: 'outfitting.refusal.staleDraft' },
         { id: 'b', messageKey: 'outfitting.refusal.blocked' },
@@ -527,10 +532,64 @@ describe('outfitting notice', () => {
     expect(textOf(query(fixture, '.status__tone')).length).toBeGreaterThan(0);
   });
 
+  it('keeps the lines in the order it was handed them', () => {
+    // Reading order is the whole of what this component offers a reader: the
+    // lines are found and read one at a time, at the reader's own pace, rather
+    // than being spoken over the screen.
+    const fixture = renderComponent(OutfittingNotice, {
+      title: 'Imported build',
+      lines: [
+        { id: 'a', messageKey: 'outfitting.refusal.staleDraft' },
+        { id: 'b', messageKey: 'outfitting.refusal.blocked' },
+      ],
+    });
+
+    const messages = TestBed.inject(MessageService);
+    const read = [...element(fixture).querySelectorAll('.notice__line')].map((line) =>
+      textOf(line),
+    );
+
+    // Each line carries its own tone word ahead of the sentence, so the
+    // sentence is read within the line rather than as the whole of it.
+    expect(read).toHaveLength(2);
+    expect(read[0]).toContain(messages.message('outfitting.refusal.staleDraft'));
+    expect(read[1]).toContain(messages.message('outfitting.refusal.blocked'));
+  });
+
+  it('announces nothing, whatever it is given', () => {
+    // The lines are resolved text, so an effect over them would re-run for a
+    // committed locale and speak a refusal a reader was already told about.
+    // What holds the refusal announces it; this holds the reading of it
+    // (011/FR-009).
+    const fixture = renderComponent(OutfittingNotice, {
+      title: 'Imported build',
+      mode: 'alert',
+      lines: [],
+    });
+    const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('lines', [
+      { id: 'a', messageKey: 'outfitting.refusal.packageEdit' },
+    ]);
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).toBe('');
+    expect(announcements.polite()).toBe('');
+
+    // The other mode, because the mode is what would have chosen the outlet. A
+    // component that announces in one of them and not the other is the shape
+    // this is written to exclude.
+    fixture.componentRef.setInput('mode', 'status');
+    fixture.componentRef.setInput('lines', [{ id: 'b', messageKey: 'outfitting.refusal.blocked' }]);
+    fixture.detectChanges();
+
+    expect(announcements.assertive()).toBe('');
+    expect(announcements.polite()).toBe('');
+  });
+
   it('renders nothing when there is nothing to say', () => {
     const fixture = renderComponent(OutfittingNotice, {
       title: 'Imported build',
-      revision: 1,
       lines: [],
     });
 
@@ -540,7 +599,6 @@ describe('outfitting notice', () => {
   it('treats a refusal as an alert and a report as a status', () => {
     const status = renderComponent(OutfittingNotice, {
       title: 'Imported build',
-      revision: 1,
       mode: 'status',
       lines: [{ id: 'a', messageKey: 'outfitting.refusal.blocked' }],
     });
@@ -548,7 +606,6 @@ describe('outfitting notice', () => {
 
     const alert = renderComponent(OutfittingNotice, {
       title: 'That change was not made',
-      revision: 2,
       mode: 'alert',
       lines: [{ id: 'a', messageKey: 'outfitting.refusal.packageEdit' }],
     });
@@ -557,15 +614,25 @@ describe('outfitting notice', () => {
 });
 
 describe('edit refusal notice', () => {
+  /** A fresh refusal, the way the store hands one over: a new object per event. */
+  const refused = () => ({
+    category: 'packageEdit' as const,
+    slotKey: null,
+    code: 'incompatibleModule',
+    constraint: 'oversized',
+    params: {},
+    diagnostic: null,
+    framingKey: 'outfitting.refusal.packageEdit' as const,
+  });
+
   it('renders nothing while no edit has been refused', () => {
-    const fixture = renderComponent(EditRefusalNotice, { failure: null, revision: 1 });
+    const fixture = renderComponent(EditRefusalNotice, { failure: null });
 
     expect(element(fixture).querySelector('.notice')).toBeNull();
   });
 
   it('frames the outcome and names the mount, leaving the reason to the Almanac', () => {
     const fixture = renderComponent(EditRefusalNotice, {
-      revision: 2,
       slotLabel: 'Huge Hardpoint 1',
       failure: {
         category: 'packageEdit',
@@ -583,5 +650,65 @@ describe('edit refusal notice', () => {
     // The mount is named the way the ledger names it, not by its raw key.
     expect(text).toContain('Huge Hardpoint 1');
     expect(text).not.toContain('HugeHardpoint1');
+  });
+
+  it('announces a second refusal that changes nothing on screen', () => {
+    // The refusal spends no build revision and moves nothing a reader can see,
+    // so a Commander who presses again and is refused again would otherwise be
+    // met with silence. It is the refusal itself that this component watches,
+    // and the store hands over a new one per event (011/FR-009).
+    const fixture = renderComponent(EditRefusalNotice, { failure: null });
+    const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('failure', refused());
+    fixture.detectChanges();
+    const first = announcements.assertiveEvent();
+    expect(first?.text).toContain('1 to read');
+
+    fixture.componentRef.setInput('failure', refused());
+    fixture.detectChanges();
+
+    const second = announcements.assertiveEvent();
+    expect(second?.text).toBe(first?.text);
+    expect(second?.identity, 'the second refusal was published as the first').not.toBe(
+      first?.identity,
+    );
+  });
+
+  it('says nothing about a refusal that is already on screen when it opens', () => {
+    // The store holding the refusal is the application's and the workspace is
+    // a route, so a Commander who is refused, looks at the shipyard and comes
+    // back meets a screen with the refusal drawn on it. It is initial content,
+    // and every screen's arrival is silent (011/FR-009).
+    renderComponent(EditRefusalNotice, { failure: refused() });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toBe('');
+  });
+
+  it('says nothing more when a locale commits behind the refusal', () => {
+    // Everything the sentence says is resolved inside `untracked`, so the
+    // effect depends on the refusal and not on the catalogue. Tracked, a
+    // committed locale would tell a reader again about a refusal they have
+    // already been told about (011/FR-009).
+    const fixture = renderComponent(EditRefusalNotice, { failure: null });
+    const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('failure', refused());
+    fixture.detectChanges();
+    const announced = announcements.assertiveEvent();
+    expect(announced).not.toBeNull();
+
+    TestBed.inject(LocaleStore).commitCandidate(
+      {
+        requested: 'de',
+        catalogue: germanCatalogue as unknown as MessageCatalogue,
+        source: 'asset',
+        failure: null,
+      },
+      'browser',
+    );
+    fixture.detectChanges();
+
+    expect(announcements.assertiveEvent()).toBe(announced);
   });
 });

@@ -120,9 +120,6 @@ export class HullAnatomy {
 
   readonly headingId = relationId('anatomy');
 
-  /** Monotonic across every side transition this session announces. */
-  #transition = 0;
-
   /**
    * Segments the strip offers for a region that is not this one.
    *
@@ -356,10 +353,6 @@ export class HullAnatomy {
 
     this.#announcements.announce({
       kind: `anatomy.side.${side}`,
-      // The transition's own number, not the build's. A side that fails,
-      // recovers and fails again does so at one build revision, and the
-      // service drops anything not ahead of what it last announced.
-      revision: (this.#transition += 1),
       urgency: 'polite',
       messageKey: key,
       params: {

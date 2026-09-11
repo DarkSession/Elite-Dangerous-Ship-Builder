@@ -380,6 +380,764 @@ describe('test discipline', () => {
   });
 });
 
+describe('announcements', () => {
+  it('rejects a request carrying a number for the policy to compare', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", revision: 1, urgency: "polite", messageKey: "k" });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('rejects a request built somewhere else and handed over', () => {
+    // The route the compiler cannot see: a surplus key is checked on a literal
+    // at the call site, never on a variable.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'const request = { kind: "x", revision: 1, urgency: "polite", messageKey: "k" };\nthis.#announcements.announce(request);',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('rejects a request that spreads something into itself', () => {
+    // The literal rule, one character wider: a spread carries whatever it was
+    // given, and the compiler checks a surplus key on the literal only.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", ...extra });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('accepts a spread inside a message\u2019s own parameters', () => {
+    // `params` is the caller's own message data. What it holds is words in a
+    // sentence, not keys the policy is being handed.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { ...counts } });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a number stated as a shorthand key', () => {
+    // The spelling someone re-adding the field would reach for, and the one
+    // the compiler is silent about once the field is back on the type.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind, urgency, messageKey, revision });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('accepts a request whose every key is shorthand and none of them a number', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind, urgency, messageKey, params });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects an announcement published in the open from a render effect', () => {
+    // `afterRenderEffect` tracks signals exactly as `effect` does, so an
+    // announcement built inside one takes the same catalogue dependency.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'afterRenderEffect(() => { this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }); });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
+  it('rejects an announcement published from an effect in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'effect(() => { this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }); });',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
+  it('rejects a message resolved in the effect and carried into the request', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const name = this.#messages.message("k");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('rejects a resolved member read in the open and carried into the request', () => {
+    // The shape the two refusal notices are written in. `title` is a computed
+    // over one message, so reading it out here is the catalogue read, one
+    // statement earlier and under another name.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("outfitting.refusal.title"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "assertive", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member declared with an access modifier', () => {
+    // `protected readonly` is how nine of these are written. A member the
+    // template reads is no less a catalogue read than a private one.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'protected readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member declared with a type annotation', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title: Signal<string> = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const title = this.title();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { title } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a member that spells a number, read in the open', () => {
+    // A member holding a formatted number reaches the reading language exactly
+    // as a member holding a sentence does. The catalogue read is one statement
+    // further away than `message()`, and so is the republished event.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'readonly countText = computed(() => this.#formatters.integer(this.count()));',
+        'effect(() => {',
+        '  const spelled = this.countText();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { spelled } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('rejects a member that asks the package for a name, read in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #gameText = inject(GameTextPresenter);',
+        'readonly hullName = computed(() => this.#gameText.shipName(this.hull()).text);',
+        'effect(() => {',
+        '  const hull = this.hullName();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "assertive", messageKey: "k", params: { hull } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('rejects a number formatted in the open and announced in there', () => {
+    // `Formatters.integer` reads the effective locale to know how to spell a
+    // number, so a tracked call to it is the catalogue dependency under
+    // another name — and every announcement in the application formats one.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  const count = this.#formatters.integer(shown);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('reads a locale field whose name carries more than one dollar', () => {
+    // `$` is legal in an identifier and means end of input in a pattern, so a
+    // field name goes into the pattern as a name rather than as a pattern of
+    // its own. Escaping only the first one leaves a pattern that matches
+    // nothing, and the read walks past the rule.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #a$b$c = inject(Formatters);',
+        'effect(() => {',
+        '  const count = this.#a$b$c.integer(this.#shown());',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects game text resolved in the open and announced in there', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #gameText = inject(GameTextPresenter);',
+        'effect(() => {',
+        '  const name = this.#gameText.shipName(symbol);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+  });
+
+  it('accepts the locale settling as an announcing effect\u2019s own trigger', () => {
+    // Everything else derives from the reading language, so reading one of
+    // those is never the event. The language settling is one, and the shell
+    // announces it with the snapshot tracked on purpose.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #locale = inject(LocaleStore);',
+        'effect(() => {',
+        '  const snapshot = this.#locale.snapshot();',
+        '  if (snapshot.status !== "fallback") { return; }',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "locale.fallback", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a number formatted inside the untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #formatters = inject(Formatters);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "polite",',
+        '      messageKey: "k",',
+        '      params: { count: this.#formatters.integer(shown) },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a message resolved inside a template interpolation', () => {
+    // A template's interpolations are code. Blanking them with the text would
+    // hide the same catalogue read behind two characters.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const label = `${this.#messages.message("x")} to read`;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { label } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('accepts a template whose text describes the rule', () => {
+    // The text around an interpolation is still text, and a sentence naming
+    // the thing the rule rejects must not be the thing that fails the build.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const label = `this.#messages.message("x") is what rule 3 rejects`;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { label } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('reports one read once, however many of the rules match it', () => {
+    // `this.#messages.message(` is matched from `this.` and again from
+    // `.message(` inside it, which is how every real caller is written. One
+    // read is one violation, and a file reporting double what it holds is a
+    // report nobody can count.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #messages = inject(MessageService);',
+        'effect(() => {',
+        '  const name = this.#messages.message("a");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('reports two separate reads separately', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #messages = inject(MessageService);',
+        'effect(() => {',
+        '  const a = this.#messages.message("a");',
+        '  const b = this.#messages.message("b");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { a, b } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(
+      found.map((one) => one.line),
+      [3, 4],
+    );
+  });
+
+  it('reads an interpolation carrying a string with a brace in it', () => {
+    // A `'}'` counted as the interpolation's own close blanks from inside that
+    // string onwards, leaving a call unbalanced — and an unbalanced call makes
+    // `callSpan` answer nothing, which stops every rule without saying so.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const id = `${join("}")} tail`;',
+        '  const name = this.#messages.message("x");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('keeps reading the file after an interpolation carrying an opening brace', () => {
+    // Counted as the template's own, it never closes, and everything from the
+    // next brace to the end of the file is blanked.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'const id = `${wrap("{")} done`;',
+        'this.#announcements.announce({ kind: "k", urgency: "polite", messageKey: "m", revision: 1 });',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('accepts the same member read inside the untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("outfitting.refusal.title"));',
+        'effect(() => {',
+        '  const failure = this.failure();',
+        '  if (failure === null) { return; }',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "assertive",',
+        '      messageKey: "k",',
+        '      params: { title: this.title() },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a member read in the open that resolves no message', () => {
+    // The trigger. An effect has to read its own event out here, or it depends
+    // on nothing and never runs again.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #shown = computed(() => this.#catalogue.count().shown);',
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { count: shown } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an effect that resolves a message for something else and announces nothing', () => {
+    // The place a message wanted for something else belongs. This effect takes
+    // the catalogue dependency and has no announcement to republish.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  this.#document.setTitle(this.title());',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an effect that builds and announces inside one untracked call', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const shown = this.#shown();',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "catalogue.match-count",',
+        '      urgency: "polite",',
+        '      messageKey: "catalogue.match-count",',
+        '      params: { count: this.#formatters.integer(shown) },',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects an announcing effect that resolves a message for something else', () => {
+    // Where the value goes does not matter. The effect read the catalogue, so
+    // it depends on the catalogue, so a committed locale runs it again and the
+    // announcement is published a second time for one occurrence.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const heading = this.#messages.message("title");',
+        '  this.#heading.set(heading);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 2);
+  });
+
+  it('rejects a resolved member read in the open with nothing bound to it', () => {
+    // No binding to name, and the same dependency either way.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  this.#document.setTitle(this.title());',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a resolved member carried in through an object built in the open', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly title = computed(() => this.#messages.message("k"));',
+        'effect(() => {',
+        '  const params = { title: this.title() };',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('accepts a revision on something that is not an announcement', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'const snapshot = { state: "ready", revision: 4 };\nreturn { kind: "refused", failure, revision };',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a revision named inside a message\u2019s own parameters', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { revision: 3 } });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an announcement made from a method rather than an effect', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'scanFiles(files) {',
+        '  this.#announcements.announce({',
+        '    kind: "slef.import.scan",',
+        '    urgency: "polite",',
+        '    messageKey: this.#messages.key("scanning"),',
+        '  });',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts an effect that resolves a message but announces nothing', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      'effect(() => { this.#title.set(this.#messages.message("k")); });',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('accepts a comment and a string that describe the rule', () => {
+    // Text is not code. A doc comment explaining what the rule rejects, and a
+    // fixture quoting it, must not be the thing that fails the build.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        '/** Never `this.#announcements.announce({ revision: 1 })`. */',
+        'const example = "effect(() => this.#announcements.announce({ kind: 1 }))";',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('reads an effect that carries a regular expression holding a quote', () => {
+    // The quote inside the pattern is not a string opening. Read as one, it
+    // runs to the end of the file and takes the whole effect out of the scan.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const name = this.#raw().replace(/[\'"]/g, "");',
+        '  this.#announcements.announce({ kind: name, urgency: "polite", messageKey: "k" });',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('rejects a quoted revision key', () => {
+    // A string is blanked before any rule reads the source, so a quoted key is
+    // invisible to the shape the other fixtures use. It is the same key.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'this.#announcements.announce({',
+        '  kind: "x",',
+        '  urgency: "polite",',
+        '  messageKey: "k",',
+        "  'revision': 1,",
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+  });
+
+  it('rejects a formatter read declared with a type annotation', () => {
+    // `readonly #formatters: Formatters = inject(Formatters)` is the same
+    // field as the unannotated form, and formatting a number in the open takes
+    // the same locale dependency resolving a message does.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'class Probe {',
+        '  readonly #formatters: Formatters = inject(Formatters);',
+        '  constructor() {',
+        '    effect(() => {',
+        '      const count = this.#formatters.integer(this.total());',
+        '      untracked(() =>',
+        '        this.#announcements.announce({',
+        '          kind: "x",',
+        '          urgency: "polite",',
+        '          messageKey: "k",',
+        '          params: { count },',
+        '        }),',
+        '      );',
+        '    });',
+        '  }',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 5);
+  });
+
+  it('rejects a formatter read taken through a constructor parameter', () => {
+    // The other way a field is declared. Nothing about the dependency changes.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'class Probe {',
+        '  constructor(private readonly formatters: Formatters) {',
+        '    effect(() => {',
+        '      const count = this.formatters.integer(this.total());',
+        '      untracked(() =>',
+        '        this.#announcements.announce({',
+        '          kind: "x",',
+        '          urgency: "polite",',
+        '          messageKey: "k",',
+        '          params: { count },',
+        '        }),',
+        '      );',
+        '    });',
+        '  }',
+        '}',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 4);
+  });
+
+  it('reads an effect below a regular expression a keyword introduces', () => {
+    // `return /…/` is a pattern, not a division. Read as a division, the quote
+    // inside it opens a string that runs to the next quote and blanks the
+    // announcement between them — and the file passes while saying nothing.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'isApple(declared) {',
+        "  return /mac|o'brien/i.test(declared);",
+        '}',
+        'effect(() => {',
+        '  const name = this.#messages.message("k");',
+        '  this.#announcements.announce({ kind: name, urgency: "polite", messageKey: "k" });',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect', 'announcement-effect']);
+    assert.deepEqual(
+      found.map((violation) => violation.line).sort(),
+      [5, 6],
+      'the effect below the pattern was not read at all',
+    );
+  });
+
+  it('still reads a division whose left side ends in a keyword-like name', () => {
+    // `margin / 2` divides. Taken for a pattern, everything to the next `/`
+    // would be blanked, the announcement with it.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const half = this.margin / 2;',
+        '  untracked(() =>',
+        '    this.#announcements.announce({',
+        '      kind: "x",',
+        '      urgency: "polite",',
+        '      messageKey: "k",',
+        '      revision: half,',
+        '    }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 4);
+  });
+});
+
 describe('duplicated composition steps', () => {
   const PAIR = {
     scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },

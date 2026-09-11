@@ -6,6 +6,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
@@ -268,19 +269,29 @@ export class HullDetailPage {
       void this.#router.navigate([NAVIGATION_ROUTES.catalogue, canonical], { replaceUrl: true });
     });
 
-    // One assertive announcement per new blocking condition, and none for the
+    // One assertive announcement per blocking condition, and none for the
     // ordinary populated case, which is discoverable in reading order.
+    //
+    // Each address that resolves to no hull is its own event, and a Commander
+    // who mistypes a hull twice is told twice — the words are identical, which
+    // is exactly what 011/FR-009 says must not make the second one silent.
+    //
+    // The resolved view is the effect's only dependency. Announcing is read in
+    // `untracked` because resolving a message reads the catalogue: tracked, a
+    // committed locale would re-run this and state an address the Commander has
+    // already left.
     effect(() => {
       const view = this.view();
       if (view?.kind !== 'unknown') {
         return;
       }
-      this.#announcements.announce({
-        kind: 'hullDetail.unknown',
-        revision: 1,
-        urgency: 'assertive',
-        messageKey: 'hullDetail.unknown.title',
-      });
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'hullDetail.unknown',
+          urgency: 'assertive',
+          messageKey: 'hullDetail.unknown.title',
+        }),
+      );
     });
   }
 

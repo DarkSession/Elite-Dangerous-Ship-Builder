@@ -358,13 +358,13 @@ describe('App and a screen that never arrives', () => {
     const announce = vi.spyOn(announcements, 'announce');
 
     const fixture = await failed();
-    expect(announce.mock.results.map((result) => result.value)).toEqual([true]);
+    expect(announce).toHaveBeenCalledTimes(1);
     const first = spokenNode(fixture);
 
     // A screen that opens is the answer to the failure before it, and the
-    // press after that is a new event rather than the one already spoken.
-    // Announcing is deduped on the revision the count carries; a boolean would
-    // make the second failure the same event and leave it in silence.
+    // press after that is a new event rather than the one already spoken. The
+    // effect runs on the failure count, so the second press publishes a second
+    // time and the policy adds nothing of its own.
     //
     // It goes to another address rather than back to the one the shell is on:
     // the router skips a press on the address it is already at, and a skip
@@ -379,14 +379,14 @@ describe('App and a screen that never arrives', () => {
     await second;
     fixture.detectChanges();
 
-    expect(announce.mock.results.map((result) => result.value)).toEqual([true, true]);
+    expect(announce).toHaveBeenCalledTimes(2);
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['navigation.failed.notice']);
     expect(announcements.assertive()).toBe('');
 
-    // What the service decided is not what a reader hears. Both failures say
-    // the same sentence, so the outlet holding that sentence at the end says
-    // nothing about whether the second one was ever a change to announce. The
-    // node is what a live region announces, so the node is what is read.
+    // What was published is not what a reader hears. Both failures say the
+    // same sentence, so the outlet holding that sentence at the end says
+    // nothing about whether the second one reached anyone. The node is what a
+    // live region announces, so the node is what is read.
     const spoken = spokenNode(fixture);
     expect(first, 'the first failure put nothing in the polite outlet').not.toBeNull();
     expect(spoken, 'the second failure emptied the polite outlet').not.toBeNull();

@@ -4,7 +4,7 @@
 **Covers**: 011 FR-006, FR-007, FR-008, FR-009, FR-010, FR-013, FR-020, FR-023, FR-025,
 FR-026, SC-001; 017 FR-001, FR-002, FR-003, FR-004, FR-005, SC-001, SC-002; 018 FR-002,
 FR-006, FR-007
-**Version**: 13
+**Version**: 14
 
 ## What is automated, and what is left
 
@@ -69,10 +69,13 @@ disagrees or where the announcement is correct but unusable.
    expect its title to be announced, and expect content behind it to be
    unreachable — including by landmark and heading navigation. Dismiss it and
    expect to be returned to the control that opened it.
-7. **Urgency and deduplication.** Trigger a blocking error. Expect one assertive
+7. **Urgency and replay.** Trigger a blocking error. Expect one assertive
    announcement, promptly. Then trigger a settled change. Expect one polite
-   announcement that does not interrupt. Repeat the same change without altering
-   anything: expect **silence**. Expect unaffected values never to be announced.
+   announcement that does not interrupt. Then, without touching that change,
+   change the browser's language setting: expect **silence**, because the event
+   already happened and nothing about it moved. Expect unaffected values never
+   to be announced. An action the Commander takes a second time is a second
+   event and is not this step's silence — step 22 reads that one.
 8. **Text equivalents.** Find every status, tone, selected state and metric.
    Expect the meaning to be in words. Nothing may be carried by colour, shape,
    position or motion alone.
@@ -140,7 +143,10 @@ disagrees or where the announcement is correct but unusable.
     expect the payload field to be announced as read-only rather than
     unavailable, and expect the entry count and size to be reachable. Activate
     `COPY` and expect one polite announcement of the result — never the payload
-    — and expect the same result not to be announced twice. Activate
+    — and expect a second press to be answered in its own right: the same
+    sentence again, because a Commander who was unsure of the first press has
+    no other way to learn it was received (step 22 reads that judgment).
+    Activate
     `DOWNLOAD` and expect it to be announced as handed to the browser, never as
     saved. Where the platform offers `SHARE`, expect a cancelled share to be
     announced as nothing sent. In every one of these states expect the payload
@@ -440,6 +446,34 @@ disagrees or where the announcement is correct but unusable.
     navigation that is still running from one that has failed — including two
     failures in a row, where the second says nothing new and the only thing
     separating them is that it is said.
+
+22. **The same thing, twice.** Two readings of one contract, and the reason this
+    step exists is that in both of them the second sentence is identical to the
+    first. Nothing automated can judge whether hearing it again is an answer or
+    a nuisance.
+
+    First, narrowing. On the shipyard, choose Medium, then Small, then Large,
+    then clear the filter. The three pad classes are in that order because each
+    shows fewer hulls than the one before it, so each press is a narrowing
+    rather than a move in whichever direction the Almanac happens to decide.
+    Expect one polite announcement per press, each naming how many hulls are
+    shown out of how many, arriving without cutting off what the reader was
+    saying. Expect the fourth — the widening — to be announced too: a list
+    growing back is news in the same way a list shrinking is.
+
+    Then a refusal. In the import layer, paste a payload the Almanac refuses
+    and press the action. Expect one polite announcement saying the payload was
+    not imported, and expect the detail to be findable on the layer afterwards
+    and re-readable at the reader's own pace. Press the action a second time
+    without changing anything. Expect a second announcement, in the same words.
+
+    The judgment this step exists for, and it is two. Whether the count read
+    out on every press is help or chatter — a Commander stepping through four
+    pad classes hears four sentences, and if that is a nuisance the message
+    changes rather than the policy. And whether a Commander who pressed a
+    refused action twice can tell, from speech alone, that the second press was
+    received: the words do not move between the two, so what is being confirmed
+    is that anything is said at all.
 
 ## Recording the result
 

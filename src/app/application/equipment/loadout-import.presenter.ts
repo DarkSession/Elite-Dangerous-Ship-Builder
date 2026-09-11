@@ -112,34 +112,45 @@ export class LoadoutImportPresenter {
   async scanFiles(files: readonly JournalFile[]): Promise<void> {
     this.#announcements.announce({
       kind: 'equipment.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey: 'equipment.import.announce.scanning',
     });
-    await this.#import.scanFiles(files);
+
+    // Only the scan a Commander is still waiting for says how it ended. A scan
+    // replaced by a newer one is a question nobody is asking (011/FR-009).
+    if (!(await this.#import.scanFiles(files))) {
+      return;
+    }
     this.#announceScan();
   }
 
-  /**
-   * Says how a scan ended, not only that one started (016/FR-004, FR-006).
-   *
-   * The revision is the store's own token, which only ever rises. A count would
-   * not: `AnnouncementService` drops any request whose revision is below the
-   * highest it has published for that kind, so announcing the second of two
-   * scans at a lower number would silence it for the rest of the session.
-   */
+  /** Says how a scan ended, not only that one started (016/FR-004, FR-006). */
   #announceScan(): void {
+    // A scan that settled on a refusal says what refused it, in the sentence
+    // the panel states it in, rather than reporting the empty list the refusal
+    // left behind. See the twin in `slef.presenter.ts`
+    // (constitution IV, 016/FR-004).
+    const failure = this.#store.failure();
+    if (failure !== null) {
+      this.#announcements.announce({
+        kind: 'equipment.import.scan',
+        urgency: 'polite',
+        messageKey: 'equipment.import.announce.scanFailed',
+        params: { reason: this.#failureMessage(failure) },
+      });
+      return;
+    }
+
+    // The same as the ship tool's: a scan that came back with nothing came back
+    // with a refusal, which the branch above answered.
     const found = this.#store.entries().length;
     this.#announcements.announce({
       kind: 'equipment.import.scan',
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey:
-        found === 0
-          ? 'equipment.import.announce.scanned.none'
-          : found === 1
-            ? 'equipment.import.announce.scanned.one'
-            : 'equipment.import.announce.scanned.many',
+        found === 1
+          ? 'equipment.import.announce.scanned.one'
+          : 'equipment.import.announce.scanned.many',
       params: { count: this.#formatters.integer(found) },
     });
   }
@@ -150,12 +161,7 @@ export class LoadoutImportPresenter {
     if (submission.kind === 'opened') {
       this.#announce('equipment.import.announce.opened');
     } else if (submission.kind === 'stored') {
-      this.#announce(
-        submission.stored === 1
-          ? 'equipment.import.announce.stored.one'
-          : 'equipment.import.announce.stored.many',
-        { count: this.#formatters.integer(submission.stored) },
-      );
+      this.#announceBatch(submission.stored, submission.refused.length);
     } else if (submission.kind === 'failed') {
       this.#announce('equipment.import.announce.failed');
     }
@@ -163,13 +169,52 @@ export class LoadoutImportPresenter {
     return submission;
   }
 
+  /**
+   * What a batch of several loadouts did, in one sentence.
+   *
+   * One sentence and not two, because the polite outlet holds one event: a
+   * second announcement published in the same tick writes over the first, and
+   * the reader hears only what was said last. A batch that stored some
+   * loadouts and refused others reports two outcomes, and both are owed
+   * (011/FR-009, "One request reports two outcomes").
+   *
+   * Both counts, and never a count and a word standing in for the other one. A
+   * batch where every chosen loadout was refused must not say the rest were
+   * saved — nothing was.
+   */
+  #announceBatch(stored: number, refused: number): void {
+    const saved: { messageKey: MessageKey; params: Record<string, string> } = {
+      messageKey:
+        stored === 1
+          ? 'equipment.import.announce.stored.one'
+          : 'equipment.import.announce.stored.many',
+      params: { count: this.#formatters.integer(stored) },
+    };
+    const notSaved: { messageKey: MessageKey; params: Record<string, string> } = {
+      messageKey:
+        refused === 1
+          ? 'equipment.import.announce.notSaved.one'
+          : 'equipment.import.announce.notSaved.many',
+      params: { count: this.#formatters.integer(refused) },
+    };
+
+    if (stored > 0 && refused > 0) {
+      this.#announce('equipment.import.announce.batch', {
+        saved: this.#messages.message(saved.messageKey, saved.params),
+        notSaved: this.#messages.message(notSaved.messageKey, notSaved.params),
+      });
+      return;
+    }
+
+    // A batch is at least two loadouts and each of them is either stored or
+    // refused, so exactly one of the two halves is left here.
+    const only = refused > 0 ? notSaved : saved;
+    this.#announce(only.messageKey, only.params);
+  }
+
   #announce(messageKey: MessageKey, params: Record<string, string> = {}): void {
     this.#announcements.announce({
       kind: 'equipment.import',
-      // The store's monotonic token, never a measurement of the draft: a
-      // revision that can fall is a mute switch for every later announcement of
-      // this kind.
-      revision: this.#store.requestToken,
       urgency: 'polite',
       messageKey,
       params,

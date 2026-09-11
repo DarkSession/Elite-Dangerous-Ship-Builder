@@ -126,6 +126,16 @@ export class App {
    */
   readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.start);
 
+  /**
+   * The revision of the version whose notice a reader has been told about, or
+   * `null` before the first one.
+   *
+   * The update effect watches the restart overlay as well as the version, so
+   * one version can run it more than once. See the effect for why the overlay
+   * has to be watched, and why this is the one announcement here that remembers.
+   */
+  #announcedUpdate: number | null = null;
+
   /** Where the bar's insignia goes: the entry point, from every screen. */
   readonly home = computed(() => this.#navigation.home());
 
@@ -438,17 +448,25 @@ export class App {
       // down is exactly when this has something to say. A restart that could
       // not be carried out lowers it without moving the state or the revision,
       // and the notice left on the shell is the one thing telling a reader the
-      // session is behind. `(kind, revision, urgency)` is the dedupe identity,
-      // so a later version raising and lowering the overlay again does not say
-      // it twice.
+      // session is behind.
       if (state === 'ready' && this.#updates.overlay()) {
         return;
       }
 
+      // Which is why this effect can run more than once for one version, and
+      // why it is the one announcement in the application that remembers what
+      // it said. Every other caller depends on its own event alone; this one
+      // watches the overlay as well, so a version raising and lowering it twice
+      // would otherwise tell a reader the same thing twice (011/FR-009, "One
+      // event is published twice").
+      if (revision === this.#announcedUpdate) {
+        return;
+      }
+      this.#announcedUpdate = revision;
+
       untracked(() =>
         this.#announcements.announce({
           kind: 'app.update',
-          revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
           // The durable fact, not the thing about to happen. An announcement
           // is spoken once and cannot be taken back, and this only reaches a
@@ -467,19 +485,21 @@ export class App {
     // words also stay on the page, in the status list above, because a
     // spoken sentence cannot be re-read (018/FR-007).
     //
-    // The count is the revision, so two separate failures are two events and
-    // the second is not deduped into silence. Resolving the message reads the
-    // catalogue, so it is announced in `untracked`: tracked, a committed locale
-    // would republish an event that already happened.
+    // The count is what makes this effect run twice for two failures: both say
+    // one sentence, and a boolean would not move. It is the trigger and nothing
+    // more — the policy is told an event happened, not which one.
+    //
+    // Resolving the message reads the catalogue, so it is announced in
+    // `untracked`: tracked, a committed locale would republish a failure the
+    // Commander has already been told about.
     effect(() => {
-      const revision = this.#navigationWaiting.failures();
-      if (revision === 0) {
+      const failures = this.#navigationWaiting.failures();
+      if (failures === 0) {
         return;
       }
       untracked(() =>
         this.#announcements.announce({
           kind: 'navigation.failed',
-          revision,
           urgency: 'polite',
           messageKey: 'navigation.failed.notice',
         }),

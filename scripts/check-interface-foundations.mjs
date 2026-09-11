@@ -980,6 +980,582 @@ async function checkTestDiscipline() {
 }
 
 // ---------------------------------------------------------------------------
+// Rule: what an announcement declares, and where it is built
+// ---------------------------------------------------------------------------
+
+/**
+ * The keywords a value may follow, so a `/` after one opens a pattern.
+ *
+ * Every one of them is followed by an expression rather than by an operand, so
+ * nothing here can be the left side of a division.
+ */
+const VALUE_KEYWORDS = new Set([
+  'await',
+  'case',
+  'delete',
+  'do',
+  'else',
+  'in',
+  'instanceof',
+  'new',
+  'of',
+  'return',
+  'throw',
+  'typeof',
+  'void',
+  'yield',
+]);
+
+/**
+ * The source with every comment, string, template and regular expression
+ * blanked out, character for character.
+ *
+ * Both rules below match shapes in text, and text that is not code says
+ * nothing about what the code does. A doc comment explaining the rule would
+ * otherwise fail it; a quotation mark inside a regular expression would
+ * otherwise run a string to the end of the file and take a whole effect out of
+ * the reading with it. Blanking rather than removing keeps every offset and
+ * every line break where it was, so a violation is still reported on its own
+ * line.
+ */
+function maskedSource(source) {
+  const out = [...source];
+  const blank = (from, to) => {
+    for (let index = from; index < to && index < out.length; index += 1) {
+      if (out[index] !== '\n') {
+        out[index] = ' ';
+      }
+    }
+  };
+
+  /**
+   * Whether a `/` here opens a regular expression rather than divides.
+   *
+   * An operator or an opening bracket before it means a value is expected, and
+   * a value starting with `/` is a pattern. So does a keyword: `return /…/` and
+   * `typeof /…/` are patterns, and reading them as division scans the pattern
+   * body as code — where a quote in it opens a string that runs to the next
+   * one and blanks whole calls on its way.
+   */
+  const opensRegex = (index) => {
+    let back = index - 1;
+    while (back >= 0 && ' \t\n\r'.includes(source[back])) {
+      back -= 1;
+    }
+    if (back < 0) {
+      return true;
+    }
+    if (!/[\w$]/.test(source[back])) {
+      return '(,=:[!&|?{};+-*%~^<>'.includes(source[back]);
+    }
+    let start = back;
+    while (start > 0 && /[\w$]/.test(source[start - 1])) {
+      start -= 1;
+    }
+    // `a.in / 2` is a property divided, not a keyword followed by a pattern.
+    if (start > 0 && source[start - 1] === '.') {
+      return false;
+    }
+    return VALUE_KEYWORDS.has(source.slice(start, back + 1));
+  };
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+
+    if (character === '/' && source[index + 1] === '/') {
+      const end = source.indexOf('\n', index);
+      const stop = end === -1 ? source.length : end;
+      blank(index, stop);
+      index = stop;
+      continue;
+    }
+    if (character === '/' && source[index + 1] === '*') {
+      const end = source.indexOf('*/', index + 2);
+      const stop = end === -1 ? source.length : end + 2;
+      blank(index, stop);
+      index = stop - 1;
+      continue;
+    }
+    if (character === "'" || character === '"' || character === '`') {
+      // A template literal's interpolations are code, and the rules read them:
+      // a message resolved inside `${…}` is the same catalogue read as one
+      // resolved on its own line. Its text is blanked around them.
+      //
+      // An interpolation holds whole expressions, strings included, so the
+      // braces that close it are counted outside any string it carries — a
+      // `'}'` that ended the interpolation early would blank from inside that
+      // string onwards, and a call left unbalanced makes `callSpan` answer
+      // nothing, which stops every rule silently.
+      const template = character === '`';
+      let end = index + 1;
+      let text = index + 1;
+      let nesting = 0;
+      while (end < source.length) {
+        if (source[end] === '\\') {
+          end += 2;
+          continue;
+        }
+        if (template && nesting === 0 && source[end] === '$' && source[end + 1] === '{') {
+          blank(text, end);
+          nesting = 1;
+          end += 2;
+          continue;
+        }
+        if (template && nesting > 0) {
+          const inner = source[end];
+          if (inner === "'" || inner === '"' || inner === '`') {
+            // A string inside the interpolation. Its own body is text: the
+            // rules must not read it, and its braces are not the template's.
+            let close = end + 1;
+            while (close < source.length) {
+              if (source[close] === '\\') {
+                close += 2;
+                continue;
+              }
+              if (source[close] === inner) {
+                break;
+              }
+              close += 1;
+            }
+            const stop = Math.min(close, source.length);
+            blank(end + 1, stop);
+            end = stop + 1;
+            continue;
+          }
+          if (inner === '{') {
+            nesting += 1;
+          } else if (inner === '}') {
+            nesting -= 1;
+            if (nesting === 0) {
+              text = end + 1;
+            }
+          }
+          end += 1;
+          continue;
+        }
+        if (source[end] === character) {
+          break;
+        }
+        end += 1;
+      }
+      const stop = Math.min(end, source.length);
+      blank(nesting === 0 ? text : stop, stop);
+      index = stop;
+      continue;
+    }
+    if (character === '/' && opensRegex(index)) {
+      let end = index + 1;
+      let inClass = false;
+      while (end < source.length && source[end] !== '\n') {
+        if (source[end] === '\\') {
+          end += 2;
+          continue;
+        }
+        if (source[end] === '[') {
+          inClass = true;
+        } else if (source[end] === ']') {
+          inClass = false;
+        } else if (source[end] === '/' && !inClass) {
+          break;
+        }
+        end += 1;
+      }
+      blank(index + 1, Math.min(end, source.length));
+      index = Math.min(end, source.length);
+      continue;
+    }
+  }
+
+  return out.join('');
+}
+
+/**
+ * The span of the call whose opening parenthesis is at `open`.
+ *
+ * Offsets of the text between the parentheses, or `null` where they never
+ * balance. Reads masked source, so a bracket in a comment or a string is
+ * already gone.
+ */
+function callSpan(masked, open) {
+  let depth = 0;
+  for (let index = open; index < masked.length; index += 1) {
+    if (masked[index] === '(') {
+      depth += 1;
+    } else if (masked[index] === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        return { start: open + 1, end: index };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * The keys an object literal states directly, ignoring anything nested.
+ *
+ * Depth is what makes this worth writing rather than matching: `params` is a
+ * caller's own message data, and a key inside it is a word in a sentence rather
+ * than something the policy is being handed.
+ *
+ * A shorthand key counts. `{ kind, urgency, messageKey, revision }` states the
+ * same four keys as the spelled-out form, and it is the spelling someone
+ * re-adding the field would reach for. So does a quoted one: a string is
+ * blanked before the rules read anything, so `'revision':` is read from the
+ * unmasked source at the same offset.
+ */
+function topLevelKeys(literal, raw = literal) {
+  const keys = [];
+  let depth = 0;
+  for (let index = 0; index < literal.length; index += 1) {
+    const character = literal[index];
+    if (character === '{' || character === '[' || character === '(') {
+      depth += 1;
+      continue;
+    }
+    if (character === '}' || character === ']' || character === ')') {
+      depth -= 1;
+      continue;
+    }
+    if (depth !== 1) {
+      continue;
+    }
+    const quoted = /^(['"])([A-Za-z_$][\w$]*)\1\s*:/.exec(raw.slice(index));
+    if (quoted !== null) {
+      keys.push(quoted[2]);
+      index += quoted[0].length - 1;
+      continue;
+    }
+    const key = /^([A-Za-z_$][\w$]*)\s*(?::|,|\}|$)/.exec(literal.slice(index));
+    if (key !== null && !/[\w$.]/.test(literal[index - 1] ?? '')) {
+      keys.push(key[1]);
+      index += key[0].length - 1;
+    }
+  }
+  return keys;
+}
+
+/**
+ * Whether an object literal spreads something into itself at the top level.
+ *
+ * The same route the literal rule closes, one character wider. TypeScript
+ * checks a surplus property on a literal and not on what a spread brings in, so
+ * a `revision` arriving through `...request` reaches neither the compiler nor
+ * the key rule below.
+ */
+function spreadsIntoItself(literal) {
+  let depth = 0;
+  for (let index = 0; index < literal.length; index += 1) {
+    const character = literal[index];
+    if (character === '{' || character === '[' || character === '(') {
+      depth += 1;
+    } else if (character === '}' || character === ']' || character === ')') {
+      depth -= 1;
+    } else if (depth === 1 && literal.startsWith('...', index)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Every offset at which `pattern` matches, with the match. */
+function occurrences(masked, pattern) {
+  return [...masked.matchAll(pattern)].map((match) => ({
+    index: match.index ?? 0,
+    text: match[0],
+  }));
+}
+
+const ANNOUNCE_CALL = /\.announce\s*\(/g;
+const EFFECT_CALL = /\b(?:effect|afterRenderEffect|afterNextRender|afterEveryRender)\s*\(/g;
+const UNTRACKED_CALL = /\buntracked\s*\(/g;
+const CATALOGUE_READ = /\.message(?:Signal)?\s*\(/g;
+const LOCALE_SERVICES = '(?:MessageService|Formatters|GameTextPresenter)';
+const LOCALE_SERVICE = new RegExp(
+  `(?:readonly\\s+)?(#?[A-Za-z_$][\\w$]*)\\s*(?::[^=;\\n]+)?=\\s*inject\\(\\s*${LOCALE_SERVICES}\\s*\\)`,
+  'g',
+);
+const LOCALE_PARAMETER = new RegExp(
+  `(?:public|protected|private)\\s+(?:readonly\\s+)?([A-Za-z_$][\\w$]*)\\s*:\\s*${LOCALE_SERVICES}\\b`,
+  'g',
+);
+const MEMBER_DECLARATION =
+  /^[ \t]*(?:(?:public|protected|private|static|override|readonly)\s+)*(#?[A-Za-z_$][\w$]*)\s*(?::[^=;\n]+)?=/gm;
+const MEMBER_READ = /\bthis\.(#?[A-Za-z_$][\w$]*)\s*\(/g;
+
+/** Where the statement beginning at `from` ends, ignoring nested brackets. */
+function statementEnd(masked, from) {
+  let depth = 0;
+  for (let index = from; index < masked.length; index += 1) {
+    const character = masked[index];
+    if (character === '(' || character === '[' || character === '{') {
+      depth += 1;
+    } else if (character === ')' || character === ']' || character === '}') {
+      depth -= 1;
+      if (depth < 0) {
+        return index;
+      }
+    } else if (character === ';' && depth === 0) {
+      return index;
+    }
+  }
+  return masked.length;
+}
+
+/**
+ * The fields holding a service whose answers move with the reading language.
+ *
+ * The catalogue is not reached only through `message()`. `Formatters.integer()`
+ * reads the effective locale to know how to spell a number, and
+ * `GameTextPresenter` reads it to know which of the package's languages it is
+ * answering in. A tracked call to either takes the same dependency a `message()`
+ * call does, and every announcement here formats a number, so this is the
+ * nearest way to get the dependency back by accident.
+ *
+ * `LocaleStore` is not one of these. Everything above derives from the reading
+ * language, so reading one is never the event — but the language settling is
+ * itself an event, and `app-frame.ts` announces it with the locale snapshot as
+ * its trigger, tracked on purpose.
+ *
+ * A field is seen however it is declared — `inject()` with or without a type
+ * annotation, or a constructor parameter property — and read through `this.`.
+ * A local alias (`const formatters = this.#formatters`) is not followed;
+ * design.md records it with the other shapes syntax cannot see.
+ */
+function localeServices(masked) {
+  const fields = new Set();
+  for (const declaration of masked.matchAll(LOCALE_SERVICE)) {
+    fields.add(declaration[1]);
+  }
+  for (const parameter of masked.matchAll(LOCALE_PARAMETER)) {
+    fields.add(parameter[1]);
+  }
+  return fields;
+}
+
+/**
+ * Reads of a locale service's own methods, as a fresh pattern each call.
+ *
+ * A pattern carrying state is a pattern two callers cannot share, so each asks
+ * for its own and says which flags it wants: the scan over an effect body needs
+ * `g`, a single `test` over one initialiser does not.
+ *
+ * A field name goes in as a name rather than as a pattern of its own. `$` is
+ * legal in an identifier and means end of input in a pattern, so a field with
+ * two of them would match nothing at all.
+ */
+function localeReadPattern(locales, flags) {
+  if (locales.size === 0) {
+    return null;
+  }
+  const fields = [...locales].map(asLiteralPattern).join('|');
+  return new RegExp(`\\bthis\\.(?:${fields})\\s*\\.[A-Za-z_$][\\w$]*\\s*\\(`, flags);
+}
+
+/**
+ * The class's own members whose value is resolved from the message catalogue.
+ *
+ * A component keeps the sentence it draws as a member — `title` is a `computed`
+ * over one message — and reading that member reads the catalogue exactly as
+ * calling `message()` does. Without this the rule below sees only the shape it
+ * was written against, and one line hoisted out of the `untracked` call walks
+ * past it.
+ *
+ * A member is resolved whichever way it reaches the catalogue: by calling
+ * `message()`, or by asking a locale service for a word — `integer`, a hull's
+ * name — because a member spelling a number in the Commander's language is as
+ * much a catalogue read as a sentence is, and hoisting it out of the `untracked`
+ * call takes the same dependency.
+ *
+ * One level deep, and deliberately so. A member reaching the catalogue through
+ * a private method it calls is not found here; design.md records that with the
+ * other shape no scan can see.
+ */
+function messageMembers(masked, locales) {
+  const members = new Set();
+  const reads = localeReadPattern(locales, '');
+  for (const declaration of masked.matchAll(MEMBER_DECLARATION)) {
+    const at = declaration.index ?? 0;
+    const initialiser = masked.slice(at, statementEnd(masked, at + declaration[0].length));
+    if (/\.message(?:Signal)?\s*\(/.test(initialiser) || reads?.test(initialiser)) {
+      members.add(declaration[1]);
+    }
+  }
+  return members;
+}
+
+/**
+ * What an announcement may declare, and where an effect may build one.
+ *
+ * Three rules over one subject.
+ *
+ * An announcement states its event and nothing else. It carries no number for
+ * the policy to compare, and it is written where it is made: a request built
+ * somewhere else and handed over is the same field arriving by another route,
+ * and the compiler does not see it, because it checks a surplus key on a
+ * literal at the call site and not on a variable.
+ *
+ * The third rule carries the obligation that sits with the caller. An effect
+ * re-runs when anything it read changes, and resolving a message reads the
+ * message catalogue, so an announcement built in the open is republished
+ * whenever a Commander's reading language is committed. Building the request
+ * and calling `announce` inside one `untracked` call is what makes the effect
+ * depend on its own event and nothing else. It is a requirement rather than a
+ * preference: without it there is nothing left that keeps a replay silent.
+ *
+ * An announcing effect therefore reads the catalogue inside `untracked` or not
+ * at all — whatever the value was wanted for, and whether it is reached by
+ * calling `message()` or by reading one of the class's own members that holds
+ * a message. A tracked read for something else takes the same dependency and
+ * republishes the same event; a message wanted for something else belongs to
+ * an effect that announces nothing.
+ */
+function announcementViolations(file, source) {
+  const found = [];
+  const masked = maskedSource(source);
+  const locales = localeServices(masked);
+  const resolvers = messageMembers(masked, locales);
+  const localeReads = localeReadPattern(locales, 'g');
+  const add = (offset, rule, message) =>
+    found.push({ file, line: lineOf(source, offset), rule, message });
+
+  for (const call of occurrences(masked, ANNOUNCE_CALL)) {
+    const span = callSpan(masked, call.index + call.text.indexOf('('));
+    if (span === null) {
+      continue;
+    }
+    const literal = masked.slice(span.start, span.end).trim();
+    const raw = source.slice(span.start, span.end).trim();
+    if (!literal.startsWith('{')) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement is written where it is made. A request built elsewhere and handed ' +
+          'over carries whatever it was given, and a surplus key on it reaches no compiler.',
+      );
+      continue;
+    }
+    if (spreadsIntoItself(literal)) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement is written where it is made. A spread carries whatever it was given, ' +
+          'and neither the compiler nor the rule below sees a surplus key that arrives that way.',
+      );
+    }
+    if (topLevelKeys(literal, raw).includes('revision')) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement states its event, never a number for the policy to compare. ' +
+          'A caller that must not be heard twice decides that before it calls.',
+      );
+    }
+  }
+
+  for (const effectCall of occurrences(masked, EFFECT_CALL)) {
+    const body = callSpan(masked, effectCall.index + effectCall.text.indexOf('('));
+    if (body === null) {
+      continue;
+    }
+    const region = masked.slice(body.start, body.end);
+    const announcing = occurrences(region, ANNOUNCE_CALL);
+    if (announcing.length === 0) {
+      continue;
+    }
+
+    const sheltered = [];
+    for (const untracked of occurrences(region, UNTRACKED_CALL)) {
+      const span = callSpan(region, untracked.index + untracked.text.indexOf('('));
+      if (span !== null) {
+        sheltered.push(span);
+      }
+    }
+    const inside = (offset) => sheltered.some((span) => offset >= span.start && offset < span.end);
+
+    for (const call of announcing) {
+      if (!inside(call.index)) {
+        add(
+          body.start + call.index,
+          'announcement-effect',
+          'An announcement published from an effect is built and made inside one `untracked` ' +
+            'call. Outside it, resolving the message reads the catalogue, and a committed ' +
+            'locale republishes an event that already happened.',
+        );
+      }
+    }
+
+    // A message resolved in the open and carried into the request is the same
+    // read, one statement earlier — and so is a catalogue read this effect makes
+    // for anything else at all. An effect re-runs when anything it read
+    // changes, so one tracked read of the catalogue republishes the
+    // announcement whenever a Commander's reading language is committed,
+    // whatever the value was wanted for. An announcing effect reads the
+    // catalogue inside `untracked` or not at all; a message wanted for
+    // something else belongs to a second effect.
+    //
+    // Read through a member as well as through `message()` itself. `this.title()`
+    // reaches the catalogue whenever `title` is one of the class's own resolved
+    // members, and it is the shape these components are written in.
+    //
+    // Gathered by the text each match covers rather than by where it starts, so
+    // one read is one violation. `this.#messages.message(` is matched by two of
+    // the three patterns — one from `this.`, one from `.message(` inside it —
+    // and that is how every real caller is written.
+    const reads = [];
+    const take = (read) => {
+      const start = read.index;
+      const stop = start + read.text.length;
+      if (reads.some((held) => start < held.stop && stop > held.start)) {
+        return;
+      }
+      reads.push({ start, stop });
+    };
+    for (const read of occurrences(region, CATALOGUE_READ)) {
+      take(read);
+    }
+    for (const read of occurrences(region, MEMBER_READ)) {
+      const member = /this\.(#?[A-Za-z_$][\w$]*)/.exec(read.text)?.[1];
+      if (member !== undefined && resolvers.has(member)) {
+        take(read);
+      }
+    }
+    if (localeReads !== null) {
+      for (const read of occurrences(region, localeReads)) {
+        take(read);
+      }
+    }
+
+    for (const read of reads.map((held) => held.start).sort((one, other) => one - other)) {
+      if (inside(read)) {
+        continue;
+      }
+      add(
+        body.start + read,
+        'announcement-effect',
+        'This effect announces, and reads the message catalogue out here. Read it inside the ' +
+          '`untracked` call with the rest of the request, or move it to an effect that ' +
+          'announces nothing: a committed locale re-runs this one and republishes the event.',
+      );
+    }
+  }
+
+  return found;
+}
+
+/** IO wrapper. */
+async function checkAnnouncements(sources) {
+  for (const file of sources) {
+    // Product code only. The policy's own suite hands it one request twice on
+    // purpose, to prove the service adds nothing of its own to what it is given.
+    if (file.endsWith('.spec.ts') || file.endsWith('.spec-helpers.ts')) {
+      continue;
+    }
+    violations.push(...announcementViolations(relative(ROOT, file), await readFile(file, 'utf8')));
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 /** Runs every rule and returns the violations found. */
 export async function runChecks({ scope = SCOPE } = {}) {
@@ -1011,6 +1587,7 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkPreviewCoverage();
   await checkDuplicatedSteps();
   await checkTestDiscipline();
+  await checkAnnouncements(sources);
   await checkCatalogues();
   await checkServiceWorkerOwnership(sources);
   await checkConformanceClaims(sources);
@@ -2701,6 +3278,14 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: a Commander\u2019s own ship name and ident, which no language translates, either side of a language-neutral separator.',
     'slef.import.failure.refused':
       'A composition pattern: the record\u2019s own title and the package\u2019s reason, either side of a language-neutral separator.',
+    'slef.import.announce.scanFailed':
+      'The variable alone: the sentence the import panel states the refusal in, which is translated where it is written.',
+    'equipment.import.announce.scanFailed':
+      'The same refusal sentence, on the bench\u2019s own import layer.',
+    'slef.import.announce.batch':
+      'A composition pattern: two whole sentences, each translated on its own, with a space between them. A language wanting another separator changes it here.',
+    'equipment.import.announce.batch':
+      'The same pair of sentences, on the bench\u2019s own import layer.',
     'equipment.import.scanned': 'The same scan report, on the bench\u2019s own import layer.',
     'equipment.import.failure.refused':
       'The same refusal line, on the bench\u2019s own import layer.',
@@ -3131,6 +3716,7 @@ export const rules = {
   governedStylesheetViolations,
   previewCoverageViolations,
   testDisciplineViolations,
+  announcementViolations,
   duplicatedStepViolations,
   isTokenisedValue,
   isStructuralText,

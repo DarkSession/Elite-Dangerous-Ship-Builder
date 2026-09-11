@@ -8,17 +8,16 @@ export type AnnouncementUrgency = 'assertive' | 'polite';
 /**
  * A request to announce something.
  *
- * `kind` is a stable application event id, never derived from translated text —
- * deduplication must survive a locale switch, and two languages would otherwise
- * look like two different events.
+ * `kind` is a stable application event id, never derived from translated text.
+ * The outlet keys what it holds by the event rather than by its words, and two
+ * languages saying one thing must not look like two events.
  *
- * `revision` is the revision of the source the event describes. It is what lets
- * a stale result be recognised and dropped: an async outcome that arrives after
- * its source has moved on describes something that is no longer on screen.
+ * There is no number here, and that is the contract. Every request is
+ * announced. A caller that must not be heard twice decides that before it calls
+ * — see the two silences below.
  */
 export interface AnnouncementRequest {
   readonly kind: string;
-  readonly revision: number;
   readonly urgency: AnnouncementUrgency;
   readonly messageKey: MessageKey;
   readonly params?: MessageParams;
@@ -49,21 +48,42 @@ export interface AnnouncementState {
 /**
  * The announcement policy.
  *
- * Publishes at most one message per outlet, and only for an event that is
- * genuinely new. The dedupe identity is `(kind, revision, urgency)`.
+ * Every request is announced. A reader is told about the second of two things
+ * as reliably as the first, which is the whole of 011/FR-009 and the one thing
+ * a policy holding a number could not promise: a caller supplying a number that
+ * did not rise silenced itself, and silence reports nothing.
  *
- * What is deliberately silent:
+ * **The two silences are the caller's, because only the caller has the facts.**
+ *
+ *   * **A replay.** One occurrence is announced once. An announcement published
+ *     from an effect resolves its message inside `untracked`, and that effect
+ *     reads the message catalogue nowhere else, so a committed locale does not
+ *     re-run it. What the effect does depend on is the caller's to choose, and
+ *     it has to be the event: a trigger rebuilt on every recompute re-runs the
+ *     effect whether or not a word moved, so the ship catalogue reads its count
+ *     as a number. Where an effect must watch more than its own event, the
+ *     caller remembers what it announced — `src/app/app.ts` and the restart
+ *     overlay. `scripts/check-interface-foundations.mjs` holds the half of this
+ *     that is visible in the text of a call; the trigger's own identity is not,
+ *     and is held by each caller's unit suite.
+ *   * **An outcome to a withdrawn question.** Whether the request an outcome
+ *     belongs to is still the one a Commander is waiting for is a fact its store
+ *     holds — `SlefStore.isCurrent`, `LoadoutImportStore.isCurrent` — and not
+ *     one this service can read from a number handed to it. A Commander who
+ *     cancels without starting another leaves any high-water mark where it
+ *     stands, so a late outcome would be behind nothing. A withdrawn question
+ *     whose answer is already on disk is still answered: see the batch import.
+ *
+ * Two things stay silent here and are not the caller's:
  *
  *   * **initial content** — it is discoverable in reading order, and announcing
- *     it means every page load starts by talking over the reader;
- *   * **an unchanged or replayed event** — same identity, nothing happened;
- *   * **a stale outcome** — its revision is behind what is presented, so it
- *     describes something that is no longer true;
+ *     it means every page load starts by talking over the reader. Each screen
+ *     holds its own first-run guard;
  *   * **unaffected values** — an outlet carries the change, not its neighbours.
  *
  * Visible feedback is a separate projection. Removing outlet text during a
- * locale switch does not replay old events, and a genuinely new event
- * afterwards resolves in the new language.
+ * locale switch replays nothing, and a later event resolves in the new
+ * language.
  */
 @Injectable({ providedIn: 'root' })
 export class AnnouncementService {
@@ -73,19 +93,19 @@ export class AnnouncementService {
   readonly #polite = signal<SpokenEvent | null>(null);
 
   /**
-   * The revision of the last event published, per `(kind, urgency)`.
+   * How many events this session has announced.
    *
-   * The whole of the policy's memory. An event is one revision of one kind, so
-   * a revision ahead of what that kind has said is the only thing worth
-   * interrupting for: one that matches is the same event again, and one behind
-   * describes a state the interface has moved past.
+   * The whole of the policy's memory, and it exists for the outlet rather than
+   * for the policy. Two events can be spoken in identical words, and a live
+   * region announces a change to what it holds — so the outlet rebuilds by this
+   * number and a reader hears the second one.
    *
-   * Kept per event rather than per outlet. An outlet carries more than one kind
-   * of event, so remembering only what it last held would make a replay silent
-   * when it followed itself and speak when something else had come between —
-   * and a replay is the same event either way.
+   * It never goes backwards while the application runs, `clearOutlets()`
+   * included: a number reused after a locale switch would hand the outlet an
+   * event it has already drawn. Only `reset()` puts it back to nothing, and a
+   * reset is the whole policy starting again.
    */
-  readonly #published = new Map<string, number>();
+  #sequence = 0;
 
   /** What each outlet is saying, for a reader of text rather than of nodes. */
   readonly assertive = computed(() => this.#assertive()?.text ?? '');
@@ -100,27 +120,12 @@ export class AnnouncementService {
     polite: this.polite(),
   }));
 
-  /**
-   * Announces an event if the policy says it is worth interrupting for.
-   *
-   * Returns whether anything was published, which is what the tests assert
-   * against — "it stayed silent" is as much a behaviour as "it spoke".
-   */
-  announce(request: AnnouncementRequest): boolean {
-    const eventKey = `${request.kind}|${request.urgency}`;
-
-    // Said already, or behind what was said. The first is a replay: the same
-    // event again, which nothing happened for. The second is a late arrival
-    // describing a state the interface has moved past.
-    const latest = this.#published.get(eventKey);
-    if (latest !== undefined && request.revision <= latest) {
-      return false;
-    }
-
-    this.#published.set(eventKey, request.revision);
+  /** Announces an event. */
+  announce(request: AnnouncementRequest): void {
+    this.#sequence += 1;
 
     const spoken: SpokenEvent = {
-      identity: `${request.kind}|${request.revision}|${request.urgency}`,
+      identity: `${request.kind}|${this.#sequence}|${request.urgency}`,
       text: this.#messages.message(request.messageKey, request.params),
     };
     if (request.urgency === 'assertive') {
@@ -128,16 +133,17 @@ export class AnnouncementService {
     } else {
       this.#polite.set(spoken);
     }
-
-    return true;
   }
 
   /**
-   * Clears the outlets without forgetting what has been announced.
+   * Empties the outlets.
    *
-   * Used on a locale switch: the old translated text must go, but clearing the
-   * dedupe history would let every prior event replay itself in the new
-   * language.
+   * For a locale switch, where the old translated text must go. Nothing in the
+   * application calls it: a committed locale leaves the outlets holding the
+   * last event in the language it was spoken in, which no reader is told about
+   * again and which the next event replaces. The sequence is untouched here,
+   * because it identifies events to the outlet and reusing a number would hand
+   * it one it has already drawn.
    */
   clearOutlets(): void {
     this.#assertive.set(null);
@@ -147,6 +153,6 @@ export class AnnouncementService {
   /** Forgets everything. Test support and full application reset only. */
   reset(): void {
     this.clearOutlets();
-    this.#published.clear();
+    this.#sequence = 0;
   }
 }

@@ -552,9 +552,328 @@ describe('what a journal source adds to the words', () => {
     expect(announcements.polite()).toBe('2 builds found. Choose one or more.');
   });
 
-  it('says so out loud when a scan found nothing', async () => {
+  it('says what refused a scan, in the sentence the panel states it in', async () => {
     await presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
 
-    expect(announcements.polite()).toBe('Nothing was found to import.');
+    // Not "Nothing was found to import.", which is an outcome that did not
+    // happen for every refusal but this one: a file over the size limit was
+    // never read, and saying nothing was found in it would be untrue
+    // (constitution IV).
+    expect(announcements.polite()).toBe('No loadout event was found in Journal.01.log.');
+  });
+
+  it('never says a file held nothing when it was never read', async () => {
+    // A file over the size limit is refused before it is opened. The panel
+    // says it was not read; an outlet saying nothing was found in it states an
+    // outcome nobody reached (constitution IV).
+    const enormous = {
+      name: 'Journal.big.log',
+      size: 64 * 1024 * 1024,
+      text: () => Promise.resolve(''),
+    };
+
+    await presenter.scanFiles([enormous]);
+
+    const spoken = announcements.polite();
+    expect(spoken).toContain('Journal.big.log');
+    expect(spoken).not.toContain('Nothing was found');
+  });
+
+  it('says nothing about the outcome of a scan a newer one replaced', async () => {
+    let release: (text: string) => void = () => {};
+    const slow = {
+      name: 'Journal.slow.log',
+      size: 1,
+      text: () => new Promise<string>((resolve) => (release = resolve)),
+    };
+
+    const abandoned = presenter.scanFiles([slow]);
+
+    // A second drop while the first is still being read. Its outcome is the
+    // answer the Commander is waiting for.
+    await presenter.scanFiles([
+      FILE('Journal.02.log', [line({ ShipName: 'A' }), line({ ShipName: 'B' })]),
+    ]);
+    const answered = announcements.politeEvent();
+    expect(answered?.text).toBe('2 builds found. Choose one or more.');
+
+    // The abandoned scan then settles, on nothing at all. Announced, it would
+    // talk over the answer to the question that replaced it. This order was
+    // never the broken one — the current scan had already spent the number both
+    // outcomes were compared on, so the late one was dropped for free. It is
+    // read because the number is gone and nothing drops anything now; the order
+    // that went wrong is the test below.
+    release('{"event":"Docked"}');
+    await abandoned;
+
+    expect(announcements.politeEvent()).toBe(answered);
+  });
+
+  it('lets the current scan answer when the one it replaced settles first', async () => {
+    let release: (text: string) => void = () => {};
+    const slow = {
+      name: 'Journal.slow.log',
+      size: 1,
+      text: () => new Promise<string>((resolve) => (release = resolve)),
+    };
+
+    // The other order, and the one that went wrong. The first drop holds
+    // nothing and is read at once; the second is still being read when it
+    // lands. Settling first is what made the abandoned scan the louder of the
+    // two under the policy this change replaced: it stated its own empty
+    // reading, spent the number both outcomes were compared on, and the answer
+    // the Commander was actually waiting for was dropped for being no further
+    // ahead (011/FR-009).
+    const abandoned = presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
+    const current = presenter.scanFiles([slow]);
+
+    await abandoned;
+    expect(announcements.polite()).toBe('Reading journal files.');
+
+    release([line({ ShipName: 'A' }), line({ ShipName: 'B' })].join('\n'));
+    await current;
+
+    expect(announcements.polite()).toBe('2 builds found. Choose one or more.');
+  });
+});
+
+/**
+ * What an import and a delivery say out loud.
+ *
+ * Both are a request a Commander made, and both used to be muted by a number
+ * that did not rise: a stored batch behind a committed import carried the same
+ * build revision, and a second press of Copy carried the same export revision.
+ * The policy no longer compares anything, so each of these is read as what a
+ * Commander is owed rather than as what a counter allowed (011/FR-009).
+ */
+describe('what an import and a delivery say out loud', () => {
+  let presenter: SlefPresenter;
+  let store: SlefStore;
+  let active: ActiveBuildStore;
+  let announcements: AnnouncementService;
+
+  /** A clipboard that can be made to fail, so both outcomes can be read. */
+  class TogglingNavigator extends FakeNavigator {
+    copies = true;
+
+    override async copyText(): Promise<boolean> {
+      return this.copies;
+    }
+  }
+
+  let navigator: TogglingNavigator;
+
+  const loadoutLine = (fields: Record<string, unknown>) =>
+    JSON.stringify({
+      timestamp: '2026-09-01T10:00:00Z',
+      event: 'Loadout',
+      Ship: FIXTURE_HULL,
+      ShipName: 'Anaconda',
+      Modules: [],
+      ...fields,
+    });
+
+  const journalFile = (name: string, lines: readonly string[]) => {
+    const text = lines.join('\n');
+    return { name, size: text.length, text: () => Promise.resolve(text) };
+  };
+
+  beforeEach(() => {
+    navigator = new TogglingNavigator();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        // A stub `/outfitting`, so the move to the workspace resolves without
+        // mounting feature 001's real route.
+        provideRouter([{ path: 'outfitting', children: [] }]),
+        provideLocalization(),
+        ...provideIsolatedLocaleEnvironment(),
+        ...provideMemoryStorage(new MemoryStorage()),
+        { provide: NavigatorAdapter, useValue: navigator },
+        { provide: DownloadAdapter, useClass: FakeDownload },
+      ],
+    });
+    presenter = TestBed.inject(SlefPresenter);
+    store = TestBed.inject(SlefStore);
+    active = TestBed.inject(ActiveBuildStore);
+    announcements = TestBed.inject(AnnouncementService);
+  });
+
+  /**
+   * Works on the open build, spending build revisions and no request token.
+   *
+   * This is what puts the build ahead of the import counter, and it is the only
+   * arrangement in which the policy this change replaced fell silent here: it
+   * compared one number across all three `slef.import` outcomes, a commit
+   * supplied the build's revision and a batch supplied the request token, and a
+   * Commander who had been editing had a build revision far above any token the
+   * layer had reached. Without the edits the token is the larger of the two,
+   * the old policy publishes, and a test written here proves nothing.
+   */
+  function workOnIt(times: number): void {
+    for (let index = 0; index < times; index += 1) {
+      active.touch();
+    }
+  }
+
+  /** Pastes one build and submits it, which commits and opens the workspace. */
+  async function commitOne(): Promise<void> {
+    store.setDraft(JSON.stringify({ event: 'Loadout', Ship: FIXTURE_HULL, Modules: [] }));
+    expect(await presenter.submit()).toEqual({ kind: 'committed' });
+  }
+
+  /** Scans three builds and chooses all of them. */
+  async function chooseAll(lines: readonly string[]): Promise<void> {
+    await presenter.scanFiles([journalFile('Journal.01.log', lines)]);
+    for (const entry of store.journalEntries().slice(1)) {
+      store.toggleSelection(entry.key);
+    }
+  }
+
+  it('states a stored batch after a committed import', async () => {
+    await commitOne();
+    workOnIt(5);
+    await commitOne();
+    const committed = announcements.politeEvent();
+    expect(committed?.text).toContain('imported');
+
+    // The batch spends no build revision, because nothing it stores is opened.
+    // It carries a request token instead, and the commit before it carried a
+    // build revision that five edits had pushed well past it — so under the old
+    // policy the batch was the smaller number of the two and went unsaid.
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({ ShipName: 'Second', timestamp: '2026-09-03T09:00:00Z' }),
+    ]);
+    // The arrangement the old policy fell silent in, stated rather than assumed:
+    // the build is ahead of the token, so the number the batch would have
+    // carried is behind the number the commit already published.
+    expect(active.revision()).toBeGreaterThan(store.requestToken);
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
+
+    const stored = announcements.politeEvent();
+    expect(stored?.text).toBe('2 builds imported and saved.');
+    expect(stored?.identity).not.toBe(committed?.identity);
+  });
+
+  it('states a refused payload after a committed import', async () => {
+    await commitOne();
+    workOnIt(5);
+    await commitOne();
+    const committed = announcements.politeEvent();
+    expect(committed?.text).toContain('imported');
+
+    // Same shape as the batch above: the refusal carries a request token, the
+    // commit carried a build revision the edits had raised past it, and one
+    // number for both is what silenced the second.
+    store.setDraft('not a payload');
+    expect(active.revision()).toBeGreaterThan(store.requestToken);
+    expect(await presenter.submit()).toEqual({ kind: 'failed' });
+
+    const failed = announcements.politeEvent();
+    expect(failed?.text).toBe('This payload was not imported.');
+    expect(failed?.identity).not.toBe(committed?.identity);
+  });
+
+  it('states both outcomes of a batch that stores some and refuses one', async () => {
+    // One request, two outcomes. One sentence carries both: the polite outlet
+    // holds one event, so a second announcement in the same tick would write
+    // over the first and only the last of them would reach a reader
+    // (011/FR-009, 016/FR-011).
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({
+        ShipName: 'Refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-03T09:00:00Z',
+      }),
+      loadoutLine({ ShipName: 'Third', timestamp: '2026-09-02T09:00:00Z' }),
+    ]);
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
+
+    // Both counts. How many were imported is what 016/FR-010 asks the outcome
+    // to state, and a reader who hears only the refusal has to go and count
+    // the records to learn the rest of their own answer.
+    expect(announcements.polite()).toBe('2 builds imported and saved. 1 build was not saved.');
+  });
+
+  it('states what a batch saved even where the Commander closed the layer over it', async () => {
+    // Closing the layer withdraws the question, and a withdrawn question's
+    // answer is normally not announced — it would land on top of the answer to
+    // whatever replaced it. A batch is the exception, and the records are the
+    // reason: they are in storage by the time this settles and they stay
+    // there. Silence would leave a Commander holding saved builds nobody told
+    // them about (011/FR-009, 016/FR-010).
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({ ShipName: 'Second', timestamp: '2026-09-03T09:00:00Z' }),
+    ]);
+
+    const submitting = presenter.submit();
+    const inFlight = store.requestToken;
+    presenter.closeLayer();
+    expect(store.requestToken, 'closing the layer did not withdraw the request').not.toBe(inFlight);
+
+    expect(await submitting).toMatchObject({ kind: 'stored', stored: 2 });
+    expect(announcements.polite()).toBe('2 builds imported and saved.');
+  });
+
+  it('never says the rest were saved where nothing was', async () => {
+    // Every chosen build refused. The batch still reports, because the
+    // Commander asked and is owed an answer — but the answer is that nothing
+    // was saved. Saying "the rest were" here would state an outcome that did
+    // not happen (constitution IV).
+    await chooseAll([
+      loadoutLine({
+        ShipName: 'Refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-04T09:00:00Z',
+      }),
+      loadoutLine({
+        ShipName: 'Also refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-03T09:00:00Z',
+      }),
+    ]);
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 0 });
+
+    expect(announcements.polite()).toBe('2 builds were not saved.');
+  });
+
+  it('answers a second Copy, in the same words', async () => {
+    await commitOne();
+    presenter.generate();
+
+    await presenter.copy();
+    const first = announcements.politeEvent();
+    expect(first?.text).toBe('Copy: Copied');
+
+    // The export did not change between the presses, which is exactly why the
+    // second one used to be silent. A Commander presses again because they
+    // were unsure of the first press, and the sentence is the answer.
+    await presenter.copy();
+    const second = announcements.politeEvent();
+    expect(second?.text).toBe(first?.text);
+    expect(second?.identity, 'the second press was published as the first').not.toBe(
+      first?.identity,
+    );
+  });
+
+  it('says a copy that failed, and then the one that worked', async () => {
+    await commitOne();
+    presenter.generate();
+
+    navigator.copies = false;
+    await presenter.copy();
+    expect(announcements.polite()).toContain('could not be copied');
+
+    // The export still has not changed, so the old policy muted the outcome
+    // that differed from the first — which is the press that actually worked.
+    navigator.copies = true;
+    await presenter.copy();
+    expect(announcements.polite()).toBe('Copy: Copied');
   });
 });
