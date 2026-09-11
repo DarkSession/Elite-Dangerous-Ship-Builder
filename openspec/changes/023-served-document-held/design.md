@@ -215,16 +215,23 @@ where the development server has no generated document at any address at all —
 over a wider set, which is why the rule is stated as holding what was served rather than as a
 second case.
 
-One case the rule reaches and the delta does not enumerate: a returning Commander with no network
-is answered by the cached shell, at an address the build does generate a document for
-(015/FR-014, "The generated document or the cached shell"). Holding what was served gives them the
-shell, which is what they were given. 018/FR-007's scenario agrees — it leaves them "on the
-readable document that address served" — but the prose above it reads the two as the same thing,
-"the readable document where the build generates one". 015/FR-014 separates them, and does so
-independently of this change. The delta is written on what the address served, which is the half
-that holds either way, and the case is recorded here rather than enumerated in a requirement no
-task reads. Closing the prose is `platform/navigation-waiting`'s, and this change does not open
-it.
+**Open question, recorded and not answered here (constitution IX).** A returning Commander with no
+network is answered by the cached shell at an address the build does generate a document for
+(015/FR-014, "The generated document or the cached shell"). If their first navigation then fails
+because the screen's chunk is not cached, holding what was served gives them the shell. 018/FR-007
+reads that case the other way: its scenario's WHEN is "the first navigation of a session fails at
+an address the build generates a document for" and its THEN is "the Commander is left on the
+readable document that address served", and its sibling scenario sets the shell against the
+document as the two distinct outcomes rather than two names for one. So a test written from that
+scenario would expect the document and find the shell.
+
+The question is which of the two is right, and it is not this change's to settle: 015/FR-014
+separates what the build generates from what the address served, and it did so before this change.
+No task here depends on the answer — nothing in this change reads the offline case — so the change
+is built on what the address served, the half that holds either way, and the question is written
+down where the change found it. Whether the case is reachable by any lane at all is the first
+thing to settle, and it belongs to `platform/navigation-waiting` with `platform/published-addresses`
+beside it.
 
 ## Risks / Trade-offs
 

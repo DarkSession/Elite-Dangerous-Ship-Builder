@@ -102,6 +102,12 @@ None.
 - `e2e/prerendered-first-frame.spec.ts:496` already holds the failing first navigation in the
   production lane and records at line 575 which half of FR-007 it does not read, and why. This
   change adds that assertion and removes the note.
+- An open question this change found and does not answer: offline, a returning Commander is
+  answered by the cached shell at an address the build generates a document for (015/FR-014). If
+  their first navigation fails, 018/FR-007's scenario expects the document and holding what was
+  served gives them the shell. It is recorded in design.md, "Development has nothing to hold". No
+  task here depends on the answer, and settling it belongs to `platform/navigation-waiting`
+  (constitution IX).
 - A gap this change found and does not close: 011/FR-024 requires the automated check to reject a
   component state with no preview, and the check is written per component. A component already
   declared in the preview manifest passes with a state it does not preview, so the held state's

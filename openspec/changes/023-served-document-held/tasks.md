@@ -146,10 +146,12 @@
 - [ ] 5.2 Re-read the locale replacement this change must not disturb, which is the other branch
       the modified 015/FR-011 creates. For a Commander whose committed locale is German at an
       address with a generated document, where the navigation presents the screen: the document
-      paints English, the screen carries German once the catalogue arrives, and each untranslated
-      game name carries its disclosure (015/FR-011a). This is what an implementation that holds the
-      English too long would break, and task 2.5 reads only the held branch. Verify with
-      `pnpm run e2e` (015/FR-011, 015/FR-011a).
+      paints English, the screen carries German once the catalogue arrives, nothing on the page is
+      reordered or removed as it does, and each untranslated game name carries its disclosure
+      (015/FR-011a). The reorder-and-removal assertion is the one that would expose a held copy
+      standing where the screen should be, so read it here rather than assume it elsewhere. This is
+      what an implementation that holds the English too long would break, and task 2.5 reads only
+      the held branch. Verify with `pnpm run e2e` (015/FR-011, 015/FR-011a).
 - [ ] 5.3 Remove the note at `e2e/prerendered-first-frame.spec.ts:575` that records FR-007's second
       half as unread, because task 1.2 adds the assertion it asks for. Leave
       `openspec/changes/archive/018-navigation-loading-overlay/` alone: the archive is read and not

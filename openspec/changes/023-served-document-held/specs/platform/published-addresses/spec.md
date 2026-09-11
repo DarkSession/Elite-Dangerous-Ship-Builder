@@ -15,8 +15,8 @@ replaces it, so it does not spend the hold. What is said about any of those outc
 "The statement ends with the navigation", and this requirement adds nothing to either.
 
 Where the address served the application's own shell rather than a generated document, nothing is
-held: the shell is what the Commander keeps, because the shell is what they were given. That is
-every address the build generates no document for.
+held: the shell is what the Commander keeps, because the shell is what they were given. That covers
+every address the build generates no document for, and any other address that served the shell.
 
 Held content MUST be kept as the address served it. It MUST NOT be rebuilt, recomputed or written
 again, and it MUST carry the language it was served in.
@@ -58,9 +58,9 @@ Source: 023/FR-001.
 
 #### Scenario: A navigation presents a screen
 
-- **WHEN** a navigation presents a screen
-- **THEN** the screen replaces what the address served
-- **AND** nothing visible moves and no frame is emptier than the frame before it
+- **WHEN** a navigation presents a screen while content the address served is held
+- **THEN** the screen replaces that content
+- **AND** holding adds no movement and no emptier frame to what the takeover already does
 
 #### Scenario: The address served the shell
 
