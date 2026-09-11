@@ -110,6 +110,16 @@
   padding-inline: var(--ednb-space-2xl);
 }
 
+// A track with no ladder in it. Here the ladder stands below the list rather
+// than beside the name, so nothing above the list moves when a ladder appears
+// and there is nothing to hold. Out of flow rather than merely empty: an empty
+// box is still an item of the column's stack, and an item takes a gap either
+// side of it — 22px of nothing under the list, for a movement this arrangement
+// does not have.
+.item__grades--held {
+  display: none;
+}
+
 .item__attributes {
   padding-inline: var(--ednb-space-3xl);
 }
@@ -199,6 +209,16 @@
   .item__grades {
     padding-inline: 0;
     inline-size: var(--ednb-layout-grade-ladder);
+  }
+
+  // Here the ladder stands beside the name, on a row whose height is the taller
+  // of the two, and the ladder is the taller. So the track carries the ladder's
+  // own composed height whether or not there is a ladder in it: the header keeps
+  // one height, and the list under it keeps its place across the choice
+  // (020/FR-001).
+  .item__grades--held {
+    display: block;
+    min-block-size: var(--ednb-layout-grade-ladder-block);
   }
 
   .item__name {

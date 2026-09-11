@@ -498,6 +498,81 @@ describe('duplicated composition steps', () => {
     assert.deepEqual(found, []);
   });
 
+  it('adds a composed step up from the terms on each side', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$part: 40rem;\n$mode-wide-min: 24rem + $part;',
+      'const PART = 40;\nconst WIDE_MODE_MIN_REM = 24 + PART;',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a composed step whose parts moved on one side only', () => {
+    // The drift a composed step is open to: one side is built on a step that
+    // something else moved, and the two answer at widths 2rem apart.
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$part: 42rem;\n$mode-wide-min: 24rem + $part;',
+      'const PART = 40;\nconst WIDE_MODE_MIN_REM = 24 + PART;',
+    );
+
+    assert.deepEqual(ruleIds(found), ['composition-step']);
+    assert.match(found[0].message, /is 64rem where \$mode-wide-min is 66rem/);
+  });
+
+  it('rejects a step composed of a term it cannot read', () => {
+    assert.deepEqual(
+      ruleIds(
+        rules.duplicatedStepViolations(
+          PAIR,
+          '$mode-wide-min: 64rem * 2;',
+          'const WIDE_MODE_MIN_REM = 64;',
+        ),
+      ),
+      ['composition-step'],
+    );
+  });
+
+  // A term is a name to look up, never a pattern to search with. Read as a
+  // pattern, `calc(24rem` is an unterminated group, and the rule would fail the
+  // run with a stack trace instead of naming the file it could not read.
+  it('rejects a term carrying pattern punctuation rather than failing the run', () => {
+    assert.deepEqual(
+      ruleIds(
+        rules.duplicatedStepViolations(
+          PAIR,
+          '$mode-wide-min: calc(24rem + 40rem);',
+          'const WIDE_MODE_MIN_REM = 64;',
+        ),
+      ),
+      ['composition-step'],
+    );
+  });
+
+  it('adds a term named twice in one sum twice', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$part: 32rem;\n$mode-wide-min: $part + $part;',
+      'const PART = 32;\nconst WIDE_MODE_MIN_REM = PART + PART;',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a step that refers to itself rather than adding up forever', () => {
+    assert.deepEqual(
+      ruleIds(
+        rules.duplicatedStepViolations(
+          PAIR,
+          '$mode-wide-min: $mode-wide-min;',
+          'const WIDE_MODE_MIN_REM = 64;',
+        ),
+      ),
+      ['composition-step'],
+    );
+  });
+
   it('rejects a restatement that has drifted from the declaration', () => {
     const found = rules.duplicatedStepViolations(
       PAIR,

@@ -51,6 +51,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '017-tool-bar-navigation',
   '018-navigation-loading-overlay',
   '019-first-frame-typefaces',
+  '020-held-grade-ladder',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -149,7 +150,15 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'equipment/loadout',
-    requirements: ['013/FR-001', '013/FR-002', '013/FR-003', '013/FR-005', '013/FR-022'],
+    requirements: [
+      '013/FR-001',
+      '013/FR-002',
+      '013/FR-003',
+      '013/FR-005',
+      '013/FR-022',
+      '020/FR-001',
+      '020/FR-002',
+    ],
     journey: 'equipment/bench',
     axe: true,
     assertions: [
@@ -159,6 +168,10 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a weapon fitted on a mount is named in the ledger and counted in the firepower',
       'the Flight Suit offers one grade and says it takes no modification',
       'undo and redo are published to the shell rather than drawn a second time',
+      'the list stays where it was when a weapon is fitted into an empty mount',
+      'the list stays where it was when the first suit is chosen at the empty bench',
+      'the list stands in one place whichever item is selected',
+      'an empty mount holds the ladder’s track and states nothing in it',
     ],
     manualRecord: 'screen-reader',
   },

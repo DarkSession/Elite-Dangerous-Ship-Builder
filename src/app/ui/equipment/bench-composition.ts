@@ -22,18 +22,30 @@ export type BenchComposition = 'wide' | 'compact';
  * The declared content minimums, in rem, added up.
  *
  * The ledger's rail and the commander rail are the canvas's own fixed tracks —
- * 392px and 320px in artboard `1a` — and the item view between them may not be
- * narrowed below what its attribute grid and its grade ladder need. Stated in
- * rem so a Commander who has doubled their text size gets the compact
- * composition for the same reason a narrow window does.
+ * 392px and 320px in artboard `1a` — and the item view between them takes the
+ * rest. Stated in rem so a Commander who has doubled their text size gets the
+ * compact composition for the same reason a narrow window does.
  *
- * `equipment-bench.page.scss` states the same figure for the grid it draws. The
- * two are the same decision asked from two sides, and they may not drift.
+ * The item column's share is the medium container step, which is the step the
+ * item view and the suit gate answer at from inside that column. Below it the
+ * two disagree with each other: the gate draws canvas 2a's header because the
+ * bench composes wide, and the item view draws canvas 1b's band because its own
+ * column is narrow, so choosing the first suit moves the list it was chosen from
+ * (020/FR-001). Stated at one step, a wide bench never draws a middle column
+ * narrower than that column's own stylesheets ask for.
+ *
+ * The rules are the two hairlines the grid shows between the three columns. They
+ * are a rem token like everything else here, so the sum holds at any text size.
+ *
+ * `_responsive.scss` composes the same figure for the grid it draws
+ * (`$equipment-bench-wide-min`). The two are the same decision asked from two
+ * sides, and they may not drift.
  */
 const LEDGER_REM = 24.5;
-const ITEM_REM = 21.5;
+const ITEM_REM = 24;
 const COMMANDER_REM = 20;
-export const BENCH_WIDE_MINIMUM_REM = LEDGER_REM + ITEM_REM + COMMANDER_REM;
+const RULES_REM = 0.125;
+export const BENCH_WIDE_MINIMUM_REM = LEDGER_REM + ITEM_REM + COMMANDER_REM + RULES_REM;
 
 /**
  * Watches the bench's own box, not the viewport.
