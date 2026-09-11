@@ -227,11 +227,16 @@ scenario would expect the document and find the shell.
 
 The question is which of the two is right, and it is not this change's to settle: 015/FR-014
 separates what the build generates from what the address served, and it did so before this change.
-No task here depends on the answer — nothing in this change reads the offline case — so the change
-is built on what the address served, the half that holds either way, and the question is written
-down where the change found it. Whether the case is reachable by any lane at all is the first
-thing to settle, and it belongs to `platform/navigation-waiting` with `platform/published-addresses`
-beside it.
+So the delta does not answer it. Its shell clause and its shell scenario are both keyed on an
+address the build generates no document for, which is the case nothing disputes, and the requirement
+says in as many words that an address which served the shell despite having a generated document is
+not settled there. A clause reading "any other address that served the shell" would have settled it
+by the back door, against an accepted scenario, which is what an open question is recorded to
+prevent.
+
+No task here depends on the answer, because nothing in this change reads the offline case. Whether
+that case is reachable by any lane at all is the first thing to settle, and it belongs to
+`platform/navigation-waiting` with `platform/published-addresses` beside it.
 
 ## Risks / Trade-offs
 

@@ -105,9 +105,11 @@
 - [ ] 4.1 Declare the frame's held state in `src/app/ui/previews/preview-manifest.ts`, with a
       fixture standing in for the content an address served, so the state previews at desktop,
       tablet and mobile widths like every other state the frame supports. Verify with
-      `pnpm run e2e` over `e2e/ui-preview.spec.ts`, which renders every registered state at its
-      own address across the layout profiles and scans each one: a state that is declared is read,
-      and one that is not declared is read nowhere. Do not verify this with `pnpm run policy`: its
+      `pnpm run e2e` over `e2e/ui-preview.spec.ts`, opening the new state at its own preview
+      address by name and asserting the fixture's content stands in the frame's `main`: a suite
+      that only sweeps what is registered goes green on a state that was never declared, so the
+      address is named in the test rather than left to the sweep. The sweep then scans it across
+      the layout profiles like every other state. Do not verify this with `pnpm run policy`: its
       preview rule is written per component rather than per state, `AppFrame` is already declared,
       and it therefore passes whether or not this fixture exists. Task 4.4 is where that gap is
       recorded (011/FR-004, 011/FR-024).
@@ -118,10 +120,13 @@
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.5 scans its own
       standing overlay for the same reason). Verify with `pnpm run e2e` (011/FR-022, 011/SC-002).
 
-- [ ] 4.3 Measure the restore, not only the takeover that succeeds: read that no frame between the
-      document arriving and the held content standing is emptier than the frame before it, and that
-      the content does not blank and return. 015/FR-009 admits three exceptions and this claims
-      none of them, so a visible removal and return is a failure rather than a cost. Verify with
+- [ ] 4.3 Measure the restore, not only the takeover that succeeds: read that no content the
+      Commander can see moves position, that no frame between the document arriving and the held
+      content standing is emptier than the frame before it, and that the content does not blank and
+      return. Read the movement against the failure statement landing beside the content, which is
+      what this change stands in the same place for the first time: a statement that pushes the
+      content down the page is a move. 015/FR-009 admits three exceptions and this claims none of
+      them, so a visible move, removal or return is a failure rather than a cost. Verify with
       `pnpm run e2e` in the production lane, beside the journey task 1.2 adds (023/FR-001,
       015/FR-009).
 - [ ] 4.4 Re-read the gap proposal.md, Impact, records, so the record is true when the change

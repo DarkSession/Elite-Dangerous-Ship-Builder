@@ -97,6 +97,11 @@ None.
   "Development has nothing to hold", and is not this change's to close.
 - `src/app/ui/previews/preview-manifest.ts` gains the frame's held state, which is what keeps the
   state previewed at the three widths (011/FR-004).
+- `e2e/coverage-ledger.ts` gains the change and the new requirement id, which is what keeps the
+  behaviour's coverage checked rather than merely tested.
+- `e2e/navigation-waiting.spec.ts` reads the address with no generated document, where that reading
+  already stands, and a unit specification beside `src/app/app-navigation-waiting.spec.ts` drives
+  the same sequence without a browser.
 - Nothing a Commander sees changes where a navigation presents a screen, which is every navigation
   that is not the defect. No new words, so no catalogue keys.
 - `e2e/prerendered-first-frame.spec.ts:496` already holds the failing first navigation in the

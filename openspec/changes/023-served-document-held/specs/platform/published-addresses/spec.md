@@ -14,17 +14,23 @@ replaces it, so it does not spend the hold. What is said about any of those outc
 `platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned" and
 "The statement ends with the navigation", and this requirement adds nothing to either.
 
-Where the address served the application's own shell rather than a generated document, nothing is
-held: the shell is what the Commander keeps, because the shell is what they were given. That covers
-every address the build generates no document for, and any other address that served the shell.
+Where the build generates no document for an address, nothing is held: the shell is what that
+address served and the shell is what the Commander keeps. This requirement states that case and no
+other. An address the build does generate a document for, which nonetheless served the shell, is
+not settled here — `platform/navigation-waiting` reads that case the other way, and which of the
+two is right is recorded as an open question in this change's design rather than answered in
+passing.
 
 Held content MUST be kept as the address served it. It MUST NOT be rebuilt, recomputed or written
 again, and it MUST carry the language it was served in.
 
-Putting held content back MUST be invisible, on the same terms as the takeover itself: no frame may
-be emptier than the frame before it, and the content MUST NOT blank and return. This requirement
-claims none of the three exceptions the invisible takeover names, so a removal and a restore that a
-Commander could see would breach it.
+Putting held content back MUST be invisible, on the same terms as the takeover itself: no content
+the Commander can see may move position, no frame may be emptier than the frame before it, and the
+content MUST NOT blank and return. Movement is named because this is the first thing to stand a
+failure statement and served content in the same place at the same time, and a statement that
+pushes the content down the page is a move the Commander can see. This requirement claims none of
+the three exceptions the invisible takeover names, so a removal and a restore that a Commander
+could see would breach it.
 
 A screen that is presented replaces what the address served, and holding MUST NOT move anything
 visible or blank the page while it does. A navigation that fails after a screen has been presented
@@ -53,7 +59,8 @@ Source: 023/FR-001.
 #### Scenario: Held content is put back without a visible change
 
 - **WHEN** content the address served is put back
-- **THEN** no frame is emptier than the frame before it
+- **THEN** no content the Commander can see moves position
+- **AND** no frame is emptier than the frame before it
 - **AND** the content does not blank and return
 
 #### Scenario: A navigation presents a screen
@@ -64,9 +71,9 @@ Source: 023/FR-001.
 
 #### Scenario: The address served the shell
 
-- **WHEN** a navigation fails at an address that served the application's own shell
+- **WHEN** a navigation fails at an address the build generates no document for
 - **THEN** nothing is held
-- **AND** the Commander is left on that shell
+- **AND** the Commander is left on the shell that address served
 
 #### Scenario: Held content is not rebuilt
 
