@@ -50,8 +50,10 @@
       Verify two unresolvable addresses publish twice, and a browser language change publishes
       nothing (011/FR-009).
 - [x] 3.8 Drop the numbers from the three `slef.import` announcements in `submit()`. None of
-      them asks `SlefStore.isCurrent`: a submit that was withdrawn comes back as its own
-      outcome kind, which no branch here announces. Add the words a batch's second outcome
+      them asks `SlefStore.isCurrent`: a withdrawn submit comes back as `superseded`, which no
+      branch here announces, and a withdrawn batch is announced on purpose — its records are
+      already in storage, and a Commander left with saved builds nobody told them about is the
+      worse silence. Add the words a batch's second outcome
       needs — the refusal sentence in both counted forms, and the joiner that puts it after the
       stored count — in both catalogues. Verify a stored import and a refused import each
       publish after a committed one, that one batch reporting a count and a refusal publishes a

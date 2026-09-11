@@ -67,7 +67,8 @@ export interface AnnouncementState {
  *     holds — `SlefStore.isCurrent`, `LoadoutImportStore.isCurrent` — and not
  *     one this service can read from a number handed to it. A Commander who
  *     cancels without starting another leaves any high-water mark where it
- *     stands, so a late outcome would be behind nothing.
+ *     stands, so a late outcome would be behind nothing. A withdrawn question
+ *     whose answer is already on disk is still answered: see the batch import.
  *
  * Two things stay silent here and are not the caller's:
  *

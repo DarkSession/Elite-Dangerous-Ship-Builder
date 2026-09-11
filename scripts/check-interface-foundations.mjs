@@ -1038,6 +1038,12 @@ function maskedSource(source) {
       // A template literal's interpolations are code, and the rules read them:
       // a message resolved inside `${…}` is the same catalogue read as one
       // resolved on its own line. Its text is blanked around them.
+      //
+      // An interpolation holds whole expressions, strings included, so the
+      // braces that close it are counted outside any string it carries — a
+      // `'}'` that ended the interpolation early would blank from inside that
+      // string onwards, and a call left unbalanced makes `callSpan` answer
+      // nothing, which stops every rule silently.
       const template = character === '`';
       let end = index + 1;
       let text = index + 1;
@@ -1054,9 +1060,29 @@ function maskedSource(source) {
           continue;
         }
         if (template && nesting > 0) {
-          if (source[end] === '{') {
+          const inner = source[end];
+          if (inner === "'" || inner === '"' || inner === '`') {
+            // A string inside the interpolation. Its own body is text: the
+            // rules must not read it, and its braces are not the template's.
+            let close = end + 1;
+            while (close < source.length) {
+              if (source[close] === '\\') {
+                close += 2;
+                continue;
+              }
+              if (source[close] === inner) {
+                break;
+              }
+              close += 1;
+            }
+            const stop = Math.min(close, source.length);
+            blank(end + 1, stop);
+            end = stop + 1;
+            continue;
+          }
+          if (inner === '{') {
             nesting += 1;
-          } else if (source[end] === '}') {
+          } else if (inner === '}') {
             nesting -= 1;
             if (nesting === 0) {
               text = end + 1;
@@ -1384,25 +1410,37 @@ function announcementViolations(file, source) {
     //
     // Read through a member as well as through `message()` itself. `this.title()`
     // reaches the catalogue whenever `title` is one of the class's own resolved
-    // members, and it is the shape these components are written in. Gathered by
-    // offset, so a read matching both forms is one violation rather than two.
-    const reads = new Map();
+    // members, and it is the shape these components are written in.
+    //
+    // Gathered by the text each match covers rather than by where it starts, so
+    // one read is one violation. `this.#messages.message(` is matched by two of
+    // the three patterns — one from `this.`, one from `.message(` inside it —
+    // and that is how every real caller is written.
+    const reads = [];
+    const take = (read) => {
+      const start = read.index;
+      const stop = start + read.text.length;
+      if (reads.some((held) => start < held.stop && stop > held.start)) {
+        return;
+      }
+      reads.push({ start, stop });
+    };
     for (const read of occurrences(region, CATALOGUE_READ)) {
-      reads.set(read.index, read);
+      take(read);
     }
     for (const read of occurrences(region, MEMBER_READ)) {
       const member = /this\.(#?[A-Za-z_$][\w$]*)/.exec(read.text)?.[1];
       if (member !== undefined && resolvers.has(member)) {
-        reads.set(read.index, read);
+        take(read);
       }
     }
     if (localeReads !== null) {
       for (const read of occurrences(region, localeReads)) {
-        reads.set(read.index, read);
+        take(read);
       }
     }
 
-    for (const read of [...reads.keys()].sort((one, other) => one - other)) {
+    for (const read of reads.map((held) => held.start).sort((one, other) => one - other)) {
       if (inside(read)) {
         continue;
       }

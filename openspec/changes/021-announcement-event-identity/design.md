@@ -165,9 +165,18 @@ wrong twice" exists to prevent.
 and from the store's request token when it stores or fails. Two counters under one
 `(kind, urgency)` is what mutes a stored import after a committed one.
 
-None of the three carries a number, and none asks whether its submission is still current: a
-submit whose question was withdrawn comes back as its own outcome kind, which no branch here
-announces.
+None of the three carries a number, and none asks whether its submission is still current. For
+the two that open a build that is right by construction: a submit whose question was withdrawn
+comes back as `superseded`, which no branch here announces.
+
+The batch is the exception, and it is one on purpose. A Commander who closes the import layer
+while several builds are being written still gets the outcome announced, because the outcome is
+not a candidate nobody has seen — it is records already in storage. The coordinator says as
+much where it refreshes the library: a token issued mid-batch supersedes a build nobody has
+seen yet and cannot supersede rows already written. Withholding the sentence would leave a
+Commander with saved builds they were never told about, which is a worse silence than the one
+the withdrawn-question rule exists to prevent. What the withdrawal does change is the layer,
+which stays closed.
 
 One submit reporting two outcomes states both, in one sentence rather than two. A batch that
 stores three records and refuses a fourth owes the count and the refusal, and

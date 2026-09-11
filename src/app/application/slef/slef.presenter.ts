@@ -342,6 +342,12 @@ export class SlefPresenter {
    * 016/FR-010 requires the outcome to say how many builds were imported, and
    * a batch where every chosen build was refused must not say the rest were
    * saved — nothing was.
+   *
+   * Said even where the Commander closed the layer while it was being written.
+   * A withdrawn question is not announced, and this is the one place that rule
+   * does not reach: a token issued mid-batch supersedes a candidate nobody has
+   * seen, not rows already in storage. Saying nothing would leave a Commander
+   * with saved builds they were never told about (011/FR-009).
    */
   #announceBatch(stored: number, refused: number): void {
     const saved: { messageKey: MessageKey; params: MessageParams } = {

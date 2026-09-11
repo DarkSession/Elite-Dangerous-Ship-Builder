@@ -659,6 +659,85 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
+  it('reports one read once, however many of the rules match it', () => {
+    // `this.#messages.message(` is matched from `this.` and again from
+    // `.message(` inside it, which is how every real caller is written. One
+    // read is one violation, and a file reporting double what it holds is a
+    // report nobody can count.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #messages = inject(MessageService);',
+        'effect(() => {',
+        '  const name = this.#messages.message("a");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('reports two separate reads separately', () => {
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'readonly #messages = inject(MessageService);',
+        'effect(() => {',
+        '  const a = this.#messages.message("a");',
+        '  const b = this.#messages.message("b");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { a, b } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(
+      found.map((one) => one.line),
+      [3, 4],
+    );
+  });
+
+  it('reads an interpolation carrying a string with a brace in it', () => {
+    // A `'}'` counted as the interpolation's own close blanks from inside that
+    // string onwards, leaving a call unbalanced — and an unbalanced call makes
+    // `callSpan` answer nothing, which stops every rule without saying so.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const id = `${join("}")} tail`;',
+        '  const name = this.#messages.message("x");',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { name } }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
+  });
+
+  it('keeps reading the file after an interpolation carrying an opening brace', () => {
+    // Counted as the template's own, it never closes, and everything from the
+    // next brace to the end of the file is blanked.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'const id = `${wrap("{")} done`;',
+        'this.#announcements.announce({ kind: "k", urgency: "polite", messageKey: "m", revision: 1 });',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 2);
+  });
+
   it('accepts the same member read inside the untracked call', () => {
     const found = rules.announcementViolations(
       'a.ts',
