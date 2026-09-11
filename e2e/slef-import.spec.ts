@@ -420,7 +420,8 @@ test.describe('the layer’s semantics', () => {
     expect(imported.length).toBeGreaterThan(0);
     // Bounded: the outlet never carries the payload or a diagnostic list.
     expect(announced.join(' ')).not.toContain('Modules');
-    // One revision, one sentence: the same announcement is not repeated.
+    // One import, one sentence: this journey commits once, so the outlet
+    // carries that outcome once.
     expect(new Set(imported).size).toBe(1);
   });
 

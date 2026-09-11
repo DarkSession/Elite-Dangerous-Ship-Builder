@@ -107,12 +107,12 @@ export class NavigationWaitingStore {
   /**
    * How many navigations have failed in this session.
    *
-   * Which failure this is, so the shell can say it once. Announcing is deduped
-   * by `(kind, revision, urgency)`, and a boolean carries no revision — two
-   * separate failures would be one event, and the second would be the silence
-   * this requirement exists to remove.
+   * Which failure this is, so the shell has an event to announce on. A boolean
+   * does not move when a second navigation fails, so the effect watching it
+   * would not run and the second failure would be the silence this requirement
+   * exists to remove.
    *
-   * Getting past the dedupe is half of it. Both failures say the same sentence,
+   * Being published is half of it. Both failures say the same sentence,
    * and a live region announces a change to what it holds rather than a
    * decision to publish, so the outlet is what carries the second of them to a
    * reader: `src/app/ui/announcements/` renders what it holds by the event

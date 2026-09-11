@@ -37,9 +37,11 @@ import { slotName } from './slot-naming';
  * It is an alert. A Commander who opened a link and is still looking at their
  * previous build needs to know now, not when they next read the page — so it is
  * announced as well as drawn, and announced from here rather than from the
- * notice it is drawn in. `failures` is the refusal itself and ingress hands over
- * a new set per refused candidate, so this effect runs once per event; an effect
- * over the drawn lines would run again for every committed locale (011/FR-009).
+ * notice it is drawn in. `failures` is the refusal itself and ingress hands
+ * over a new set per refused candidate, so the effect runs once per event; an
+ * effect over the drawn lines would run again for every committed locale
+ * (011/FR-009). A refusal already standing when the screen opens is initial
+ * content and stays silent, the way every other screen's arrival does.
  */
 @Component({
   selector: 'ednb-ingress-refusal-notice',
@@ -97,8 +99,19 @@ export class IngressRefusalNotice {
   });
 
   constructor() {
+    // The first run is silent, whatever it finds. The record holding the
+    // refusal is the application's and the workspace is a route, so a refusal
+    // still standing when the screen is opened again arrives with the screen.
+    // That is initial content — drawn at the top of the workspace, in reading
+    // order (announcement policy, "initial content").
+    let arrived = false;
     effect(() => {
-      if (this.failures().length === 0) {
+      const failures = this.failures();
+      if (!arrived) {
+        arrived = true;
+        return;
+      }
+      if (failures.length === 0) {
         return;
       }
       // Everything the sentence says is read in here, so the only thing this
@@ -110,7 +123,10 @@ export class IngressRefusalNotice {
           kind: 'outfitting.ingress-refused',
           urgency: 'assertive',
           messageKey: 'outfitting.notice.announced',
-          params: { title: this.title(), count: this.lines().length },
+          params: {
+            title: this.title(),
+            count: this.#formatters.integer(this.lines().length),
+          },
         });
       });
     });

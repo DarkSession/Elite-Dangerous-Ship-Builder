@@ -585,3 +585,163 @@ describe('what a journal source adds to the words', () => {
     expect(announcements.politeEvent()).toBe(answered);
   });
 });
+
+/**
+ * What an import and a delivery say out loud.
+ *
+ * Both are a request a Commander made, and both used to be muted by a number
+ * that did not rise: a stored batch behind a committed import carried the same
+ * build revision, and a second press of Copy carried the same export revision.
+ * The policy no longer compares anything, so each of these is read as what a
+ * Commander is owed rather than as what a counter allowed (011/FR-009).
+ */
+describe('what an import and a delivery say out loud', () => {
+  let presenter: SlefPresenter;
+  let store: SlefStore;
+  let announcements: AnnouncementService;
+
+  /** A clipboard that can be made to fail, so both outcomes can be read. */
+  class TogglingNavigator extends FakeNavigator {
+    copies = true;
+
+    override async copyText(): Promise<boolean> {
+      return this.copies;
+    }
+  }
+
+  let navigator: TogglingNavigator;
+
+  const loadoutLine = (fields: Record<string, unknown>) =>
+    JSON.stringify({
+      timestamp: '2026-09-01T10:00:00Z',
+      event: 'Loadout',
+      Ship: FIXTURE_HULL,
+      ShipName: 'Anaconda',
+      Modules: [],
+      ...fields,
+    });
+
+  const journalFile = (name: string, lines: readonly string[]) => {
+    const text = lines.join('\n');
+    return { name, size: text.length, text: () => Promise.resolve(text) };
+  };
+
+  beforeEach(() => {
+    navigator = new TogglingNavigator();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        // A stub `/outfitting`, so the move to the workspace resolves without
+        // mounting feature 001's real route.
+        provideRouter([{ path: 'outfitting', children: [] }]),
+        provideLocalization(),
+        ...provideIsolatedLocaleEnvironment(),
+        ...provideMemoryStorage(new MemoryStorage()),
+        { provide: NavigatorAdapter, useValue: navigator },
+        { provide: DownloadAdapter, useClass: FakeDownload },
+      ],
+    });
+    presenter = TestBed.inject(SlefPresenter);
+    store = TestBed.inject(SlefStore);
+    announcements = TestBed.inject(AnnouncementService);
+  });
+
+  /** Pastes one build and submits it, which commits and opens the workspace. */
+  async function commitOne(): Promise<void> {
+    store.setDraft(JSON.stringify({ event: 'Loadout', Ship: FIXTURE_HULL, Modules: [] }));
+    expect(await presenter.submit()).toEqual({ kind: 'committed' });
+  }
+
+  /** Scans three builds and chooses all of them. */
+  async function chooseAll(lines: readonly string[]): Promise<void> {
+    await presenter.scanFiles([journalFile('Journal.01.log', lines)]);
+    for (const entry of store.journalEntries().slice(1)) {
+      store.toggleSelection(entry.key);
+    }
+  }
+
+  it('states a stored batch after a committed import', async () => {
+    await commitOne();
+    const committed = announcements.politeEvent();
+    expect(committed?.text).toContain('imported');
+
+    // The batch spends no build revision, because nothing it stores is opened.
+    // Under the old policy that made it the same event as the commit before it
+    // and left it silent.
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({ ShipName: 'Second', timestamp: '2026-09-03T09:00:00Z' }),
+    ]);
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
+
+    const stored = announcements.politeEvent();
+    expect(stored?.text).toBe('2 builds imported and saved.');
+    expect(stored?.identity).not.toBe(committed?.identity);
+  });
+
+  it('states a refused payload after a committed import', async () => {
+    await commitOne();
+    const committed = announcements.politeEvent();
+
+    store.setDraft('not a payload');
+    expect(await presenter.submit()).toEqual({ kind: 'failed' });
+
+    const failed = announcements.politeEvent();
+    expect(failed?.text).toBe('This payload was not imported.');
+    expect(failed?.identity).not.toBe(committed?.identity);
+  });
+
+  it('states both outcomes of a batch that stores some and refuses one', async () => {
+    // One request, two outcomes. One sentence carries both: the polite outlet
+    // holds one event, so a second announcement in the same tick would write
+    // over the first and only the last of them would reach a reader
+    // (011/FR-009, 016/FR-011).
+    await chooseAll([
+      loadoutLine({ ShipName: 'First', timestamp: '2026-09-04T09:00:00Z' }),
+      loadoutLine({
+        ShipName: 'Refused',
+        Ship: 'Nonexistent_Hull',
+        timestamp: '2026-09-03T09:00:00Z',
+      }),
+      loadoutLine({ ShipName: 'Third', timestamp: '2026-09-02T09:00:00Z' }),
+    ]);
+
+    expect(await presenter.submit()).toMatchObject({ kind: 'stored', stored: 2 });
+
+    expect(announcements.polite()).toBe('1 of the chosen builds was not saved. The rest were.');
+  });
+
+  it('answers a second Copy, in the same words', async () => {
+    await commitOne();
+    presenter.generate();
+
+    await presenter.copy();
+    const first = announcements.politeEvent();
+    expect(first?.text).toBe('Copy: Copied');
+
+    // The export did not change between the presses, which is exactly why the
+    // second one used to be silent. A Commander presses again because they
+    // were unsure of the first press, and the sentence is the answer.
+    await presenter.copy();
+    const second = announcements.politeEvent();
+    expect(second?.text).toBe(first?.text);
+    expect(second?.identity, 'the second press was published as the first').not.toBe(
+      first?.identity,
+    );
+  });
+
+  it('says a copy that failed, and then the one that worked', async () => {
+    await commitOne();
+    presenter.generate();
+
+    navigator.copies = false;
+    await presenter.copy();
+    expect(announcements.polite()).toContain('could not be copied');
+
+    // The export still has not changed, so the old policy muted the outcome
+    // that differed from the first — which is the press that actually worked.
+    navigator.copies = true;
+    await presenter.copy();
+    expect(announcements.polite()).toBe('Copy: Copied');
+  });
+});

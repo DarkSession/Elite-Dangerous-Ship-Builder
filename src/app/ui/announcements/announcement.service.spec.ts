@@ -205,17 +205,22 @@ describe('AnnouncementService', () => {
     });
   });
 
-  it('forgets everything on reset', () => {
+  it('forgets everything on reset, the sequence included', () => {
     const { announcements } = setup();
-    announcements.announce({
-      kind: 'a',
-      urgency: 'polite',
-      messageKey: 'status.success',
-    });
+    const event = { kind: 'a', urgency: 'polite' as const, messageKey: 'status.success' as const };
+    announcements.announce(event);
+    const first = announcements.politeEvent()?.identity;
 
     announcements.reset();
 
     expect(announcements.polite()).toBe('');
     expect(announcements.politeEvent()).toBeNull();
+
+    // The sequence is the whole of the policy's memory, so a reset empties it
+    // too: the next event is the first one again. `clearOutlets()` is the
+    // opposite case and is read above — it empties what is held and leaves the
+    // number where it stands, because the outlet has already drawn it.
+    announcements.announce(event);
+    expect(announcements.politeEvent()?.identity).toBe(first);
   });
 });

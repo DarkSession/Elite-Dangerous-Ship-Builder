@@ -601,9 +601,11 @@ describe('edit refusal notice', () => {
     // so a Commander who presses again and is refused again would otherwise be
     // met with silence. It is the refusal itself that this component watches,
     // and the store hands over a new one per event (011/FR-009).
-    const fixture = renderComponent(EditRefusalNotice, { failure: refused() });
+    const fixture = renderComponent(EditRefusalNotice, { failure: null });
     const announcements = TestBed.inject(AnnouncementService);
 
+    fixture.componentRef.setInput('failure', refused());
+    fixture.detectChanges();
     const first = announcements.assertiveEvent();
     expect(first?.text).toContain('1 to read');
 
@@ -617,13 +619,26 @@ describe('edit refusal notice', () => {
     );
   });
 
+  it('says nothing about a refusal that is already on screen when it opens', () => {
+    // The store holding the refusal is the application's and the workspace is
+    // a route, so a Commander who is refused, looks at the shipyard and comes
+    // back meets a screen with the refusal drawn on it. It is initial content,
+    // and every screen's arrival is silent (011/FR-009).
+    renderComponent(EditRefusalNotice, { failure: refused() });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toBe('');
+  });
+
   it('says nothing more when a locale commits behind the refusal', () => {
     // Everything the sentence says is resolved inside `untracked`, so the
     // effect depends on the refusal and not on the catalogue. Tracked, a
     // committed locale would tell a reader again about a refusal they have
     // already been told about (011/FR-009).
-    const fixture = renderComponent(EditRefusalNotice, { failure: refused() });
+    const fixture = renderComponent(EditRefusalNotice, { failure: null });
     const announcements = TestBed.inject(AnnouncementService);
+
+    fixture.componentRef.setInput('failure', refused());
+    fixture.detectChanges();
     const announced = announcements.assertiveEvent();
     expect(announced).not.toBeNull();
 

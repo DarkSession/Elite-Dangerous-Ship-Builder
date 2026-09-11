@@ -151,10 +151,23 @@ test.describe('the second time something happens', () => {
     await page.getByRole('radio', { name: 'All', exact: true }).check();
     await expect.poll(async () => (await spoken(page)).length).toBe(3);
 
+    // Each sentence is the manifest's own count message, and every one of them
+    // names the same manifest: what moved is the count, which is the event.
+    // Built from the message rather than from a transcribed number, so a hull
+    // added to the Almanac does not fail this journey.
+    const digits = String.raw`[\d\u00a0\u202f.,]+`;
+    const shape = new RegExp(
+      `^${englishMessages['catalogue.match-count']
+        .replace('{{count}}', digits)
+        .replace('{{total}}', `(${digits})`)}$`,
+    );
+
     const heard = await spoken(page);
-    for (const sentence of heard) {
-      expect(sentence).toMatch(/of 48 ships$/);
-    }
+    const totals = heard.map((sentence) => {
+      expect(sentence, 'a sentence the outlet took was not the match count').toMatch(shape);
+      return shape.exec(sentence)?.[1];
+    });
+    expect(new Set(totals).size, 'the manifest itself changed between narrowings').toBe(1);
   });
 
   test('states a refusal each time, even in the same words', async ({ page }) => {

@@ -130,9 +130,12 @@ export class AnnouncementService {
   /**
    * Empties the outlets.
    *
-   * Used on a locale switch, where the old translated text must go. The
-   * sequence is untouched: it identifies events to the outlet, and reusing a
-   * number would hand it one it has drawn.
+   * For a locale switch, where the old translated text must go. Nothing in the
+   * application calls it: a committed locale leaves the outlets holding the
+   * last event in the language it was spoken in, which no reader is told about
+   * again and which the next event replaces. The sequence is untouched here,
+   * because it identifies events to the outlet and reusing a number would hand
+   * it one it has already drawn.
    */
   clearOutlets(): void {
     this.#assertive.set(null);

@@ -127,7 +127,8 @@ export class App {
   readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.start);
 
   /**
-   * The version whose notice a reader has been told about, or `null`.
+   * The revision of the version whose notice a reader has been told about, or
+   * `null` before the first one.
    *
    * The update effect watches the restart overlay as well as the version, so
    * one version can run it more than once. See the effect for why the overlay

@@ -866,10 +866,21 @@ describe('ingress refusal notice', () => {
     expect(announcements.assertive()).toContain('5 to read');
   });
 
+  it('says nothing about a refusal that is already on screen when it opens', () => {
+    // The record holding the refusal is the application's and the workspace is
+    // a route, so a refusal still standing when the screen is opened again
+    // arrives with the screen. That is initial content (011/FR-009).
+    renderComponent(IngressRefusalNotice, { failures: [FAILURE] });
+
+    expect(TestBed.inject(AnnouncementService).assertive()).toBe('');
+  });
+
   it('announces a second refusal, and says nothing more for a committed locale', () => {
-    const fixture = renderComponent(IngressRefusalNotice, { failures: [FAILURE] });
+    const fixture = renderComponent(IngressRefusalNotice, { failures: [] });
     const announcements = TestBed.inject(AnnouncementService);
 
+    fixture.componentRef.setInput('failures', [FAILURE]);
+    fixture.detectChanges();
     const first = announcements.assertiveEvent();
     expect(first).not.toBeNull();
 

@@ -158,10 +158,17 @@ wrong twice" exists to prevent.
 and from the store's request token when it stores or fails. Two counters under one
 `(kind, urgency)` is what mutes a stored import after a committed one.
 
-None of the three carries a number. Each asks whether its submission is still current and
-announces if it is, so one submit reporting two outcomes states both — a batch that stores
-three records and refuses a fourth owes the count and the refusal, and
-`ship-builder/slef-exchange` requires each.
+None of the three carries a number, and none asks whether its submission is still current: a
+submit whose question was withdrawn comes back as its own outcome kind, which no branch here
+announces.
+
+One submit reporting two outcomes states both, in one sentence rather than two. A batch that
+stores three records and refuses a fourth owes the count and the refusal, and
+`ship-builder/slef-exchange` requires each — but the polite outlet holds one event, so a second
+announcement published in the same tick writes over the first and a reader hears only what was
+said last. The batch refusal's own message already states both: "{{count}} of the chosen builds
+were not saved. The rest were." So the stored branch announces that sentence when anything was
+refused, and the plain stored count when nothing was.
 
 ### A refusal is announced by what holds the refusal
 
@@ -176,6 +183,15 @@ The two wrappers around it hold the refusal itself: `EditRefusalNotice` takes an
 per refusal, and a committed locale touches neither. So each wrapper announces, with its own
 input as the trigger and everything the announcement says read inside `untracked`. That is gate
 rule 2's shape.
+
+Each wrapper keeps a first-run guard, the same one `ship-catalogue`, `build-library` and
+`hull-anatomy` hold. The store holding the refusal is the application's and the workspace is a
+route, so a Commander who is refused an edit, looks at the shipyard and comes back arrives at a
+screen with the refusal already drawn on it, at the top of the workspace and in reading order.
+That is initial content, and announcing it would speak to a reader about something they were
+told about on their last visit. Removing the high-water mark un-silenced the genuine second
+event and this re-mount alike; the guard is what separates them, and it is the caller's silence
+because only the caller knows which of its runs is an arrival.
 
 It also keeps one count in one place. `outfitting.notice.announced` says how many lines there
 are to read, and the wrapper that builds the lines is what counts them.

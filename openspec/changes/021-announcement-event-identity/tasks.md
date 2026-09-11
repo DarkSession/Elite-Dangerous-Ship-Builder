@@ -25,14 +25,16 @@
       declaration, keeping its first-run guard. Track the count as a number: `count()` is a
       fresh object whenever a reading language reorders the manifest. Verify a filter narrowed
       twice and then widened publishes three times (011/FR-009).
-- [x] 3.2 Verify in the same spec that a rising count publishes once, and that a reading
-      language changing with the count unchanged publishes nothing (011/FR-009).
-- [x] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads a falling
-      count three times, a rising count once, and a browser language change not at all
-      (011/FR-009).
+- [x] 3.2 Verify in the same spec that the count a visit opens on is not announced, and that a
+      reading language committing behind an unchanged count publishes nothing (011/FR-009).
+- [x] 3.3 `build-library.page.ts` takes the same treatment. Verify its spec reads two
+      narrowings and the widening after them as three events, the count the layer opens on as
+      none, and a browser language behind an unchanged count as none (011/FR-009).
 - [x] 3.4 Announce the refusal from `edit-refusal-notice.ts` and `ingress-refusal-notice.ts`,
       with the refusal input as the trigger and everything the message says read in `untracked`.
-      Verify two refusals with no committed edit between them publish twice (011/FR-009).
+      Keep a first-run guard on each: a refusal already drawn when the workspace opens is
+      initial content. Verify two refusals with no committed edit between them publish twice,
+      and that a notice arriving with a standing refusal publishes nothing (011/FR-009).
 - [x] 3.5 Verify in the same specs that a committed locale publishes nothing, and that a batch
       refusing four entries publishes one message rather than four (011/FR-009).
 - [x] 3.6 Remove the `revision` input, the `announce` call and the effect from
@@ -42,9 +44,11 @@
 - [x] 3.7 `hull-detail.page.ts` resolves its message in `untracked` and declares nothing.
       Verify two unresolvable addresses publish twice, and a browser language change publishes
       nothing (011/FR-009).
-- [x] 3.8 Ask `SlefStore.isCurrent` before each of the three `slef.import` announcements, and
-      drop the numbers. Verify a stored import and a refused import each publish after a
-      committed one, and that one batch reporting a count and a refusal publishes both
+- [x] 3.8 Drop the numbers from the three `slef.import` announcements in `submit()`. None of
+      them asks `SlefStore.isCurrent`: a submit that was withdrawn comes back as its own
+      outcome kind, which no branch here announces. Verify a stored import and a refused import
+      each publish after a committed one, and that one batch reporting a count and a refusal
+      publishes a single sentence stating both, because the polite outlet holds one event
       (011/FR-009, 016/FR-010, 016/FR-011).
 - [x] 3.9 `slef.presenter.ts` delivery declares nothing. Verify one export copied twice
       publishes twice, and a copy that fails then succeeds publishes both outcomes

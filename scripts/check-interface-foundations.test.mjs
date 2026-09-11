@@ -390,6 +390,18 @@ describe('announcements', () => {
     assert.deepEqual(ruleIds(found), ['announcement-request']);
   });
 
+  it('rejects a request built somewhere else and handed over', () => {
+    // The route the compiler cannot see: a surplus key is checked on a literal
+    // at the call site, never on a variable.
+    const found = rules.announcementViolations(
+      'a.ts',
+      'const request = { kind: "x", revision: 1, urgency: "polite", messageKey: "k" };\nthis.#announcements.announce(request);',
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-request']);
+    assert.equal(found[0].line, 2);
+  });
+
   it('rejects an announcement published from an effect in the open', () => {
     const found = rules.announcementViolations(
       'a.ts',
@@ -399,7 +411,7 @@ describe('announcements', () => {
     assert.deepEqual(ruleIds(found), ['announcement-effect']);
   });
 
-  it('rejects a message resolved in the effect before an untracked announce', () => {
+  it('rejects a message resolved in the effect and carried into the request', () => {
     const found = rules.announcementViolations(
       'a.ts',
       [
@@ -437,6 +449,25 @@ describe('announcements', () => {
     assert.deepEqual(found, []);
   });
 
+  it('accepts an announcing effect that resolves a message for something else', () => {
+    // The rule is about what the announcement says, not about everything the
+    // effect touches. This read never reaches the request.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const heading = this.#messages.message("title");',
+        '  this.#heading.set(heading);',
+        '  untracked(() =>',
+        '    this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k" }),',
+        '  );',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('accepts a revision on something that is not an announcement', () => {
     const found = rules.announcementViolations(
       'a.ts',
@@ -449,7 +480,7 @@ describe('announcements', () => {
   it('accepts a revision named inside a message\u2019s own parameters', () => {
     const found = rules.announcementViolations(
       'a.ts',
-      'announce({ kind: "x", urgency: "polite", messageKey: "k", params: { revision: 3 } });',
+      'this.#announcements.announce({ kind: "x", urgency: "polite", messageKey: "k", params: { revision: 3 } });',
     );
 
     assert.deepEqual(found, []);
@@ -479,6 +510,37 @@ describe('announcements', () => {
     );
 
     assert.deepEqual(found, []);
+  });
+
+  it('accepts a comment and a string that describe the rule', () => {
+    // Text is not code. A doc comment explaining what the rule rejects, and a
+    // fixture quoting it, must not be the thing that fails the build.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        '/** Never `this.#announcements.announce({ revision: 1 })`. */',
+        'const example = "effect(() => this.#announcements.announce({ kind: 1 }))";',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('reads an effect that carries a regular expression holding a quote', () => {
+    // The quote inside the pattern is not a string opening. Read as one, it
+    // runs to the end of the file and takes the whole effect out of the scan.
+    const found = rules.announcementViolations(
+      'a.ts',
+      [
+        'effect(() => {',
+        '  const name = this.#raw().replace(/[\'"]/g, "");',
+        '  this.#announcements.announce({ kind: name, urgency: "polite", messageKey: "k" });',
+        '});',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(ruleIds(found), ['announcement-effect']);
+    assert.equal(found[0].line, 3);
   });
 });
 

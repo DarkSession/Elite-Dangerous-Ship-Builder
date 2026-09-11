@@ -984,43 +984,111 @@ async function checkTestDiscipline() {
 // ---------------------------------------------------------------------------
 
 /**
- * The span of the call whose opening parenthesis is at `open`.
+ * The source with every comment, string, template and regular expression
+ * blanked out, character for character.
  *
- * Returns the offsets of the text between the parentheses, or `null` where they
- * never balance. Strings, template literals and comments are skipped, because a
- * bracket inside any of them is text rather than structure.
+ * Both rules below match shapes in text, and text that is not code says
+ * nothing about what the code does. A doc comment explaining the rule would
+ * otherwise fail it; a quotation mark inside a regular expression would
+ * otherwise run a string to the end of the file and take a whole effect out of
+ * the reading with it. Blanking rather than removing keeps every offset and
+ * every line break where it was, so a violation is still reported on its own
+ * line.
  */
-function callSpan(source, open) {
-  let depth = 0;
-  for (let index = open; index < source.length; index += 1) {
+function maskedSource(source) {
+  const out = [...source];
+  const blank = (from, to) => {
+    for (let index = from; index < to && index < out.length; index += 1) {
+      if (out[index] !== '\n') {
+        out[index] = ' ';
+      }
+    }
+  };
+
+  /** Whether a `/` here opens a regular expression rather than divides. */
+  const opensRegex = (index) => {
+    for (let back = index - 1; back >= 0; back -= 1) {
+      const character = source[back];
+      if (character === ' ' || character === '\t' || character === '\n' || character === '\r') {
+        continue;
+      }
+      return '(,=:[!&|?{};+-*%~^<>'.includes(character);
+    }
+    return true;
+  };
+
+  for (let index = 0; index < source.length; index += 1) {
     const character = source[index];
 
     if (character === '/' && source[index + 1] === '/') {
-      index = source.indexOf('\n', index);
-      if (index === -1) {
-        return null;
-      }
+      const end = source.indexOf('\n', index);
+      const stop = end === -1 ? source.length : end;
+      blank(index, stop);
+      index = stop;
       continue;
     }
     if (character === '/' && source[index + 1] === '*') {
       const end = source.indexOf('*/', index + 2);
-      if (end === -1) {
-        return null;
-      }
-      index = end + 1;
+      const stop = end === -1 ? source.length : end + 2;
+      blank(index, stop);
+      index = stop - 1;
       continue;
     }
     if (character === "'" || character === '"' || character === '`') {
-      index = endOfString(source, index);
-      if (index === -1) {
-        return null;
+      let end = index + 1;
+      while (end < source.length) {
+        if (source[end] === '\\') {
+          end += 2;
+          continue;
+        }
+        if (source[end] === character) {
+          break;
+        }
+        end += 1;
       }
+      blank(index + 1, Math.min(end, source.length));
+      index = Math.min(end, source.length);
       continue;
     }
+    if (character === '/' && opensRegex(index)) {
+      let end = index + 1;
+      let inClass = false;
+      while (end < source.length && source[end] !== '\n') {
+        if (source[end] === '\\') {
+          end += 2;
+          continue;
+        }
+        if (source[end] === '[') {
+          inClass = true;
+        } else if (source[end] === ']') {
+          inClass = false;
+        } else if (source[end] === '/' && !inClass) {
+          break;
+        }
+        end += 1;
+      }
+      blank(index + 1, Math.min(end, source.length));
+      index = Math.min(end, source.length);
+      continue;
+    }
+  }
 
-    if (character === '(') {
+  return out.join('');
+}
+
+/**
+ * The span of the call whose opening parenthesis is at `open`.
+ *
+ * Offsets of the text between the parentheses, or `null` where they never
+ * balance. Reads masked source, so a bracket in a comment or a string is
+ * already gone.
+ */
+function callSpan(masked, open) {
+  let depth = 0;
+  for (let index = open; index < masked.length; index += 1) {
+    if (masked[index] === '(') {
       depth += 1;
-    } else if (character === ')') {
+    } else if (masked[index] === ')') {
       depth -= 1;
       if (depth === 0) {
         return { start: open + 1, end: index };
@@ -1028,21 +1096,6 @@ function callSpan(source, open) {
     }
   }
   return null;
-}
-
-/** The offset of the closing quote of the string opening at `open`. */
-function endOfString(source, open) {
-  const quote = source[open];
-  for (let index = open + 1; index < source.length; index += 1) {
-    if (source[index] === '\\') {
-      index += 1;
-      continue;
-    }
-    if (source[index] === quote) {
-      return index;
-    }
-  }
-  return -1;
 }
 
 /**
@@ -1057,13 +1110,6 @@ function topLevelKeys(literal) {
   let depth = 0;
   for (let index = 0; index < literal.length; index += 1) {
     const character = literal[index];
-    if (character === "'" || character === '"' || character === '`') {
-      index = endOfString(literal, index);
-      if (index === -1) {
-        break;
-      }
-      continue;
-    }
     if (character === '{' || character === '[' || character === '(') {
       depth += 1;
       continue;
@@ -1085,32 +1131,33 @@ function topLevelKeys(literal) {
 }
 
 /** Every offset at which `pattern` matches, with the match. */
-function occurrences(source, pattern) {
-  return [...source.matchAll(pattern)].map((match) => ({
+function occurrences(masked, pattern) {
+  return [...masked.matchAll(pattern)].map((match) => ({
     index: match.index ?? 0,
     text: match[0],
   }));
 }
 
-const ANNOUNCE_CALL = /\bannounce\s*\(\s*\{/g;
+const ANNOUNCE_CALL = /\.announce\s*\(/g;
 const EFFECT_CALL = /\beffect\s*\(/g;
 const UNTRACKED_CALL = /\buntracked\s*\(/g;
-const MESSAGE_READ = /\.message(?:Signal)?\s*\(/g;
+const MESSAGE_BINDING =
+  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=[^;]*?\.message(?:Signal)?\s*\(/g;
 
 /**
  * What an announcement may declare, and where an effect may build one.
  *
- * Two rules over one subject.
+ * Three rules over one subject.
  *
- * `revision` is gone from `AnnouncementRequest`, and the first rule is what
- * stops it coming back one caller at a time. The field asked the policy to
- * decide whether an event had already happened, from a number the caller
- * supplied — and every one of the seven callers that supplied one got it wrong
- * in the same direction, which is silence (011/FR-009).
+ * An announcement states its event and nothing else. It carries no number for
+ * the policy to compare, and it is written where it is made: a request built
+ * somewhere else and handed over is the same field arriving by another route,
+ * and the compiler does not see it, because it checks a surplus key on a
+ * literal at the call site and not on a variable.
  *
- * The second rule carries the obligation that moved to the caller with it. An
- * effect re-runs when anything it read changes, and resolving a message reads
- * the message catalogue, so an announcement built in the open is republished
+ * The third rule carries the obligation that sits with the caller. An effect
+ * re-runs when anything it read changes, and resolving a message reads the
+ * message catalogue, so an announcement built in the open is republished
  * whenever a Commander's reading language is committed. Building the request
  * and calling `announce` inside one `untracked` call is what makes the effect
  * depend on its own event and nothing else. It is a requirement rather than a
@@ -1118,15 +1165,25 @@ const MESSAGE_READ = /\.message(?:Signal)?\s*\(/g;
  */
 function announcementViolations(file, source) {
   const found = [];
+  const masked = maskedSource(source);
   const add = (offset, rule, message) =>
     found.push({ file, line: lineOf(source, offset), rule, message });
 
-  for (const call of occurrences(source, ANNOUNCE_CALL)) {
-    const span = callSpan(source, call.index + call.text.indexOf('('));
+  for (const call of occurrences(masked, ANNOUNCE_CALL)) {
+    const span = callSpan(masked, call.index + call.text.indexOf('('));
     if (span === null) {
       continue;
     }
-    const literal = source.slice(span.start, span.end);
+    const literal = masked.slice(span.start, span.end).trim();
+    if (!literal.startsWith('{')) {
+      add(
+        call.index,
+        'announcement-request',
+        'An announcement is written where it is made. A request built elsewhere and handed ' +
+          'over carries whatever it was given, and a surplus key on it reaches no compiler.',
+      );
+      continue;
+    }
     if (topLevelKeys(literal).includes('revision')) {
       add(
         call.index,
@@ -1137,17 +1194,16 @@ function announcementViolations(file, source) {
     }
   }
 
-  for (const effectCall of occurrences(source, EFFECT_CALL)) {
-    const body = callSpan(source, effectCall.index + effectCall.text.indexOf('('));
+  for (const effectCall of occurrences(masked, EFFECT_CALL)) {
+    const body = callSpan(masked, effectCall.index + effectCall.text.indexOf('('));
     if (body === null) {
       continue;
     }
-    const region = source.slice(body.start, body.end);
-    if (!ANNOUNCE_CALL.test(region)) {
-      ANNOUNCE_CALL.lastIndex = 0;
+    const region = masked.slice(body.start, body.end);
+    const announcing = occurrences(region, ANNOUNCE_CALL);
+    if (announcing.length === 0) {
       continue;
     }
-    ANNOUNCE_CALL.lastIndex = 0;
 
     const sheltered = [];
     for (const untracked of occurrences(region, UNTRACKED_CALL)) {
@@ -1158,7 +1214,9 @@ function announcementViolations(file, source) {
     }
     const inside = (offset) => sheltered.some((span) => offset >= span.start && offset < span.end);
 
-    for (const call of occurrences(region, ANNOUNCE_CALL)) {
+    /** The request literals this effect announces from, as masked text. */
+    const requests = [];
+    for (const call of announcing) {
       if (!inside(call.index)) {
         add(
           body.start + call.index,
@@ -1167,19 +1225,36 @@ function announcementViolations(file, source) {
             'call. Outside it, resolving the message reads the catalogue, and a committed ' +
             'locale republishes an event that already happened.',
         );
+        continue;
+      }
+      const span = callSpan(region, call.index + call.text.indexOf('('));
+      if (span !== null) {
+        requests.push(region.slice(span.start, span.end));
       }
     }
 
-    for (const read of occurrences(region, MESSAGE_READ)) {
-      if (!inside(read.index)) {
-        add(
-          body.start + read.index,
-          'announcement-effect',
-          'This effect announces, so every part of what it says is resolved inside its ' +
-            '`untracked` call. Resolving one out here reads the message catalogue from the ' +
-            'effect, which is the shape the rule exists to reject.',
-        );
+    // A message resolved in the open and carried into the request is the same
+    // read, one statement earlier. Only a value that reaches the announcement
+    // is a violation: an effect may resolve a message for something else.
+    for (const binding of occurrences(region, MESSAGE_BINDING)) {
+      if (inside(binding.index)) {
+        continue;
       }
+      const name = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)/.exec(binding.text)?.[1];
+      if (name === undefined) {
+        continue;
+      }
+      const named = new RegExp(`(?<![\\w$.])${name}(?![\\w$])`);
+      if (!requests.some((request) => named.test(request))) {
+        continue;
+      }
+      add(
+        body.start + binding.index,
+        'announcement-effect',
+        'This value is resolved from the message catalogue out here and announced in there. ' +
+          'Read it inside the `untracked` call with the rest of the request, or the effect ' +
+          'depends on the catalogue and a committed locale republishes the event.',
+      );
     }
   }
 
@@ -1189,6 +1264,11 @@ function announcementViolations(file, source) {
 /** IO wrapper. */
 async function checkAnnouncements(sources) {
   for (const file of sources) {
+    // Product code only. The policy's own suite hands it one request twice on
+    // purpose, to prove the service adds nothing of its own to what it is given.
+    if (file.endsWith('.spec.ts') || file.endsWith('.spec-helpers.ts')) {
+      continue;
+    }
     violations.push(...announcementViolations(relative(ROOT, file), await readFile(file, 'utf8')));
   }
 }

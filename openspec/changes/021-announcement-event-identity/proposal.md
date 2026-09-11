@@ -96,8 +96,9 @@ None.
   `scripts/check-interface-foundations.test.mjs`.
 - The unit suite beside each of those files reads what was silent.
   `announcement.service.spec.ts` reads the policy directly.
-- `e2e/coverage-ledger.ts` keeps its two rows for 011/FR-009. Their assertions gain a second
-  narrowing and a second refusal.
+- `e2e/coverage-ledger.ts` keeps both rows carrying 011/FR-009. The `shell/announcements` row
+  is the one that moves: its locale assertion is restated against a policy that publishes
+  nothing on a committed locale, and it gains the second narrowing and the second refusal.
 - `e2e/manual/screen-reader.protocol.md` gains the two journeys no scan can judge, and
   `e2e/manual/results/` gains their record.
 - No screen changes and no message changes. What changes is which events reach a reader.

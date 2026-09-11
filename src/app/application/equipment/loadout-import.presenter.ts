@@ -146,11 +146,21 @@ export class LoadoutImportPresenter {
     if (submission.kind === 'opened') {
       this.#announce('equipment.import.announce.opened');
     } else if (submission.kind === 'stored') {
+      // One sentence for a batch that reports two outcomes, not two. The
+      // polite outlet holds one event, so a second announcement published in
+      // the same tick writes over the first and the reader hears only what was
+      // said last. The batch refusal's own sentence states both — how many
+      // were not saved, and that the rest were (011/FR-009, 016/FR-011).
+      const refused = submission.refused.length;
       this.#announce(
-        submission.stored === 1
-          ? 'equipment.import.announce.stored.one'
-          : 'equipment.import.announce.stored.many',
-        { count: this.#formatters.integer(submission.stored) },
+        refused === 1
+          ? 'equipment.import.failure.batch.one'
+          : refused > 1
+            ? 'equipment.import.failure.batch.many'
+            : submission.stored === 1
+              ? 'equipment.import.announce.stored.one'
+              : 'equipment.import.announce.stored.many',
+        { count: this.#formatters.integer(refused > 0 ? refused : submission.stored) },
       );
     } else if (submission.kind === 'failed') {
       this.#announce('equipment.import.announce.failed');

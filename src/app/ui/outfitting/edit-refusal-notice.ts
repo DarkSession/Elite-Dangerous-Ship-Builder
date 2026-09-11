@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import type { EditFailure } from '../../application/outfitting/build-edit-intent';
+import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../announcements/announcement.service';
@@ -28,9 +29,10 @@ import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
  * nothing happen needs to be told now, not when they next happen to read the
  * page — so it is announced as well as drawn, and announced from here rather
  * than from the notice it is drawn in. `failure` is the refusal itself and the
- * store hands over a new one per refusal, so this effect runs once per event;
+ * store hands over a new one per refusal, so the effect runs once per event;
  * an effect over the drawn lines would run again for every committed locale
- * (011/FR-009).
+ * (011/FR-009). A refusal already standing when the screen opens is initial
+ * content and stays silent, the way every other screen's arrival does.
  */
 @Component({
   selector: 'ednb-edit-refusal-notice',
@@ -42,6 +44,7 @@ import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
 export class EditRefusalNotice {
   readonly #messages = inject(MessageService);
   readonly #gameText = inject(GameTextPresenter);
+  readonly #formatters = inject(Formatters);
   readonly #announcements = inject(AnnouncementService);
 
   readonly failure = input.required<EditFailure | null>();
@@ -77,8 +80,21 @@ export class EditRefusalNotice {
   });
 
   constructor() {
+    // The first run is silent, whatever it finds. The store holding the
+    // refusal is the application's and the workspace is a route, so a
+    // Commander who is refused an edit, looks at the shipyard and comes back
+    // arrives at a screen with the refusal already on it. That is initial
+    // content: it is drawn at the top of the workspace, in reading order, and
+    // announcing it would speak to a reader about something they were told
+    // about on their last visit (announcement policy, "initial content").
+    let arrived = false;
     effect(() => {
-      if (this.failure() === null) {
+      const failure = this.failure();
+      if (!arrived) {
+        arrived = true;
+        return;
+      }
+      if (failure === null) {
         return;
       }
       // Everything the sentence says is read in here, so the only thing this
@@ -89,7 +105,10 @@ export class EditRefusalNotice {
           kind: 'outfitting.edit-refused',
           urgency: 'assertive',
           messageKey: 'outfitting.notice.announced',
-          params: { title: this.title(), count: this.lines().length },
+          params: {
+            title: this.title(),
+            count: this.#formatters.integer(this.lines().length),
+          },
         });
       });
     });
