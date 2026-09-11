@@ -38,12 +38,22 @@ to stand over.
 
 ## Screens
 
-None. This change introduces no screen and composes nothing from the design system. What a
-Commander is left on is the document the build already generated for that address, which
-`platform/published-addresses` already holds to the accessibility of a generated first frame
-(015/FR-019) and to the first-frame layout requirements. Holding those same nodes adds no surface
-to scan and no string to translate. The failure statement over them is the shell's, drawn exactly
-as it is today.
+No new screen, and nothing new composed from the design system. The application frame gains one
+state, and it is a state no screen inventory has recorded: its `main` holding content the address
+served, inside a running application, with the failure statement over it. It is not "A takeover
+that does not complete" (015/FR-012), which is the opposite case — there the application never
+runs.
+
+The state reaches the three content-bearing screens, which are the addresses the build generates a
+document for (015/FR-018, "Which addresses get a document"): the start page, the hull catalogue
+and a hull's own page. It satisfies `023/FR-001`.
+
+What stands in that state is the generated document's own markup. It is already laid out for its
+viewport (015/FR-010), already scanned as a generated first frame (015/FR-019) and already written
+in bundled English (015/FR-011), so it adds no composition and no string. What is new is the frame
+holding it, and that is a supported state of `app-frame` like any other: it takes a preview
+fixture at desktop, tablet and mobile widths (011/FR-004), and it is scanned where it stands
+(011/FR-022). The failure statement over it is the shell's own, drawn exactly as it is today.
 
 ## Decisions
 
@@ -61,8 +71,8 @@ generated address loses the same content, whatever the reason the chunk did not 
 
 ### The served nodes are copied before bootstrap, and the copy is what is put back
 
-The copy is taken in a browser-only application initializer registered before `provideRouter`,
-which is the position and the reason `NavigationWaitingStore` already uses: initializers run in the
+The copy is taken in a browser-only application initialiser registered before `provideRouter`,
+which is the position and the reason `NavigationWaitingStore` already uses: initialisers run in the
 order they are provided, and the blocking initial navigation starts from one of them. Before that
 point the DOM is the served document and nothing has been claimed.
 
@@ -73,35 +83,58 @@ which is the defect this change is not allowed to cause.
 The copy is kept as nodes. Not as a string to be parsed again: a string would be re-interpreted,
 and what is put back has to be what the address served rather than a second reading of it.
 
-### The copy is released when a screen is presented
+### The boundary is the first screen presented, not the first navigation
 
-A screen that is presented replaces what the address served, which is what the takeover already
-does. The copy is dropped at the router's first `NavigationEnd`, so it is held for the length of
-one navigation and no longer. Holding it beyond that would keep a stale rendering of a screen the
-Commander has moved past.
+The copy is dropped when a navigation presents a screen, and it is put back whenever one fails
+before that has happened. The router's first `NavigationEnd` is the end of the hold; a
+`NavigationError` before it is what puts the copy back.
+
+Not "the session's first navigation", which is narrower than the rule and would miss a case. A
+first navigation can be cancelled and handed over to a replacement — a redirect, or an address
+that resolves elsewhere and lands at the entry point
+(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve") — and
+018/FR-005 treats the pair as one presentation. If the replacement fails, no screen has been
+presented and the Commander is owed what the address served, but the navigation that failed is not
+the first one. Counting screens rather than navigations covers that without a second rule.
 
 Alternative considered: keeping the copy for the session, so any later failure could restore it.
 Rejected because it is not what a Commander wants. After they have opened a screen, a failed
 navigation leaves them on the screen they are on (018/FR-007), and putting a document they left
 behind back over it would take a screen away from them to answer a failure.
 
-### The shell draws the held content where the outlet stands
+### The shell draws the held content in the outlet's place
 
-The frame renders a container in the outlet's place while content is held, and the platform
-service that holds the nodes fills it. The shell owns its own structure, so the container is in the
-frame's template rather than written into it from outside; the nodes are the service's, because it
-is the one that took them.
+The frame renders a container inside its `main`, where the outlet stands, while content is held.
+That is where the copy was taken from, and putting it anywhere else would move it out of the
+landmark it was served in (`openspec/specs/platform/accessible-responsive-operation/`, "Landmarks
+and heading structure").
 
-Nothing about the container claims the content is a screen the application opened. It is what the
-address served, standing where it stood.
+The container is in the frame's template rather than written into it from outside, because the
+shell owns its own structure. The nodes are the adapter's, because it is the one that took them.
+Nothing about the container claims the content is a screen the application opened.
 
-### Bundled English is what is held, and that is correct
+### Held content stays in bundled English, which 015/FR-011 has to say
 
-A document is written in bundled English, and the committed locale replaces its text once that
-catalogue arrives (015/FR-011). Where the first navigation fails there is no screen, so that
-replacement never lands, and the copy matches what the Commander is already looking at. A Commander
-reading in German keeps the English document they were served and reads the failure in German,
-which is the shell's own text. Nothing is translated twice and nothing is reordered.
+A document is written in bundled English, and 015/FR-011 requires the committed locale to replace
+its text once that catalogue arrives. Read as it stands, that applies to the held content too: the
+application is running and states the failure in German, so the catalogue has arrived. The new
+requirement forbids rewriting held content. Two rules in one capability would point opposite ways,
+so 015/FR-011 is modified rather than left to be read around.
+
+The replacement cannot be done for held content, and this is the reason rather than an excuse. The
+catalogue is applied by rendering the screen in it, and the screen's code is exactly what did not
+arrive. Translating the served markup without it would mean writing sentences the application does
+not have, which constitution IV forbids.
+
+So a Commander reading in German keeps the English document they were served, and reads the failure
+in German because that sentence is the shell's own. Nothing is reordered and nothing is removed,
+which is what FR-011 protects.
+
+Alternative considered: telling them the content is in English, the way 015/FR-011a discloses an
+untranslated game name. Rejected because a document is served in bundled English to every
+Commander by design, and this one has been reading it since before any script ran. FR-011a covers
+names inside a replacement that lands; here none lands, and a note about it would be a new sentence
+in a change that adds no words.
 
 ### Development has nothing to hold
 

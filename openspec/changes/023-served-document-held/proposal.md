@@ -20,26 +20,33 @@ this is where it is fixed. The requirement in `platform/navigation-waiting` stan
 ## What Changes
 
 - The served document is held across the takeover until a navigation presents a screen. Today the
-  application adopts the document's content only where the first navigation activates a screen
-  over it. Where that navigation fails, what the address served is kept and stays readable.
-- The Commander is left on the served content with the failure stated over it, at an address the
-  build generates a document for. At an address it generates none, nothing changes: the shell is
-  what that address served, and the shell is what they keep.
+  application adopts the document's content only where a navigation activates a screen over it.
+  Where the navigation fails instead, what the address served is kept and stays readable.
+- The boundary is the first screen presented, not the first navigation. A first navigation that is
+  cancelled or redirected and replaced is one presentation, and a replacement that fails leaves
+  the Commander owed the same content.
+- At an address the build generates no document for, nothing changes: the shell is what that
+  address served, and the shell is what the Commander keeps.
 - Held content is the application's own markup, kept as it stands. Nothing is re-rendered, no
-  figure is recomputed and no sentence is written for it. The application does not claim it is
-  interactive, and it states no reason for the failure it does not have.
-- The hold ends the moment a navigation presents a screen. A screen that arrives replaces what the
-  document served, which is what the takeover already does when the first navigation succeeds.
+  figure is recomputed and no sentence is written for it — including into the committed locale,
+  which the application cannot reach without the screen's code.
+- The application frame gains one state: its `main` holding content the address served. It takes a
+  preview and a scan like any other state the frame supports.
 
 The change declares requirement `023/FR-001`:
 
 - **FR-001** What an address served is held until a navigation presents a screen to replace it,
-  and is kept where that navigation fails.
+  and is kept where a navigation fails before one is presented.
 
 One thing this change does is not a requirement of its own, because a standing requirement already
 carries it: the failure is stated on whatever the Commander is left with. That is
-`platform/navigation-waiting`, "A navigation that fails" (018/FR-007), which this change makes true
-rather than restates.
+`platform/navigation-waiting`, "A navigation that fails" (018/FR-007). The delta says nothing about
+the statement, so the two cannot drift; what this change alters is what the Commander is left with,
+which is the half of that requirement the application does not meet.
+
+`015/FR-011`, "Bundled English, replaced by the committed locale", is modified in the same delta.
+Read as accepted it requires the committed locale to replace the text of held content, which the
+application cannot do without the screen's code — the thing that failed to arrive.
 
 ## Capabilities
 
@@ -50,10 +57,12 @@ None.
 ### Modified Capabilities
 
 - `platform/published-addresses`: gains a requirement that what an address served is held until a
-  navigation presents a screen — that a failed navigation leaves the Commander on the served
-  content rather than on the shell, that the hold ends when a screen is presented, that held
-  content is kept as it stands rather than rebuilt, and that an address with no generated document
-  is unaffected.
+  navigation presents a screen — that a navigation failing before one is presented leaves the
+  Commander on the served content rather than on the shell, that the hold ends when a screen is
+  presented, that held content is kept as it stands rather than rebuilt, and that an address with
+  no generated document holds nothing. In the same delta, "Bundled English, replaced by the
+  committed locale" (015/FR-011) is modified to say that the replacement is carried by the screen
+  the application presents, so held content stays in the English it was served in.
 
 ## Impact
 
@@ -63,12 +72,15 @@ None.
   draws changes otherwise.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right; what changes is
   the takeover it describes.
-- Nothing a Commander sees changes where a navigation succeeds, which is every navigation that is
-  not the defect. No new words, so no catalogue keys.
+- `src/app/ui/previews/preview-manifest.ts` gains the frame's held state, which is what keeps the
+  state previewed at the three widths (011/FR-004).
+- Nothing a Commander sees changes where a navigation presents a screen, which is every navigation
+  that is not the defect. No new words, so no catalogue keys.
 - `e2e/prerendered-first-frame.spec.ts:496` already holds the failing first navigation in the
   production lane and records at line 575 which half of FR-007 it does not read, and why. This
   change adds that assertion and removes the note.
-- Task 6.3 of `openspec/changes/archive/018-navigation-loading-overlay/tasks.md` is the unticked
-  task this closes.
+- `openspec/changes/archive/018-navigation-loading-overlay/` is read and not written to. Its task
+  6.3 stands unticked with the reason it carries, which is the record of why the work was deferred;
+  this change is where the work is done and where it is recorded.
 
 Closes #90.
