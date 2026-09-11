@@ -45,9 +45,9 @@ to stand over.
 
 ## Screens
 
-No new screen, and nothing new composed from the design system. The application frame gains one
-state, and it is a state no screen inventory has recorded: its `main` holding content the address
-served, inside a running application, with the failure statement over it.
+No new screen, and nothing new composed from the design system. The application frame draws one
+composition no screen inventory has recorded: its `main` holding content the address served, inside
+a running application, with the failure statement beside it.
 
 "A takeover that does not complete" (015/FR-012) already reads on this case. Its scenario is "The
 bundle is blocked or a chunk never arrives", which is what happens here, and it requires the
@@ -57,7 +57,8 @@ second half. `023/FR-001` is not a second answer to the same question: FR-012 st
 a takeover that fails, and FR-001 states when the application may discard what an address served —
 which also governs a navigation that ends without a screen long after bootstrap succeeded.
 
-The state reaches the three content-bearing screens: the start page, the hull catalogue and a
+The composition reaches the three content-bearing screens: the entry point, the hull catalogue
+and a
 hull's own page. Those three stand at the 50 addresses the build generates a document for — the
 root, the catalogue and each of the 48 hulls (015/FR-018, "Which addresses get a document"). It
 satisfies `023/FR-001`.
@@ -98,7 +99,7 @@ frame draws the held container in that same render. Nothing is painted between t
 This is the same shape the stored catalogue view already has — applied "in the takeover frame
 itself rather than a frame later" (015/FR-009a) — and it is why the container is part of the
 frame's first render rather than something written in afterwards from an effect. A restore that
-waited for a second pass would be the blank this feature exists to prevent.
+waited for a second pass would blank the page.
 
 ### The served nodes are copied before bootstrap, and the copy is what is put back
 
@@ -121,17 +122,23 @@ ends without presenting one. The router's first `NavigationEnd` is the end of th
 ending leaves the copy standing.
 
 Not "the session's first navigation", which is narrower than the rule and would miss a case. A
-first navigation can be cancelled and handed over to a replacement — a redirect, or an address
-that resolves elsewhere and lands at the entry point
-(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"). If the
-replacement ends without a screen, no screen has been presented and the Commander is owed what the
-address served, but the navigation that ended is not the first one.
+first navigation can be cancelled and handed over to a replacement. If the replacement ends without
+a screen, no screen has been presented and the Commander is owed what the address served, but the
+navigation that ended is not the first one.
 
-One consequence is worth stating so a later reader does not read it as a defect: where a
-navigation is redirected, the content standing is what the first address served while the address
-bar carries the second. The Commander was given that content and no screen has replaced it, so it
-is what they keep; the address states where the application was going, which is what it states on
-every redirect.
+No address the build generates a document for reaches that shape today. The routes configure one
+redirect, the wildcard to the entry point, and an address the wildcard catches is one the build
+generates no document for (015/FR-016), so it served the shell and holds nothing
+(`openspec/specs/platform/tool-navigation/`, "An address the application cannot resolve"). No route
+carries a guard either, so a cancellation with nothing taking over has no browser-reachable
+instance at such an address. Both shapes are therefore read in the unit sequence rather than in a
+lane, which tasks 3.2 and 3.5 say. The rule is still written for them, because a route added later
+can reach them and because a rule that named only the reachable shape would be the narrower one
+this decision rejects.
+
+Were a generated address ever to redirect, the content standing would be what the first address
+served while the address bar carried the second. That is not a defect: the Commander was given that
+content, no screen has replaced it, and the address states where the application was going.
 
 That the pair counts once is this change's own rule, stated in `023/FR-001` and nowhere else. The
 nearest accepted requirement, 018/FR-005, reaches the same pair for a different purpose — one
@@ -165,13 +172,17 @@ Nothing today reads on it: the statement arrives over an empty `main`, so there 
 This change is what puts the two in the same frame, so the question arrives with it.
 
 A fourth exception is not available; 015/FR-009 says three exist and nothing else may claim one.
-So the content must not move, and the way it does not is a question for the implementation: the
-space the statement occupies has to exist before the statement does, or the statement has to stand
-somewhere that does not displace the content. Which of the two is right needs the rendered frame,
-which task 2.3 is what produces, so it is answered there as the container is built rather than
-guessed here or left for task 4.3 to discover. What is settled before either is the constraint: the
-restore is measured against the served document's own layout, and a shift is a failure rather than
-a cost.
+So the content must not move. Two things could achieve that: the space the statement occupies
+exists before the statement does, or the statement stands somewhere that does not displace the
+content. The first is ruled out here rather than left to the implementation. It means the build
+laying out a block for a statement that may never arrive, and 015/FR-010 forbids that: "Composition
+that the build cannot know MUST NOT decide the first frame". The build knows neither whether the
+takeover will fail nor how tall the statement would be.
+
+So the statement does not take space above the held content. How the frame draws it so — out of
+the flow over the content, or after it — is the implementation's, because both meet the constraint
+and task 4.3 measures the constraint rather than the mechanism. The restore is measured against the
+served document's own layout, and a shift is a failure rather than a cost.
 
 ### The shell draws the held content in the outlet's place
 
@@ -187,8 +198,8 @@ Nothing about the container claims the content is a screen the application opene
 here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands over
 the content and says so. Where one is cancelled, the same requirement says a cancellation is stated
 as nothing — so there is no sentence, and nothing a test could read that would distinguish held
-content from a screen presented over the same markup. An obligation no scenario can fail is
-reasoning, and it is recorded as reasoning.
+content from a screen presented over the same markup. No scenario can test it, so it is recorded
+here rather than written into the requirement.
 
 The same applies to delay. Holding costs one copy of one subtree, taken before bootstrap and
 outside the window 015/SC-003 measures, and the capability states no timing threshold anywhere that
@@ -231,7 +242,7 @@ same delta to say so. Read as it stands it already does: its second scenario is 
 English", whose WHEN is "a document is read in bundled English" and whose THEN is "there is nothing
 to disclose, because English is the original", and held content is exactly that. But the same
 requirement says the disclosure "MUST NOT be suppressed", and a reader who reaches that sentence
-first would find two rules in one file pointing opposite ways —
+first would find two rules in one file that contradict each other —
 the condition this change already refuses to leave standing for 015/FR-011. So the boundary is
 written into the requirement rather than left in a design note: the disclosure belongs to a
 replacement that lands, and where none lands nothing is suppressed, because each name stands in the
@@ -242,7 +253,7 @@ text the application requests from the package and shows; for held content the a
 none. What the Commander is reading is the document the address served, whose disclosure story
 `platform/published-addresses` already owns — as it does for the head (011/FR-027).
 
-### Development has nothing to hold
+### A development server serves no document
 
 No document is generated on a development server, so the copy is empty and the Commander is left on
 the shell — which is what that address served, and what 018/FR-007's scenario "The first navigation

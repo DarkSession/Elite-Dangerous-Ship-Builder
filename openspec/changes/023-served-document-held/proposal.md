@@ -59,11 +59,10 @@ which is the half of that requirement the application does not meet.
 `015/FR-011`, "Bundled English, replaced by the committed locale", is modified in the same delta.
 Read as accepted it requires the committed locale to replace the text of held content, which the
 application cannot do without the screen's code — the thing that failed to arrive. Its accepted
-scenario "A Commander whose committed locale is not English" is narrowed to the takeover that
-presents a screen, because that is the only takeover that can carry the replacement. Nothing is
-lost by the narrowing: the document painting English immediately is required by the requirement's
-own first sentence and by 015/FR-008, and the case the scenario no longer reaches is the one a new
-scenario beside it reads.
+scenario "A Commander whose committed locale is not English" keeps the English paint unconditional,
+because that is a fact about the first frame and cannot depend on how the takeover ends. The
+condition moves to the replacement instead: the screen carries the committed locale's text where
+the takeover presents one. A new scenario beside it reads the case where none is presented.
 
 `015/FR-011a`, "The disclosure beside an untranslated game name", is modified beside it, for the
 same reason. It already says a document read in bundled English has nothing to disclose, which is
@@ -99,8 +98,9 @@ None.
   the same banner, tool links and standing notices it draws today, and the failure statement is one
   of those notices. Where that statement stands relative to the held content decides whether the
   restore moves anything the Commander can see, which design.md, "The failure statement stands
-  above the content, and that is a move", records, task 2.3 answers as it builds the container, and
-  task 4.3 reads back.
+  above the content, and that is a move", settles: the statement does not take space above the
+  held content, because reserving that space in the build is ruled out by 015/FR-010. Task 2.3
+  builds to that and task 4.3 measures it.
 - `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
   fixes; what changes is the takeover it describes.
 - `src/app/ui/previews/preview-manifest.ts` is unchanged. A frame whose `main` holds content is
@@ -126,7 +126,7 @@ None.
   returning Commander with no network, and did so before this change. The sentence that governs
   that requirement, and its scenario, both key on what the address served, which is what this
   change states — so nothing here contradicts it, and tightening the enumeration belongs to
-  `platform/navigation-waiting`. Recorded in design.md, "Development has nothing to hold".
+  `platform/navigation-waiting`. Recorded in design.md, "A development server serves no document".
 - `openspec/changes/archive/018-navigation-loading-overlay/` is read and not written to. Its task
   6.3 stands unticked with the reason it carries, which is the record of why the work was deferred;
   this change is where the work is done and where it is recorded.

@@ -3,9 +3,10 @@
 - [ ] 1.1 The held content is the generated document's own markup, already laid out for its
       viewport, already scanned for accessibility as a first frame, and already written in bundled
       English (015/FR-010, 015/FR-019, 015/FR-011). Holding the same nodes adds no composition, no
-      touch target and no string. What is new is one state of the application frame, and it is
-      carried: task 4.1 previews it at the three widths and task 4.2 scans
-      it where it stands, before the change is read end to end (011/FR-004, 011/FR-022). Verify
+      touch target and no string. What is new is one composition of the application frame, and it
+      is carried: task 4.1 confirms the preview manifest needs nothing added for it, and tasks 4.2
+      and 4.4 read it at the layout profiles where it stands, before the change is read end to end
+      (011/FR-004, 011/FR-022). Verify
       the rest by holding the change to it: no new catalogue key (011/FR-016), no reusable pattern
       entering the design system (011/FR-005), and the existing responsive and touch journeys pass
       unchanged (011/FR-021, 011/FR-006).
@@ -47,13 +48,12 @@
       fills it — that is where the copy was taken from, and anywhere else moves it out of its
       landmark. The container is part of the frame's first render rather than written in from an
       effect afterwards, so the copy lands in the render that removes the served nodes and nothing
-      is painted between the two. Where the failure statement stands is settled here rather than
-      later, because this is the task that first renders the two together and the one that would
-      otherwise be built on a guess (AGENTS.md, "answer it before building the tasks that depend on
-      it"): either the space the statement occupies exists before the statement does, or the
-      statement stands where it does not displace the content. 015/FR-009 admits three exceptions
-      and this claims none of them, so a fourth is not available. Task 4.3 reads the answer back
-      rather than choosing it. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the failure
+      is painted between the two. The failure statement does not take space above the held
+      content, which is design.md, "The failure statement stands above the content, and that is a
+      move": 015/FR-009 admits three exceptions and this claims none of them, and reserving the
+      space in the build is ruled out by 015/FR-010. Drawing it out of the flow over the content or
+      after it both meet that, and this task picks one. Verify tasks 1.2, 1.3 and 3.5 now pass,
+      and that the failure
       statement still stands over the content rather than instead of it. Tasks 1.2 and 1.3 drive
       `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
       that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
@@ -92,9 +92,11 @@
       presentation, so the cancellation does not end the hold. That rule is `023/FR-001`'s own —
       018/FR-005 reaches the same pair only to keep one waiting statement standing across it, and
       says nothing about what the Commander is left on. This is the case a rule written about the
-      session's first navigation would miss. Read it in the production lane, or in the unit sequence
-      task 1.3 establishes where a browser cannot produce the pairing; either way not in a lane with
-      no document to hold (023/FR-001).
+      session's first navigation would miss. Read it in the unit sequence task 1.3 establishes: the
+      only redirect the routes configure is the wildcard to the entry point, and an address the
+      wildcard catches served the shell rather than a document, so no browser lane can reach the
+      pairing at an address with something to hold (design.md, "The boundary is the first screen
+      presented, not the first navigation"; 023/FR-001).
 - [ ] 3.3 Verify an address the build generates no document for is unaffected: nothing is held, and
       a failed first navigation leaves the Commander on the shell, which is what that address
       served and what 018/FR-007's scenario "The first navigation fails at an address with no
@@ -121,27 +123,29 @@
       content and nothing else. This is the case that separates
       counting screens presented from counting errors raised: an implementation restoring only on
       `NavigationError` passes every other test in this change and fails this one. Read it in the
-      production lane, or in the unit sequence task 1.3 establishes where a browser cannot produce
-      a cancellation with nothing taking over (023/FR-001).
+      unit sequence task 1.3 establishes: no route carries a guard, so a browser lane cannot cancel
+      a navigation with nothing taking over (023/FR-001).
 
 ## 4. Where the held frame is read
 
 - [ ] 4.1 Verify the preview manifest needs nothing added, rather than adding a state to it.
-      `ComponentState` is closed over the five states 011/FR-004 enumerates — `default`, `empty`,
-      `loading`, `error` and `disabled` (`src/app/ui/component-contract.ts`) — and `app-frame`
+      `ComponentState` is closed over the five states 011/FR-004 enumerates as populated, empty,
+      loading, error and disabled, which the contract spells `default`, `empty`, `loading`, `error`
+      and `disabled` (`src/app/ui/component-contract.ts`) — and `app-frame`
       already accounts for all five, with a fixture for three and a stated reason for the two its
       contract cannot represent. A `main` with content in it is none of the five: it is the frame
-      in a state it is already previewed in. No fixture could show it in any case, because `main`
-      is `<ng-content />` and the catalogue renders each cell through `NgComponentOutlet` with
+      in a state it is already previewed in, holding a composition no fixture supplies. None could
+      show it in any case, because `main` is `<ng-content />` and the catalogue renders each cell
+      through `NgComponentOutlet` with
       inputs alone (`projects/ui-preview/src/app/preview-app.ts`), so no component preview puts
       anything in the frame's `main`. Verify by running `pnpm run policy` with this change's code
       in place and reading that it reports nothing about `app-frame`. The composition is read
       where it occurs instead, in the product lane, which is tasks 4.2, 4.3 and 4.4 (011/FR-004,
       constitution IX).
-- [ ] 4.2 Scan the held state where it stands, in the production lane, across the layout profiles
-      the journey in task 1.2 already runs: the held content and the failure statement together,
-      asserted to report no in-scope violation. The existing scans reach the generated first frame
-      and the screens the application presents, and this state is neither
+- [ ] 4.2 Scan the held composition where it stands, in the production lane, across the layout
+      profiles the journey in task 1.2 already runs: the held content and the failure statement
+      together, asserted to report no in-scope violation. The existing scans reach the generated
+      first frame and the screens the application presents, and this composition is neither
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.5 scans its own
       standing overlay for the same reason). Verify with `pnpm run e2e` (011/FR-022, 011/SC-002).
 - [ ] 4.3 Measure the restore, not only the takeover that succeeds: read that no content the
@@ -150,19 +154,19 @@
       return. Read the movement against the failure statement landing beside the content, which is
       what this change stands in the same place for the first time: a statement that pushes the
       content down the page is a move. The frame draws its standing notices above the `main` the
-      outlet sits in, so this is the reading that a wrong answer in task 2.3 fails. Read the answer
-      that task chose rather than choosing one here: either the space the statement occupies exists
-      before the statement does, or the statement stands where it does not displace the content.
-      015/FR-009 admits three exceptions and this claims none of them, so a fourth is not available
-      and a visible move, removal or return is a failure rather than a cost. Verify with
+      outlet sits in, so this is the reading that a statement taking space above the content
+      fails. Measure the constraint rather than the mechanism task 2.3 chose. 015/FR-009 admits
+      three exceptions and this claims none of them, so a fourth is not available and a visible
+      move, removal or return is a failure rather than a cost. Verify with
       `pnpm run e2e` in the production lane, beside the journey task 1.2 extends (023/FR-001,
       015/FR-009).
-- [ ] 4.4 Read the held state at 200% text size and at 400% zoom, in the profiles the journey in
-      task 1.2 already runs: the held content and the failure statement together, with the content
-      complete and no horizontal page scrolling. 011/FR-011 requires it of every capability, and
-      neither existing reading reaches this composition — 015/FR-019 scans the generated first
+- [ ] 4.4 Read the held composition at 200% text size and at 400% zoom, in the profiles the
+      journey in task 1.2 already runs: the held content and the failure statement together, with
+      the content complete and no horizontal page scrolling. 011/FR-011 requires it of every
+      capability, and neither existing reading reaches this composition — 015/FR-019 scans the
+      generated first
       frame, where no statement stands beside the content, and the responsive journeys never reach
-      a held state. Change 018 read its own standing state the same way for the same reason
+      it. Change 018 read its own standing state the same way for the same reason
       (`openspec/changes/archive/018-navigation-loading-overlay/tasks.md` 6.6). Verify with
       `pnpm run e2e` (011/FR-011, 011/SC-003).
 
@@ -201,7 +205,10 @@
       that never arrives after it has. One assertion for task 1.2's reading, and one each for tasks
       2.5 and 2.6, which are the new readings of `015/FR-011` and `015/FR-011a`. Those two ids are
       already in that entry's `requirements` array and stay there; what the modification adds is
-      evidence, not a registration. Verify by reading the entry back against
+      evidence, not a registration. Three rather than one per task, because the entry's assertions
+      summarise what the journey reads rather than transcribing each test: it carries nine for a
+      file of sixteen, and the readings tasks 3.1 to 3.5, 4.2 to 4.4 and 5.1 add are instances of
+      the one the first of the three names. Verify by reading the entry back against
       the journey task 1.2 extends: the surface's journey name is the one that now carries the
       assertion, and the assertion text names what that journey reads. `pnpm run policy` is the
       command that can fail here — it reconciles each ledger surface and journey against the routes,
