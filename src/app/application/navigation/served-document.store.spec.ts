@@ -16,7 +16,7 @@ import { ServedDocumentStore } from './served-document.store';
 
 /**
  * What the Commander is left on, and when the copy is dropped, for the readings
- * a real router cannot drive.
+ * a real router and a real adapter cannot show.
  *
  * Most of this behaviour is read over real navigations, in
  * `src/app/app-served-document.spec.ts`. Three readings are left here. Two are
