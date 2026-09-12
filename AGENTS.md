@@ -99,6 +99,10 @@ them: renaming them would change bytes a Commander has already saved.
   `--frozen-lockfile`.
 - Run `pnpm run check` before proposing a change: format, typecheck, build, unit
   tests with coverage, Playwright.
+- During fixes, use the README's targeted-check procedure: reproduce the failing
+  test and project, then run the affected capability across the matrix.
+  Store full output under `dist/verification/` and read concise failure summaries.
+  The complete merge gate remains required before proposing merge.
 - Unit tests live beside their source in `src/`; end-to-end tests in `e2e/`. A
   new user journey needs both.
 - **Nothing the application asks for at runtime may be a root-absolute path.** A

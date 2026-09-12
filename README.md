@@ -128,6 +128,33 @@ editing the config:
 E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e2e
 ```
 
+### Develop with targeted checks
+
+1. If a browser test fails, reproduce its file, title and project. Keep the failure output in a local log.
+
+   ```bash
+   mkdir -p dist/verification
+   pnpm run e2e power-and-heat.spec.ts --project=firefox-mobile-portrait --grep='states the plant' > dist/verification/reproduction.log 2>&1
+   ```
+
+2. Read the failure and its attachment. After a fix, run the same selection again.
+3. Run the affected capability across all ten projects. Include shared consumers when a helper or component changes.
+
+   ```bash
+   pnpm run e2e power-and-heat.spec.ts > dist/verification/capability.log 2>&1
+   ```
+
+4. Before proposing merge, run the complete gate. Targeted checks do not replace it.
+
+   ```bash
+   pnpm run check > dist/verification/check.log 2>&1
+   ```
+
+Pass Playwright options directly after the script name; do not insert an extra `--`.
+Use `--list` to verify a selection without launching browsers.
+Keep logs outside conversation output. Report the command, exit status, test counts and relevant failures.
+The agent guide uses this procedure for development iterations.
+
 ## Deployment
 
 The application is published to GitHub Pages at
