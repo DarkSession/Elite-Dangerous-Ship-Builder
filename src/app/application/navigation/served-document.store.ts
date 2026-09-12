@@ -179,6 +179,10 @@ export class ServedDocumentStore {
     this.#running = null;
     this.#screenPresented = true;
     this.#held.set(null);
+    // And the copy itself goes, not only the offer of it. Nothing can be put
+    // back after this, so a clone of the served document held for the life of
+    // the page is memory spent on a page the Commander cannot be returned to.
+    this.#served.release();
   }
 
   #restore(): void {

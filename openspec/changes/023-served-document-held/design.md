@@ -174,6 +174,13 @@ leaves them on "a screen they can use", and putting a document they left behind 
 take a screen away from them to answer a failure. That it is the screen they are on, rather than any
 usable screen, is `023/FR-001`'s own addition.
 
+This rule is one seam of its own, `src/app/application/navigation/served-document.store.ts`. It
+reads the router's events, decides what the Commander is left on, and tells the adapter when the
+hold is over. It renders nothing and is tested without a component, which is what keeps a decision
+this narrow out of both the adapter that owns the document and the frame that draws it
+(constitution III). Three parts, then: the adapter owns the copy, this store owns the boundary, and
+the frame draws what it is handed.
+
 ### The failure statement does not take space above the content
 
 The shell draws its standing notices in a block of their own, above the `main` the outlet sits in.
@@ -233,7 +240,9 @@ reaching into the frame's DOM. Nodes handed to a component are state it is hande
 constitution III leaves a component free to render; a platform adapter writing inside another
 component's template is what that principle and the design system's presentation-only rule both
 refuse. The frame therefore stays the only thing that writes its own structure, and the adapter
-stays the only thing that owns the copy.
+stays the only thing that owns the copy. What the frame is handed comes from `ServedDocumentStore`
+rather than from the adapter directly, because when there is something to draw is a decision and
+the frame takes decisions as inputs.
 
 Nothing about the container claims the content is a screen the application opened, and that stays
 here rather than in the requirement. Where a navigation fails, 018/FR-007's statement stands beside

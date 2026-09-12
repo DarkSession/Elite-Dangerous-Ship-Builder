@@ -95,6 +95,11 @@ None.
 - `src/app/app.config.ts` and a new adapter under `src/app/platform/browser/` gain the hold, beside
   the other adapters that own a piece of the document. It belongs with the takeover it is part of,
   not inside a screen.
+- `src/app/application/navigation/` gains the store that decides what the Commander is left on. It
+  reads the router's events, holds nothing of the document itself, and tells the adapter when the
+  hold is over. The rule is a decision rather than a piece of the document or a piece of the shell,
+  so it sits beside `navigation-waiting`'s own store and not in either of the other two
+  (constitution III).
 - `src/app/ui/components/app-frame/` receives the held content where the outlet stands. It draws
   the same banner, tool links and standing notices it draws today, and the failure statement is one
   of those notices. Where that statement stands relative to the held content decides whether the

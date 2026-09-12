@@ -61,9 +61,10 @@ export class ServedContentAdapter {
    *
    * Taken in the constructor rather than on first read, because the only moment
    * it can be taken is before the router reaches the outlet, and a lazy read
-   * would take it whenever its first caller happened to ask.
+   * would take it whenever its first caller happened to ask. `null` again from
+   * `release()`, which is the end of the hold.
    */
-  readonly #copy: readonly Node[] | null = this.#take();
+  #copy: readonly Node[] | null = this.#take();
 
   /**
    * The language the document declared when it was served, or `null` where it
@@ -116,6 +117,26 @@ export class ServedContentAdapter {
    */
   get content(): readonly Node[] | null {
     return this.#copy;
+  }
+
+  /**
+   * Drop the copy.
+   *
+   * Once a screen is presented there is nothing left to put back, and a clone
+   * of a whole document is what this is holding — the catalogue address serves
+   * forty-eight hull cards. Keeping it for the life of the page costs the
+   * Commander memory for a document they can no longer be returned to, so the
+   * copy goes when the thing it stood in for arrives.
+   *
+   * Called by `ServedDocumentStore` at the first `NavigationEnd`, which is the
+   * only place that knows a screen has been presented (constitution III). This
+   * owns the copy and nothing else decides when it ends.
+   *
+   * The measured height stays: it is one number, and it is read once as the
+   * store is built rather than at the moment the copy is placed.
+   */
+  release(): void {
+    this.#copy = null;
   }
 
   #measure(): number | null {

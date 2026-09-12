@@ -44,30 +44,36 @@
       replacement that ends the same way. Count screens presented rather than navigations run or
       errors raised: a rule written about `NavigationError` alone would leave the cancelled-with-
       nothing-taking-over Commander on an empty shell with no statement on it, which is worse than
-      either outcome this change is for (design.md, "The boundary is the first screen presented,
-      not the first navigation"; 018/FR-005). The frame renders a container inside the
+      either outcome this change is for (design.md, "The boundary is the first screen presented, not
+      the first navigation"; 018/FR-005). The frame renders a container inside the
       `<main class="frame__main">` it already draws, where the outlet stands, in
-      `src/app/ui/components/app-frame/app-frame.html`, and takes the nodes as an input rather
-      than having the adapter write into its template (design.md, "The shell draws the held content
-      in the outlet's place"; constitution III) — that is where the copy was taken from, and
-      anywhere else moves it out of its landmark. The container is part of the frame's first render
-      rather than written in from an effect afterwards, so the copy lands in the render that
-      removes the served nodes and nothing is painted between the two. The failure statement does
+      `src/app/ui/components/app-frame/app-frame.html`, and takes the nodes as an input rather than
+      having the adapter write into its template (design.md, "The shell draws the held content in
+      the outlet's place"; constitution III) — that is where the copy was taken from, and anywhere
+      else moves it out of its landmark. The container is drawn by the frame's own template and the
+      nodes are placed into it in the same pass, so the box is never drawn empty first. What removes
+      the served document's own nodes is neither render: the framework clears the views hydration
+      did not claim, from a bootstrap listener once the application is stable — which is why nothing
+      moving across the two is measured rather than argued (015/FR-009). The failure statement does
       not take space above the held content, which is design.md, "The failure statement does not
       take space above the content": 015/FR-009 admits three exceptions and this claims none of
       them, and reserving the space in the build is ruled out by 015/FR-010. Drawing it out of the
-      flow over the content is ruled out by measurement rather than by preference — it hides the
-      end of the content for the life of the page and cannot be scrolled off where the screen
-      fills the window (design.md) — so it stands after the content, and the content is put back
-      into the box it was served in. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the
-      statement can be read where it stands and stands over nothing the Commander is reading: hit
-      test its own box at the end of the scroll range, which `toBeVisible` and `innerText` cannot
-      fail on. Tasks 1.2 and 1.3 drive
-      `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is the one
-      that fails against it, and this task is not done until it passes (023/FR-001, 018/FR-007).
+      flow over the content is ruled out by measurement rather than by preference — it hides the end
+      of the content for the life of the page and cannot be scrolled off where the screen fills the
+      window (design.md) — so it stands after the content, and the content is put back into the box
+      it was served in. Verify tasks 1.2, 1.3 and 3.5 now pass, and that the statement can be read
+      where it stands and stands over nothing the Commander is reading: hit test its own box at the
+      end of the scroll range, which `toBeVisible` and `innerText` cannot fail on. Tasks 1.2 and 1.3
+      drive `NavigationError` alone, so they pass against the rule this task forbids; task 3.5 is
+      the one that fails against it, and this task is not done until it passes (023/FR-001,
+      018/FR-007).
 - [x] 2.4 Release the copy at the first `NavigationEnd`. Verify nothing is held after a screen has
-      been presented, and that the held container is not drawn once a screen stands in the outlet
-      (023/FR-001).
+      been presented, that the held container is not drawn once a screen stands in the outlet, and
+      that the nodes themselves are dropped rather than only the offer of them: a clone of the
+      served document kept for the life of the page is memory spent on a page nothing can return the
+      Commander to, which is the risk design.md names and the release is its whole mitigation. The
+      adapter owns the copy, so the adapter is what drops it and the store is what says when
+      (constitution III) — read both, the call at the boundary and the drop itself (023/FR-001).
 - [x] 2.5 Verify the held content stays in the bundled English it was served in, for a Commander
       whose committed locale is German: assert the held words are the served ones, that no
       translated text and no disclosure has been written into them, and that the failure statement

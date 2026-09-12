@@ -59,6 +59,66 @@ describe('ServedContentAdapter', () => {
     expect(adapter.held).toBe(false);
   });
 
+  it('reads the language the document declared when it was served', () => {
+    // The one moment the answer is still on the document: the running
+    // application writes the committed locale onto the root, so by the time the
+    // copy is standing the root says German over content in bundled English
+    // (011/FR-017, WCAG 3.1.2).
+    const declared = document.documentElement.lang;
+    document.documentElement.lang = 'en';
+    serve('<h1>Ships</h1>');
+
+    try {
+      expect(TestBed.inject(ServedContentAdapter).language).toBe('en');
+    } finally {
+      document.documentElement.lang = declared;
+    }
+  });
+
+  it('reads no language where the document declared none', () => {
+    const declared = document.documentElement.lang;
+    document.documentElement.lang = '   ';
+    serve('<h1>Ships</h1>');
+
+    try {
+      expect(TestBed.inject(ServedContentAdapter).language).toBeNull();
+    } finally {
+      document.documentElement.lang = declared;
+    }
+  });
+
+  it('measures the box the content was served in', () => {
+    // The measurement the frame stands the copy in. Taken from the served
+    // document while it is the only thing on the page, because the shell
+    // stretches a screen shorter than the window and a box measured from the
+    // copy's own content closes higher up the page than it was served
+    // (023/FR-001, 015/FR-009).
+    const served = serve('<h1>Ships</h1>');
+    served.getBoundingClientRect = () => ({ height: 512 }) as DOMRect;
+
+    expect(TestBed.inject(ServedContentAdapter).height).toBe(512);
+  });
+
+  it('measures nothing where the document has no main at all', () => {
+    expect(TestBed.inject(ServedContentAdapter).height).toBeNull();
+  });
+
+  it('drops the copy when it is released', () => {
+    // What ends the hold, and the only thing that does. The nodes go with the
+    // offer of them, because a clone of the served document kept for the life
+    // of the page is memory spent on a page nothing can return the Commander to
+    // (023/FR-001).
+    const served = serve('<h1>Ships</h1><ul><li>Anaconda</li></ul>');
+    const adapter = TestBed.inject(ServedContentAdapter);
+
+    adapter.release();
+
+    expect(adapter.held).toBe(false);
+    expect(adapter.content).toBeNull();
+    // And the document the Commander is on is not what was dropped.
+    expect(served.textContent).toContain('Anaconda');
+  });
+
   it('leaves the live nodes where they are', () => {
     // A copy rather than a detachment: the Commander is reading this document
     // while the copy is taken, and hydration has to find the same nodes it
