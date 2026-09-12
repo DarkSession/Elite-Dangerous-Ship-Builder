@@ -15,7 +15,8 @@ import { ServedContentAdapter } from '../../platform/browser/served-content.adap
 import { ServedDocumentStore } from './served-document.store';
 
 /**
- * What the Commander is left on, for the outcomes no route table can produce.
+ * What the Commander is left on, and when the copy is dropped, for the readings
+ * a real router cannot drive.
  *
  * Most of this behaviour is read over real navigations, in
  * `src/app/app-served-document.spec.ts`. Three readings are left here. Two are
@@ -26,8 +27,8 @@ import { ServedDocumentStore } from './served-document.store';
  * instance a real router can reach, at this moment in the session or any
  * other. The other is a press cancelled by the next, which needs one
  * navigation started over another still running. The third reading is not a
- * sequence at all: the copy going back to the adapter is a call rather than a
- * signal, and only a stub adapter counts calls.
+ * sequence at all: the copy being dropped is a call on the adapter rather than
+ * a signal, and only a stub adapter counts calls.
  *
  * `navigation-waiting.store.spec.ts` drives its own codes the same way and for
  * the same reason.
