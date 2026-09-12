@@ -17,13 +17,17 @@ import { ServedDocumentStore } from './served-document.store';
 /**
  * What the Commander is left on, for the outcomes no route table can produce.
  *
- * The rest of this behaviour is read over real navigations, in
- * `src/app/app-served-document.spec.ts`. What is read here is the one shape the
- * router will not raise there: a handover the router answers without
- * navigating. It raises that skip only for an address it has already navigated
- * to, and by then a screen has been presented and there is nothing left to
- * hold — so the pairing this store is written for has no instance a real router
- * can reach, at this moment in the session or any other.
+ * Most of this behaviour is read over real navigations, in
+ * `src/app/app-served-document.spec.ts`. Three readings are left here. Two are
+ * sequences the router will not raise there. One is a handover the router
+ * answers without navigating: it raises that skip only for an address it has
+ * already navigated to, and by then a screen has been presented and there is
+ * nothing left to hold — so the pairing this store is written for has no
+ * instance a real router can reach, at this moment in the session or any
+ * other. The other is a press cancelled by the next, which needs one
+ * navigation started over another still running. The third reading is not a
+ * sequence at all: the copy going back to the adapter is a call rather than a
+ * signal, and only a stub adapter counts calls.
  *
  * `navigation-waiting.store.spec.ts` drives its own codes the same way and for
  * the same reason.

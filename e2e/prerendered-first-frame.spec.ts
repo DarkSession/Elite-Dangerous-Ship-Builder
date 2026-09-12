@@ -594,7 +594,7 @@ test.describe('the waiting statement and a generated document', () => {
  * A Commander opening `path` in a context of its own, whose screen never
  * arrives.
  *
- * The arrangement the journey above works out, in one place because four
+ * The arrangement the journey above works out, in one place because ten
  * readings need it. The screen's own chunks are told from the application's by
  * asking for that screen once and remembering what it fetched — both are
  * chunks and only the address distinguishes them — and the reading itself is
