@@ -2265,7 +2265,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a Commander whose first screen never arrives is left on the document that address served, with the failure stated beside it and nothing moved',
       'held content stays in the bundled English it was served in, with no translation and no disclosure written into it',
       'held content states the language it is in, which is not the one the running application presents',
-      'held content stands in the box it was served in, at the entry point as well as at the catalogue, where the screen fills the window',
+      'held content stands in the box it was served in, at the catalogue and at the entry point, where the screen fills the window',
       'the failure is stated where it can be read, over nothing the Commander was given',
       'a document with no rendered body is not taken over until the application has drawn the screen',
     ],

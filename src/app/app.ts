@@ -311,7 +311,7 @@ export class App {
    * without presenting a screen and none has been presented in this session
    * (023/FR-001).
    */
-  readonly heldContent = computed(() => this.#servedDocument.held());
+  readonly heldContent = this.#servedDocument.held;
 
   /**
    * The language that content is in, which is the one the document declared
