@@ -1320,6 +1320,13 @@ registerPreview({
     // repaired: a named error and, beside it, the one control that recovers the
     // session. It is a rendered product state that no journey can provoke — the
     // worker decides when it happens — so this is where it is scanned.
+    //
+    // Content the address served standing beside that statement is not a cell
+    // here, and deliberately. It is the same error state in another
+    // composition rather than a state of its own, a journey can provoke it,
+    // and it is scanned where it occurs: over the held content and the
+    // statement together, on the production lane
+    // (`e2e/prerendered-first-frame.spec.ts`, 023/FR-001).
     state(
       'error',
       {

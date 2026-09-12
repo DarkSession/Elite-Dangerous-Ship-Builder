@@ -78,7 +78,6 @@ describe('ServedDocumentStore', () => {
         {
           provide: ServedContentAdapter,
           useValue: {
-            held: true,
             content: served,
             language: 'en',
             height: 512,

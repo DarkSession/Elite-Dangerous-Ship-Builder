@@ -801,8 +801,10 @@ test.describe('held content and a Commander reading in German', () => {
  * Asserts that every frame holds what the first one held, where it held it.
  *
  * Three of the four boxes compared as they stand: the bar, the landmark and the
- * content inside it. A statement that took space above the content moves all
- * three, which is the reading this exists for.
+ * content inside it. A statement that took space above the content moves the
+ * landmark and what stands in it, which is the reading this exists for. The bar
+ * is held to the same rule because a composition corrected after the fact moves
+ * it too (`MEASURED`).
  *
  * The restore adds the copy and the framework's cleanup removes the served
  * nodes it was taken from, and the two overlap until the cleanup runs — the
@@ -817,7 +819,8 @@ test.describe('held content and a Commander reading in German', () => {
  * document ends lower than it did — the page is taller, and nothing in it
  * moved. What is asserted of it is what that leaves: the page begins where it
  * began, it is the width it was, and it never gets shorter (015/FR-009,
- * design.md, "The failure statement does not take space above the content").
+ * `openspec/changes/archive/023-served-document-held/design.md`, "The failure
+ * statement does not take space above the content").
  */
 function nothingTheCommanderIsReadingMoved(window: readonly Frame[]): void {
   const first = window[0];

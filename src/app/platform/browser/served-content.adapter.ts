@@ -5,9 +5,13 @@ import { DOCUMENT, Injectable, inject } from '@angular/core';
  *
  * The framework's hydration anchors are comments and the whitespace between
  * elements is text with nothing in it. A `main` holding only those is a `main`
- * the build wrote no content into, which is every address the build generates
- * no document for — and there the shell is what was served, so there is nothing
- * to hold (`openspec/specs/platform/published-addresses/`, "What an address
+ * the build wrote no content into, and there is nothing to hold.
+ *
+ * No document the build writes has that shape. An address it generates no
+ * document for answers with a document that has no `main` at all, which the
+ * copy declines a step earlier. So this reads the rule rather than a shape the
+ * build happens to produce, and an empty landmark is held to it if one ever
+ * appears (`openspec/specs/platform/published-addresses/`, "What an address
  * served is held until a screen replaces it").
  */
 function readable(node: Node): boolean {

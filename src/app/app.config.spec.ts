@@ -45,8 +45,8 @@ describe('appConfig', () => {
     it('is registered before the router takes the document over', () => {
       // Positions rather than a comment about positions. Initializers run in
       // the order they are provided and the blocking initial navigation is
-      // started from one of the router's own, so an initializer added between
-      // these two entries would take the copy after hydration had already
+      // started from one of the router's own, so the copy's own initializer
+      // moved after the router's would take the copy once hydration had already
       // removed what it was for — with nothing else in the suite failing.
       const order = appConfig.providers;
 

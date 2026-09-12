@@ -57,9 +57,9 @@ function takeoverRouting(): RouterFeatures[] {
  * reading (015/FR-001).
  *
  * What the guard leaves out is this initializer, not the store: the shell
- * injects it wherever it is built, so the renderer constructs it too. There it
- * copies a `main` with nothing in it yet and holds nothing — the renderer runs
- * one navigation, and it presents a screen (015/FR-001).
+ * injects it wherever it is built, so the renderer constructs it too. There the
+ * document has no `main` yet, so it holds nothing — and the renderer runs one
+ * navigation, which presents a screen (015/FR-001).
  */
 export const SERVED_DOCUMENT_INITIALIZER = provideAppInitializer(() => {
   if (inject(RenderingTarget).isBrowser) {
