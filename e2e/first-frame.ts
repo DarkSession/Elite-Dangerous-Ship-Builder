@@ -171,6 +171,49 @@ export function frames(page: Page): Promise<readonly Frame[]> {
 }
 
 /**
+ * Marks the frame the document has had last, for a reading that starts there.
+ *
+ * A measurement of the takeover is a measurement from the last frame the
+ * document had to itself through every frame after it, so something has to say
+ * which frame that is. A journey whose takeover presents a screen reads it off
+ * the page: the presses the document holds for replay leave it, and `takenOver`
+ * turns over on the frame they do.
+ *
+ * Where the takeover presents no screen there is nothing that turns over. The
+ * copy put back carries the served document's own presses, as it must, being
+ * what the address served rather than a rewriting of it. The page's own verdict
+ * on its typeface is no marker either: `document.fonts.status` is one verdict
+ * over every face at once, and on Firefox it read `loading` through every frame
+ * the document had on its own — so a window that began where it turned `loaded`
+ * began after the failure had already been stated, and measured nothing.
+ *
+ * So the moment is marked where it is known rather than read off the page: by
+ * the journey holding the application's own code back, at the moment it lets it
+ * go.
+ */
+export async function markTheDocumentsLastFrame(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const recorded = (window as unknown as { __frames?: readonly Frame[] }).__frames ?? [];
+    (window as unknown as { __from?: number }).__from = recorded.length;
+  });
+}
+
+/**
+ * Every frame from the one the document had to itself last, onwards.
+ *
+ * Everything the recorder has, where the mark was never set — a journey that
+ * lets the application go the moment it asks marks nothing, and has no window
+ * of its own to measure in.
+ */
+export async function framesSinceTheDocumentWasAlone(page: Page): Promise<readonly Frame[]> {
+  const recorded = await frames(page);
+  const released = await page.evaluate(
+    () => (window as unknown as { __from?: number }).__from ?? 0,
+  );
+  return recorded.slice(Math.max(0, released - 1));
+}
+
+/**
  * The text of the frame the document painted, before anything else ran.
  *
  * Recorded rather than read afterwards, because by the time a test can ask, the

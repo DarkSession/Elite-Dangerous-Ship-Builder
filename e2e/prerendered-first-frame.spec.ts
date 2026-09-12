@@ -9,6 +9,8 @@ import {
   MEASURED,
   type Frame,
   frames,
+  framesSinceTheDocumentWasAlone,
+  markTheDocumentsLastFrame,
   openBeforeTheBundleArrives,
   openOnceTheTypefaceHasArrived,
   openWithADelayedBundle,
@@ -624,7 +626,9 @@ async function whereTheScreenNeverArrives(
      *
      * For a reading that measures frames. Without it the takeover can be over
      * before the recorder has a frame of the document on its own, and there is
-     * then nothing to measure the restore against.
+     * then nothing to measure the restore against. The moment the code is let
+     * go is marked as well, so such a reading knows which frame the document
+     * had last (`markTheDocumentsLastFrame`).
      */
     readonly settled?: boolean;
   },
@@ -653,6 +657,7 @@ async function whereTheScreenNeverArrives(
     ...(options.context ?? {}),
   });
   const fresh = await context.newPage();
+  let released = false;
   await fresh.route('**/*', async (route) => {
     const url = route.request().url();
     if (screenChunks.has(url)) {
@@ -661,6 +666,15 @@ async function whereTheScreenNeverArrives(
     }
     if ((options.settled ?? false) && /\.js(\?.*)?$/.test(url)) {
       await theTypefaceHasArrived(fresh);
+      // The frame the document has had last, marked on the way past: this is
+      // the moment the application is let go, and a reading that measures the
+      // takeover measures from here (`markTheDocumentsLastFrame`). Once, on
+      // the first piece of code released, because the rest arrive after the
+      // application already exists.
+      if (!released) {
+        released = true;
+        await markTheDocumentsLastFrame(fresh);
+      }
     }
     await route.continue().catch(() => {});
   });
@@ -828,6 +842,9 @@ function nothingTheCommanderIsReadingMoved(window: readonly Frame[]): void {
   }
 }
 
+/** Where two boxes meeting stops being two boxes meeting: one whole pixel. */
+const A_SHARED_EDGE = 1;
+
 /**
  * Asserts the failure statement can be read where it stands, and stands over
  * nothing the Commander was given.
@@ -869,10 +886,19 @@ async function nothingStandsOverAnythingElse(page: Page, at: string): Promise<vo
   expect(stated, `the failure was never stated at ${at}`).not.toBeNull();
   expect(held, `nothing was held to read at ${at}`).not.toBeNull();
   expect(covering, `the statement cannot be read where it stands at ${at}`).toBe(0);
-  expect(
-    held![0] < stated![1] && stated![0] < held![1],
-    `the statement stands over the end of the held content at ${at}`,
-  ).toBe(false);
+
+  // How deep the statement stands over the content, rather than whether the two
+  // boxes meet. They do meet, and by construction: the content ends where the
+  // statement begins, both edges at 538.046875 on Chromium at a doubled text
+  // size. An engine laying the same pair out in its own fractions of a pixel
+  // puts its shared edge either side of itself, and that is the edge rather
+  // than a statement over anything — what 015/FR-009 is about is a sentence
+  // standing over words a Commander is reading, which is lines of text.
+  const over = Math.min(held![1], stated![1]) - Math.max(held![0], stated![0]);
+
+  expect(over, `the statement stands over ${over}px of the held content at ${at}`).toBeLessThan(
+    A_SHARED_EDGE,
+  );
 }
 
 /**
@@ -954,12 +980,21 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       settled: true,
     });
 
-    // Every frame from the one the document had finished arriving and was
-    // wearing its typeface in. `takenOver` is not the marker here and cannot
-    // be: it reads the presses the document holds for replay, and the held
-    // copy carries the served document's own — as it must, being what the
-    // address served rather than a rewriting of it.
-    const held = (await frames(fresh)).filter((frame) => frame.parsed && frame.dressed);
+    // Every frame from the one the document had to itself last, through every
+    // frame after it. The marker is the journey's own, set where it lets the
+    // application go: `takenOver` cannot be it, because it reads the presses
+    // the document holds for replay and the held copy carries the served
+    // document's own — as it must, being what the address served rather than a
+    // rewriting of it — and the page's verdict on its typeface cannot be it
+    // either (`markTheDocumentsLastFrame`). What that verdict was there for is
+    // done before the mark is set: this journey holds the application's code
+    // back until the document is wearing the faces it asked for, so the
+    // settling those frames would show has already happened.
+    //
+    // Still cut to the frames the document had finished arriving in. A page
+    // still being read is shorter than the page being served, and that is the
+    // download rather than the takeover.
+    const held = (await framesSinceTheDocumentWasAlone(fresh)).filter((frame) => frame.parsed);
 
     expect(held.length, '/ships was never recorded settled').toBeGreaterThan(1);
     expect(
@@ -1006,7 +1041,8 @@ test.describe('what a takeover that presents no screen leaves standing', () => {
       settled: true,
     });
 
-    const held = (await frames(fresh)).filter((frame) => frame.parsed && frame.dressed);
+    // The same window as the reading above, marked the same way.
+    const held = (await framesSinceTheDocumentWasAlone(fresh)).filter((frame) => frame.parsed);
 
     expect(held.length, '/ was never recorded settled').toBeGreaterThan(1);
     nothingTheCommanderIsReadingMoved(held);
