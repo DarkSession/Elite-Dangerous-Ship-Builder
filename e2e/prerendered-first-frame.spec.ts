@@ -719,9 +719,19 @@ test.describe('held content and a Commander reading in German', () => {
   }) => {
     const { context, fresh } = await leftOnTheDocument(browser, page);
 
-    // The document's own words, untouched. The catalogue has arrived — the
-    // sentence beside the content proves it — and the content is still English,
-    // because nothing rendered the screen that would have carried the German.
+    // The sentence beside the content, first, because it is what the readings
+    // under it stand on. It is the shell's own, so it is in the committed
+    // locale like everything else the application says — and its being German
+    // is the proof the catalogue has arrived. A page has only a few hundred
+    // milliseconds of being English, and English content read inside that
+    // window is evidence of nothing.
+    await expect(
+      fresh.locator('.frame__status').getByText(germanMessages['navigation.failed.notice']),
+    ).toBeVisible();
+
+    // Then the document's own words, untouched: the catalogue is here and the
+    // content is still English, because nothing rendered the screen that would
+    // have carried the German.
     //
     // Read case-insensitively: the catalogue typesets several of its own labels
     // in capitals, and what is claimed here is which language the words are in
@@ -740,12 +750,6 @@ test.describe('held content and a Commander reading in German', () => {
     // here none landed, each name stands in the language of the document around
     // it, and that document says which language that is (015/FR-011a).
     expect(await disclosures(fresh), 'a disclosure was written into held content').toBe(0);
-
-    // The sentence beside it is the shell's own, so it is in the committed
-    // locale like every other thing the application says.
-    await expect(
-      fresh.locator('.frame__status').getByText(germanMessages['navigation.failed.notice']),
-    ).toBeVisible();
     await context.close();
   });
 
@@ -759,10 +763,17 @@ test.describe('held content and a Commander reading in German', () => {
     // 3.1.2 is in scope: the target is WCAG 2.2 AA except eight criteria and
     // 3.1.2 is not among them. The container carries it, because the page
     // cannot — the page is German (011/FR-015, 011/FR-017).
+    //
+    // The page's own language is waited for rather than read once. The root
+    // says English until the catalogue lands, and the application does not hold
+    // the first frame for it (`src/app/i18n/i18n.providers.ts`) — so a single
+    // read here is a race, and what it would report is the moment rather than
+    // the language.
+    await expect(fresh.locator('html')).toHaveAttribute('lang', /^de/);
+
     const presented = await fresh.locator('html').getAttribute('lang');
     const heldIn = await fresh.locator('.frame__held').getAttribute('lang');
 
-    expect(presented, 'the application was not presenting in German').toMatch(/^de/);
     expect(heldIn, 'the held content did not say which language it is in').toBe('en');
     expect(heldIn, 'the held content claimed the language the page presents in').not.toBe(
       presented,
@@ -777,6 +788,14 @@ test.describe('held content and a Commander reading in German', () => {
  * Three of the four boxes compared as they stand: the bar, the landmark and the
  * content inside it. A statement that took space above the content moves all
  * three, which is the reading this exists for.
+ *
+ * The restore adds the copy and the framework's cleanup removes the served
+ * nodes it was taken from, and the two overlap until the cleanup runs — the
+ * landmark holding both is twice the box either would give it. No frame lands
+ * there, because the cleanup is scheduled as soon as the application reports
+ * itself stable, which is the same task as the render that added the copy. A
+ * cleanup deferred by a task would show up here as a landmark that grew and
+ * then shrank, and that is the defect rather than the reading's fault.
  *
  * The page's own box is compared differently, and only this one is. The
  * statement takes its box after the content rather than before it, so the

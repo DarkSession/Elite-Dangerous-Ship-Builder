@@ -102,6 +102,14 @@ removes, and neither waits for the other. The reading that holds this is a frame
 than an argument about order — task 4.3 compares every frame from the last one the document had to
 itself, and a page that blanked or moved between them fails it.
 
+The two overlap while the cleanup has not run: the landmark holds the copy and the nodes it was
+taken from, and its box is the sum of them. No frame lands in that window, because the cleanup is
+scheduled as soon as the application reports itself stable, which is the same task as the render
+that put the copy back. That is a timing the frame readings depend on rather than one they state. A
+cleanup deferred by a task would show as a landmark that grew and then shrank, and task 4.3's
+comparison is what would fail on it — which is the right place for it to fail, and the reason the
+readings are measurements rather than an argument.
+
 This is the same shape the stored catalogue view already has — applied "in the takeover frame
 itself rather than a frame later" (015/FR-009a) — and it is why the container is part of the
 frame's first render rather than something written in afterwards from an effect. A restore that

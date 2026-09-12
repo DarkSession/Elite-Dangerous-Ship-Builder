@@ -41,10 +41,15 @@ describe('ServedContentAdapter', () => {
   });
 
   it('holds nothing where the address served no content of its own', () => {
-    // The shell, which is what every address the build generates no document
-    // for answers with. Whitespace and the framework's own comment anchors are
-    // not content, so an implementation reading child count rather than content
-    // would hold an empty frame and put it back over the shell.
+    // A landmark with nothing in it but whitespace and the framework's own
+    // comment anchors. An implementation reading child count rather than
+    // content would hold that and put an empty frame back over the page.
+    //
+    // Not the shape the build writes today: an address it generates no document
+    // for answers with a document that has no `main` at all, which is the next
+    // test, and a generated `main` opens with the outlet element. This is the
+    // reading that keeps the rule about content rather than about a shape the
+    // build happens to produce.
     serve('\n  <!--container-->\n  ');
 
     const adapter = TestBed.inject(ServedContentAdapter);

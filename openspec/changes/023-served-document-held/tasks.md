@@ -134,15 +134,19 @@
       are not failures and MUST be stated as nothing"). No waiting statement is removed either,
       because none was drawn: 018/FR-008 says "the first presentation of a session MUST NOT be
       covered by it", and this is that presentation. So what the Commander is left on is the served
-      content and nothing else. This is the case that separates
-      counting screens presented from counting errors raised: an implementation restoring only on
-      `NavigationError` passes every other test in this change and fails this one. Read beside it
-      the outcome 018/FR-005 names as its own, "What takes over is not a navigation": a cancellation
-      handed over to the address already open, which the application answers without navigating. No
-      screen is presented there either, and an implementation counting navigations rather than
-      screens would end the hold on it. Read both in the unit sequence task 1.3 establishes: no
-      route carries a guard, so a browser lane cannot cancel a navigation at all (023/FR-001,
-      018/FR-005).
+      content and nothing else. This is the case that separates counting screens presented from
+      counting errors raised: an implementation restoring only on `NavigationError` passes every
+      other test in this change and fails this one. Read beside it the outcome 018/FR-005 names as
+      its own, "What takes over is not a navigation": a cancellation handed over to the address
+      already open, which the application answers without navigating. No screen is presented there
+      either, and an implementation counting navigations rather than screens would end the hold on
+      it. Read both without a browser, because no route carries a guard and a browser lane cannot
+      cancel a navigation at all. The cancellation goes in the unit sequence task 1.3 establishes,
+      over a route table of its own. The handover answered without navigating goes beside the store
+      instead, over a router that is a subject: the router raises that skip only for an address it
+      has already navigated to, and by then a screen has been presented and there is nothing left to
+      hold — so the pairing has no instance a real router can reach, at this moment in the session
+      or any other (023/FR-001, 018/FR-005).
 
 ## 4. Where the held frame is read
 
