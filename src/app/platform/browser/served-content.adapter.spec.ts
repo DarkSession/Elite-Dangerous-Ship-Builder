@@ -33,7 +33,7 @@ describe('ServedContentAdapter', () => {
 
     const adapter = TestBed.inject(ServedContentAdapter);
 
-    expect(adapter.held).toBe(true);
+    expect(adapter.content).not.toBeNull();
     const copied = adapter.content ?? [];
     const text = copied.map((node) => node.textContent ?? '').join(' ');
 
@@ -54,14 +54,13 @@ describe('ServedContentAdapter', () => {
 
     const adapter = TestBed.inject(ServedContentAdapter);
 
-    expect(adapter.held).toBe(false);
     expect(adapter.content).toBeNull();
   });
 
   it('holds nothing where the document has no main at all', () => {
     const adapter = TestBed.inject(ServedContentAdapter);
 
-    expect(adapter.held).toBe(false);
+    expect(adapter.content).toBeNull();
   });
 
   it('reads the language the document declared when it was served', () => {
@@ -118,7 +117,6 @@ describe('ServedContentAdapter', () => {
 
     adapter.release();
 
-    expect(adapter.held).toBe(false);
     expect(adapter.content).toBeNull();
     // And the document the Commander is on is not what was dropped.
     expect(served.textContent).toContain('Anaconda');

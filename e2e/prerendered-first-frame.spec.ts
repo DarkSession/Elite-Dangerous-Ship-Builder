@@ -657,7 +657,7 @@ async function whereTheScreenNeverArrives(
     ...(options.context ?? {}),
   });
   const fresh = await context.newPage();
-  let released = false;
+  let marked: Promise<void> | null = null;
   await fresh.route('**/*', async (route) => {
     const url = route.request().url();
     if (screenChunks.has(url)) {
@@ -668,13 +668,14 @@ async function whereTheScreenNeverArrives(
       await theTypefaceHasArrived(fresh);
       // The frame the document has had last, marked on the way past: this is
       // the moment the application is let go, and a reading that measures the
-      // takeover measures from here (`markTheDocumentsLastFrame`). Once, on
-      // the first piece of code released, because the rest arrive after the
-      // application already exists.
-      if (!released) {
-        released = true;
-        await markTheDocumentsLastFrame(fresh);
-      }
+      // takeover measures from here (`markTheDocumentsLastFrame`). Marked once,
+      // and awaited by every piece of code held at this point rather than by
+      // the one that does the marking: a document asks for several, they clear
+      // the wait above on the same tick, and one released while the mark was
+      // still being set puts the boundary a frame late — which is the timing
+      // this mark exists to take the window out of.
+      marked ??= markTheDocumentsLastFrame(fresh);
+      await marked;
     }
     await route.continue().catch(() => {});
   });

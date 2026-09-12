@@ -116,11 +116,6 @@ export class ServedContentAdapter {
     return this.#box;
   }
 
-  /** Whether anything was served that a screen would replace. */
-  get held(): boolean {
-    return this.#copy !== null;
-  }
-
   /**
    * The copy, for the frame to place in its own container.
    *

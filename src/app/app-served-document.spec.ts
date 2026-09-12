@@ -18,7 +18,7 @@ import { MemoryStorage, provideMemoryStorage } from './platform/storage/storage.
  * sequence without a browser, because two of the outcomes the requirement
  * covers have no browser instance at all: the routes configure one redirect and
  * no guard, so a cancellation and a handover can only be produced here
- * (`openspec/changes/023-served-document-held/design.md`, "The boundary is the
+ * (`openspec/changes/archive/023-served-document-held/design.md`, "The boundary is the
  * first screen presented, not the first navigation").
  *
  * The mechanism differs from the browser's and the outcome does not. There the

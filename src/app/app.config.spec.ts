@@ -82,7 +82,7 @@ describe('appConfig', () => {
       TestBed.inject(ApplicationInitStatus);
 
       expect(copies, 'the copy waited for something to ask for it').toBe(1);
-      expect(TestBed.inject(ServedContentAdapter).held).toBe(true);
+      expect(TestBed.inject(ServedContentAdapter).content).not.toBeNull();
     });
   });
 });

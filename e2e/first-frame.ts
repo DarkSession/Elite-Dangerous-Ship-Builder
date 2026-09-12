@@ -53,9 +53,14 @@ export interface Frame {
    * two disagree on metrics the page changes height under that swap — measured
    * on Firefox at 1112px, ten pixels across the catalogue — and it does so
    * whether or not this application ever loads, which is what makes it the
-   * network rather than the takeover. Recorded so a measurement of the takeover
-   * can start from the frame the page is wearing what it asked for, the same way
-   * `parsed` lets one start from the frame the page had all of itself.
+   * network rather than the takeover. Recorded so a frame that fails a reading
+   * can say whether the page was wearing what it asked for when it was taken,
+   * which is what tells a swap apart from something moving.
+   *
+   * Not a boundary, the way `parsed` is one. The verdict covers every face at
+   * once and turns back over for a face the application asks for after the
+   * document had all of its own, so a window that begins where it turns over
+   * can begin anywhere (`markTheDocumentsLastFrame`).
    */
   readonly dressed: boolean;
 }
