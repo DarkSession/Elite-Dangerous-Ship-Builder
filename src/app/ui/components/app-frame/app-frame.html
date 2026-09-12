@@ -209,7 +209,20 @@
   arrived second.
 -->
 @if (notices().length > 0) {
-  <div class="frame__status" [attr.aria-label]="statusLabel()">
+  <!--
+    Drawn after the `main` below rather than above it while content is held, and
+    in the same place as ever otherwise. A statement arriving above content a
+    Commander is already reading pushes that content down the page, which is
+    content that moves — and 015/FR-009 admits three exceptions to that, none of
+    them this one. It keeps its place in the document, so a reader still meets
+    the statement before what it is about; only the box it occupies moves
+    (`app-frame.scss`).
+  -->
+  <div
+    class="frame__status"
+    [class.frame__status--below]="held() !== null"
+    [attr.aria-label]="statusLabel()"
+  >
     @for (notice of notices(); track notice.message) {
       <ednb-status-notice
         [tone]="notice.tone"
@@ -222,6 +235,31 @@
 
 <main class="frame__main">
   <ng-content />
+  <!--
+    What the address served, where the takeover presented no screen. In the
+    outlet's own place, because that is where the document carried it and
+    anywhere else moves it out of the landmark it was served in. The container
+    is drawn here and the nodes are placed into it from an effect in the same
+    pass (`app-frame.ts`), so the box is never drawn empty first. Neither
+    render is what removes the served document's own nodes: the framework
+    clears the views hydration did not claim from a bootstrap listener, once
+    the application is stable.
+
+    After the outlet rather than before it, which is where a screen's own
+    content goes: the outlet is an element of its own and draws nothing, and a
+    container placed ahead of it would leave an empty outlet standing as the
+    last thing in the landmark where the served document had its content. The
+    held content occupies the same box either way, and this is the order the
+    document had.
+  -->
+  @if (held() !== null) {
+    <div
+      class="frame__held"
+      [attr.lang]="heldLanguage()"
+      [style.min-block-size.px]="heldHeight()"
+      #heldContent
+    ></div>
+  }
 </main>
 
 <ednb-announcement-outlet />

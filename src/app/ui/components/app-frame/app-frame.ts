@@ -257,6 +257,47 @@ export class AppFrame {
    */
   readonly status = input<readonly ShellStatus[]>([]);
 
+  /**
+   * What the address served, where no screen has replaced it.
+   *
+   * The nodes the document carried in this `main` before the application took
+   * over, handed back so the Commander is left on what they were given rather
+   * than on an empty shell. `null` whenever a screen is presented, which is
+   * every ordinary frame.
+   *
+   * Nodes rather than markup, because they are the served document's own and
+   * not a second reading of it. Presentation only: when they are held and when
+   * they are released is
+   * `src/app/application/navigation/served-document.store.ts` (023/FR-001,
+   * constitution III).
+   */
+  readonly held = input<readonly Node[] | null>(null);
+
+  /**
+   * The language the held content is in, where the served document declared
+   * one.
+   *
+   * Stated on the container, not on the page: the application declares the
+   * committed locale as the document's own language, so held content served in
+   * bundled English is a part in another language and has to say which
+   * (011/FR-017, WCAG 3.1.2).
+   */
+  readonly heldLanguage = input<string | null>(null);
+
+  /**
+   * The height of the box that content was served in, where content is held.
+   *
+   * Stood in the same box rather than in one measured from the content itself.
+   * The shell is at least as tall as the window and stretches a screen shorter
+   * than that to the rest of it, so a screen that closes at the foot of its box
+   * — the start page and its attribution band — closes higher up the page when
+   * the box is smaller. A measurement of the served document rather than a
+   * figure the build decided, and it is only ever a floor: where the content is
+   * taller than the box it was served in, nothing here applies (023/FR-001,
+   * 015/FR-009, 015/FR-010).
+   */
+  readonly heldHeight = input<number | null>(null);
+
   readonly actionSelected = output<string>();
 
   /** The identity block asked to open, close or confirm one of its fields. */
@@ -328,6 +369,9 @@ export class AppFrame {
   readonly actionsOpen = signal(false);
 
   protected readonly banner = viewChild<ElementRef<HTMLElement>>('banner');
+
+  /** The box the held content goes into, which exists only while it is held. */
+  private readonly heldContainer = viewChild<ElementRef<HTMLElement>>('heldContent');
 
   /**
    * Whether the banner has released the top of the screen.
@@ -442,6 +486,28 @@ export class AppFrame {
           params: { locale: snapshot.requestedLocale },
         }),
       );
+    });
+
+    // The served nodes into the container the template drew for them, in the
+    // same pass, so the copy is standing in the render that draws the container
+    // rather than in one after it. A restore that waited for a second pass
+    // would show the box empty first.
+    //
+    // What removes the served document's own nodes is not this render. Angular
+    // clears the views hydration did not claim from a bootstrap listener, once
+    // the application is stable, so this render only adds. That nothing a
+    // Commander is reading moves or disappears across the two is measured
+    // rather than reasoned about: the frame readings in
+    // `e2e/prerendered-first-frame.spec.ts` compare every frame from the last
+    // one the document had to itself, at the catalogue and at the entry point
+    // (015/FR-009, 015/FR-009a).
+    effect(() => {
+      const held = this.held();
+      const container = this.heldContainer();
+      if (!container) {
+        return;
+      }
+      container.nativeElement.replaceChildren(...(held ?? []));
     });
   }
 

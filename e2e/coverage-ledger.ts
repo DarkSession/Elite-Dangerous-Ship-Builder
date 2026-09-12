@@ -52,6 +52,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '018-navigation-loading-overlay',
   '019-first-frame-typefaces',
   '020-held-grade-ladder',
+  '023-served-document-held',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -2246,6 +2247,9 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       // reads the screen the application resolves it into.
       '015/FR-015',
       '015/FR-016',
+      // What the address served is held until a screen replaces it, read on the
+      // same failure this journey holds for the statement beside it.
+      '023/FR-001',
     ],
     journey: 'product/prerendered-first-frame',
     axe: true,
@@ -2258,6 +2262,11 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a German Commander’s words are replaced without anything being reordered or removed',
       'the one thing German adds is the note beside each name English has nothing to disclose about',
       'a Commander whose bundle never arrives is left with the readable document',
+      'a Commander whose first screen never arrives is left on the document that address served, with the failure stated beside it and nothing moved',
+      'held content stays in the bundled English it was served in, with no translation and no disclosure written into it',
+      'held content states the language it is in, which is not the one the running application presents',
+      'held content stands in the box it was served in, at the catalogue and at the entry point, where the screen fills the window',
+      'the failure is stated where it can be read, over nothing the Commander was given',
       'a document with no rendered body is not taken over until the application has drawn the screen',
     ],
     manualRecord: 'screen-reader',

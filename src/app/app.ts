@@ -34,6 +34,7 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { NavigationWaitingStore } from './application/navigation/navigation-waiting.store';
+import { ServedDocumentStore } from './application/navigation/served-document.store';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { RenderingTarget } from './platform/browser/rendering-target';
 import { EmptyBenchService } from './application/equipment/empty-bench.service';
@@ -110,6 +111,7 @@ export class App {
   readonly interactive = inject(RenderingTarget).isBrowser;
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #navigationWaiting = inject(NavigationWaitingStore);
+  readonly #servedDocument = inject(ServedDocumentStore);
   readonly #announcements = inject(AnnouncementService);
   readonly library = inject(LibraryPresence);
 
@@ -300,6 +302,27 @@ export class App {
       detail: this.#messages.message('update.ready.detail'),
     };
   });
+
+  /**
+   * What the address served, while no screen has replaced it.
+   *
+   * Handed to the frame, which places it where the outlet stands. `null` on
+   * every ordinary frame: it answers with content only where a navigation ended
+   * without presenting a screen and none has been presented in this session
+   * (023/FR-001).
+   */
+  readonly heldContent = this.#servedDocument.held;
+
+  /**
+   * The language that content is in, which is the one the document declared
+   * when it was served rather than the one the application is presenting in.
+   */
+  readonly heldLanguage = this.#servedDocument.language;
+
+  /**
+   * The box that content was served in, which is the box it goes back into.
+   */
+  readonly heldHeight = this.#servedDocument.height;
 
   /**
    * Everything the session has to say on the page, in reading order.

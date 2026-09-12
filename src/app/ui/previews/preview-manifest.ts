@@ -1320,6 +1320,23 @@ registerPreview({
     // repaired: a named error and, beside it, the one control that recovers the
     // session. It is a rendered product state that no journey can provoke — the
     // worker decides when it happens — so this is where it is scanned.
+    //
+    // Content the address served standing beside that statement is not a cell
+    // here, and deliberately. It is the same error state in another
+    // composition rather than a state of its own, a journey can provoke it,
+    // and it is scanned where it occurs: over the held content and the
+    // statement together, on the production lane
+    // (`e2e/prerendered-first-frame.spec.ts`, 023/FR-001).
+    //
+    // That change's own documents give a different reason: that no fixture
+    // could show the composition at all, because the frame projects its `main`
+    // and a cell is rendered with inputs alone. What was built says otherwise.
+    // Held content is not projected — it arrives as the frame's `held` input
+    // and the frame puts it in a box of its own — so inputs alone are what the
+    // composition takes. The reason there is no cell for it is the one above.
+    // Those documents are archived and are read as they stand
+    // (`openspec/changes/archive/023-served-document-held/proposal.md`,
+    // `design.md`, `tasks.md` task 4.1).
     state(
       'error',
       {

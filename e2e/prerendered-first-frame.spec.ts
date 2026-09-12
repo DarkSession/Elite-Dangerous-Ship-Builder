@@ -1,16 +1,22 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
+import { ZOOM_400 } from './accessibility';
+import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   MEASURED,
   type Frame,
   frames,
+  framesSinceTheDocumentWasAlone,
+  markTheDocumentsLastFrame,
   openBeforeTheBundleArrives,
   openOnceTheTypefaceHasArrived,
   openWithADelayedBundle,
   openWithoutTheBundle,
   recordFrames,
+  theTypefaceHasArrived,
 } from './first-frame';
 import { PRODUCT_URL } from './servers';
 import { shapeOf } from './served-document';
@@ -530,11 +536,7 @@ test.describe('the waiting statement and a generated document', () => {
         screenChunks.add(request.url());
       }
     });
-    await page
-      .getByRole('main')
-      .getByRole('link', { name: /Ship Builder/ })
-      .click();
-    await expect(page).toHaveURL(/\/ships$/);
+    await reachTheCatalogue(page);
     await expect(page.getByRole('main')).toBeVisible();
 
     // A context of its own, not a second page in this one. The worker
@@ -573,19 +575,620 @@ test.describe('the waiting statement and a generated document', () => {
 
     // No statement was drawn over the first presentation, and the shell the
     // Commander is left on is one they can use (018/FR-008).
-    //
-    // FR-007's other half — "the Commander is left on the readable document
-    // that address served" — is NOT read here, because the application does not
-    // do it: the takeover empties `main` when the first navigation fails, and
-    // what the Commander keeps is the shell. The requirement stands and the
-    // takeover is what changes — it must hold what the address served until a
-    // navigation has presented a screen to replace it — which belongs to
-    // `platform/published-addresses` rather than to this feature. What is
-    // missing here is an assertion that the served document's own `main` is
-    // still standing, and it is added with that change.
     await expect(fresh.getByRole('banner')).toBeVisible();
     await expect(fresh.getByRole('link', { name: 'Ship Builder' })).toBeVisible();
+
+    // FR-007's other half, and the whole of what 023/FR-001 adds: the Commander
+    // is left on the readable document that address served. `main` is read
+    // rather than the page, because the banner and the tool links are the
+    // shell's and stand whether or not anything was held — a reading over the
+    // whole page would pass on a shell with an empty `main` under it.
+    const held = (await fresh.getByRole('main').innerText()).toLowerCase();
+
+    expect(held, 'the ship list the document served is gone from main').toContain('anaconda');
     await context.close();
+  });
+});
+
+/**
+ * A Commander opening `path` in a context of its own, whose screen never
+ * arrives.
+ *
+ * The arrangement the journey above works out, in one place because ten
+ * readings need it. The screen's own chunks are told from the application's by
+ * asking for that screen once and remembering what it fetched — both are
+ * chunks and only the address distinguishes them — and the reading itself is
+ * taken in a context of its own, which starts with no worker registered in it —
+ * a request a worker answers from its cache is one no route can refuse. Fresh
+ * rather than blocked: a new context carries no registration, and the screen is
+ * asked for once, before anything in this session could have put it in a
+ * cache.
+ *
+ * `reach` is how the first page asks for the screen. A press rather than a
+ * second `goto`: a fresh load would refetch the application's own chunks too,
+ * and refusing those refuses the application rather than the screen.
+ *
+ * Returns the context as well as the page, because the caller has to close it.
+ */
+async function whereTheScreenNeverArrives(
+  browser: Browser,
+  page: Page,
+  options: {
+    readonly path: string;
+    readonly reach: (page: Page) => Promise<void>;
+    /** The address the learning pass opens. The entry point unless given. */
+    readonly open?: string;
+    readonly context?: Parameters<Browser['newContext']>[0];
+    readonly prepare?: (page: Page) => Promise<void>;
+    /**
+     * Whether to hold the application's own code until the document has
+     * settled — parsed, and wearing the faces it asked for.
+     *
+     * For a reading that measures frames. Without it the takeover can be over
+     * before the recorder has a frame of the document on its own, and there is
+     * then nothing to measure the restore against. The moment the code is let
+     * go is marked as well, so such a reading knows which frame the document
+     * had last (`markTheDocumentsLastFrame`).
+     */
+    readonly settled?: boolean;
+  },
+): Promise<{ context: BrowserContext; fresh: Page }> {
+  const { path, reach, prepare } = options;
+  const screenChunks = new Set<string>();
+  // Opened somewhere other than the address under test where that address is
+  // the entry point: the chunks are learnt from the presses after this one, and
+  // a screen already fetched to draw this page is not asked for again.
+  await page.goto(options.open ?? '/');
+  await waitForTakeover(page);
+  page.on('request', (request) => {
+    if (request.resourceType() === 'script') {
+      screenChunks.add(request.url());
+    }
+  });
+  await reach(page);
+  await expect(page.getByRole('main')).toBeVisible();
+
+  // `browser.newContext` inherits none of the project's options, and the
+  // profile is what several of these readings are about — so the viewport is
+  // carried over by hand, and a reading that wants another one gives its own.
+  const context = await browser.newContext({
+    baseURL: PRODUCT_URL,
+    viewport: page.viewportSize() ?? undefined,
+    ...(options.context ?? {}),
+  });
+  const fresh = await context.newPage();
+  let marked: Promise<void> | null = null;
+  await fresh.route('**/*', async (route) => {
+    const url = route.request().url();
+    if (screenChunks.has(url)) {
+      await route.abort('failed').catch(() => {});
+      return;
+    }
+    if ((options.settled ?? false) && /\.js(\?.*)?$/.test(url)) {
+      await theTypefaceHasArrived(fresh);
+      // The frame the document has had last, marked on the way past: this is
+      // the moment the application is let go, and a reading that measures the
+      // takeover measures from here (`markTheDocumentsLastFrame`). Marked once,
+      // and awaited by every piece of code held at this point rather than by
+      // the one that does the marking: a document asks for several, they clear
+      // the wait above on the same tick, and one released while the mark was
+      // still being set puts the boundary a frame late — which is the timing
+      // this mark exists to take the window out of.
+      marked ??= markTheDocumentsLastFrame(fresh);
+      await marked;
+    }
+    await route.continue().catch(() => {});
+  });
+  await prepare?.(fresh);
+  await fresh.goto(path);
+
+  // The statement standing is what says the navigation is over and the
+  // application is running. Waited for by its box rather than by its words,
+  // because which words it carries is what one of the readings below is about.
+  await expect(fresh.locator('.frame__status')).toBeVisible({ timeout: 30_000 });
+  return { context, fresh };
+}
+
+/** The press that asks for the hull catalogue, from the entry point. */
+async function reachTheCatalogue(page: Page): Promise<void> {
+  await page
+    .getByRole('main')
+    .getByRole('link', { name: /Ship Builder/ })
+    .click();
+  // Waited on generously: the address changes when the navigation resolves, and
+  // what it is waiting for is the screen's chunk over a server several of these
+  // readings are asking for a build from at once.
+  await expect(page).toHaveURL(/\/ships$/, { timeout: 30_000 });
+}
+
+/** The press that asks for the entry point, from anywhere the flag is drawn. */
+async function reachTheEntryPoint(page: Page): Promise<void> {
+  await page.locator('.frame__flag-home').click();
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+}
+
+/**
+ * Held content, read by a Commander whose committed locale is German.
+ *
+ * The document is bundled English and the application around it is German, so
+ * this is the one composition where the two stand together. 015/FR-011 has the
+ * committed locale replace a document's words once the catalogue arrives, and
+ * this change bounds it: the replacement is applied by rendering the screen in
+ * the catalogue, and the screen's code is exactly what did not arrive. There is
+ * nothing that can apply it and nothing the application may write in its place
+ * (015/FR-011, 015/FR-011a, constitution VI).
+ *
+ * Only this lane has a document to be left on, so both readings are here.
+ */
+test.describe('held content and a Commander reading in German', () => {
+  const leftOnTheDocument = (browser: Browser, page: Page) =>
+    whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+      context: { locale: 'de-DE' },
+    });
+
+  test('keeps the content in the English it was served in, with the statement in German', async ({
+    browser,
+    page,
+  }) => {
+    const { context, fresh } = await leftOnTheDocument(browser, page);
+
+    // The sentence beside the content, first, because it is what the readings
+    // under it stand on. It is the shell's own, so it is in the committed
+    // locale like everything else the application says — and its being German
+    // is the proof the catalogue has arrived. A page has only a few hundred
+    // milliseconds of being English, and English content read inside that
+    // window is evidence of nothing.
+    await expect(
+      fresh.locator('.frame__status').getByText(germanMessages['navigation.failed.notice']),
+    ).toBeVisible();
+
+    // Then the document's own words, untouched: the catalogue is here and the
+    // content is still English, because nothing rendered the screen that would
+    // have carried the German.
+    //
+    // Read case-insensitively: the catalogue typesets several of its own labels
+    // in capitals, and what is claimed here is which language the words are in
+    // rather than how the design system sets them.
+    const main = (await fresh.getByRole('main').innerText()).toLowerCase();
+
+    expect(main, 'the served English is gone from the held content').toContain(
+      englishMessages['catalogue.search.label'].toLowerCase(),
+    );
+    expect(main, 'the held content was rewritten in German').not.toContain(
+      germanMessages['catalogue.search.label'].toLowerCase(),
+    );
+
+    // And nothing was added to it either. A game name shown in its original
+    // language is disclosed as such beside itself where a replacement lands;
+    // here none landed, each name stands in the language of the document around
+    // it, and that document says which language that is (015/FR-011a).
+    expect(await disclosures(fresh), 'a disclosure was written into held content').toBe(0);
+    await context.close();
+  });
+
+  test("states the language the held content is in, which is not the page's", async ({
+    browser,
+    page,
+  }) => {
+    const { context, fresh } = await leftOnTheDocument(browser, page);
+
+    // English standing inside a German page is a part in another language, and
+    // 3.1.2 is in scope: the target is WCAG 2.2 AA except eight criteria and
+    // 3.1.2 is not among them. The container carries it, because the page
+    // cannot — the page is German (011/FR-015, 011/FR-017).
+    //
+    // The page's own language is waited for rather than read once. The root
+    // says English until the catalogue lands, and the application does not hold
+    // the first frame for it (`src/app/i18n/i18n.providers.ts`) — so a single
+    // read here is a race, and what it would report is the moment rather than
+    // the language.
+    await expect(fresh.locator('html')).toHaveAttribute('lang', /^de/);
+
+    const presented = await fresh.locator('html').getAttribute('lang');
+    const heldIn = await fresh.locator('.frame__held').getAttribute('lang');
+
+    expect(heldIn, 'the held content did not say which language it is in').toBe('en');
+    expect(heldIn, 'the held content claimed the language the page presents in').not.toBe(
+      presented,
+    );
+    await context.close();
+  });
+});
+
+/**
+ * Asserts that every frame holds what the first one held, where it held it.
+ *
+ * Three of the four boxes compared as they stand: the bar, the landmark and the
+ * content inside it. A statement that took space above the content moves the
+ * landmark and what stands in it, which is the reading this exists for. The bar
+ * is held to the same rule because a composition corrected after the fact moves
+ * it too (`MEASURED`).
+ *
+ * The restore adds the copy and the framework's cleanup removes the served
+ * nodes it was taken from, and the two overlap until the cleanup runs — the
+ * landmark holding both is twice the box either would give it. No frame lands
+ * there, because the cleanup is scheduled as soon as the application reports
+ * itself stable, which is the same task as the render that added the copy. A
+ * cleanup deferred by a task would show up here as a landmark that grew and
+ * then shrank, and that is the defect rather than the reading's fault.
+ *
+ * The page's own box is compared differently, and only this one is. The
+ * statement takes its box after the content rather than before it, so the
+ * document ends lower than it did — the page is taller, and nothing in it
+ * moved. What is asserted of it is what that leaves: the page begins where it
+ * began, it is the width it was, and it never gets shorter (015/FR-009,
+ * `openspec/changes/archive/023-served-document-held/design.md`, "The failure
+ * statement does not take space above the content").
+ */
+function nothingTheCommanderIsReadingMoved(window: readonly Frame[]): void {
+  const first = window[0];
+  const page = MEASURED.indexOf('body');
+  for (const [index, frame] of window.entries()) {
+    const moved = frame.boxes
+      .map((box, at) => ({ box, at }))
+      .filter(
+        ({ box, at }) => at !== page && JSON.stringify(box) !== JSON.stringify(first.boxes[at]),
+      )
+      .map(
+        ({ box, at }) =>
+          `${MEASURED[at]}: ${JSON.stringify(first.boxes[at])} → ${JSON.stringify(box)}`,
+      );
+
+    expect(moved, `the held document moved at frame ${index} of ${window.length}`).toEqual([]);
+
+    const [x, y, width, height] = frame.boxes[page] ?? [0, 0, 0, 0];
+    const [wasX, wasY, wasWidth, wasHeight] = first.boxes[page] ?? [0, 0, 0, 0];
+
+    expect([x, y, width], `the page moved at frame ${index}`).toEqual([wasX, wasY, wasWidth]);
+    expect(height, `the page got shorter at frame ${index}`).toBeGreaterThanOrEqual(wasHeight);
+  }
+}
+
+/** Where two boxes meeting stops being two boxes meeting: one whole pixel. */
+const A_SHARED_EDGE = 1;
+
+/**
+ * Asserts the failure statement can be read where it stands, and stands over
+ * nothing the Commander was given.
+ *
+ * Read at the end of the scroll range, which is where both questions are
+ * decided: the page is as long as the content and the statement together, so
+ * this is where the statement stands, and a statement standing over the content
+ * holds the last of it down there for good — there is no further scrolling that
+ * could move it off.
+ *
+ * Read as boxes and as the document's own answer to "what is at this point",
+ * because nothing else can fail on it. Playwright's visibility is geometry and a
+ * style, and `innerText` reports text that is covered as readily as text that is
+ * not — so a statement painted behind the page, and content standing under a
+ * statement, both pass those (011/FR-011, 018/FR-007, constitution V).
+ */
+async function nothingStandsOverAnythingElse(page: Page, at: string): Promise<void> {
+  const [covering, held, stated] = await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    const notice = document.querySelector('.frame__status');
+    const last = document.querySelector('.frame__held')?.lastElementChild ?? null;
+    if (!notice) {
+      return [-1, null, null] as const;
+    }
+
+    const box = notice.getBoundingClientRect();
+    const across = [0.2, 0.5, 0.8].map((part) => box.x + box.width * part);
+    const down = [0.25, 0.5, 0.75].map((part) => box.y + box.height * part);
+    const blocked = across
+      .flatMap((x) => down.map((y) => document.elementFromPoint(x, y)))
+      .filter((found) => found === null || !found.closest('.frame__status')).length;
+    const rect = (node: Element | null) =>
+      node
+        ? ([node.getBoundingClientRect().top, node.getBoundingClientRect().bottom] as const)
+        : null;
+    return [blocked, rect(last), rect(notice)] as const;
+  });
+
+  expect(stated, `the failure was never stated at ${at}`).not.toBeNull();
+  expect(held, `nothing was held to read at ${at}`).not.toBeNull();
+  expect(covering, `the statement cannot be read where it stands at ${at}`).toBe(0);
+
+  // How deep the statement stands over the content, rather than whether the two
+  // boxes meet. They do meet, and by construction: the content ends where the
+  // statement begins, both edges at 538.046875 on Chromium at a doubled text
+  // size. An engine laying the same pair out in its own fractions of a pixel
+  // puts its shared edge either side of itself, and that is the edge rather
+  // than a statement over anything — what 015/FR-009 is about is a sentence
+  // standing over words a Commander is reading, which is lines of text.
+  const over = Math.min(held![1], stated![1]) - Math.max(held![0], stated![0]);
+
+  expect(over, `the statement stands over ${over}px of the held content at ${at}`).toBeLessThan(
+    A_SHARED_EDGE,
+  );
+}
+
+/**
+ * The boundaries of the hold, read where it actually happens.
+ *
+ * What is held, what is not, and that what goes back is what was served rather
+ * than a second rendering of it. Only this lane has a generated document to be
+ * left on (023/FR-001).
+ */
+test.describe('what a takeover that presents no screen leaves standing', () => {
+  test('is what the address served, node for node (023/FR-001, 015/FR-004)', async ({
+    browser,
+    page,
+  }) => {
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+    });
+
+    // The served document as the browser reads it, against the content
+    // standing. Both are parsed by the same browser so the comparison is of
+    // documents rather than of two spellings of the same markup — and what it
+    // catches is a rewrite into a re-rendering: every figure here comes from
+    // the pinned package and none of them is computed again on the way back.
+    const served = await (await fresh.request.get(`${PRODUCT_URL}/ships`)).text();
+    const [wasServed, isStanding] = await fresh.evaluate((html) => {
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      return [
+        parsed.querySelector('main')?.innerHTML ?? '',
+        document.querySelector('.frame__held')?.innerHTML ?? '',
+      ];
+    }, served);
+
+    expect(wasServed.length, 'the address served no content to compare against').toBeGreaterThan(0);
+    expect(isStanding, 'what is standing is not what the address served').toBe(wasServed);
+    await context.close();
+  });
+
+  test('is the shell at an address the build generates no document for (018/FR-007)', async ({
+    browser,
+    page,
+  }) => {
+    // One of the two bench addresses 015/FR-018 names, which is where a
+    // production build serves documents at other addresses and a shell at this
+    // one — so a reading here can fail. The development lane generates no
+    // document anywhere, so its reading of the same failure passes however the
+    // adapter behaves and stays where it is, in `navigation-waiting.spec.ts`.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/equipment',
+      reach: async (page) => {
+        await page.getByRole('link', { name: 'Equipment Builder' }).first().click();
+        await expect(page).toHaveURL(/\/equipment$/, { timeout: 30_000 });
+      },
+    });
+
+    // The shell, which is what that address served. Nothing is put back over
+    // it, because nothing was served to put back — one rule, not two.
+    await expect(fresh.getByRole('banner')).toBeVisible();
+    await expect(
+      fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible();
+    await expect(fresh.locator('.frame__held')).toHaveCount(0);
+    await context.close();
+  });
+
+  test('moves nothing the Commander can see, and never empties (015/FR-009)', async ({
+    browser,
+    page,
+  }) => {
+    // The restore measured, not only the takeover that succeeds. This change is
+    // what puts the held content and the failure statement in the same frame
+    // for the first time, so this is the reading a statement taking space above
+    // the content fails: the boxes are compared from the last frame the
+    // document had to itself, through every frame after it.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+      prepare: (fresh) => recordFrames(fresh, 'Anaconda'),
+      settled: true,
+    });
+
+    // Every frame from the one the document had to itself last, through every
+    // frame after it. The marker is the journey's own, set where it lets the
+    // application go: `takenOver` cannot be it, because it reads the presses
+    // the document holds for replay and the held copy carries the served
+    // document's own — as it must, being what the address served rather than a
+    // rewriting of it — and the page's verdict on its typeface cannot be it
+    // either (`markTheDocumentsLastFrame`). What that verdict was there for is
+    // done before the mark is set: this journey holds the application's code
+    // back until the document is wearing the faces it asked for, so the
+    // settling those frames would show has already happened.
+    //
+    // Still cut to the frames the document had finished arriving in. A page
+    // still being read is shorter than the page being served, and that is the
+    // download rather than the takeover.
+    const held = (await framesSinceTheDocumentWasAlone(fresh)).filter((frame) => frame.parsed);
+
+    expect(held.length, '/ships was never recorded settled').toBeGreaterThan(1);
+    expect(
+      held.at(-1)?.length ?? 0,
+      'the statement never arrived while frames were being recorded',
+    ).toBeGreaterThan(held[0].length);
+    nothingTheCommanderIsReadingMoved(held);
+
+    // And no frame emptier than the frame before it. A restore that removed the
+    // served nodes and put the copy back a pass later reads here as a dip, and
+    // one that never put them back reads as the subject leaving the page.
+    const lost = held.findIndex((frame) => !frame.subject);
+
+    expect(lost, `/ships left the screen at frame ${lost} of the restore`).toBe(-1);
+    let tallest = 0;
+    held.forEach((frame, index) => {
+      expect(frame.length, `/ships shrank at frame ${index} of the restore`).toBeGreaterThanOrEqual(
+        tallest,
+      );
+      tallest = Math.max(tallest, frame.length);
+    });
+    await context.close();
+  });
+
+  test('moves nothing at the entry point, where the screen fills the shell (015/FR-009)', async ({
+    browser,
+    page,
+  }) => {
+    // The same measurement as above, at the one address whose screen is shorter
+    // than the window it is drawn in. The shell is at least as tall as the
+    // window, so a screen that does not fill it is stretched to the rest — and
+    // the start page closes with its attribution band at the foot of that
+    // stretch. The catalogue overflows every profile, so `main` is its content
+    // there and takes nothing from anything: the reading above cannot fail on a
+    // statement that takes space out of the box the content stands in, and this
+    // one can. With the copy standing in a box measured from its own content,
+    // the band stands 102 pixels above where it was served, on a page that
+    // never scrolls.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      open: '/ships',
+      path: '/',
+      reach: reachTheEntryPoint,
+      prepare: (fresh) => recordFrames(fresh, 'Ship Builder'),
+      settled: true,
+    });
+
+    // The same window as the reading above, marked the same way.
+    const held = (await framesSinceTheDocumentWasAlone(fresh)).filter((frame) => frame.parsed);
+
+    expect(held.length, '/ was never recorded settled').toBeGreaterThan(1);
+    nothingTheCommanderIsReadingMoved(held);
+    await context.close();
+  });
+
+  test('states the failure where it can be read, over nothing the Commander is reading', async ({
+    browser,
+    page,
+  }) => {
+    // Two readings a scan cannot make, at the address that makes both hardest:
+    // the entry point's screen fills the window, so the statement and the
+    // content it stands beside want the same pixels.
+    //
+    // Neither `toBeVisible` nor `innerText` can fail on what this is about.
+    // Playwright reads a box and a style, and `innerText` reports text that is
+    // covered as readily as text that is not — so a statement painted behind
+    // the page and content standing under a statement both pass them. What
+    // fails here is the document's own answer to "what is at this point", and
+    // the boxes at the end of the page.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      open: '/ships',
+      path: '/',
+      reach: reachTheEntryPoint,
+    });
+
+    await nothingStandsOverAnythingElse(fresh, 'the entry point');
+    await context.close();
+  });
+
+  test('reports no accessibility violation, content and statement together', async ({
+    browser,
+    page,
+  }, testInfo) => {
+    // The composition the application draws and no catalogue cell can: the
+    // frame holding content in its `main` with the failure statement beside it.
+    // The existing scans reach the generated first frame and the screens the
+    // application presents, and this is neither (011/FR-022, 011/SC-002).
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+    });
+
+    await expectNoAccessibilityViolations(fresh, testInfo, {
+      label: 'the held document and the statement beside it',
+    });
+    await context.close();
+  });
+
+  test('is complete at a doubled text size, with no horizontal page scrolling', async ({
+    browser,
+    page,
+  }) => {
+    // 011/FR-011 asks it of every capability, and neither existing reading
+    // reaches this composition: 015/FR-019 scans the generated first frame,
+    // where no statement stands beside the content, and the responsive journeys
+    // never reach it at all.
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+      prepare: (fresh) => withRootTextScale(fresh, DOUBLED_TEXT),
+    });
+
+    const main = (await fresh.getByRole('main').innerText()).toLowerCase();
+
+    expect(main, 'the held content is gone at a doubled text size').toContain('anaconda');
+    await expect(
+      fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible();
+    await expectNoDocumentOverflow(fresh);
+
+    // Completeness as boxes as well as as text, and at this size rather than
+    // only at the default one: a statement is a larger share of the window the
+    // larger the words in it are, so this condition is where content standing
+    // under one is worst.
+    await nothingStandsOverAnythingElse(fresh, 'a doubled text size');
+    await context.close();
+  });
+
+  test('is complete at 400% zoom, with no horizontal page scrolling', async ({ browser, page }) => {
+    const { context, fresh } = await whereTheScreenNeverArrives(browser, page, {
+      path: '/ships',
+      reach: reachTheCatalogue,
+      context: ZOOM_400,
+    });
+
+    const main = (await fresh.getByRole('main').innerText()).toLowerCase();
+
+    expect(main, 'the held content is gone at 400% zoom').toContain('anaconda');
+    await expect(
+      fresh.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible();
+    await expectNoDocumentOverflow(fresh);
+
+    // And the same reading at the condition that makes it hardest. The window
+    // is 320x256 here, where a statement is close to half of what a Commander
+    // can see at once — so content standing under one loses most of the page
+    // (constitution V).
+    await nothingStandsOverAnythingElse(fresh, '400% zoom');
+    await context.close();
+  });
+});
+
+/**
+ * A failure after a screen has been presented, which this change must not
+ * answer by taking that screen away.
+ *
+ * The reading passes against the standing takeover in either lane, because
+ * nothing is held today. What this lane buys is that only here can a wrong
+ * implementation have something to put back, so only here can it fail
+ * (023/FR-001, 018/FR-007).
+ */
+test.describe('a failure after a screen has been presented', () => {
+  // No worker in this context: it answers a chunk from its cache without a
+  // request being made, and a request that is never made is one no route can
+  // refuse.
+  test.use({ serviceWorkers: 'block' });
+
+  test('leaves the Commander on that screen, with nothing put back over it', async ({ page }) => {
+    await page.goto('/');
+    await waitForTakeover(page);
+    await expect(page.getByRole('main')).toContainText('Tools for Commanders');
+
+    // Every chunk from here on, which at this point is every screen the
+    // Commander has not opened yet.
+    await page.route('**/*.js', async (route) => {
+      await route.abort('failed').catch(() => {});
+    });
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: /Ship Builder/ })
+      .click({ noWaitAfter: true });
+
+    await expect(
+      page.locator('.frame__status').getByText(englishMessages['navigation.failed.notice']),
+    ).toBeVisible({ timeout: 30_000 });
+
+    // The entry point is still the screen they are on, and the document this
+    // session was served — the entry point's own — was released when that
+    // screen was presented, so there is nothing left that could land over it.
+    await expect(page.getByRole('main')).toContainText('Tools for Commanders');
+    await expect(page.locator('.frame__held')).toHaveCount(0);
   });
 });
 

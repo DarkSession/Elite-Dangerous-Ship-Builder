@@ -483,6 +483,36 @@
   padding-inline: var(--ednb-space-region);
 }
 
+// While content the address served is standing, the statement takes its box
+// after that content instead of before it.
+//
+// The shell is a column of flex items, so this moves the box and nothing else:
+// the notice keeps its place in the document, and a reader still meets the
+// statement before what it is about. What it must not do is take space above
+// content a Commander is already reading — that is content moving position,
+// and 015/FR-009 admits three exceptions to it, none of them this one. The
+// space cannot be reserved ahead of the statement either: the build knows
+// neither that the takeover will fail nor how tall the sentence would be, and
+// 015/FR-010 forbids it deciding the first frame on what it cannot know.
+//
+// Safe to reorder because this block is text and nothing else. A reader meets
+// it in document order, and success criterion 1.3.2 is about that order rather
+// than about the boxes; 2.4.3 is one of the eight this project excludes, and
+// there is nothing in the block to reach anyway. A control added to a standing
+// notice — a dismissal, a retry — would be reached before the content it
+// visually follows, and would need this decided again.
+//
+// In the flow rather than over the content. A statement standing over it hides
+// the end of what the Commander is reading for as long as the page lasts, and
+// on a page that does not scroll it can never be moved off — the start page's
+// attribution band would sit under it and stay there. Constitution V asks for
+// the whole of a capability at 200% text and at 400% zoom, where a box of this
+// height is nearly half the window. What keeps the content still is the box it
+// is put back into (`.frame__held` below), not where the statement stands.
+.frame__status--below {
+  order: 1;
+}
+
 // No centred measure. Every canvas runs its regions to the edge of the artboard
 // — canvas 1c's `392px 1fr 306px` grid and canvas 1a's `1fr 340px` both give
 // the slack to a region rather than to a margin — so the screen takes the width
@@ -531,4 +561,39 @@
   @include layout.compact {
     padding-inline: var(--ednb-space-inline-loose);
   }
+}
+
+// The box the held content goes into, which lays its children out the way the
+// `main` around it would have.
+//
+// The same column this `main` is, so the content that was laid out as its
+// direct children is laid out the same way one level in: a box between them
+// and it that composed differently would lay them out a second way, and what
+// the Commander is reading has to stand exactly where it stood — which is the
+// whole of what putting it back means (023/FR-001, 015/FR-009).
+//
+// It takes the box a screen took, too. A screen root is a flex item of this
+// column and several of them ask to fill it — the start page is a column that
+// closes with its attribution band at the foot of the shell — so a
+// content-height container stands that band wherever the copy ends instead. On
+// `/` at 1440x900 that is the band at y=469 against the y=848 it was served at,
+// which is content the Commander can see moving.
+//
+// Stretching is only half of it, because the statement below takes its own
+// height out of the shell: the box this stretches to is shorter than the box
+// the content was served in by exactly that much. The other half is the floor
+// the frame is handed — the height the served document's own `main` had,
+// measured before anything moved and set on the element (`app-frame.html`).
+// It arrives with the nodes and is never absent while this box exists, so the
+// box is the one the content was served in and the page is taller than the
+// window by the height of the statement — the page growing at its end rather
+// than anything moving.
+//
+// Nothing is lost by it. The container carries no role and says nothing; it
+// exists so the frame has somewhere of its own to place nodes it was handed,
+// and the language it carries is an attribute rather than a box.
+.frame__held {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 }

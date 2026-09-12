@@ -1,0 +1,140 @@
+## Why
+
+A Commander who opens `/ships` directly, on a connection that then loses the screen's code, ends
+up with less than the server sent them. The build generates a document for that address, so the
+browser paints a readable ship list before any script runs. The application boots, takes over, and
+the first navigation fails. The list is gone, and what is left is the shell — the banner, the tool
+links and a notice saying the screen could not be opened.
+
+`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned"
+(018/FR-007), already states what should happen: "the Commander is left on the readable document
+that address served". The failure is
+stated, so the first half holds. The second half does not. The scenario below it, for an address
+the build generates no document for, describes what a Commander gets today at an address that has
+one — and the shell is the right answer only where there is nothing else.
+
+`platform/published-addresses` is not met either. "A takeover that does not complete" (015/FR-012)
+requires the Commander to be left with the readable document, and its scenario is "The bundle is
+blocked or a chunk never arrives" — which is this.
+
+The takeover is what is wrong. It discards what the address served before any navigation has
+presented a screen to replace it, so a navigation that never presents one leaves nothing behind.
+That is the contract of `platform/published-addresses`, which owns the generated documents, and
+this is where it is fixed. The requirement in `platform/navigation-waiting` stands as accepted.
+
+## What Changes
+
+- The served document is held across the takeover until a navigation presents a screen. Today the
+  application adopts the document's content only where a navigation activates a screen over it.
+  Where the navigation fails instead, what the address served is kept and stays readable.
+- The boundary is the first screen presented, not the first navigation and not a failure. A
+  navigation that ends any other way — cancelled with nothing taking over, or replaced by one that
+  ends without a screen — leaves the Commander owed the same content.
+- At an address the build generates no document for, nothing changes: the shell is what that
+  address served, and the shell is what the Commander keeps.
+- Held content is the application's own markup, kept as it stands, carrying the language it was
+  served in. Nothing is re-rendered, no figure is recomputed and no sentence is written for it —
+  including into the committed locale. The catalogue has arrived, because the application is
+  running; what is missing is the screen, and the catalogue is applied by rendering one.
+- Putting it back is invisible. It lands in the render that would otherwise have removed it, so no
+  frame is emptier than the one before it and the invisible takeover keeps its three exceptions
+  and no more.
+- The application frame draws one composition it does not draw today: its `main` holding content
+  the address served, with the failure statement beside it. It is scanned, measured, and read at
+  200% text and 400% zoom where it stands, in the production lane. It is not a new component
+  state:
+  011/FR-004 enumerates five and the frame already accounts for all five.
+
+The change declares requirement `023/FR-001`:
+
+- **FR-001** What an address served is held until a navigation presents a screen to replace it,
+  and is kept wherever a navigation ends without presenting one.
+
+One thing this change does is not a requirement of its own, because a standing requirement already
+carries it: the failure is stated on whatever the Commander is left with. That is
+`platform/navigation-waiting`, "A screen that never arrives is stated, not silently abandoned"
+(018/FR-007). The delta says nothing about
+the statement, so the two cannot drift; what this change alters is what the Commander is left with,
+which is the half of that requirement the application does not meet.
+
+`015/FR-011`, "Bundled English, replaced by the committed locale", is modified in the same delta.
+Read as accepted it requires the committed locale to replace the text of held content, which the
+application cannot do without the screen's code — the thing that failed to arrive. Its accepted
+scenario "A Commander whose committed locale is not English" keeps the English paint unconditional,
+because that is a fact about the first frame and cannot depend on how the takeover ends. The
+condition moves to the replacement instead: the screen carries the committed locale's text where
+the takeover presents one. A new scenario beside it reads the case where none is presented.
+
+`015/FR-011a`, "The disclosure beside an untranslated game name", is modified beside it, for the
+same reason. It already says a document read in bundled English has nothing to disclose, which is
+what held content is, but it also says the disclosure "MUST NOT be suppressed". The boundary
+between the two is written into the requirement rather than left for a reader to draw.
+
+## Capabilities
+
+### New Capabilities
+
+None.
+
+### Modified Capabilities
+
+- `platform/published-addresses`: gains a requirement that what an address served is held until a
+  navigation presents a screen — that a navigation ending any other way leaves the Commander on
+  the served content rather than on the shell, that held content is kept as it stands and carries
+  the language it was served in, that putting it back is invisible on the same terms as the
+  takeover, and that an address that served the shell holds nothing. This is also what makes
+  015/FR-012 true at an address with a generated document. In the same delta, "Bundled English,
+  replaced by the committed locale" (015/FR-011) is modified to say that the replacement is
+  carried by the screen the application presents, so held content stays in the English it was
+  served in, and "The disclosure beside an untranslated game name" (015/FR-011a) is modified to
+  say that the disclosure belongs to a replacement that lands, so none is written into held
+  content.
+
+## Impact
+
+- `src/app/app.config.ts` and a new adapter under `src/app/platform/browser/` gain the hold, beside
+  the other adapters that own a piece of the document. It belongs with the takeover it is part of,
+  not inside a screen.
+- `src/app/application/navigation/` gains the store that decides what the Commander is left on. It
+  reads the router's events, offers the frame the copy the adapter took, and tells the adapter when
+  the hold is over. It copies nothing and measures nothing itself. The rule is a decision rather than a piece of the document or a piece of the shell,
+  so it sits beside `navigation-waiting`'s own store and not in either of the other two
+  (constitution III).
+- `src/app/ui/components/app-frame/` receives the held content where the outlet stands. It draws
+  the same banner, tool links and standing notices it draws today, and the failure statement is one
+  of those notices. Where that statement stands relative to the held content decides whether the
+  restore moves anything the Commander can see, which design.md, "The failure statement does not
+  take space above the content", settles: it does not, because reserving that space in the build is
+  ruled out by 015/FR-010. Task 2.3 builds to that and task 4.3 measures it.
+- `platform/navigation-waiting` is unchanged. Its requirement is already right on what this change
+  fixes; what changes is the takeover it describes.
+- `src/app/ui/previews/preview-manifest.ts` is unchanged. A frame whose `main` holds content is
+  none of the five states 011/FR-004 enumerates, the frame already accounts for all five, and the
+  preview catalogue renders each cell with inputs alone — so nothing it could hold would fill a
+  `main` that content is projected into. The composition is read in the application instead, where
+  it occurs.
+- `e2e/coverage-ledger.ts` gains the change and the new requirement id, which is what keeps the
+  behaviour's coverage checked rather than merely tested.
+- `e2e/navigation-waiting.spec.ts` reads the address with no generated document, where that reading
+  already stands, and a unit specification beside `src/app/app-navigation-waiting.spec.ts` drives
+  the same sequence without a browser.
+- Nothing a Commander sees changes where a navigation presents a screen, which is every navigation
+  that is not the defect. No new words, so no catalogue keys.
+- `e2e/prerendered-first-frame.spec.ts` already holds the failing first navigation in the
+  production lane, in the journey "states a first navigation that failed, over the document it was
+  served (018/FR-007, FR-008)". A note at the end of that journey records which half of FR-007 it
+  does not read and why, ending "What is missing here is an assertion that the served document's
+  own `main` is still standing, and it is added with that change." This change adds that assertion
+  and removes the note.
+- One line of prose this change reads and does not rewrite: 018/FR-007 enumerates the document a
+  Commander is left on as "the readable document where the build generates one", which reads a
+  generated address and a served document as the same thing. 015/FR-014 separates them for a
+  returning Commander with no network, and did so before this change. The sentence that governs
+  that requirement, and its scenario, both key on what the address served, which is what this
+  change states — so nothing here contradicts it, and tightening the enumeration belongs to
+  `platform/navigation-waiting`. Recorded in design.md, "A development server serves no document".
+- `openspec/changes/archive/018-navigation-loading-overlay/` is read and not written to. Its task
+  6.3 stands unticked with the reason it carries, which is the record of why the work was deferred;
+  this change is where the work is done and where it is recorded.
+
+Closes #90.

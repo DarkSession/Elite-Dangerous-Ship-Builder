@@ -18,6 +18,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
 import { NavigationWaitingStore } from './application/navigation/navigation-waiting.store';
+import { ServedDocumentStore } from './application/navigation/served-document.store';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
 import { RenderingTarget } from './platform/browser/rendering-target';
@@ -32,6 +33,51 @@ import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
 function takeoverRouting(): RouterFeatures[] {
   return isDevMode() ? [] : [withEnabledBlockingInitialNavigation()];
 }
+
+/**
+ * The store that holds what the address served, created before the router can
+ * remove it.
+ *
+ * Creating it is what takes the copy: it injects `ServedContentAdapter`, whose
+ * constructor reads the document as the address served it.
+ *
+ * Named rather than written inline because its position is the whole
+ * mechanism, and a position stated only in a comment is one a later
+ * initializer can take without anything noticing: `app.config.spec.ts` reads
+ * this against `ROUTING_PROVIDERS` below and fails if the two ever swap.
+ *
+ * Initializers run in the order they are provided, and the blocking initial
+ * navigation is started from one of the router's own — so the moment the
+ * document still holds what the address served, with nothing claimed and
+ * nothing removed, is here (023/FR-001).
+ *
+ * Not run in the build's renderer, and this is the same ruling the other
+ * browser-only initializers carry: there is nothing served to a Commander at
+ * build time, and the document the renderer is writing is not one anybody is
+ * reading (015/FR-001).
+ *
+ * What the guard leaves out is this initializer, not the store: the shell
+ * injects it wherever it is built, so the renderer constructs it too. There the
+ * document has no `main` yet, so it holds nothing — and the renderer runs one
+ * navigation, which presents a screen (015/FR-001).
+ */
+export const SERVED_DOCUMENT_INITIALIZER = provideAppInitializer(() => {
+  if (inject(RenderingTarget).isBrowser) {
+    inject(ServedDocumentStore);
+  }
+});
+
+/**
+ * The router, whose initial navigation is the takeover itself.
+ *
+ * Named for the same reason as the initializer above: this is what everything
+ * that must happen before the takeover has to be registered before.
+ */
+export const ROUTING_PROVIDERS = provideRouter(
+  routes,
+  withComponentInputBinding(),
+  ...takeoverRouting(),
+);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -81,6 +127,7 @@ export const appConfig: ApplicationConfig = {
         inject(NavigationWaitingStore);
       }
     }),
+    SERVED_DOCUMENT_INITIALIZER,
     // Route parameters are bound to component inputs, so a screen takes its
     // subject as an input rather than reaching into the router for it.
     //
@@ -103,7 +150,7 @@ export const appConfig: ApplicationConfig = {
     // are where nothing was rendered to hydrate. The warning is `ngDevMode`
     // only; what ships is the blocking navigation, because what ships has 50
     // documents to adopt.
-    provideRouter(routes, withComponentInputBinding(), ...takeoverRouting()),
+    ROUTING_PROVIDERS,
     // Route titles are message keys resolved in the committed locale, so the
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },

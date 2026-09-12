@@ -53,9 +53,14 @@ export interface Frame {
    * two disagree on metrics the page changes height under that swap — measured
    * on Firefox at 1112px, ten pixels across the catalogue — and it does so
    * whether or not this application ever loads, which is what makes it the
-   * network rather than the takeover. Recorded so a measurement of the takeover
-   * can start from the frame the page is wearing what it asked for, the same way
-   * `parsed` lets one start from the frame the page had all of itself.
+   * network rather than the takeover. Recorded so a frame that fails a reading
+   * can say whether the page was wearing what it asked for when it was taken,
+   * which is what tells a swap apart from something moving.
+   *
+   * Not a boundary, the way `parsed` is one. The verdict covers every face at
+   * once and turns back over for a face the application asks for after the
+   * document had all of its own, so a window that begins where it turns over
+   * can begin anywhere (`markTheDocumentsLastFrame`).
    */
   readonly dressed: boolean;
 }
@@ -168,6 +173,49 @@ export async function recordFrames(page: Page, subject: string): Promise<void> {
 /** Everything the recorder has seen so far. */
 export function frames(page: Page): Promise<readonly Frame[]> {
   return page.evaluate(() => (window as unknown as { __frames: Frame[] }).__frames ?? []);
+}
+
+/**
+ * Marks the frame the document has had last, for a reading that starts there.
+ *
+ * A measurement of the takeover is a measurement from the last frame the
+ * document had to itself through every frame after it, so something has to say
+ * which frame that is. A journey whose takeover presents a screen reads it off
+ * the page: the presses the document holds for replay leave it, and `takenOver`
+ * turns over on the frame they do.
+ *
+ * Where the takeover presents no screen there is nothing that turns over. The
+ * copy put back carries the served document's own presses, as it must, being
+ * what the address served rather than a rewriting of it. The page's own verdict
+ * on its typeface is no marker either: `document.fonts.status` is one verdict
+ * over every face at once, and on Firefox it read `loading` through every frame
+ * the document had on its own — so a window that began where it turned `loaded`
+ * began after the failure had already been stated, and measured nothing.
+ *
+ * So the moment is marked where it is known rather than read off the page: by
+ * the journey holding the application's own code back, at the moment it lets it
+ * go.
+ */
+export async function markTheDocumentsLastFrame(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const recorded = (window as unknown as { __frames?: readonly Frame[] }).__frames ?? [];
+    (window as unknown as { __from?: number }).__from = recorded.length;
+  });
+}
+
+/**
+ * Every frame from the one the document had to itself last, onwards.
+ *
+ * Everything the recorder has, where the mark was never set — a journey that
+ * lets the application go the moment it asks marks nothing, and has no window
+ * of its own to measure in.
+ */
+export async function framesSinceTheDocumentWasAlone(page: Page): Promise<readonly Frame[]> {
+  const recorded = await frames(page);
+  const released = await page.evaluate(
+    () => (window as unknown as { __from?: number }).__from ?? 0,
+  );
+  return recorded.slice(Math.max(0, released - 1));
 }
 
 /**
@@ -298,17 +346,29 @@ export async function openBeforeTheBundleArrives(page: Page, path: string): Prom
  */
 export async function openOnceTheTypefaceHasArrived(page: Page, path: string): Promise<void> {
   await page.route(/\.js(\?.*)?$/, async (route) => {
-    await page
-      .waitForFunction(
-        () =>
-          document.readyState !== 'loading' &&
-          document.fonts.status === 'loaded' &&
-          [...document.fonts].some((face) => face.status === 'loaded'),
-        undefined,
-        { timeout: 10_000 },
-      )
-      .catch(() => undefined);
+    await theTypefaceHasArrived(page);
     await route.continue();
   });
   await page.goto(`${PRODUCT_URL}${path}`);
+}
+
+/**
+ * Returns once the page has read its document and is wearing the faces it asked
+ * for, or once the wait has run out.
+ *
+ * This is the condition `openOnceTheTypefaceHasArrived` holds the bundle on,
+ * exported on its own so a journey that builds its own route can hold the
+ * bundle on the same condition. Its reasoning is that function's.
+ */
+export async function theTypefaceHasArrived(page: Page): Promise<void> {
+  await page
+    .waitForFunction(
+      () =>
+        document.readyState !== 'loading' &&
+        document.fonts.status === 'loaded' &&
+        [...document.fonts].some((face) => face.status === 'loaded'),
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => undefined);
 }
