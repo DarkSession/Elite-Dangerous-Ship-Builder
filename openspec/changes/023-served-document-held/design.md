@@ -345,11 +345,24 @@ case.
   screen's markup, released at the first `NavigationEnd`. Where no screen is ever presented it
   stands for the life of the page, which is the outcome the change is for: it is on screen then,
   not merely held. The document it copies was already in the page when the copy was taken.
-- **Held content's controls are not the application's.** → They are the served document's own
-  anchors, which carry addresses and navigate by loading them. That is what they did before any
-  script ran, and it is what the Commander pressed a moment earlier. The application adds no
-  listener to them and claims nothing about them, and `withEventReplay()` is not involved because
-  nothing is being adopted.
+- **Held content's controls do nothing.** → They are the served document's own, and what they are
+  differs by address. The entry point's `main` carries two anchors, which carry addresses and load
+  them, so they work. The catalogue's carries 106 buttons and each hull's 107, and a button's
+  behaviour is the screen's — the screen that did not arrive. `withEventReplay()` does not reach
+  them either: it delivers a press to the node the application adopts, and these nodes are a copy
+  nothing adopted. So at 49 of the 50 addresses this applies to, the Commander is left holding
+  controls that answer nothing.
+
+  That is the cost, and it is taken deliberately. `src/app/app.config.ts` names the same shape as
+  the thing replay exists to prevent — "a control that looks interactive and is not, which is a
+  worse first frame than the empty shell this feature replaced" — and the difference is what else
+  is on the page. There, the empty shell was the alternative and the content was arriving. Here the
+  screen is not arriving at all, the alternative is the empty shell for good, and the statement
+  beside the content says so (018/FR-007). What the Commander can still act on is the shell's own
+  banner and tool links, which are the application's and work; what the held content is for is
+  reading — the hull's figures are on the page rather than gone. Making those controls answer is a
+  non-goal: it would mean the application claiming a screen it does not have.
+
 - **The held copy could be put back over a screen.** → It cannot: it is released at the first
   `NavigationEnd`, and what puts it back is a navigation ending without presenting a screen while
   none has been presented in the session — a failure, a cancellation with nothing taking over, or a

@@ -29,9 +29,14 @@ function readable(node: Node): boolean {
  * so a Commander is reading that address's content before any script runs. The
  * takeover then hands the document to a screen the application presents —
  * except where no screen is presented, and there the served content has to
- * still be standing. Nothing else in the application has a view of it: by the
- * time a navigation has failed, hydration has already removed the nodes it
- * found nothing to claim them with.
+ * still be standing. Nothing else in the application has a view of it. The
+ * nodes hydration finds nothing to claim are cleared from a bootstrap listener
+ * once the application is stable, which is after the navigation has failed and
+ * after the copy has gone back — so the two co-exist for a moment, and nothing
+ * the Commander is reading is ever missing from a frame. What there is no
+ * moment for is a later reading: from the takeover onward the document is the
+ * application's, part adopted and part waiting to be cleared, and asking it
+ * what the address served would be asking it about itself.
  *
  * So the copy is taken first, in a browser-only application initializer
  * registered before `provideRouter`, where the DOM is still the served document
@@ -91,6 +96,13 @@ export class ServedContentAdapter {
    * band moved 102 pixels on `/`. The box the content stood in is a measurement
    * of the served document, taken from the served document while it is the only
    * thing on the page (023/FR-001, 015/FR-009).
+   *
+   * Taken once and not maintained. A window resized while content is held, or a
+   * face that swapped in after this was read, leaves the number describing a
+   * page that is no longer quite the one on screen. It is a floor rather than a
+   * height, so the content grows past it where it needs more and stands in
+   * space at its end where it needs less — neither moves anything the Commander
+   * is reading, which is what 015/FR-009 is about.
    */
   readonly #box: number | null = this.#measure();
 

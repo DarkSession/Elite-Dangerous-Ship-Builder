@@ -596,8 +596,11 @@ test.describe('the waiting statement and a generated document', () => {
  * readings need it. The screen's own chunks are told from the application's by
  * asking for that screen once and remembering what it fetched — both are
  * chunks and only the address distinguishes them — and the reading itself is
- * taken in a context with no worker in it, because a request the worker answers
- * from its cache is one no route can refuse.
+ * taken in a context of its own, which starts with no worker registered in it —
+ * a request a worker answers from its cache is one no route can refuse. Fresh
+ * rather than blocked: a new context carries no registration, and the screen is
+ * asked for once, before anything in this session could have put it in a
+ * cache.
  *
  * `reach` is how the first page asks for the screen. A press rather than a
  * second `goto`: a fresh load would refetch the application's own chunks too,
