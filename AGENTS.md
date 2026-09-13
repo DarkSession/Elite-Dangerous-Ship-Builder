@@ -111,7 +111,7 @@ them: renaming them would change bytes a Commander has already saved.
 - Package manager is **pnpm**. `pnpm-lock.yaml` is committed; CI installs with
   `--frozen-lockfile`.
 - Run `pnpm run check` before proposing a change: format, typecheck, build, unit
-  tests with coverage, Playwright.
+  tests with coverage, server restore, format, build and tests, and Playwright.
 - Unit tests live beside their source in `src/`; end-to-end tests in `e2e/`. A
   new user journey needs both.
 - **Nothing the application asks for at runtime may be a root-absolute path.** A
