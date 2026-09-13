@@ -1,6 +1,7 @@
 ## Context
 
-The regular suite contains 737 cases across ten projects. Production adds 610 executions; timing adds two.
+The regular suite runs each case across ten projects. Generated help artifacts affect its discovered case count.
+Production and timing run separately.
 The constitution requires primary journeys in all ten projects and accessibility checks over every relevant state.
 This change introduces no screens. It retains their present layout, interaction and manual verification requirements.
 

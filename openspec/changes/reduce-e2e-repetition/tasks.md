@@ -1,11 +1,11 @@
 ## 1. Targeted development runs
 
-- [ ] 1.1 Document reproduction, capability checks and the complete merge gate. Verify command selection with Playwright discovery and run formatting and specification policy checks. Commit and push step 1.
+- [x] 1.1 Document reproduction, capability checks and the complete merge gate. Verify command selection with Playwright discovery and run formatting and specification policy checks. Commit and push step 1.
 
 ## 2. Timing evidence
 
-- [ ] 2.1 Add local JSON reporting, named timing steps and a concise summary command. Verify aggregation with script tests and TypeScript checks.
-- [ ] 2.2 Run the complete regular, timing and production suites before consolidation. Record measured durations, scan costs, failures and completeness without personal data. Commit and push step 2.
+- [x] 2.1 Add local JSON reporting, named timing steps and a concise summary command. Verify aggregation with script tests and TypeScript checks.
+- [x] 2.2 Run the complete regular, timing and production suites before consolidation. Record measured durations, scan costs, failures and completeness without personal data. Commit and push step 2.
 
 ## 3. Related assertions
 

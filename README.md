@@ -155,6 +155,29 @@ Use `--list` to verify a selection without launching browsers.
 Keep logs outside conversation output. Report the command, exit status, test counts and relevant failures.
 The agent guide uses this procedure for development iterations.
 
+### Measure end-to-end work
+
+1. Save one JSON report per suite. Run timing tests without other browser tests beside them.
+
+   ```bash
+   mkdir -p dist/verification
+   E2E_JSON_REPORT=dist/verification/regular.json pnpm run e2e > dist/verification/regular.log 2>&1
+   E2E_JSON_REPORT=dist/verification/timing.json pnpm run e2e:timing > dist/verification/timing.log 2>&1
+   E2E_JSON_REPORT=dist/verification/production.json pnpm run e2e:offline > dist/verification/production.log 2>&1
+   ```
+
+2. Read the summary. A failed or incomplete report returns a nonzero status.
+
+   ```bash
+   pnpm run e2e:summary dist/verification/regular.json dist/verification/timing.json dist/verification/production.json
+   ```
+
+Elapsed time measures the run. Summed attempt time measures browser work across workers, including retries.
+Named `setup:` steps measure instrumented helpers; they do not include every navigation or server startup.
+Named `axe:` steps measure scans. These durations are part of attempt time, not additional work.
+The summary states completion for the selected tests. A targeted selection does not establish full-suite coverage.
+Keep raw reports local because failure output can contain environment details.
+
 ## Deployment
 
 The application is published to GitHub Pages at

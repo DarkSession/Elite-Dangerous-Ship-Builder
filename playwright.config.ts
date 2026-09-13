@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 import {
   ENGINES,
   LAYOUT_PROFILES,
@@ -258,7 +258,17 @@ export default defineConfig({
   // join; an unsharded one writes the HTML report directly. Each shard would
   // otherwise emit its own partial HTML report and the last upload would win.
   shard,
-  reporter: isCI ? [['list'], shard ? ['blob'] : ['html', { open: 'never' }]] : [['list']],
+  reporter: process.env['E2E_JSON_REPORT']
+    ? [
+        ['dot'],
+        ['json', { outputFile: process.env['E2E_JSON_REPORT'] }],
+        ...(isCI
+          ? ([shard ? ['blob'] : ['html', { open: 'never' }]] as ReporterDescription[])
+          : []),
+      ]
+    : isCI
+      ? [['list'], shard ? ['blob'] : ['html', { open: 'never' }]]
+      : [['list']],
 
   use: {
     baseURL: PRODUCT_URL,

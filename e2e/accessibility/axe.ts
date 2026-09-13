@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { settled } from './assertions';
 
 /**
@@ -68,7 +68,8 @@ export async function expectNoAccessibilityViolations(
   // the user-agent's defaults rather than at anything this project chose.
   await settled(page);
 
-  const scanned = await new AxeBuilder({ page }).withTags([...AXE_TAGS]).analyze();
+  const scanned = await test.step(`axe: ${options.label ?? 'scan'}`, () =>
+    new AxeBuilder({ page }).withTags([...AXE_TAGS]).analyze());
 
   // Node by node, never rule by rule: a `target-size` result anywhere else on
   // the page is still a failure, and so is any other result on a mount. The
