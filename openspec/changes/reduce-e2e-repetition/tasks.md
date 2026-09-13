@@ -13,7 +13,7 @@
 
 ## 4. Accessibility ownership
 
-- [ ] 4.1 Identify equivalent scan states and consolidate their visits where evidence permits. Record scan ownership and retained distinct states. Verify affected suites in all ten projects and the coverage ledger policy. Commit and push step 4.
+- [x] 4.1 Identify equivalent scan states and consolidate their visits where evidence permits. Record scan ownership and retained distinct states. Verify affected suites in all ten projects and the coverage ledger policy. Commit and push step 4.
 
 ## 5. Test placement and viewport review
 

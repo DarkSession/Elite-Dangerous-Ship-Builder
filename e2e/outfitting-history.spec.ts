@@ -142,12 +142,13 @@ test.describe('stepping back and forward', () => {
     await expect(redo(page)).toBeDisabled();
   });
 
-  test('is offered as disabled rather than hidden at either end', async ({ page }) => {
+  test('is offered as disabled rather than hidden at either end', async ({ page }, testInfo) => {
     await openStockBuild(page);
 
     // A control that disappears is a control a Commander has to go looking for.
     await expect(undo(page)).toBeDisabled();
     await expect(redo(page)).toBeDisabled();
+    await sweepOutfittingState(page, testInfo, 'history/disabled');
   });
 
   test('records nothing for looking, searching or opening a field', async ({ page }) => {
@@ -249,7 +250,7 @@ test.describe('the ship’s name and ident', () => {
 
   test('is accessible in the states it draws', async ({ page }, testInfo) => {
     await openStockBuild(page);
-    await sweepOutfittingState(page, testInfo, 'history/nothing recorded');
+    // The disabled-control test owns the initial stock-state scan.
 
     await rename(page, 'Pacifier');
     await sweepOutfittingState(page, testInfo, 'history/one decision');

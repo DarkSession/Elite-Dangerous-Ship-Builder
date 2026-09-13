@@ -68,3 +68,20 @@ The step 3 regular selection contains 717 cases per project, with 7,170 executio
 
 The eight affected suites pass all 2,150 executions across ten projects in 6.9 minutes.
 TypeScript, formatting and repository policy checks pass.
+
+## Accessibility scan ownership
+
+| Rendered state                       | Owning test                                                                                           | Retained evidence                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Stock build with no history          | `outfitting-history.spec.ts`: is offered as disabled rather than hidden at either end                 | Visible disabled undo and redo, full accessibility sweep |
+| Stock build with CargoHatch selected | `outfitting-accessibility.spec.ts`: states cargo-hatch refusal and unavailable engineering accessibly | Visible refusal reason, full accessibility sweep         |
+
+Each owner uses the same stock hull, route and selected mount as the equivalent scans.
+The disabled-control assertions do not change the rendered state.
+The cargo-hatch refusal and unavailable engineering appear together in one state.
+The owners run in all ten projects without scan caching.
+Distinct overlays, edited builds, locales, text scales and layout conditions retain their scans.
+The consolidation removes two repeated scans and two test setups per project.
+
+Both affected suites pass all 310 executions across ten projects in 1.8 minutes.
+TypeScript, formatting and repository policy checks pass.
