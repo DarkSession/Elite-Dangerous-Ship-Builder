@@ -85,3 +85,74 @@ The consolidation removes two repeated scans and two test setups per project.
 
 Both affected suites pass all 310 executions across ten projects in 1.8 minutes.
 TypeScript, formatting and repository policy checks pass.
+
+## Test placement and viewport review
+
+Domain boundary cases remain in unit tests beside their source.
+The history store and application tests cover the exact 100-decision retention boundary.
+The browser history test retains its 12-decision journey to verify rendered controls and restored state.
+Static browser assertions share setup where their route, build and selection match.
+Primary journeys, browser geometry, touch interactions and rendered accessibility remain browser tests.
+
+The viewport review identifies 42 explicit viewport sites across 17 files.
+Two context factories inherit their viewport; 40 sites select fixed conditions.
+
+| File                               | Sites |
+| ---------------------------------- | ----: |
+| `cost-and-materials.spec.ts`       |     1 |
+| `defence.spec.ts`                  |     1 |
+| `design-reference.spec.ts`         |     3 |
+| `help-and-licences.spec.ts`        |     1 |
+| `hull-anatomy.spec.ts`             |     5 |
+| `interface-conformance.spec.ts`    |     1 |
+| `mobility-and-jump.spec.ts`        |     2 |
+| `module-engineering.spec.ts`       |     7 |
+| `module-outfitting.spec.ts`        |     1 |
+| `offence-profile.spec.ts`          |     4 |
+| `outfitting-accessibility.spec.ts` |     1 |
+| `outfitting-families.spec.ts`      |     5 |
+| `outfitting-responsive.spec.ts`    |     5 |
+| `power-and-heat.spec.ts`           |     1 |
+| `prerendered-first-frame.spec.ts`  |     1 |
+| `reflow.spec.ts`                   |     2 |
+| `ship-status.spec.ts`              |     1 |
+
+Fixed conditions include 320-pixel reflow, panel breakpoints, wide engineering benches and selected mobile layouts.
+The family locale context inherits the project viewport and touch setting.
+The first-frame context inherits the page viewport and permits explicit context options.
+Fixed widths do not establish coverage at the original project width.
+Input settings can still differ between projects at the same width.
+
+All project assignments remain in place.
+A narrower assignment requires a separate accepted change that identifies each condition and preserves every primary journey across the required matrix.
+The README states how to choose the verification layer and assign scan ownership.
+OpenSpec apply guidance uses targeted checks during fixes and requires the full merge gate after the final code fix.
+
+Regular discovery selects 7,150 executions across ten projects in 43 files.
+Repository policy checks pass for the retained matrix and coverage ledger.
+
+## Complete verification
+
+`pnpm run check` passes, including formatting, generated artifacts, TypeScript, both builds, policies, codec capacity, script tests, unit coverage and all browser suites.
+The run passes 598 script tests and 3,228 unit tests across 226 files.
+Coverage is 93.50% statements, 86.36% branches, 94.52% functions and 93.37% lines.
+
+| Browser suite | Passed executions | Reported elapsed time |
+| ------------- | ----------------: | --------------------: |
+| Regular       |             7,150 |          22.2 minutes |
+| Timing        |                 2 |          14.5 seconds |
+| Production    |               720 |           3.1 minutes |
+
+All 7,872 browser executions pass without failures, retries or skips.
+The complete log is local at `dist/verification/check.log`.
+All ten regular projects remain, with 290 fewer executions than the baseline.
+The scan ownership changes remove 20 repeated scans across those projects.
+
+The regular baseline takes 22.4 minutes; the final regular run takes 22.2 minutes.
+These single local runs do not establish a stable speedup.
+The affected step 3 files consume 3,133.3 summed attempt seconds, compared with 3,321.9 in the baseline selection.
+The affected step 4 files consume 721.6 summed attempt seconds, compared with 737.8 in the baseline selection.
+Targeted selections and full suites have different scheduling, so these comparisons describe observed work rather than guaranteed elapsed savings.
+
+The main workflow saving comes from limiting intermediate checks to the failing test and affected capability.
+The complete merge gate remains required after the final code fix.

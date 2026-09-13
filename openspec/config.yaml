@@ -121,4 +121,8 @@ operations:
       - Run the implementation gate when the last task is implemented, and
         before you report the change complete. The project context defines the
         gate, the code reviewer it uses, and what that subagent reads.
-      - Run `pnpm run check` before each review round, and report what passed.
+      - During implementation and review fixes, use the README's targeted-check
+        procedure. Run affected checks and repeat the code review after each fix.
+      - Run `pnpm run check` after the final code fix and before proposing merge.
+        Report what passed. Verification-record edits need formatting and
+        specification policy checks; they do not require another browser run.

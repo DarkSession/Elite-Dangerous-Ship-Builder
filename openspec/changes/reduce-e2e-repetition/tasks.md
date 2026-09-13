@@ -17,5 +17,5 @@
 
 ## 5. Test placement and viewport review
 
-- [ ] 5.1 Record the placement review and fixed viewport inventory, including any changes that require a separate specification. Align apply guidance with targeted review fixes and the final full merge gate. Verify retained primary journeys through discovery and policy checks.
-- [ ] 5.2 Run `pnpm run check`, compare measured results and complete the independent implementation review. Address actionable findings and repeat the required gate. Commit and push step 5.
+- [x] 5.1 Record the placement review and fixed viewport inventory, including any changes that require a separate specification. Align apply guidance with targeted review fixes and the final full merge gate. Verify retained primary journeys through discovery and policy checks.
+- [x] 5.2 Run `pnpm run check`, compare measured results and complete the independent implementation review. Address actionable findings and repeat the required gate. Commit and push step 5.

@@ -178,6 +178,29 @@ Named `axe:` steps measure scans. These durations are part of attempt time, not 
 The summary states completion for the selected tests. A targeted selection does not establish full-suite coverage.
 Keep raw reports local because failure output can contain environment details.
 
+### Choose the verification layer
+
+| Behaviour                                      | Verification                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| Domain rules and boundary cases                | Unit tests beside the domain or store                         |
+| Component text, attributes and emitted actions | Component unit tests                                          |
+| A primary user journey                         | Playwright across all ten projects                            |
+| Browser layout, touch operation and reflow     | Playwright at the required conditions                         |
+| Accessibility of a rendered state              | One named scan owner for that state and each required project |
+
+Related static assertions share one prepared state and use named steps for diagnosis.
+Distinct journeys keep independent browser contexts.
+A scan state includes its route, build, selection, open layers, locale, text scale and effective viewport.
+Different states retain separate scans; a passing scan is never cached across tests.
+
+A fixed viewport override proves that fixed condition, not the profile width it replaces.
+Retain the required primary-journey matrix when assigning tests to projects.
+Any narrower assignment needs an explicit coverage decision in an accepted change.
+
+During review fixes, run affected checks and repeat the code review.
+After the final code fix, run the complete merge gate before proposing merge.
+If only verification records change, run formatting and specification policy checks for those records.
+
 ## Deployment
 
 The application is published to GitHub Pages at
