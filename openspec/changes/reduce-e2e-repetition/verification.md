@@ -34,3 +34,37 @@ pnpm run e2e:summary dist/verification/baseline-regular.json dist/verification/b
 Raw reports and logs stay under the ignored `dist/verification/` directory.
 Report aggregation has four passing script tests, including retry accounting and incomplete-run exit status.
 TypeScript, formatting and repository policy checks pass for the reporting changes.
+
+## Assertion destinations
+
+The original case names remain as named steps within these tests.
+Each step keeps its assertions and uses the same prepared state.
+
+| File                         | Owning test                                                         | Named steps |
+| ---------------------------- | ------------------------------------------------------------------- | ----------: |
+| `power-and-heat.spec.ts`     | states power groups and the labelled module totals                  |           3 |
+| `power-and-heat.spec.ts`     | states the plant, bar and read-only controls                        |           3 |
+| `cost-and-materials.spec.ts` | states package costs with labels and native relationships           |           3 |
+| `cost-and-materials.spec.ts` | states the complete ordered material list and its totals            |           4 |
+| `hull-anatomy.spec.ts`       | draws package geometry and names hardpoints and utilities           |           3 |
+| `hull-anatomy.spec.ts`       | limits schematic content to located mounts and the declared legend  |           3 |
+| `defence.spec.ts`            | identifies defence pools, damage readings and their sources         |           3 |
+| `defence.spec.ts`            | states armour protection and shield recovery facts                  |           2 |
+| `defence.spec.ts`            | states matching shield and hull figures without controls            |           2 |
+| `offence-profile.spec.ts`    | states weapon totals, their count and range bands                   |           3 |
+| `offence-profile.spec.ts`    | names every damage segment in one complete legend                   |           3 |
+| `offence-profile.spec.ts`    | states matching sustained damage without controls or qualification  |           2 |
+| `slef-export.spec.ts`        | offers a selectable SLEF payload with metadata and delivery actions |           4 |
+
+Cross-route announcement assertions belong to the existing structural test for each of the four screens.
+The three outlet assertions execute on every screen in every project.
+Entry-point semantics and control names share one load in `interface-foundations.spec.ts`.
+Its ship-tool tests open the shipyard directly because they inspect no entry-point content.
+
+A TypeScript syntax-tree comparison preserves all 810 `expect` calls across the eight files.
+The comparison ignores formatting and checks expression structure and literal values.
+The six capability files retain all 779 of their `expect` calls.
+The step 3 regular selection contains 717 cases per project, with 7,170 executions across the same ten projects.
+
+The eight affected suites pass all 2,150 executions across ten projects in 6.9 minutes.
+TypeScript, formatting and repository policy checks pass.

@@ -17,6 +17,8 @@ Changing timeouts, weakening assertions, accepting flakes and reducing primary-j
 Contributor instructions use a file, test title and project to reproduce a failure.
 The affected capability runs across all ten projects after a fix.
 The complete `pnpm run check` remains the merge gate.
+Apply guidance uses affected checks during review fixes and requires the complete gate after the final code fix.
+Verification-record edits require formatting and specification policy checks rather than another browser run.
 Full-suite output goes to a local file; contributors read summaries and relevant failures.
 
 ### Timing evidence

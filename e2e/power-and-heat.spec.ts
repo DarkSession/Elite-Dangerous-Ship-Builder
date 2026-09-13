@@ -212,63 +212,58 @@ async function bandRows(page: Page): Promise<{ group: string; draw: string; tail
 }
 
 test.describe('reading the build', () => {
-  test('draws every group the build uses, each stating its own verdict', async ({ page }) => {
+  test('states power groups and the labelled module totals', async ({ page }) => {
     await openPower(page);
+    await test.step('draws every group the build uses, each stating its own verdict', async () => {
+      const bands = await bandRows(page);
+      // The groups this build puts something in, in the package's order. The game
+      // has five; a group nothing is assigned to is not a reading of this build.
+      expect(bands.length).toBeGreaterThan(0);
+      expect(bands.length).toBeLessThanOrEqual(5);
+      const numbers = bands.map((band) => Number(digits(band.group)));
+      expect(numbers).toEqual([...numbers].sort((left, right) => left - right));
+      for (const band of bands) {
+        expect(band.group).toMatch(/^Group [1-5]$/u);
+        expect(band.draw).toMatch(/MW$/u);
+        // A lit group states its share of plant output; a shed one states the
+        // word the canvas puts in that column instead.
+        expect(band.tail).toMatch(
+          new RegExp(`^(\\d+%|${englishMessages['power.bands.offline']})$`, 'u'),
+        );
+      }
+      expect(bands.some((band) => band.tail.endsWith('%'))).toBe(true);
+    });
+    await test.step('lists the drawing modules against a total that they add up to', async () => {
+      const list = page.locator('ednb-power-thermals .module');
+      const drawn = await list.count();
+      expect(drawn).toBeGreaterThan(0);
 
-    const bands = await bandRows(page);
-    // The groups this build puts something in, in the package's order. The game
-    // has five; a group nothing is assigned to is not a reading of this build.
-    expect(bands.length).toBeGreaterThan(0);
-    expect(bands.length).toBeLessThanOrEqual(5);
-    const numbers = bands.map((band) => Number(digits(band.group)));
-    expect(numbers).toEqual([...numbers].sort((left, right) => left - right));
-    for (const band of bands) {
-      expect(band.group).toMatch(/^Group [1-5]$/u);
-      expect(band.draw).toMatch(/MW$/u);
-      // A lit group states its share of plant output; a shed one states the
-      // word the canvas puts in that column instead.
-      expect(band.tail).toMatch(
-        new RegExp(`^(\\d+%|${englishMessages['power.bands.offline']})$`, 'u'),
+      const draws = await list.locator('.module__draw').allInnerTexts();
+      const figures = draws.map((text) => Number(text.replace(/[^\d.]/gu, '')));
+      // Heaviest first, as the canvas orders its list.
+      expect(figures).toEqual([...figures].sort((left, right) => right - left));
+
+      // The row closing the list is the whole list added up, so the two readings
+      // on this block have to agree without either being written down.
+      const closing = await page.locator('.modules__total-draw').innerText();
+      const total = Number((closing.match(/[\d.]+/u) ?? ['0'])[0]);
+      const added = figures.reduce((sum, figure) => sum + figure, 0);
+      expect(Math.abs(added - total)).toBeLessThan(0.05 * drawn);
+    });
+    await test.step('heads the list and closes it in the canvas’s own words', async () => {
+      // `MODULE` against `MW` over the tracks, and `TOTAL DRAW` under them. The
+      // note that used to sit beside the heading is withdrawn with the revision.
+      expect(caps(await page.locator('.modules__head-name').innerText())).toBe(
+        caps(englishMessages['power.modules.column.name']),
       );
-    }
-    expect(bands.some((band) => band.tail.endsWith('%'))).toBe(true);
-  });
-
-  test('lists the drawing modules against a total that they add up to', async ({ page }) => {
-    await openPower(page);
-
-    const list = page.locator('ednb-power-thermals .module');
-    const drawn = await list.count();
-    expect(drawn).toBeGreaterThan(0);
-
-    const draws = await list.locator('.module__draw').allInnerTexts();
-    const figures = draws.map((text) => Number(text.replace(/[^\d.]/gu, '')));
-    // Heaviest first, as the canvas orders its list.
-    expect(figures).toEqual([...figures].sort((left, right) => right - left));
-
-    // The row closing the list is the whole list added up, so the two readings
-    // on this block have to agree without either being written down.
-    const closing = await page.locator('.modules__total-draw').innerText();
-    const total = Number((closing.match(/[\d.]+/u) ?? ['0'])[0]);
-    const added = figures.reduce((sum, figure) => sum + figure, 0);
-    expect(Math.abs(added - total)).toBeLessThan(0.05 * drawn);
-  });
-
-  test('heads the list and closes it in the canvas’s own words', async ({ page }) => {
-    await openPower(page);
-
-    // `MODULE` against `MW` over the tracks, and `TOTAL DRAW` under them. The
-    // note that used to sit beside the heading is withdrawn with the revision.
-    expect(caps(await page.locator('.modules__head-name').innerText())).toBe(
-      caps(englishMessages['power.modules.column.name']),
-    );
-    expect(caps(await page.locator('.modules__head-draw').innerText())).toBe(
-      caps(englishMessages['power.unit.megawatts']),
-    );
-    expect(caps(await page.locator('.modules__total-label').innerText())).toBe(
-      caps(englishMessages['power.modules.total-draw']),
-    );
-    await expect(page.locator('.power__block--modules .power__note')).toHaveCount(0);
+      expect(caps(await page.locator('.modules__head-draw').innerText())).toBe(
+        caps(englishMessages['power.unit.megawatts']),
+      );
+      expect(caps(await page.locator('.modules__total-label').innerText())).toBe(
+        caps(englishMessages['power.modules.total-draw']),
+      );
+      await expect(page.locator('.power__block--modules .power__note')).toHaveCount(0);
+    });
   });
 
   test('draws the heat bars the canvas names, its threshold and its four tiles', async ({
@@ -633,58 +628,52 @@ async function shedBuild(page: Page): Promise<void> {
 }
 
 test.describe('the status rail', () => {
-  test('states the plant against the draw, and the remainder the canvas states', async ({
-    page,
-  }) => {
+  test('states the plant, bar and read-only controls', async ({ page }) => {
     await openPower(page);
+    await test.step('states the plant against the draw, and the remainder the canvas states', async () => {
+      const line = page.locator('ednb-power-summary .rail-power');
+      let figures = '';
+      // Read in the rail and compared in the dashboard, in that order: canvas 1d
+      // draws one segment at a time, so the two readings are two visits there.
+      await inTheRail(page, async () => {
+        await expect(line).toBeVisible();
+        await expect(line.locator('.rail-power__label')).toHaveText(
+          englishMessages['power.rail.label'],
+        );
+        figures = await line.locator('.rail-power__figures').innerText();
+      });
+      expect(figures).toMatch(/MW/u);
 
-    const line = page.locator('ednb-power-summary .rail-power');
-    let figures = '';
-    // Read in the rail and compared in the dashboard, in that order: canvas 1d
-    // draws one segment at a time, so the two readings are two visits there.
-    await inTheRail(page, async () => {
-      await expect(line).toBeVisible();
-      await expect(line.locator('.rail-power__label')).toHaveText(
-        englishMessages['power.rail.label'],
-      );
-      figures = await line.locator('.rail-power__figures').innerText();
+      // The rail's draw is the same figure the dashboard's summary carries.
+      const summary = await page.locator('ednb-power-thermals .power__summary').innerText();
+      expect(digits(summary)).toContain(digits(figures.split('of')[0]));
+
+      // The canvas's `· 7.80 OFF` suffix stands exactly where there is a
+      // remainder to state, which is where the dashboard draws a dark group.
+      const dark = await page.locator('ednb-power-thermals .power__band--offline').count();
+      expect(caps(figures).includes('OFF')).toBe(dark > 0);
     });
-    expect(figures).toMatch(/MW/u);
+    await test.step('draws the bar of the same figures, named rather than left a shape', async () => {
+      await revealStatusRail(page);
 
-    // The rail's draw is the same figure the dashboard's summary carries.
-    const summary = await page.locator('ednb-power-thermals .power__summary').innerText();
-    expect(digits(summary)).toContain(digits(figures.split('of')[0]));
-
-    // The canvas's `· 7.80 OFF` suffix stands exactly where there is a
-    // remainder to state, which is where the dashboard draws a dark group.
-    const dark = await page.locator('ednb-power-thermals .power__band--offline').count();
-    expect(caps(figures).includes('OFF')).toBe(dark > 0);
-  });
-
-  test('draws the bar of the same figures, named rather than left a shape', async ({ page }) => {
-    await openPower(page);
-    await revealStatusRail(page);
-
-    const bar = page.locator('ednb-power-summary .rail-bar');
-    await expect(bar).toBeVisible();
-    // The lengths carry no reading the line above does not, so the bar says in
-    // words what it is showing rather than leaving it to the amber.
-    await expect(bar).toHaveAttribute('aria-label', /\d/u);
-    await expect(bar.locator('.rail-bar__plant')).toBeVisible();
-  });
-
-  test('keeps the figures, the bar and the sentence read-only', async ({ page }) => {
-    await openPower(page);
-
-    // The pips are the block's only control; neither reading above them is
-    // interactive, exactly as the canvas draws them.
-    for (const selector of ['.rail-power', '.rail-bar']) {
-      await expect(
-        page.locator(
-          `ednb-power-summary ${selector} button, ednb-power-summary ${selector} a, ednb-power-summary ${selector} input`,
-        ),
-      ).toHaveCount(0);
-    }
+      const bar = page.locator('ednb-power-summary .rail-bar');
+      await expect(bar).toBeVisible();
+      // The lengths carry no reading the line above does not, so the bar says in
+      // words what it is showing rather than leaving it to the amber.
+      await expect(bar).toHaveAttribute('aria-label', /\d/u);
+      await expect(bar.locator('.rail-bar__plant')).toBeVisible();
+    });
+    await test.step('keeps the figures, the bar and the sentence read-only', async () => {
+      // The pips are the block's only control; neither reading above them is
+      // interactive, exactly as the canvas draws them.
+      for (const selector of ['.rail-power', '.rail-bar']) {
+        await expect(
+          page.locator(
+            `ednb-power-summary ${selector} button, ednb-power-summary ${selector} a, ednb-power-summary ${selector} input`,
+          ),
+        ).toHaveCount(0);
+      }
+    });
   });
 
   test('keeps the shed sentence read-only too', async ({ page }) => {

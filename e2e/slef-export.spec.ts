@@ -48,44 +48,26 @@ test.describe('exporting a build as SLEF', () => {
     await expect(layer(page).getByRole('radio', { name: /markdown/i })).toHaveCount(0);
   });
 
-  test('shows one selectable payload before anything is pressed', async ({ page }) => {
+  test('offers a selectable SLEF payload with metadata and delivery actions', async ({ page }) => {
     await withStockBuild(page);
     await openExport(page);
     await chooseSlef(page);
-
-    const field = layer(page).getByLabel(/slef payload/i);
-    await expect(field).toHaveAttribute('readonly', '');
-    const payload = await field.inputValue();
-    expect(JSON.parse(payload)).toHaveLength(1);
-  });
-
-  test('states what the payload is and how large it is', async ({ page }) => {
-    await withStockBuild(page);
-    await openExport(page);
-    await chooseSlef(page);
-
-    await expect(layer(page).getByText(/SLEF v1 · \d+ modules · /)).toBeVisible();
-  });
-
-  test('says nothing about the link that travelled with it', async ({ page }) => {
-    // Narrowed 2026-08-26 (Commander request). A link travelling with the
-    // payload is the ordinary case, and the dialog used to spend a sentence
-    // saying so. Only the *omission* is worth stating, because only the
-    // omission is something a Commander did not get.
-    await withStockBuild(page);
-    await openExport(page);
-    await chooseSlef(page);
-
-    await expect(layer(page).getByText(/carries a link/i)).toHaveCount(0);
-  });
-
-  test('always offers Download, and Copy beside it', async ({ page }) => {
-    await withStockBuild(page);
-    await openExport(page);
-    await chooseSlef(page);
-
-    await expect(layer(page).getByRole('button', { name: /^download$/i })).toBeEnabled();
-    await expect(layer(page).getByRole('button', { name: /^copy$/i })).toBeEnabled();
+    await test.step('shows one selectable payload before anything is pressed', async () => {
+      const field = layer(page).getByLabel(/slef payload/i);
+      await expect(field).toHaveAttribute('readonly', '');
+      const payload = await field.inputValue();
+      expect(JSON.parse(payload)).toHaveLength(1);
+    });
+    await test.step('states what the payload is and how large it is', async () => {
+      await expect(layer(page).getByText(/SLEF v1 · \d+ modules · /)).toBeVisible();
+    });
+    await test.step('says nothing about the link that travelled with it', async () => {
+      await expect(layer(page).getByText(/carries a link/i)).toHaveCount(0);
+    });
+    await test.step('always offers Download, and Copy beside it', async () => {
+      await expect(layer(page).getByRole('button', { name: /^download$/i })).toBeEnabled();
+      await expect(layer(page).getByRole('button', { name: /^copy$/i })).toBeEnabled();
+    });
   });
 
   test('reports a download as dispatched, never as saved', async ({ page }) => {

@@ -9,7 +9,7 @@
 
 ## 3. Related assertions
 
-- [ ] 3.1 Combine equivalent setup for related static assertions, starting with power status and cross-route conformance. Record each assertion's destination. Verify affected suites in all ten projects and the policy checks. Commit and push step 3.
+- [x] 3.1 Combine equivalent setup for related static assertions, starting with power status and cross-route conformance. Record each assertion's destination. Verify affected suites in all ten projects and the policy checks. Commit and push step 3.
 
 ## 4. Accessibility ownership
 
@@ -17,5 +17,5 @@
 
 ## 5. Test placement and viewport review
 
-- [ ] 5.1 Record the placement review and fixed viewport inventory, including any changes that require a separate specification. Verify retained primary journeys through discovery and policy checks.
+- [ ] 5.1 Record the placement review and fixed viewport inventory, including any changes that require a separate specification. Align apply guidance with targeted review fixes and the final full merge gate. Verify retained primary journeys through discovery and policy checks.
 - [ ] 5.2 Run `pnpm run check`, compare measured results and complete the independent implementation review. Address actionable findings and repeat the required gate. Commit and push step 5.
