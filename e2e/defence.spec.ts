@@ -139,21 +139,64 @@ test.describe('opening the layer', () => {
 });
 
 test.describe('reading the build', () => {
-  test('heads both cards with a pool and names what each is read from', async ({ page }) => {
+  test('identifies defence pools, damage readings and their sources', async ({ page }) => {
     await openDefence(page);
+    await test.step('heads both cards with a pool and names what each is read from', async () => {
+      for (const card of ['card--shield', 'card--armour'] as const) {
+        await expect(pool(page, card)).toHaveText(/\d/u);
+      }
+      const headings = await page.locator('ednb-defence-analysis .card__heading').allInnerTexts();
+      expect(headings.map((heading) => caps(heading.trim()))).toEqual([
+        caps(englishMessages['defence.shield.heading']),
+        caps(englishMessages['defence.armour.heading']),
+      ]);
+      // The canvas names the fitted article beside each heading.
+      await expect(
+        page.locator('ednb-defence-analysis .card--shield .card__identity'),
+      ).toContainText(/\S/u);
+    });
+    await test.step('draws the four damage types with a resistance and a pool apiece', async () => {
+      for (const card of ['card--shield', 'card--armour'] as const) {
+        const rows = await damageRows(page, card);
+        expect(rows.map((row) => row[0])).toEqual([
+          englishMessages['defence.damage.kinetic'],
+          englishMessages['defence.damage.thermal'],
+          englishMessages['defence.damage.explosive'],
+          englishMessages['defence.damage.caustic'],
+        ]);
+        for (const row of rows) {
+          // Every line states both of its figures beside the bar, so nothing on
+          // this block is carried by the length of a fill alone. The resistance
+          // leads its cell; a negative one is followed by the word the hatch
+          // stands for, which is read out rather than seen.
+          expect(row[1]).toMatch(/^-?[\d.,]+%/u);
+          expect(row[2].trim()).not.toBe('');
+        }
+      }
 
-    for (const card of ['card--shield', 'card--armour'] as const) {
-      await expect(pool(page, card)).toHaveText(/\d/u);
-    }
-    const headings = await page.locator('ednb-defence-analysis .card__heading').allInnerTexts();
-    expect(headings.map((heading) => caps(heading.trim()))).toEqual([
-      caps(englishMessages['defence.shield.heading']),
-      caps(englishMessages['defence.armour.heading']),
-    ]);
-    // The canvas names the fitted article beside each heading.
-    await expect(page.locator('ednb-defence-analysis .card--shield .card__identity')).toContainText(
-      /\S/u,
-    );
+      // The hull's caustic line has no resistance on a stock build, so its pool is
+      // the headline pool: the two readings on the card have to agree without
+      // either being written down here.
+      const armour = await damageRows(page, 'card--armour');
+      const caustic = armour.find((row) => row[1].replace(/\D/gu, '') === '0');
+      if (caustic !== undefined) {
+        expect(digits(caustic[2])).toBe(digits(await pool(page, 'card--armour').innerText()));
+      }
+    });
+    await test.step('names every source row and closes it with the package aggregate', async () => {
+      const rows = page.locator('ednb-defence-analysis .sources .source');
+      expect(await rows.count()).toBeGreaterThan(0);
+      for (const row of await rows.all()) {
+        await expect(row.locator('.source__name')).toContainText(/\S/u);
+        await expect(row.locator('.source__value')).toContainText(/\d/u);
+      }
+
+      // The rows carry aggregates, not shares: no row offers a per-module figure
+      // and none of them is a control, because the package publishes no split and
+      // the canvas draws no action here.
+      await expect(page.locator('ednb-defence-analysis .sources button')).toHaveCount(0);
+      await expect(page.locator('ednb-defence-analysis .sources a')).toHaveCount(0);
+    });
   });
 
   test('sets every figure flush to the end of its own column', async ({ page }) => {
@@ -242,80 +285,30 @@ test.describe('reading the build', () => {
     expect(ink.aligned).toEqual(['end']);
   });
 
-  test('draws the four damage types with a resistance and a pool apiece', async ({ page }) => {
+  test('states armour protection and shield recovery facts', async ({ page }) => {
     await openDefence(page);
-
-    for (const card of ['card--shield', 'card--armour'] as const) {
-      const rows = await damageRows(page, card);
-      expect(rows.map((row) => row[0])).toEqual([
-        englishMessages['defence.damage.kinetic'],
-        englishMessages['defence.damage.thermal'],
-        englishMessages['defence.damage.explosive'],
-        englishMessages['defence.damage.caustic'],
-      ]);
-      for (const row of rows) {
-        // Every line states both of its figures beside the bar, so nothing on
-        // this block is carried by the length of a fill alone. The resistance
-        // leads its cell; a negative one is followed by the word the hatch
-        // stands for, which is read out rather than seen.
-        expect(row[1]).toMatch(/^-?[\d.,]+%/u);
-        expect(row[2].trim()).not.toBe('');
-      }
-    }
-
-    // The hull's caustic line has no resistance on a stock build, so its pool is
-    // the headline pool: the two readings on the card have to agree without
-    // either being written down here.
-    const armour = await damageRows(page, 'card--armour');
-    const caustic = armour.find((row) => row[1].replace(/\D/gu, '') === '0');
-    if (caustic !== undefined) {
-      expect(digits(caustic[2])).toBe(digits(await pool(page, 'card--armour').innerText()));
-    }
-  });
-
-  test('states the hull’s three protection facts and no fourth', async ({ page }) => {
-    await openDefence(page);
-
-    const facts = caps(
-      await page.locator('ednb-defence-analysis .card--armour .card__facts').innerText(),
-    );
-    expect(facts).toContain(caps(englishMessages['defence.armour.hardness']));
-    expect(facts).toContain(caps(englishMessages['defence.armour.module-protection']));
-    expect(facts).toContain(caps(englishMessages['defence.armour.integrity']));
-    await expect(
-      page.locator('ednb-defence-analysis .card--armour .card__facts .metric'),
-    ).toHaveCount(3);
-  });
-
-  test('states the recharge rate and both recovery durations', async ({ page }) => {
-    await openDefence(page);
-
-    const recovery = caps(
-      await page.locator('ednb-defence-analysis .card--shield .card__facts').innerText(),
-    );
-    expect(recovery).toContain(caps(englishMessages['defence.recovery.rate']));
-    expect(recovery).toContain(caps(englishMessages['defence.recovery.full']));
-    expect(recovery).toContain(caps(englishMessages['defence.recovery.broken']));
-    await expect(
-      page.locator('ednb-defence-analysis .card--shield .card__facts .metric'),
-    ).toHaveCount(3);
-  });
-
-  test('names every source row and closes it with the package aggregate', async ({ page }) => {
-    await openDefence(page);
-
-    const rows = page.locator('ednb-defence-analysis .sources .source');
-    expect(await rows.count()).toBeGreaterThan(0);
-    for (const row of await rows.all()) {
-      await expect(row.locator('.source__name')).toContainText(/\S/u);
-      await expect(row.locator('.source__value')).toContainText(/\d/u);
-    }
-
-    // The rows carry aggregates, not shares: no row offers a per-module figure
-    // and none of them is a control, because the package publishes no split and
-    // the canvas draws no action here.
-    await expect(page.locator('ednb-defence-analysis .sources button')).toHaveCount(0);
-    await expect(page.locator('ednb-defence-analysis .sources a')).toHaveCount(0);
+    await test.step('states the hull’s three protection facts and no fourth', async () => {
+      const facts = caps(
+        await page.locator('ednb-defence-analysis .card--armour .card__facts').innerText(),
+      );
+      expect(facts).toContain(caps(englishMessages['defence.armour.hardness']));
+      expect(facts).toContain(caps(englishMessages['defence.armour.module-protection']));
+      expect(facts).toContain(caps(englishMessages['defence.armour.integrity']));
+      await expect(
+        page.locator('ednb-defence-analysis .card--armour .card__facts .metric'),
+      ).toHaveCount(3);
+    });
+    await test.step('states the recharge rate and both recovery durations', async () => {
+      const recovery = caps(
+        await page.locator('ednb-defence-analysis .card--shield .card__facts').innerText(),
+      );
+      expect(recovery).toContain(caps(englishMessages['defence.recovery.rate']));
+      expect(recovery).toContain(caps(englishMessages['defence.recovery.full']));
+      expect(recovery).toContain(caps(englishMessages['defence.recovery.broken']));
+      await expect(
+        page.locator('ednb-defence-analysis .card--shield .card__facts .metric'),
+      ).toHaveCount(3);
+    });
   });
 
   test('draws a weakness back from the zero mark the scale states', async ({ page }) => {
@@ -555,30 +548,28 @@ test.describe('the allocation the pip column and the recovery are read at', () =
 });
 
 test.describe('the status rail', () => {
-  test('carries the same shield and hull figures the cards carry', async ({ page }) => {
+  test('states matching shield and hull figures without controls', async ({ page }) => {
     await openDefence(page);
+    await test.step('carries the same shield and hull figures the cards carry', async () => {
+      const rail = page.locator('ednb-defence-summary');
+      await expect(rail).toBeVisible();
+      const cells = await rail.locator('.metric').allInnerTexts();
+      expect(cells).toHaveLength(2);
+      expect(caps(cells[0])).toContain(caps(englishMessages['defence.rail.shield']));
+      expect(caps(cells[1])).toContain(caps(englishMessages['defence.rail.armour']));
 
-    const rail = page.locator('ednb-defence-summary');
-    await expect(rail).toBeVisible();
-    const cells = await rail.locator('.metric').allInnerTexts();
-    expect(cells).toHaveLength(2);
-    expect(caps(cells[0])).toContain(caps(englishMessages['defence.rail.shield']));
-    expect(caps(cells[1])).toContain(caps(englishMessages['defence.rail.armour']));
-
-    // One projection, read twice: the rail and the card have to agree without
-    // either figure being written down here.
-    expect(digits(cells[0])).toContain(digits(await pool(page, 'card--shield').innerText()));
-    expect(digits(cells[1])).toContain(digits(await pool(page, 'card--armour').innerText()));
-  });
-
-  test('holds no control in the block', async ({ page }) => {
-    await openDefence(page);
-
-    await expect(
-      page.locator(
-        'ednb-defence-summary button, ednb-defence-summary a, ednb-defence-summary input',
-      ),
-    ).toHaveCount(0);
+      // One projection, read twice: the rail and the card have to agree without
+      // either figure being written down here.
+      expect(digits(cells[0])).toContain(digits(await pool(page, 'card--shield').innerText()));
+      expect(digits(cells[1])).toContain(digits(await pool(page, 'card--armour').innerText()));
+    });
+    await test.step('holds no control in the block', async () => {
+      await expect(
+        page.locator(
+          'ednb-defence-summary button, ednb-defence-summary a, ednb-defence-summary input',
+        ),
+      ).toHaveCount(0);
+    });
   });
 });
 

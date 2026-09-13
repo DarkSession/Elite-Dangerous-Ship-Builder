@@ -80,38 +80,34 @@ async function packageRetail() {
 }
 
 test.describe('the COST block', () => {
-  test('shows the package figures and the canvas’s four rows', async ({ page }) => {
+  test('states package costs with labels and native relationships', async ({ page }) => {
     await openStockBuild(page);
-    const retail = await packageRetail();
+    await test.step('shows the package figures and the canvas’s four rows', async () => {
+      const retail = await packageRetail();
 
-    const rows = page.locator('ednb-cost-materials .cost__row');
-    await expect(rows).toHaveCount(4);
+      const rows = page.locator('ednb-cost-materials .cost__row');
+      await expect(rows).toHaveCount(4);
 
-    const values = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
-    expect(digits(values[0]!)).toBe(retail.hull);
-    expect(digits(values[1]!)).toBe(retail.modules);
-    expect(digits(values[2]!)).toBe(retail.total);
-    expect(digits(values[3]!)).toBe(retail.rebuy);
-  });
-
-  test('names every row, so no weight carries meaning alone', async ({ page }) => {
-    await openStockBuild(page);
-
-    const labels = await page.locator('ednb-cost-materials .cost__label').allInnerTexts();
-    expect(labels).toHaveLength(4);
-    for (const label of labels) {
-      expect(label.trim().length).toBeGreaterThan(0);
-    }
-  });
-
-  test('associates every figure with its label natively', async ({ page }) => {
-    await openStockBuild(page);
-
-    // A description list, so a screen reader reads "Total, 361,352,360" rather
-    // than two unrelated strings that happen to sit next to each other.
-    await expect(page.locator('ednb-cost-materials dl.cost')).toHaveCount(1);
-    await expect(page.locator('ednb-cost-materials .cost dt')).toHaveCount(4);
-    await expect(page.locator('ednb-cost-materials .cost dd')).toHaveCount(4);
+      const values = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
+      expect(digits(values[0]!)).toBe(retail.hull);
+      expect(digits(values[1]!)).toBe(retail.modules);
+      expect(digits(values[2]!)).toBe(retail.total);
+      expect(digits(values[3]!)).toBe(retail.rebuy);
+    });
+    await test.step('names every row, so no weight carries meaning alone', async () => {
+      const labels = await page.locator('ednb-cost-materials .cost__label').allInnerTexts();
+      expect(labels).toHaveLength(4);
+      for (const label of labels) {
+        expect(label.trim().length).toBeGreaterThan(0);
+      }
+    });
+    await test.step('associates every figure with its label natively', async () => {
+      // A description list, so a screen reader reads "Total, 361,352,360" rather
+      // than two unrelated strings that happen to sit next to each other.
+      await expect(page.locator('ednb-cost-materials dl.cost')).toHaveCount(1);
+      await expect(page.locator('ednb-cost-materials .cost dt')).toHaveCount(4);
+      await expect(page.locator('ednb-cost-materials .cost dd')).toHaveCount(4);
+    });
   });
 });
 
@@ -124,64 +120,53 @@ test.describe('the MATERIALS block', () => {
     await expect(page.locator('ednb-cost-materials .rail-materials')).toHaveCount(0);
   });
 
-  test('lists every consolidated row once a recipe is applied', async ({ page }) => {
+  test('states the complete ordered material list and its totals', async ({ page }) => {
     await openStockBuild(page);
     await engineerTheDrive(page);
+    await test.step('lists every consolidated row once a recipe is applied', async () => {
+      const rows = page.locator('ednb-cost-materials .rail-material');
+      await expect(rows.first()).toBeVisible();
 
-    const rows = page.locator('ednb-cost-materials .rail-material');
-    await expect(rows.first()).toBeVisible();
+      // Ruling E: the canvas draws five of eighteen, and the truncation did not
+      // survive. Every row the package consolidated is on screen.
+      const count = await rows.count();
+      expect(count).toBeGreaterThan(0);
+      const footer = await page.locator('ednb-cost-materials .block__footer').innerText();
+      expect(footer).toContain(String(count));
+    });
+    await test.step('orders the rows commonest first', async () => {
+      // The order a Commander gathers a shopping list in, matching the Engineer
+      // panel's list (ruling G). The marker each row carries is the package's own
+      // grade, so the drawn order can be read straight off them.
+      const grades = await page
+        .locator('ednb-cost-materials .rail-material ednb-material-grade')
+        .evaluateAll((nodes) => nodes.map((node) => Number(node.getAttribute('data-grade') ?? 0)));
 
-    // Ruling E: the canvas draws five of eighteen, and the truncation did not
-    // survive. Every row the package consolidated is on screen.
-    const count = await rows.count();
-    expect(count).toBeGreaterThan(0);
-    const footer = await page.locator('ednb-cost-materials .block__footer').innerText();
-    expect(footer).toContain(String(count));
-  });
+      expect(grades.length).toBeGreaterThan(1);
+      expect(grades).toEqual([...grades].sort((left, right) => left - right));
+    });
+    await test.step('states the blueprint count and the type and unit totals', async () => {
+      // Ruling D: three counts the canvas draws and the package does not return.
+      await expect(page.locator('ednb-cost-materials .block__note')).toHaveCount(1);
+      await expect(page.locator('ednb-cost-materials .block__footer span')).toHaveCount(2);
+    });
+    await test.step('rules the block the four times the canvas rules it', async () => {
+      // Above `TOTAL`, between the two blocks, above the counts, and above Merc
+      // Coin where there is one — the last of which now rules inside COST rather
+      // than under the material list (ruling C, re-decided). The rule over
+      // `TOTAL` is structural: it is what makes that row read as the sum of the
+      // two above it.
+      const ruled = await page
+        .locator(
+          'ednb-cost-materials .cost__row--total, ednb-cost-materials .block + .block, ednb-cost-materials .block__footer',
+        )
+        .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).borderBlockStartWidth));
 
-  test('orders the rows commonest first', async ({ page }) => {
-    await openStockBuild(page);
-    await engineerTheDrive(page);
-
-    // The order a Commander gathers a shopping list in, matching the Engineer
-    // panel's list (ruling G). The marker each row carries is the package's own
-    // grade, so the drawn order can be read straight off them.
-    const grades = await page
-      .locator('ednb-cost-materials .rail-material ednb-material-grade')
-      .evaluateAll((nodes) => nodes.map((node) => Number(node.getAttribute('data-grade') ?? 0)));
-
-    expect(grades.length).toBeGreaterThan(1);
-    expect(grades).toEqual([...grades].sort((left, right) => left - right));
-  });
-
-  test('states the blueprint count and the type and unit totals', async ({ page }) => {
-    await openStockBuild(page);
-    await engineerTheDrive(page);
-
-    // Ruling D: three counts the canvas draws and the package does not return.
-    await expect(page.locator('ednb-cost-materials .block__note')).toHaveCount(1);
-    await expect(page.locator('ednb-cost-materials .block__footer span')).toHaveCount(2);
-  });
-
-  test('rules the block the four times the canvas rules it', async ({ page }) => {
-    await openStockBuild(page);
-    await engineerTheDrive(page);
-
-    // Above `TOTAL`, between the two blocks, above the counts, and above Merc
-    // Coin where there is one — the last of which now rules inside COST rather
-    // than under the material list (ruling C, re-decided). The rule over
-    // `TOTAL` is structural: it is what makes that row read as the sum of the
-    // two above it.
-    const ruled = await page
-      .locator(
-        'ednb-cost-materials .cost__row--total, ednb-cost-materials .block + .block, ednb-cost-materials .block__footer',
-      )
-      .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).borderBlockStartWidth));
-
-    expect(ruled).toHaveLength(3);
-    for (const width of ruled) {
-      expect(width).not.toBe('0px');
-    }
+      expect(ruled).toHaveLength(3);
+      for (const width of ruled) {
+        expect(width).not.toBe('0px');
+      }
+    });
   });
 });
 

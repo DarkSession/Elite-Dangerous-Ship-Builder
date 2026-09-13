@@ -128,6 +128,79 @@ editing the config:
 E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e2e
 ```
 
+### Develop with targeted checks
+
+1. If a browser test fails, reproduce its file, title and project. Keep the failure output in a local log.
+
+   ```bash
+   mkdir -p dist/verification
+   pnpm run e2e power-and-heat.spec.ts --project=firefox-mobile-portrait --grep='states the plant' > dist/verification/reproduction.log 2>&1
+   ```
+
+2. Read the failure and its attachment. After a fix, run the same selection again.
+3. Run the affected capability across all ten projects. Include shared consumers when a helper or component changes.
+
+   ```bash
+   pnpm run e2e power-and-heat.spec.ts > dist/verification/capability.log 2>&1
+   ```
+
+4. Before proposing merge, run the complete gate. Targeted checks do not replace it.
+
+   ```bash
+   pnpm run check > dist/verification/check.log 2>&1
+   ```
+
+Pass Playwright options directly after the script name; do not insert an extra `--`.
+Use `--list` to verify a selection without launching browsers.
+Keep logs outside conversation output. Report the command, exit status, test counts and relevant failures.
+The agent guide uses this procedure for development iterations.
+
+### Measure end-to-end work
+
+1. Save one JSON report per suite. Run timing tests without other browser tests beside them.
+
+   ```bash
+   mkdir -p dist/verification
+   E2E_JSON_REPORT=dist/verification/regular.json pnpm run e2e > dist/verification/regular.log 2>&1
+   E2E_JSON_REPORT=dist/verification/timing.json pnpm run e2e:timing > dist/verification/timing.log 2>&1
+   E2E_JSON_REPORT=dist/verification/production.json pnpm run e2e:offline > dist/verification/production.log 2>&1
+   ```
+
+2. Read the summary. A failed or incomplete report returns a nonzero status.
+
+   ```bash
+   pnpm run e2e:summary dist/verification/regular.json dist/verification/timing.json dist/verification/production.json
+   ```
+
+Elapsed time measures the run. Summed attempt time measures browser work across workers, including retries.
+Named `setup:` steps measure instrumented helpers; they do not include every navigation or server startup.
+Named `axe:` steps measure scans. These durations are part of attempt time, not additional work.
+The summary states completion for the selected tests. A targeted selection does not establish full-suite coverage.
+Keep raw reports local because failure output can contain environment details.
+
+### Choose the verification layer
+
+| Behaviour                                      | Verification                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| Domain rules and boundary cases                | Unit tests beside the domain or store                         |
+| Component text, attributes and emitted actions | Component unit tests                                          |
+| A primary user journey                         | Playwright across all ten projects                            |
+| Browser layout, touch operation and reflow     | Playwright at the required conditions                         |
+| Accessibility of a rendered state              | One named scan owner for that state and each required project |
+
+Related static assertions share one prepared state and use named steps for diagnosis.
+Distinct journeys keep independent browser contexts.
+A scan state includes its route, build, selection, open layers, locale, text scale and effective viewport.
+Different states retain separate scans; a passing scan is never cached across tests.
+
+A fixed viewport override proves that fixed condition, not the profile width it replaces.
+Retain the required primary-journey matrix when assigning tests to projects.
+Any narrower assignment needs an explicit coverage decision in an accepted change.
+
+During review fixes, run affected checks and repeat the code review.
+After the final code fix, run the complete merge gate before proposing merge.
+If only verification records change, run formatting and specification policy checks for those records.
+
 ## Deployment
 
 The application is published to GitHub Pages at

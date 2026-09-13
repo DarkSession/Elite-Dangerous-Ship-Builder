@@ -27,37 +27,36 @@ import {
  * screen's own content and its scan.
  */
 test.describe('product semantics', () => {
-  test.beforeEach(async ({ page }) => {
+  test('presents landmarks, language and named controls', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('main')).toBeVisible();
-  });
 
-  test('presents the landmarks, headings and language a reader navigates by', async ({ page }) => {
-    await expectLandmarks(page);
-    await expectSingleVisibleH1(page);
-    await expectOrderedHeadings(page);
-    await expectRootLanguage(page, { lang: 'en', dir: 'ltr' });
-    await expectNoRawMessages(page);
+    await test.step('presents the landmarks, headings and language a reader navigates by', async () => {
+      await expectLandmarks(page);
+      await expectSingleVisibleH1(page);
+      await expectOrderedHeadings(page);
+      await expectRootLanguage(page, { lang: 'en', dir: 'ltr' });
+      await expectNoRawMessages(page);
 
-    // Visible feedback is ordinary semantic content, not a live region: a
-    // Commander must be able to find and re-read it, not only hear it once.
-    await expect(page.getByRole('status')).toHaveCount(1);
-  });
+      // Visible feedback is ordinary semantic content, not a live region: a
+      // Commander must be able to find and re-read it, not only hear it once.
+      await expect(page.getByRole('status')).toHaveCount(1);
+    });
+    await test.step('gives every control an accessible name matching its visible text', async () => {
+      const controls = page.getByRole('button');
+      const count = await controls.count();
 
-  test('gives every control an accessible name matching its visible text', async ({ page }) => {
-    const controls = page.getByRole('button');
-    const count = await controls.count();
+      for (let index = 0; index < count; index += 1) {
+        const control = controls.nth(index);
 
-    for (let index = 0; index < count; index += 1) {
-      const control = controls.nth(index);
-
-      // Present in the accessibility tree and not hidden from view: an action
-      // that is merely off-screen is an action a Commander cannot take, and one
-      // that survives as an unlabelled glyph has not survived either.
-      await expect(control).toBeVisible();
-      expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
-      await expectNameMatchesVisibleText(control);
-    }
+        // Present in the accessibility tree and not hidden from view: an action
+        // that is merely off-screen is an action a Commander cannot take, and one
+        // that survives as an unlabelled glyph has not survived either.
+        await expect(control).toBeVisible();
+        expect((await control.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
+        await expectNameMatchesVisibleText(control);
+      }
+    });
   });
 
   test('names the tool the open screen belongs to, and offers it too', async ({ page }) => {
@@ -65,9 +64,7 @@ test.describe('product semantics', () => {
     // that tool as well as naming it: the tab re-enters the tool a Commander is
     // already in (011/FR-028, SC-009, 017/FR-003).
     //
-    // Asked of a tool screen rather than of the entry point the `beforeEach`
-    // opens: a Commander at `/` is in no tool, and the bar marks none there
-    // (014/FR-010, asserted in `start-page.spec.ts`).
+    // The entry point marks no current tool; the shipyard names Ship Builder.
     await page.goto('/ships');
     await expect(page.getByRole('main')).toBeVisible();
 
@@ -103,10 +100,7 @@ test.describe('product semantics', () => {
         .replace(/\s+/g, ' ')
         .trim();
 
-    // Every address the ship tool owns: the shipyard, a hull's own page and the
-    // outfitting bench. The shipyard is opened here rather than by the
-    // `beforeEach`, which lands on the entry point — where no tool is open and
-    // so none is marked (014/FR-010).
+    // Each ship-tool route keeps the same current tool.
     await page.goto('/ships');
     await expect(page.getByRole('main')).toBeVisible();
 

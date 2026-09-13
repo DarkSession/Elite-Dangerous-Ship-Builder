@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * Driving the shell the way a Commander does.
@@ -287,52 +287,54 @@ export async function openFirstHullFromManifest(page: Page): Promise<void> {
  * What that screen goes on to draw is each journey's own wait.
  */
 export async function buildStockHull(page: Page, label: string): Promise<void> {
-  // Before any of it, because the retry below would otherwise press a control
-  // the build drew and press it again after the takeover, which is one
-  // commitment made twice.
-  await waitForTakeover(page);
-  const action = page.getByRole('button', { name: label, exact: true });
-  const row = manifestBuildControl(page);
+  await test.step('setup: stock hull', async () => {
+    // Before any of it, because the retry below would otherwise press a control
+    // the build drew and press it again after the takeover, which is one
+    // commitment made twice.
+    await waitForTakeover(page);
+    const action = page.getByRole('button', { name: label, exact: true });
+    const row = manifestBuildControl(page);
 
-  // Longer than the default, because the wait here spans a route's first paint:
-  // every journey reaches this straight off a navigation.
-  await expect(action.or(row).first()).toBeVisible({ timeout: 15_000 });
+    // Longer than the default, because the wait here spans a route's first paint:
+    // every journey reaches this straight off a navigation.
+    await expect(action.or(row).first()).toBeVisible({ timeout: 15_000 });
 
-  // Asked again on every attempt, and answered in favour of the action.
-  //
-  // A journey arrives here mid-navigation, where the screen being left still
-  // answers the question: the manifest row of the hull just opened is in the
-  // document a moment longer than the route that is going. Asked once, the
-  // answer can be that row — and by the time it is pressed the row is gone,
-  // which is a thirty-second wait on a control that will never appear. The two
-  // are not interchangeable either, so the pair cannot simply be pressed
-  // together: a document holds both, and the first of them in document order is
-  // the manifest's, not the screen's.
-  await expect(async () => {
-    const target = (await action.first().isVisible()) ? action.first() : row;
-    await target.click({ timeout: 2_000 });
-  }).toPass({ timeout: 15_000 });
+    // Asked again on every attempt, and answered in favour of the action.
+    //
+    // A journey arrives here mid-navigation, where the screen being left still
+    // answers the question: the manifest row of the hull just opened is in the
+    // document a moment longer than the route that is going. Asked once, the
+    // answer can be that row — and by the time it is pressed the row is gone,
+    // which is a thirty-second wait on a control that will never appear. The two
+    // are not interchangeable either, so the pair cannot simply be pressed
+    // together: a document holds both, and the first of them in document order is
+    // the manifest's, not the screen's.
+    await expect(async () => {
+      const target = (await action.first().isVisible()) ? action.first() : row;
+      await target.click({ timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
 
-  // The press is not finished until the address is the workspace's.
-  //
-  // The landing belongs to the press: no caller presses this control to stay
-  // where it is, and one statement here is a budget about the work the wait
-  // spans rather than one added to whichever assertion failed last.
-  //
-  // The first press in a document spans a fetch, which is the case the budget
-  // is written for. The commitment reaches the store first, and the router
-  // publishes `/outfitting` only once it has loaded that screen's own chunk —
-  // `/outfitting` is lazy like every other route here (`app.routes.ts`).
-  // Angular writes the address just before it activates the routes, so the wait
-  // ends at the chunk rather than at the screen, and what the screen then draws
-  // is the caller's own wait.
-  //
-  // A fetch is one of the reasons the verification contract's assertion ruling
-  // gives for stating a budget instead of taking the run's allowance, which is
-  // ten seconds on CI. Fifteen is the figure this file already states for a
-  // route arriving, above; it is a ceiling with margin rather than a
-  // measurement, since this wait spans no more than that one does.
-  await expect(page).toHaveURL(WORKSPACE, { timeout: 15_000 });
+    // The press is not finished until the address is the workspace's.
+    //
+    // The landing belongs to the press: no caller presses this control to stay
+    // where it is, and one statement here is a budget about the work the wait
+    // spans rather than one added to whichever assertion failed last.
+    //
+    // The first press in a document spans a fetch, which is the case the budget
+    // is written for. The commitment reaches the store first, and the router
+    // publishes `/outfitting` only once it has loaded that screen's own chunk —
+    // `/outfitting` is lazy like every other route here (`app.routes.ts`).
+    // Angular writes the address just before it activates the routes, so the wait
+    // ends at the chunk rather than at the screen, and what the screen then draws
+    // is the caller's own wait.
+    //
+    // A fetch is one of the reasons the verification contract's assertion ruling
+    // gives for stating a budget instead of taking the run's allowance, which is
+    // ten seconds on CI. Fifteen is the figure this file already states for a
+    // route arriving, above; it is a ceiling with margin rather than a
+    // measurement, since this wait spans no more than that one does.
+    await expect(page).toHaveURL(WORKSPACE, { timeout: 15_000 });
+  });
 }
 
 /**

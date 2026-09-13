@@ -105,102 +105,104 @@ function drawnPlates(page: Page): Promise<number> {
 }
 
 test.describe('the plates', () => {
-  test('draw both package schematics from the hull own geometry', async ({ page }) => {
+  test('draws package geometry and names hardpoints and utilities', async ({ page }) => {
     await openStockBuild(page);
+    await test.step('draw both package schematics from the hull own geometry', async () => {
+      const plates = page.locator('ednb-hull-anatomy .schematic[data-state="ready"]');
+      await expect(plates.first()).toBeVisible();
 
-    const plates = page.locator('ednb-hull-anatomy .schematic[data-state="ready"]');
-    await expect(plates.first()).toBeVisible();
+      // Canvas 1c lays the hull on its side in a frame of the hull's own shape.
+      // The package draws every hull nose-up, so the frame is wider than it is
+      // tall and the drawing is turned once to match — one transform over the
+      // package's own paths, which are written out unchanged.
+      const drawing = page.locator('ednb-hull-anatomy .schematic__drawing').first();
+      const viewBox = (await drawing.getAttribute('viewBox')) ?? '';
+      const [, , width, height] = viewBox.split(' ').map(Number);
+      expect(width / height).toBeCloseTo(720 / 292, 2);
+      await expect(drawing.locator('.schematic__artwork')).toHaveAttribute(
+        'transform',
+        /^translate\(-?[\d.]+ -?[\d.]+\) rotate\(-90\)$/,
+      );
 
-    // Canvas 1c lays the hull on its side in a frame of the hull's own shape.
-    // The package draws every hull nose-up, so the frame is wider than it is
-    // tall and the drawing is turned once to match — one transform over the
-    // package's own paths, which are written out unchanged.
-    const drawing = page.locator('ednb-hull-anatomy .schematic__drawing').first();
-    const viewBox = (await drawing.getAttribute('viewBox')) ?? '';
-    const [, , width, height] = viewBox.split(' ').map(Number);
-    expect(width / height).toBeCloseTo(720 / 292, 2);
-    await expect(drawing.locator('.schematic__artwork')).toHaveAttribute(
-      'transform',
-      /^translate\(-?[\d.]+ -?[\d.]+\) rotate\(-90\)$/,
-    );
+      // The picture is the package's own document, rasterised, drawn inside that
+      // same turned group and at the `viewBox` the extract carries. Both halves
+      // were made from one SVG at build time, which is why they line up.
+      for (const side of ['top', 'bottom']) {
+        await expect(
+          page.locator(
+            `ednb-hull-anatomy .schematic[data-side="${side}"] .schematic__artwork image`,
+          ),
+        ).toHaveAttribute('href', `assets/ships/${HULL}/schematic-${side}.png`);
+      }
+    });
+    await test.step('name every mount with its slot, kind, side and state', async () => {
+      await expect(mounts(page).first()).toBeVisible();
 
-    // The picture is the package's own document, rasterised, drawn inside that
-    // same turned group and at the `viewBox` the extract carries. Both halves
-    // were made from one SVG at build time, which is why they line up.
-    for (const side of ['top', 'bottom']) {
-      await expect(
-        page.locator(`ednb-hull-anatomy .schematic[data-side="${side}"] .schematic__artwork image`),
-      ).toHaveAttribute('href', `assets/ships/${HULL}/schematic-${side}.png`);
-    }
+      const name = await mounts(page).first().getAttribute('aria-label');
+      // Named the way the ledger row names it, not by the package's slot key.
+      expect(name).toMatch(/Hardpoint \d/);
+      expect(name).not.toMatch(/[A-Za-z]Hardpoint\d/);
+      expect(name).toMatch(/hardpoint|utility mount/);
+      expect(name).toMatch(/Top|Bottom/);
+      expect(name).toMatch(/fitted|empty/);
+      expect(name).toMatch(/engineered|stock/);
+    });
+    await test.step('present a utility as a utility, never as a hardpoint', async () => {
+      await expect(mounts(page).first()).toBeVisible();
+
+      const utilities = page.locator(
+        'ednb-hull-anatomy .schematic__mount[data-kind="utility"]:visible',
+      );
+      expect(await utilities.count()).toBeGreaterThan(0);
+      expect(await utilities.first().getAttribute('aria-label')).toContain('utility mount');
+    });
   });
 
-  test('name every mount with its slot, kind, side and state', async ({ page }) => {
+  test('limits schematic content to located mounts and the declared legend', async ({ page }) => {
     await openStockBuild(page);
-    await expect(mounts(page).first()).toBeVisible();
+    await test.step('give no geometry to a core, optional, armour or cargo-hatch slot', async () => {
+      await expect(mounts(page).first()).toBeVisible();
 
-    const name = await mounts(page).first().getAttribute('aria-label');
-    // Named the way the ledger row names it, not by the package's slot key.
-    expect(name).toMatch(/Hardpoint \d/);
-    expect(name).not.toMatch(/[A-Za-z]Hardpoint\d/);
-    expect(name).toMatch(/hardpoint|utility mount/);
-    expect(name).toMatch(/Top|Bottom/);
-    expect(name).toMatch(/fitted|empty/);
-    expect(name).toMatch(/engineered|stock/);
-  });
+      const keys = await mounts(page).evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute('data-slot') ?? ''),
+      );
+      expect(keys.length).toBeGreaterThan(0);
+      expect(keys.every((key) => /Hardpoint\d+$/u.test(key))).toBe(true);
+    });
+    await test.step('publish no provenance control of their own', async () => {
+      await expect(mounts(page).first()).toBeVisible();
 
-  test('present a utility as a utility, never as a hardpoint', async ({ page }) => {
-    await openStockBuild(page);
-    await expect(mounts(page).first()).toBeVisible();
+      // Neither canvas draws a provenance or help control on the anatomy panel;
+      // canvas 1d draws `HELP & FAQ` once, in the application menu, and that is
+      // feature 012's. The only controls in the region are the mounts, the mode
+      // strip, the side selector and a retry on a plate that did not arrive
+      // (FR-011).
+      const controls = page.locator(
+        'ednb-hull-anatomy a, ednb-hull-anatomy button, ednb-hull-anatomy [role="button"], ednb-hull-anatomy [role="link"]',
+      );
+      const names = await controls.evaluateAll((nodes) =>
+        nodes
+          .filter((node) => !node.classList.contains('schematic__mount'))
+          .map((node) => (node.getAttribute('aria-label') ?? node.textContent ?? '').trim()),
+      );
 
-    const utilities = page.locator(
-      'ednb-hull-anatomy .schematic__mount[data-kind="utility"]:visible',
-    );
-    expect(await utilities.count()).toBeGreaterThan(0);
-    expect(await utilities.first().getAttribute('aria-label')).toContain('utility mount');
-  });
-
-  test('give no geometry to a core, optional, armour or cargo-hatch slot', async ({ page }) => {
-    await openStockBuild(page);
-    await expect(mounts(page).first()).toBeVisible();
-
-    const keys = await mounts(page).evaluateAll((nodes) =>
-      nodes.map((node) => node.getAttribute('data-slot') ?? ''),
-    );
-    expect(keys.length).toBeGreaterThan(0);
-    expect(keys.every((key) => /Hardpoint\d+$/u.test(key))).toBe(true);
-  });
-
-  test('publish no provenance control of their own', async ({ page }) => {
-    await openStockBuild(page);
-    await expect(mounts(page).first()).toBeVisible();
-
-    // Neither canvas draws a provenance or help control on the anatomy panel;
-    // canvas 1d draws `HELP & FAQ` once, in the application menu, and that is
-    // feature 012's. The only controls in the region are the mounts, the mode
-    // strip, the side selector and a retry on a plate that did not arrive
-    // (FR-011).
-    const controls = page.locator(
-      'ednb-hull-anatomy a, ednb-hull-anatomy button, ednb-hull-anatomy [role="button"], ednb-hull-anatomy [role="link"]',
-    );
-    const names = await controls.evaluateAll((nodes) =>
-      nodes
-        .filter((node) => !node.classList.contains('schematic__mount'))
-        .map((node) => (node.getAttribute('aria-label') ?? node.textContent ?? '').trim()),
-    );
-
-    expect(
-      names.every((name) =>
-        /^(top|bottom|try again|mounts|power|drives|defence|offence|status)$/i.test(name),
-      ),
-    ).toBe(true);
-    expect(await page.locator('ednb-hull-anatomy a[href]').count()).toBe(0);
-  });
-
-  test('draw the legend the reference draws, and only that', async ({ page }) => {
-    await openStockBuild(page);
-
-    const entries = page.locator('ednb-hull-anatomy .anatomy__legend-entry');
-    await expect(entries).toHaveText([/Selected/i, /Fitted/i, /Empty/i, /Utility/i, /Engineered/i]);
+      expect(
+        names.every((name) =>
+          /^(top|bottom|try again|mounts|power|drives|defence|offence|status)$/i.test(name),
+        ),
+      ).toBe(true);
+      expect(await page.locator('ednb-hull-anatomy a[href]').count()).toBe(0);
+    });
+    await test.step('draw the legend the reference draws, and only that', async () => {
+      const entries = page.locator('ednb-hull-anatomy .anatomy__legend-entry');
+      await expect(entries).toHaveText([
+        /Selected/i,
+        /Fitted/i,
+        /Empty/i,
+        /Utility/i,
+        /Engineered/i,
+      ]);
+    });
   });
 });
 

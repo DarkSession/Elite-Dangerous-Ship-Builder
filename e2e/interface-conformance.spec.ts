@@ -80,6 +80,12 @@ test.describe('cross-route semantics', () => {
       testInfo.setTimeout(testInfo.timeout + 20_000);
       await openScreen(page, screen);
 
+      await test.step('publishes one polite and one assertive outlet', async () => {
+        await expect(page.locator('[data-announcement-outlet="polite"]')).toHaveCount(1);
+        await expect(page.locator('[data-announcement-outlet="assertive"]')).toHaveCount(1);
+        await expect(page.locator('[aria-live]')).toHaveCount(2);
+      });
+
       await expectLandmarks(page);
       await expectSingleVisibleH1(page);
       await expectOrderedHeadings(page);
@@ -111,20 +117,6 @@ test.describe('cross-route semantics', () => {
     await openFirstHullFromManifest(page);
     await expect(page.locator('ednb-hull-detail-page')).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
-  });
-
-  test('keeps exactly one polite and one assertive outlet on every screen', async ({ page }) => {
-    test.slow();
-
-    for (const screen of SCREENS) {
-      await openScreen(page, screen);
-
-      await expect(page.locator('[data-announcement-outlet="polite"]')).toHaveCount(1);
-      await expect(page.locator('[data-announcement-outlet="assertive"]')).toHaveCount(1);
-      // Nothing else is live. A region marked live re-announces every unaffected
-      // value inside it whenever one of them changes.
-      await expect(page.locator('[aria-live]')).toHaveCount(2);
-    }
   });
 
   test('raises no prompt where nothing is at stake', async ({ page }) => {

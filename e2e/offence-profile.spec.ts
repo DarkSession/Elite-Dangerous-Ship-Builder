@@ -225,109 +225,99 @@ test.describe('opening the layer', () => {
 });
 
 test.describe('reading the build', () => {
-  test('sets the burst total large, and names the sustained one beside it', async ({ page }) => {
+  test('states weapon totals, their count and range bands', async ({ page }) => {
     await openOffence(page);
+    await test.step('sets the burst total large, and names the sustained one beside it', async () => {
+      const headline = page.locator('ednb-offence-analysis .headline');
+      await expect(headline).toBeVisible();
 
-    const headline = page.locator('ednb-offence-analysis .headline');
-    await expect(headline).toBeVisible();
-
-    // Both named. The canvas's own two panels disagree about which of the two
-    // its large figure is, so neither is left to a reader to infer.
-    expect(digits(await headline.locator('.headline__value').innerText())).not.toBe('');
-    expect(digits(await headline.locator('.headline__note').innerText())).not.toBe('');
+      // Both named. The canvas's own two panels disagree about which of the two
+      // its large figure is, so neither is left to a reader to infer.
+      expect(digits(await headline.locator('.headline__value').innerText())).not.toBe('');
+      expect(digits(await headline.locator('.headline__note').innerText())).not.toBe('');
+    });
+    await test.step('counts the weapons the package returned beside the block heading', async () => {
+      const note = page.locator('.offence__block--weapons .offence__note');
+      await expect(note).toBeVisible();
+      expect(digits(await note.innerText())).not.toBe('');
+    });
+    await test.step('draws the canvas’s four range bands, weakening with distance', async () => {
+      const bands = await barRows(page, 'ednb-offence-analysis .bars--range .bar');
+      expect(bands).toHaveLength(4);
+      for (const [label, value] of bands) {
+        expect(digits(label)).not.toBe('');
+        expect(digits(value)).not.toBe('');
+      }
+    });
   });
 
-  test('counts the weapons the package returned beside the block heading', async ({ page }) => {
+  test('names every damage segment in one complete legend', async ({ page }) => {
     await openOffence(page);
+    await test.step('names each damage type where the canvas names it — in the legend', async () => {
+      // No canvas enumerates the types with a figure each. The stacked bar's
+      // legend is the whole reading, so a type the build deals is named there and
+      // one it does not deal has no line at all.
+      // Lowered on both sides: the legend is set in the canvas's tracked mono
+      // label, which uppercases in CSS, and `innerText` reports what is rendered.
+      const entries = page.locator('ednb-offence-analysis .split__entry');
+      const legend = (await entries.allInnerTexts()).join(' ').toLowerCase();
+      const named = (['kinetic', 'thermal', 'explosive', 'absolute'] as const).filter((type) =>
+        legend.includes(englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
+      );
 
-    const note = page.locator('.offence__block--weapons .offence__note');
-    await expect(note).toBeVisible();
-    expect(digits(await note.innerText())).not.toBe('');
-  });
+      expect(named.length).toBeGreaterThan(0);
 
-  test('names each damage type where the canvas names it — in the legend', async ({ page }) => {
-    await openOffence(page);
+      // And named there and nowhere else: every damage-type word on the panel is
+      // inside the legend. A second list of the types with a figure each is what
+      // was withdrawn (`design/canvas-contract.md`, review note 7), and it would
+      // show up here as a type named outside `.split__legend`.
+      const outside = await page.locator('ednb-offence-analysis').evaluate(
+        (panel, words: string[]) => {
+          const legend = panel.querySelector('.split__legend');
+          return words.filter((word) =>
+            [...panel.querySelectorAll('*')].some(
+              (node) =>
+                !legend?.contains(node) &&
+                node.children.length === 0 &&
+                (node.textContent ?? '').toLowerCase().includes(word),
+            ),
+          );
+        },
+        named.map((type) => englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
+      );
+      expect(outside).toEqual([]);
+    });
+    await test.step('draws the canvas’s stacked split, and writes every segment down', async () => {
+      const segments = page.locator('ednb-offence-analysis .split__segment');
+      const entries = page.locator('ednb-offence-analysis .split__entry');
+      expect(await segments.count()).toBeGreaterThan(0);
 
-    // No canvas enumerates the types with a figure each. The stacked bar's
-    // legend is the whole reading, so a type the build deals is named there and
-    // one it does not deal has no line at all.
-    // Lowered on both sides: the legend is set in the canvas's tracked mono
-    // label, which uppercases in CSS, and `innerText` reports what is rendered.
-    const entries = page.locator('ednb-offence-analysis .split__entry');
-    const legend = (await entries.allInnerTexts()).join(' ').toLowerCase();
-    const named = (['kinetic', 'thermal', 'explosive', 'absolute'] as const).filter((type) =>
-      legend.includes(englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
-    );
+      // The bar is decorative: every segment's amount and share are in the
+      // legend beside it, because a length and a colour are not a reading.
+      await expect(entries).toHaveCount(await segments.count());
+      for (const entry of await entries.all()) {
+        expect(await entry.innerText()).toContain('%');
+      }
 
-    expect(named.length).toBeGreaterThan(0);
+      // And the legend is a list that says what it is a list of, so the reading
+      // arrives as a named group rather than as loose text under the bar.
+      await expect(
+        page.getByRole('list', { name: englishMessages['offence.damage.bar'] }),
+      ).toBeVisible();
+      await expect(entries.first()).toHaveRole('listitem');
+    });
+    await test.step('gives a type the build does not deal no segment and no line', async () => {
+      // The stock Anaconda deals no unclassified damage, and the canvas draws a
+      // segment only for a type that has one. A legend entry always accompanies a
+      // segment, so the two counts agreeing is what says nothing was invented.
+      const segments = page.locator('ednb-offence-analysis .split__segment');
+      const entries = page.locator('ednb-offence-analysis .split__entry');
 
-    // And named there and nowhere else: every damage-type word on the panel is
-    // inside the legend. A second list of the types with a figure each is what
-    // was withdrawn (`design/canvas-contract.md`, review note 7), and it would
-    // show up here as a type named outside `.split__legend`.
-    const outside = await page.locator('ednb-offence-analysis').evaluate(
-      (panel, words: string[]) => {
-        const legend = panel.querySelector('.split__legend');
-        return words.filter((word) =>
-          [...panel.querySelectorAll('*')].some(
-            (node) =>
-              !legend?.contains(node) &&
-              node.children.length === 0 &&
-              (node.textContent ?? '').toLowerCase().includes(word),
-          ),
-        );
-      },
-      named.map((type) => englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
-    );
-    expect(outside).toEqual([]);
-  });
-
-  test('draws the canvas’s stacked split, and writes every segment down', async ({ page }) => {
-    await openOffence(page);
-
-    const segments = page.locator('ednb-offence-analysis .split__segment');
-    const entries = page.locator('ednb-offence-analysis .split__entry');
-    expect(await segments.count()).toBeGreaterThan(0);
-
-    // The bar is decorative: every segment's amount and share are in the
-    // legend beside it, because a length and a colour are not a reading.
-    await expect(entries).toHaveCount(await segments.count());
-    for (const entry of await entries.all()) {
-      expect(await entry.innerText()).toContain('%');
-    }
-
-    // And the legend is a list that says what it is a list of, so the reading
-    // arrives as a named group rather than as loose text under the bar.
-    await expect(
-      page.getByRole('list', { name: englishMessages['offence.damage.bar'] }),
-    ).toBeVisible();
-    await expect(entries.first()).toHaveRole('listitem');
-  });
-
-  test('draws the canvas’s four range bands, weakening with distance', async ({ page }) => {
-    await openOffence(page);
-
-    const bands = await barRows(page, 'ednb-offence-analysis .bars--range .bar');
-    expect(bands).toHaveLength(4);
-    for (const [label, value] of bands) {
-      expect(digits(label)).not.toBe('');
-      expect(digits(value)).not.toBe('');
-    }
-  });
-
-  test('gives a type the build does not deal no segment and no line', async ({ page }) => {
-    await openOffence(page);
-
-    // The stock Anaconda deals no unclassified damage, and the canvas draws a
-    // segment only for a type that has one. A legend entry always accompanies a
-    // segment, so the two counts agreeing is what says nothing was invented.
-    const segments = page.locator('ednb-offence-analysis .split__segment');
-    const entries = page.locator('ednb-offence-analysis .split__entry');
-
-    await expect(entries).toHaveCount(await segments.count());
-    expect((await entries.allInnerTexts()).join(' ').toLowerCase()).not.toContain(
-      englishMessages['offence.damage.type.unclassified'].toLowerCase(),
-    );
+      await expect(entries).toHaveCount(await segments.count());
+      expect((await entries.allInnerTexts()).join(' ').toLowerCase()).not.toContain(
+        englishMessages['offence.damage.type.unclassified'].toLowerCase(),
+      );
+    });
   });
 });
 
@@ -622,34 +612,32 @@ test.describe('the weapon row’s second line', () => {
 });
 
 test.describe('the status rail', () => {
-  test('carries the sustained figure the panel carries', async ({ page }) => {
+  test('states matching sustained damage without controls or qualification', async ({ page }) => {
     await openOffence(page);
+    await test.step('carries the sustained figure the panel carries', async () => {
+      // The cell is composed from the design system's metric group, which is what
+      // the canvas draws all six rail cells as.
+      const cell = page.locator('ednb-offence-summary .metric');
+      await expect(cell.locator('.metric__label')).toHaveText(
+        englishMessages['offence.rail.label'],
+      );
 
-    // The cell is composed from the design system's metric group, which is what
-    // the canvas draws all six rail cells as.
-    const cell = page.locator('ednb-offence-summary .metric');
-    await expect(cell.locator('.metric__label')).toHaveText(englishMessages['offence.rail.label']);
+      const railFigure = digits(await cell.locator('.metric__number').innerText());
+      // The panel's headline names the sustained total on the line beside its
+      // large burst figure, which is the rail cell's own reading.
+      const note = digits(await page.locator('ednb-offence-analysis .headline__note').innerText());
 
-    const railFigure = digits(await cell.locator('.metric__number').innerText());
-    // The panel's headline names the sustained total on the line beside its
-    // large burst figure, which is the rail cell's own reading.
-    const note = digits(await page.locator('ednb-offence-analysis .headline__note').innerText());
-
-    // The same projection reaches both, so the two readings have to agree
-    // without either being written down here.
-    expect(railFigure).not.toBe('');
-    expect(note).toContain(railFigure);
-  });
-
-  test('holds no control, and no qualification on a build whose coverage resolved', async ({
-    page,
-  }) => {
-    await openOffence(page);
-
-    await expect(page.locator('ednb-offence-summary button, ednb-offence-summary a')).toHaveCount(
-      0,
-    );
-    await expect(page.locator('ednb-offence-summary .metric__description')).toHaveCount(0);
+      // The same projection reaches both, so the two readings have to agree
+      // without either being written down here.
+      expect(railFigure).not.toBe('');
+      expect(note).toContain(railFigure);
+    });
+    await test.step('holds no control, and no qualification on a build whose coverage resolved', async () => {
+      await expect(page.locator('ednb-offence-summary button, ednb-offence-summary a')).toHaveCount(
+        0,
+      );
+      await expect(page.locator('ednb-offence-summary .metric__description')).toHaveCount(0);
+    });
   });
 
   test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {

@@ -25,11 +25,10 @@ import { buildStockHull } from './shell';
 /**
  * The states this feature can be in, held to the same floor.
  *
- * The other suites sweep the states they pass through on their way to proving
- * something else. This one exists for the states nothing else reaches — an
- * empty workspace, a refusal, a build with no history — and for the conditions
- * that break a layout rather than a journey: doubled text, 400% zoom, expanded
- * copy, a mirrored direction and no motion at all.
+ * This suite owns the empty workspace and cargo-hatch refusal scans.
+ * The history suite owns the stock build with disabled undo and redo.
+ * Layout variants retain their own checks for doubled text, 400% zoom,
+ * expanded copy, a mirrored direction and reduced motion.
  *
  * Every check here is a floor rather than a judgement. Whether a name means
  * anything is decided by a person, in the manual protocols; this proves the
@@ -59,28 +58,16 @@ test.describe('every outfitting state', () => {
     await sweepOutfittingState(page, testInfo, 'no build');
   });
 
-  test('a refusal is published without breaking the screen', async ({ page }, testInfo) => {
+  test('states cargo-hatch refusal and unavailable engineering accessibly', async ({
+    page,
+  }, testInfo) => {
     await openStockBuild(page);
     await selectMount(page, 'CargoHatch');
 
     // The Almanac refuses to empty the hatch. The reason is the state under
     // test, and it is a state a Commander lands in, not an error page.
     await expect(page.locator('.outfitting__bench-reason')).toBeVisible();
-    await sweepOutfittingState(page, testInfo, 'refusal/cargo hatch');
-  });
-
-  test('a build with nothing to undo offers both controls, disabled', async ({
-    page,
-  }, testInfo) => {
-    await openStockBuild(page);
-
-    await sweepOutfittingState(page, testInfo, 'history/disabled');
-  });
-
-  test('a mount the Almanac offers nothing for says so', async ({ page }, testInfo) => {
-    await openStockBuild(page);
-    await selectMount(page, 'CargoHatch');
-    await sweepOutfittingState(page, testInfo, 'engineering/package empty');
+    await sweepOutfittingState(page, testInfo, 'cargo hatch/refusal and unavailable engineering');
   });
 });
 
